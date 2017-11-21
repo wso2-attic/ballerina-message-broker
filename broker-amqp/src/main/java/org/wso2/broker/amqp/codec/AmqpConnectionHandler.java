@@ -23,6 +23,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.frames.AmqpBadMessage;
 import org.wso2.broker.amqp.codec.frames.ConnectionStart;
 import org.wso2.broker.amqp.codec.frames.ProtocolInitFrame;
 
@@ -34,9 +35,12 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        LOGGER.info("Channel read hit");
         if (msg instanceof ProtocolInitFrame) {
             handleProtocolInit(ctx, (ProtocolInitFrame) msg);
+        } else if (msg instanceof AmqpBadMessage) {
+            LOGGER.warn("Bad message received", ((AmqpBadMessage) msg).getCause());
+            // TODO need to send error back to client
+            ctx.close();
         }
     }
 
