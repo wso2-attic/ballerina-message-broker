@@ -33,6 +33,11 @@ public class FieldTable implements EncodableData {
     public static final FieldTable EMPTY_TABLE = new FieldTable(new HashMap<ShortString, FieldValue>());
     private final Map<ShortString, FieldValue> properties;
 
+    /**
+     * Used to cache size to avoid recalculating size
+     */
+    private long size = -1;
+
     public FieldTable(Map<ShortString, FieldValue> properties) {
         this.properties = properties;
     }
@@ -42,10 +47,19 @@ public class FieldTable implements EncodableData {
         for (Map.Entry<ShortString, FieldValue> fieldEntry : properties.entrySet()) {
             tableEntrySize = tableEntrySize + fieldEntry.getKey().getSize() + fieldEntry.getValue().getSize();
         }
+        size = tableEntrySize;
         return 4 + tableEntrySize;
     }
 
     public void write(ByteBuf buf) {
+        if (size != -1) {
+            writeWithoutCalculatingSize(buf);
+        } else {
+            writeWithCalculatedSize(buf);
+        }
+    }
+
+    private void writeWithCalculatedSize(ByteBuf buf) {
         int sizeIndex = buf.writerIndex();
         buf.writerIndex(sizeIndex + 4);
 
@@ -56,8 +70,18 @@ public class FieldTable implements EncodableData {
 
             tableEntrySize = tableEntrySize + key.getSize() + value.getSize();
             key.write(buf);
+            value.write(buf);
         }
 
         buf.setInt(sizeIndex, tableEntrySize);
+    }
+
+    private void writeWithoutCalculatingSize(ByteBuf buf) {
+        buf.writeInt((int) size);
+
+        for (Map.Entry<ShortString, FieldValue> fieldEntry : properties.entrySet()) {
+            fieldEntry.getKey().write(buf);
+            fieldEntry.getValue().write(buf);
+        }
     }
 }
