@@ -27,6 +27,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.AmqpDecoder;
+import org.wso2.broker.amqp.codec.AmqpEncoder;
 
 /**
  * AMQP Server implementation
@@ -71,7 +74,10 @@ public class Server {
     private static class SocketChannelInitializer extends ChannelInitializer<SocketChannel> {
 
         protected void initChannel(SocketChannel socketChannel) throws Exception {
-            socketChannel.pipeline().addLast(new ServerHandler());
+            socketChannel.pipeline()
+                         .addLast(new AmqpDecoder())
+                         .addLast(new AmqpEncoder())
+                         .addLast(new AmqpConnectionHandler());
         }
     }
 
