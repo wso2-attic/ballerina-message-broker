@@ -36,23 +36,23 @@ public class FieldTable implements EncodableData {
     /**
      * Used to cache size to avoid recalculating size
      */
-    private long size = -1;
+    private long size = -1L;
 
     public FieldTable(Map<ShortString, FieldValue> properties) {
         this.properties = properties;
     }
 
-    public int getSize() {
-        int tableEntrySize = 0;
+    public long getSize() {
+        long tableEntrySize = 0L;
         for (Map.Entry<ShortString, FieldValue> fieldEntry : properties.entrySet()) {
             tableEntrySize = tableEntrySize + fieldEntry.getKey().getSize() + fieldEntry.getValue().getSize();
         }
         size = tableEntrySize;
-        return 4 + tableEntrySize;
+        return 4L + tableEntrySize;
     }
 
     public void write(ByteBuf buf) {
-        if (size != -1) {
+        if (size != -1L) {
             writeWithoutCalculatingSize(buf);
         } else {
             writeWithCalculatedSize(buf);
@@ -63,7 +63,7 @@ public class FieldTable implements EncodableData {
         int sizeIndex = buf.writerIndex();
         buf.writerIndex(sizeIndex + 4);
 
-        int tableEntrySize = 0;
+        long tableEntrySize = 0L;
         for (Map.Entry<ShortString, FieldValue> fieldEntry : properties.entrySet()) {
             ShortString key = fieldEntry.getKey();
             FieldValue value = fieldEntry.getValue();
@@ -73,7 +73,7 @@ public class FieldTable implements EncodableData {
             value.write(buf);
         }
 
-        buf.setInt(sizeIndex, tableEntrySize);
+        buf.setInt(sizeIndex, (int) tableEntrySize);
     }
 
     private void writeWithoutCalculatingSize(ByteBuf buf) {
@@ -86,8 +86,8 @@ public class FieldTable implements EncodableData {
     }
 
     public static FieldTable parse(ByteBuf buf) throws Exception {
-        int size = buf.readInt();
-        int readBytes = 0;
+        long size = buf.readUnsignedInt();
+        long readBytes = 0L;
         Map<ShortString, FieldValue> properties = new HashMap<>();
 
         while (readBytes < size) {

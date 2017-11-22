@@ -51,7 +51,6 @@ public class AmqpDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out)
             throws Exception {
-        LOGGER.debug("decoding frame");
         switch (currentState) {
             case PROTOCOL_INITIALIZATION:
                 processProtocolInitFrame(buffer, out);
@@ -74,7 +73,6 @@ public class AmqpDecoder extends ByteToMessageDecoder {
     }
 
     private void processProtocolInitFrame(ByteBuf buffer, List<Object> out) {
-        LOGGER.debug("starting protocol initialization");
         if (buffer.readableBytes() >= 8) {
             CharSequence protocolName = buffer.readCharSequence(4, CharsetUtil.US_ASCII);
             buffer.skipBytes(1);
@@ -90,5 +88,12 @@ public class AmqpDecoder extends ByteToMessageDecoder {
 
             out.add(new ProtocolInitFrame(majorVersion, minorVersion, revision));
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        LOGGER.warn("Exception while handling request", cause);
+        currentState = State.BAD_MESSAGE;
+        ctx.close();
     }
 }

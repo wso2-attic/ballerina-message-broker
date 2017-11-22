@@ -34,16 +34,9 @@ public abstract class GeneralFrame {
         this.channel = channel;
     }
 
-    public abstract int getPayloadSize();
+    public abstract long getPayloadSize();
 
     public abstract void writePayload(ByteBuf buf);
-
-    /**
-     * Getter for type
-     */
-    public byte getType() {
-        return type;
-    }
 
     /**
      * Getter for channel
@@ -53,13 +46,13 @@ public abstract class GeneralFrame {
     }
 
     public ByteBuf write(ByteBufAllocator out) {
-        int payloadSize = getPayloadSize();
-        int totalSize = payloadSize + 1 + 2 + 4;
-        ByteBuf buf = out.buffer(totalSize);
+        long payloadSize = getPayloadSize();
+        long totalSize = payloadSize + 1 + 2 + 4;
+        ByteBuf buf = out.buffer((int) totalSize);
 
         buf.writeByte(type);
         buf.writeShort(channel);
-        buf.writeInt(payloadSize);
+        buf.writeInt((int) payloadSize);
 
         writePayload(buf);
 

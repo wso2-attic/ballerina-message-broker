@@ -21,8 +21,6 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.LongString;
 import org.wso2.broker.amqp.codec.data.ShortString;
@@ -31,8 +29,6 @@ import org.wso2.broker.amqp.codec.data.ShortString;
  * AMQP connection.start frame
  */
 public class ConnectionStartOk extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStartOk.class);
-
     private final FieldTable clientProperties;
     private final ShortString mechanisms;
     private final ShortString locales;
@@ -48,7 +44,7 @@ public class ConnectionStartOk extends MethodFrame {
     }
 
     @Override
-    protected int getMethodBodySize() {
+    protected long getMethodBodySize() {
         return clientProperties.getSize() + mechanisms.getSize() + locales.getSize() + response.getSize();
     }
 

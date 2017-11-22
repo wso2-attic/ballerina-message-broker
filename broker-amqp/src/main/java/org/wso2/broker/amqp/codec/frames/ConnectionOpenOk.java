@@ -23,38 +23,37 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP frame for connection.tune
+ * AMQP frame for connection.open-ok
  * Parameter Summary:
- *     1. channel­max (short) - proposed maximum channels
- *     2. frame­max (long) - proposed maximum frame size
- *     3. heartbeat (short) - desired heartbeat delay
+ *     1. reserved-1 (ShortString) - deprecated param
  */
-public class ConnectionTune extends MethodFrame {
-    private final int channelMax;
-    private final long frameMax;
-    private final int heartbeat;
-
-    public ConnectionTune(int channelMax, long frameMax, int heartbeat) {
-        super(0, (short) 10, (short) 30);
-        this.channelMax = channelMax;
-        this.frameMax = frameMax;
-        this.heartbeat = heartbeat;
+public class ConnectionOpenOk extends MethodFrame {
+    public ConnectionOpenOk() {
+        super(0, (short) 10, (short) 41);
     }
 
     @Override
     protected long getMethodBodySize() {
-        return 2L + 4L + 2L;
+        return 1L;
     }
 
     @Override
     protected void writeMethod(ByteBuf buf) {
-        buf.writeShort(channelMax);
-        buf.writeInt((int) frameMax);
-        buf.writeShort(heartbeat);
+        buf.writeByte(0);
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx) {
         // Server does not handle this
+    }
+
+    public static AMQMethodBodyFactory getFactory() {
+        return (buf, channel, size) -> {
+            // read the size of deprecated short string value
+            short stringSize = buf.readUnsignedByte();
+            // skip the other deprecated byte as well
+            buf.skipBytes(stringSize);
+            return new ConnectionOpenOk();
+        };
     }
 }

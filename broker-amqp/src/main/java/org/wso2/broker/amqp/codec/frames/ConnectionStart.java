@@ -51,8 +51,8 @@ public class ConnectionStart extends MethodFrame {
     }
 
     @Override
-    protected int getMethodBodySize() {
-        return 1 + 1 + serverProperties.getSize() + mechanisms.getSize() + locales.getSize();
+    protected long getMethodBodySize() {
+        return 1L + 1L + serverProperties.getSize() + mechanisms.getSize() + locales.getSize();
     }
 
     @Override
