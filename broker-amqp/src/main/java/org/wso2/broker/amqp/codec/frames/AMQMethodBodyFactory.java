@@ -22,7 +22,7 @@ package org.wso2.broker.amqp.codec.frames;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Factory interface used to create AMQP method frame objects
+ * Factory interface used to create AMQP method frame objects.
  */
 public interface AMQMethodBodyFactory {
     MethodFrame newInstance(ByteBuf buf, int channel, long size) throws Exception;

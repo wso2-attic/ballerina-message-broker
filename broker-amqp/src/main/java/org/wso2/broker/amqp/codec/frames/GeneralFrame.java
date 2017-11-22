@@ -23,7 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
 /**
- * AMQP General Frame
+ * AMQP General Frame.
  */
 public abstract class GeneralFrame {
     private final byte type;
@@ -39,14 +39,14 @@ public abstract class GeneralFrame {
     public abstract void writePayload(ByteBuf buf);
 
     /**
-     * Getter for type
+     * Getter for type.
      */
     public byte getType() {
         return type;
     }
 
     /**
-     * Getter for channel
+     * Getter for channel.
      */
     public int getChannel() {
         return channel;

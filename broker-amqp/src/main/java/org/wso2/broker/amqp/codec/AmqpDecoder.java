@@ -31,7 +31,7 @@ import org.wso2.broker.amqp.codec.frames.ProtocolInitFrame;
 import java.util.List;
 
 /**
- * Netty based AMQP frame decoder
+ * Netty based AMQP frame decoder.
  */
 public class AmqpDecoder extends ByteToMessageDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpDecoder.class);
