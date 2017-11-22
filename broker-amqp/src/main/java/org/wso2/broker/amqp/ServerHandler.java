@@ -23,7 +23,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 /**
- * Handle incoming requests
+ * Handle incoming requests.
  */
 public class ServerHandler extends ChannelInboundHandlerAdapter {
 

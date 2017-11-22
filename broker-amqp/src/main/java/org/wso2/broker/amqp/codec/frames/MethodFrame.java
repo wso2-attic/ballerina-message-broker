@@ -23,7 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP Method frame
+ * AMQP Method frame.
  */
 public abstract class MethodFrame extends GeneralFrame {
     private static final int FRAME_END = 0xCE;

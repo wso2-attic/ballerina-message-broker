@@ -29,7 +29,7 @@ import org.wso2.broker.amqp.codec.frames.MethodFrame;
 import org.wso2.broker.amqp.codec.frames.ProtocolInitFrame;
 
 /**
- * Netty handler for handling an AMQP connection
+ * Netty handler for handling an AMQP connection.
  */
 public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConnectionHandler.class);

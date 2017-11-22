@@ -27,14 +27,14 @@ import java.util.Map;
 /**
  * AMQP FieldTable data
  * <p>
- * field-table = long-uint *field-value-pair
+ * field-table = long-uint *field-value-pair.
  */
 public class FieldTable implements EncodableData {
     public static final FieldTable EMPTY_TABLE = new FieldTable(new HashMap<>());
     private final Map<ShortString, FieldValue> properties;
 
     /**
-     * Used to cache size to avoid recalculating size
+     * Used to cache size to avoid recalculating size.
      */
     private long size = -1L;
 

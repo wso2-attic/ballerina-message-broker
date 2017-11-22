@@ -20,7 +20,7 @@
 package org.wso2.broker.amqp.codec.frames;
 
 /**
- * Frame used when a faulty AMQP frame is received
+ * Frame used when a faulty AMQP frame is received.
  * TODO maybe we can replace this with netty pipeline exception handling
  */
 public class AmqpBadMessage {
@@ -44,14 +44,14 @@ public class AmqpBadMessage {
     }
 
     /**
-     * Getter for cause
+     * Getter  method for cause.
      */
     public Throwable getCause() {
         return cause;
     }
 
     /**
-     * Getter for reason
+     * Getter method for reason.
      */
     public String getReason() {
         return reason;
