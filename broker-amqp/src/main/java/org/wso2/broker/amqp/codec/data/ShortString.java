@@ -31,31 +31,31 @@ import java.nio.charset.StandardCharsets;
  */
 public class ShortString implements EncodableData {
     private static final int MAX_LENGTH = 0xFF;
-    private final byte length;
+    private final long length;
     private final byte[] content;
 
-    public ShortString(byte length, char[] content) {
+    public ShortString(long length, char[] content) {
         this.length = length;
         this.content = new String(content).getBytes(StandardCharsets.UTF_8);
     }
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public ShortString(byte length, byte[] content) {
+    public ShortString(long length, byte[] content) {
         this.length = length;
         this.content = content;
     }
 
-    public int getSize() {
+    public long getSize() {
         return length + 1;
     }
 
     public void write(ByteBuf buf) {
-        buf.writeByte(length);
+        buf.writeByte((int) length);
         buf.writeBytes(content);
     }
 
     public static ShortString parse(ByteBuf buf) {
-        byte size = buf.readByte();
+        int size = buf.readUnsignedByte();
         byte[] data = new byte[size];
         buf.readBytes(data);
 

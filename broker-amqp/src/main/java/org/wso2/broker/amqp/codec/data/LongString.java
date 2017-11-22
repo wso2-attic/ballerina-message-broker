@@ -30,11 +30,11 @@ import java.nio.charset.StandardCharsets;
  * long-string = long-uint *OCTET ; length + content
  */
 public class LongString implements EncodableData {
-    private final int length;
+    private final long length;
     private final byte[] content;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public LongString(int length, byte[] content) {
+    public LongString(long length, byte[] content) {
         this.length = length;
         this.content = content;
     }
@@ -44,19 +44,24 @@ public class LongString implements EncodableData {
     }
 
     @Override
-    public int getSize() {
+    public long getSize() {
         // We need to add bytes used for size as well
         return 4 + length;
     }
 
     @Override
     public void write(ByteBuf buf) {
-        buf.writeInt(length);
+        buf.writeInt((int) length);
         buf.writeBytes(content);
     }
 
-    public static LongString parse(ByteBuf buf) {
-        int size = buf.readInt();
+    public static LongString parse(ByteBuf buf) throws Exception {
+        int size = (int) buf.readUnsignedInt();
+
+        if (size < 0) {
+            throw new Exception("Invalid string length");
+        }
+
         byte[] data = new byte[size];
         buf.readBytes(data);
 

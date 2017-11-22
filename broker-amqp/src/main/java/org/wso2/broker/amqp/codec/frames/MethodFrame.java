@@ -36,13 +36,13 @@ public abstract class MethodFrame extends GeneralFrame {
         this.methodId = methodId;
     }
 
-    protected abstract int getMethodBodySize();
+    protected abstract long getMethodBodySize();
 
     protected abstract void writeMethod(ByteBuf buf);
 
     public abstract void handle(ChannelHandlerContext ctx);
 
-    public int getPayloadSize() {
+    public long getPayloadSize() {
         return getMethodBodySize() + 4;
     }
 

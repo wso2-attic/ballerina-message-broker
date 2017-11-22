@@ -25,7 +25,7 @@ import io.netty.buffer.ByteBuf;
  *
  */
 public interface EncodableData {
-    int getSize();
+    long getSize();
 
     void write(ByteBuf buf);
 }

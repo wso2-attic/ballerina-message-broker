@@ -29,12 +29,12 @@ import io.netty.channel.ChannelHandlerContext;
  *     2. frame­max (long) - proposed maximum frame size
  *     3. heartbeat (short) - desired heartbeat delay
  */
-public class ConnectionTune extends MethodFrame {
+public class ConnectionTuneOk extends MethodFrame {
     private final int channelMax;
     private final long frameMax;
     private final int heartbeat;
 
-    public ConnectionTune(int channelMax, long frameMax, int heartbeat) {
+    public ConnectionTuneOk(int channelMax, long frameMax, int heartbeat) {
         super(0, (short) 10, (short) 30);
         this.channelMax = channelMax;
         this.frameMax = frameMax;
@@ -55,6 +55,15 @@ public class ConnectionTune extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx) {
-        // Server does not handle this
+        // TODO add tuning logic
+    }
+
+    public static AMQMethodBodyFactory getFactory() {
+        return (buf, channel, size) -> {
+            int channelMax = buf.readUnsignedShort();
+            long frameMax = buf.readUnsignedInt();
+            int heartbeat = buf.readUnsignedShort();
+            return new ConnectionTuneOk(channelMax, frameMax, heartbeat);
+        };
     }
 }

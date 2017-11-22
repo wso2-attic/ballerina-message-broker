@@ -52,7 +52,7 @@ public class FieldValue implements EncodableData {
         this.value = value;
     }
 
-    public int getSize() {
+    public long getSize() {
         return 1 + value.getSize();
     }
 
