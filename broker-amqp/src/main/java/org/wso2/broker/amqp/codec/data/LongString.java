@@ -25,7 +25,7 @@ import io.netty.buffer.ByteBuf;
 import java.nio.charset.StandardCharsets;
 
 /**
- * AMQP Long String
+ * AMQP Long String.
  *
  * long-string = long-uint *OCTET ; length + content
  */

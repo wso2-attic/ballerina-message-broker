@@ -20,7 +20,7 @@
 package org.wso2.broker.amqp.codec.frames;
 
 /**
- * AMQP frame used for protocol version negotiation
+ * AMQP frame used for protocol version negotiation.
  */
 public class ProtocolInitFrame {
     public static final ProtocolInitFrame V_091 = new ProtocolInitFrame((byte) 0, (byte) 9, (byte) 1);
@@ -36,21 +36,21 @@ public class ProtocolInitFrame {
     }
 
     /**
-     * Getter for majorVersion
+     * Getter for majorVersion.
      */
     public byte getMajorVersion() {
         return majorVersion;
     }
 
     /**
-     * Getter for minorVersion
+     * Getter for minorVersion.
      */
     public byte getMinorVersion() {
         return minorVersion;
     }
 
     /**
-     * Getter for revision
+     * Getter for revision.
      */
     public byte getRevision() {
         return revision;

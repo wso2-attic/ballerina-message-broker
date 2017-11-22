@@ -26,7 +26,7 @@ import org.wso2.broker.amqp.codec.frames.AMQMethodRegistry;
 import java.util.List;
 
 /**
- * Decode AMQP frame looking at type, class ID and method ID
+ * Decode AMQP frame looking at type, class ID and method ID.
  */
 public class AmqpMethodDecoder {
     private static final int SIZE_WITHOUT_PAYLOAD = 8;

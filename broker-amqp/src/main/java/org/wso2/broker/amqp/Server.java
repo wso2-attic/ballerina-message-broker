@@ -32,7 +32,7 @@ import org.wso2.broker.amqp.codec.AmqpDecoder;
 import org.wso2.broker.amqp.codec.AmqpEncoder;
 
 /**
- * AMQP Server implementation
+ * AMQP Server implementation.
  */
 public class Server {
 
@@ -43,7 +43,7 @@ public class Server {
     }
 
     /**
-     * Start the AMQP server
+     * Start the AMQP server.
      *
      * @throws InterruptedException throws Exception when binding to port
      */

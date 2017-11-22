@@ -31,4 +31,11 @@
     <artifactId>broker-core</artifactId>
     <name>Broker - Core</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
