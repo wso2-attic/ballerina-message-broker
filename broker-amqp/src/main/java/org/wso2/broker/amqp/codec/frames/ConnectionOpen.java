@@ -21,50 +21,49 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.codec.data.ShortString;
 
 /**
- * AMQP frame for connection.tune-ok.
- *
+ * AMQP frame for connection.open
  * Parameter Summary:
- *     1. channel­max (short) - proposed maximum channels
- *     2. frame­max (long) - proposed maximum frame size
- *     3. heartbeat (short) - desired heartbeat delay
+ *     1. virtual­host (path) - virtual host name
+ *     2. reserved-1 (byte) - deprecated param
+ *     3. reserved-2 (byte) - deprecated param
  */
-public class ConnectionTuneOk extends MethodFrame {
-    private final int channelMax;
-    private final long frameMax;
-    private final int heartbeat;
+public class ConnectionOpen extends MethodFrame {
+    private final ShortString virtualHost;
 
-    public ConnectionTuneOk(int channelMax, long frameMax, int heartbeat) {
-        super(0, (short) 10, (short) 30);
-        this.channelMax = channelMax;
-        this.frameMax = frameMax;
-        this.heartbeat = heartbeat;
+    public ConnectionOpen(ShortString virtualHost) {
+        super(0, (short) 10, (short) 40);
+        this.virtualHost = virtualHost;
     }
 
     @Override
     protected long getMethodBodySize() {
-        return 2L + 4L + 2L;
+        return virtualHost.getSize() + 1L + 1L;
     }
 
     @Override
     protected void writeMethod(ByteBuf buf) {
-        buf.writeShort(channelMax);
-        buf.writeInt((int) frameMax);
-        buf.writeShort(heartbeat);
+        virtualHost.write(buf);
+        buf.writeByte(0);
+        buf.writeByte(1);
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx) {
-        // TODO add tuning logic
+        ctx.writeAndFlush(new ConnectionOpenOk());
     }
 
     public static AMQMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
-            int channelMax = buf.readUnsignedShort();
-            long frameMax = buf.readUnsignedInt();
-            int heartbeat = buf.readUnsignedShort();
-            return new ConnectionTuneOk(channelMax, frameMax, heartbeat);
+            ShortString virtualHost = ShortString.parse(buf);
+
+            // read the size of deprecated short string value
+            short stringSize = buf.readUnsignedByte();
+            // skip the other deprecated byte as well
+            buf.skipBytes(stringSize + 1);
+            return new ConnectionOpen(virtualHost);
         };
     }
 }

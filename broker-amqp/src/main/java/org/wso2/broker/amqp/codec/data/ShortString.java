@@ -61,4 +61,9 @@ public class ShortString implements EncodableData {
 
         return new ShortString(size, data);
     }
+
+    @Override
+    public String toString() {
+        return new String(content, StandardCharsets.UTF_8);
+    }
 }
