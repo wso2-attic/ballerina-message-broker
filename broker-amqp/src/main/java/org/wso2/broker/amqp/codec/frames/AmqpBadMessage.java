@@ -21,6 +21,7 @@ package org.wso2.broker.amqp.codec.frames;
 
 /**
  * Frame used when a faulty AMQP frame is received
+ * TODO maybe we can replace this with netty pipeline exception handling
  */
 public class AmqpBadMessage {
     private final Throwable cause;

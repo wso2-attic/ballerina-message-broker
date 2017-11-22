@@ -42,6 +42,7 @@ public class AmqpDecoder extends ByteToMessageDecoder {
      */
     private enum State {
         PROTOCOL_INITIALIZATION,
+        READ_FRAME,
         BAD_MESSAGE
     }
 
@@ -54,6 +55,11 @@ public class AmqpDecoder extends ByteToMessageDecoder {
         switch (currentState) {
             case PROTOCOL_INITIALIZATION:
                 processProtocolInitFrame(buffer, out);
+                currentState = State.READ_FRAME;
+                return;
+            case READ_FRAME:
+                LOGGER.debug("reading frame");
+                AmqpMethodDecoder.parse(buffer, out);
                 return;
             case BAD_MESSAGE:
                 // Keep discarding until disconnection.

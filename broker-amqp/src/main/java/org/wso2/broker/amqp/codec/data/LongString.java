@@ -54,4 +54,12 @@ public class LongString implements EncodableData {
         buf.writeInt(length);
         buf.writeBytes(content);
     }
+
+    public static LongString parse(ByteBuf buf) {
+        int size = buf.readInt();
+        byte[] data = new byte[size];
+        buf.readBytes(data);
+
+        return new LongString(size, data);
+    }
 }

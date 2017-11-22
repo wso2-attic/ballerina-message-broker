@@ -34,7 +34,6 @@
         <module>launcher</module>
     </modules>
 
-
     <dependencyManagement>
         <dependencies>
             <dependency>

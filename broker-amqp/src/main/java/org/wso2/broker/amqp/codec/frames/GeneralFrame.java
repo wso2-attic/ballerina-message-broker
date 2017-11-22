@@ -27,9 +27,9 @@ import io.netty.buffer.ByteBufAllocator;
  */
 public abstract class GeneralFrame {
     private final byte type;
-    private final short channel;
+    private final int channel;
 
-    public GeneralFrame(byte type, short channel) {
+    public GeneralFrame(byte type, int channel) {
         this.type = type;
         this.channel = channel;
     }
@@ -48,7 +48,7 @@ public abstract class GeneralFrame {
     /**
      * Getter for channel
      */
-    public short getChannel() {
+    public int getChannel() {
         return channel;
     }
 

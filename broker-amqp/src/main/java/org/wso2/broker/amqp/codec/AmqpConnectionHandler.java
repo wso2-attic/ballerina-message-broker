@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.frames.AmqpBadMessage;
 import org.wso2.broker.amqp.codec.frames.ConnectionStart;
+import org.wso2.broker.amqp.codec.frames.MethodFrame;
 import org.wso2.broker.amqp.codec.frames.ProtocolInitFrame;
 
 /**
@@ -37,6 +38,8 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ProtocolInitFrame) {
             handleProtocolInit(ctx, (ProtocolInitFrame) msg);
+        } else if (msg instanceof MethodFrame) {
+            ((MethodFrame) msg).handle(ctx);
         } else if (msg instanceof AmqpBadMessage) {
             LOGGER.warn("Bad message received", ((AmqpBadMessage) msg).getCause());
             // TODO need to send error back to client
@@ -44,8 +47,13 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        LOGGER.warn("Exception while handling request", cause);
+        ctx.close();
+    }
+
     private void handleProtocolInit(ChannelHandlerContext ctx, ProtocolInitFrame msg) {
-        LOGGER.info("Handling protocol init");
         if (ProtocolInitFrame.V_091.equals(msg)) {
             ctx.writeAndFlush(ConnectionStart.DEFAULT_FRAME);
         } else {

@@ -20,6 +20,7 @@
 package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.LongString;
 
@@ -49,15 +50,22 @@ public class ConnectionStart extends MethodFrame {
         this.locales = locales;
     }
 
+    @Override
     protected int getMethodBodySize() {
         return 1 + 1 + serverProperties.getSize() + mechanisms.getSize() + locales.getSize();
     }
 
+    @Override
     protected void writeMethod(ByteBuf buf) {
         buf.writeByte(majorVersion);
         buf.writeByte(minorVersion);
         serverProperties.write(buf);
         mechanisms.write(buf);
         locales.write(buf);
+    }
+
+    @Override
+    public void handle(ChannelHandlerContext ctx) {
+        // Server does not normally receive this message
     }
 }

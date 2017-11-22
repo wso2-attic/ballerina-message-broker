@@ -61,4 +61,15 @@ public class FieldValue implements EncodableData {
         buf.writeChar(type);
         value.write(buf);
     }
+
+    public static FieldValue parse(ByteBuf buf) throws Exception {
+        char type = (char) buf.readByte();
+
+        switch (type) {
+            case 'S':
+                return new FieldValue(type, LongString.parse(buf));
+            default:
+                throw new Exception("Invalid AMQP Field value type");
+        }
+    }
 }

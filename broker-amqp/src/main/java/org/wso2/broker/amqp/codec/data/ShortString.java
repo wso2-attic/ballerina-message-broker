@@ -46,11 +46,19 @@ public class ShortString implements EncodableData {
     }
 
     public int getSize() {
-        return length;
+        return length + 1;
     }
 
     public void write(ByteBuf buf) {
         buf.writeByte(length);
         buf.writeBytes(content);
+    }
+
+    public static ShortString parse(ByteBuf buf) {
+        byte size = buf.readByte();
+        byte[] data = new byte[size];
+        buf.readBytes(data);
+
+        return new ShortString(size, data);
     }
 }
