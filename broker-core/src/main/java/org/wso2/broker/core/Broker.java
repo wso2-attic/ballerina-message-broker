@@ -20,7 +20,55 @@
 package org.wso2.broker.core;
 
 /**
- * Main Broker entry class.
+ * Broker API class.
  */
-public class Broker {
+public final class Broker {
+
+    private final MessagingEngine messagingEngine;
+
+    Broker() {
+        this.messagingEngine = new MessagingEngine();
+    }
+
+    public void publish(Message message) throws BrokerException {
+        messagingEngine.publish(message);
+    }
+
+    public void consumeFromQueue(Consumer consumer) throws BrokerException {
+        messagingEngine.consume(consumer);
+    }
+
+    public void createExchange(String exchangeName, Exchange.Type type,
+                               boolean passive, boolean durable) throws BrokerException {
+        messagingEngine.createExchange(exchangeName, type, passive, durable);
+    }
+
+    public void deleteExchange(String exchangeName, Exchange.Type type, boolean ifUnused) throws BrokerException {
+        messagingEngine.deleteExchange(exchangeName, type, ifUnused);
+    }
+
+    public void createQueue(String destination, boolean passive,
+                            boolean durable, boolean autoDelete) throws BrokerException {
+        messagingEngine.createQueue(destination, passive, durable, autoDelete);
+    }
+
+    public void deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
+        messagingEngine.deleteQueue(queueName, ifUnused, ifEmpty);
+    }
+
+    void bind(String queueName, String exchangeName, String routingKey) throws BrokerException {
+        messagingEngine.bind(queueName, exchangeName, routingKey);
+    }
+
+    void unbind(String queueName, String exchangeName, String routingKey) throws BrokerException {
+        messagingEngine.unbind(queueName, exchangeName, routingKey);
+    }
+
+    public void startMessageDelivery() {
+        messagingEngine.startMessageDelivery();
+    }
+
+    public void stopMessageDelivery() {
+        messagingEngine.stopMessageDelivery();
+    }
 }
