@@ -20,7 +20,7 @@
 package org.wso2.broker.amqp.codec;
 
 /**
- * Keep constants related to AMQP codec which are shared in many places
+ * Keep constants related to AMQP codec which are shared in many places.
  */
 public class AMQConstant {
     public static final int COMMAND_INVALID = 503;

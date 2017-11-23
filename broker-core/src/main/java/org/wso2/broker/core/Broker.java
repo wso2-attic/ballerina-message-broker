@@ -20,7 +20,7 @@
 package org.wso2.broker.core;
 
 /**
- * Broker interface class
+ * Main Broker entry class.
  */
 public class Broker {
 }

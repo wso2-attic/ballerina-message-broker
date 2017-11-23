@@ -27,7 +27,7 @@ import org.wso2.broker.amqp.codec.frames.GeneralFrame;
 import java.util.List;
 
 /**
- * Netty based AMQP encoder
+ * Netty based AMQP encoder.
  */
 public class AmqpEncoder extends MessageToMessageEncoder<GeneralFrame> {
 

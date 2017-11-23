@@ -22,7 +22,7 @@ package org.wso2.broker.amqp.codec.data;
 import io.netty.buffer.ByteBuf;
 
 /**
- * AMQP Field value data
+ * AMQP Field value data.
  *
  * field-value = 't' boolean
  *               'b' short-short-int

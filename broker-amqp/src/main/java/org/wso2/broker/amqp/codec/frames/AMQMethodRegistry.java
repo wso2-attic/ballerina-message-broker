@@ -23,7 +23,7 @@ import org.wso2.broker.amqp.codec.AMQConstant;
 import org.wso2.broker.amqp.codec.AMQFrameDecodingException;
 
 /**
- * Keep factory classes for different class IDs and method IDs
+ * Keep factory classes for different class IDs and method IDs.
  */
 public class AMQMethodRegistry {
     public AMQMethodBodyFactory[][] factories = new AMQMethodBodyFactory[101][];

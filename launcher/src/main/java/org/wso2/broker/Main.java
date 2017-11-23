@@ -22,7 +22,7 @@ package org.wso2.broker;
 import org.wso2.broker.amqp.Server;
 
 /**
- * Starting point of the broker
+ * Starting point of the broker.
  */
 public class Main {
 

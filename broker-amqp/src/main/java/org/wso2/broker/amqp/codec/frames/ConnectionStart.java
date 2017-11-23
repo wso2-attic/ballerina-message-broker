@@ -25,7 +25,7 @@ import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.LongString;
 
 /**
- * AMQP connection.start frame
+ * AMQP connection.start frame.
  */
 public class ConnectionStart extends MethodFrame {
     public static final ConnectionStart DEFAULT_FRAME = new ConnectionStart((short) 0,

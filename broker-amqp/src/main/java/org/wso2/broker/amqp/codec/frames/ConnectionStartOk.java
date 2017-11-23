@@ -26,7 +26,7 @@ import org.wso2.broker.amqp.codec.data.LongString;
 import org.wso2.broker.amqp.codec.data.ShortString;
 
 /**
- * AMQP connection.start frame
+ * AMQP connection.start frame.
  */
 public class ConnectionStartOk extends MethodFrame {
     private final FieldTable clientProperties;
