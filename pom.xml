@@ -75,6 +75,11 @@
                 <version>3.0.1</version>
             </dependency>
             <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
                 <version>${testng.version}</version>
@@ -108,6 +113,7 @@
         <testng.version>6.11</testng.version>
         <mockito.version>2.12.0</mockito.version>
         <maven.checkstyleplugin.version>2.17</maven.checkstyleplugin.version>
+        <guava.version>23.0</guava.version>
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
