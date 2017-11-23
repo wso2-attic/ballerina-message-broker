@@ -21,40 +21,45 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
- * AMQP frame for connection.open-ok
+ * AMQP frame for channel.open-ok
  * Parameter Summary:
- *     1. reserved-1 (ShortString) - deprecated param
+ *     1. reserved-1 (LongString) - deprecated param
  */
-public class ConnectionOpenOk extends MethodFrame {
-    public ConnectionOpenOk() {
-        super(0, (short) 10, (short) 41);
+public class ChannelOpenOk extends MethodFrame {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelOpenOk.class);
+
+
+    public ChannelOpenOk(int channel) {
+        super(channel, (short) 20, (short) 11);
     }
 
     @Override
     protected long getMethodBodySize() {
-        return 1L;
+        return 4L;
     }
 
     @Override
     protected void writeMethod(ByteBuf buf) {
-        buf.writeByte(0);
+        // write deprecated LongString size as 0
+        buf.writeInt(0);
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // Server does not handle this
+        // Server does not handle channel open ok
     }
 
     public static AMQMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             // read the size of deprecated short string value
-            short stringSize = buf.readUnsignedByte();
-            // skip the other deprecated byte as well
+            int stringSize = buf.readInt();
             buf.skipBytes(stringSize);
-            return new ConnectionOpenOk();
+            return new ChannelOpenOk(channel);
         };
     }
 }

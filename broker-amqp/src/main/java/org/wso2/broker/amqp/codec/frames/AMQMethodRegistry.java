@@ -30,11 +30,14 @@ public class AMQMethodRegistry {
 
     public AMQMethodRegistry() {
         factories[10] = new AMQMethodBodyFactory[52];
-
         factories[10][11] = ConnectionStartOk.getFactory();
         factories[10][31] = ConnectionTuneOk.getFactory();
         factories[10][40] = ConnectionOpen.getFactory();
         factories[10][41] = ConnectionOpenOk.getFactory();
+
+        factories[20] = new AMQMethodBodyFactory[42];
+        factories[20][10] = ChannelOpen.getFactory();
+        factories[20][11] = ChannelOpenOk.getFactory();
     }
 
     public AMQMethodBodyFactory getFactory(short classId, short methodId) throws AMQFrameDecodingException {

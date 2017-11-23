@@ -21,6 +21,7 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
  * AMQP frame for connection.tune
@@ -54,7 +55,7 @@ public class ConnectionTune extends MethodFrame {
     }
 
     @Override
-    public void handle(ChannelHandlerContext ctx) {
+    public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         // Server does not handle this
     }
 }
