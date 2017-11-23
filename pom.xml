@@ -18,9 +18,7 @@
   ~
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -32,7 +30,7 @@
     <groupId>org.wso2.messaging</groupId> 
     <artifactId>message-broker</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
@@ -40,7 +38,7 @@
         <connection>scm:https://github.com/wso2/message-broker.git</connection>
         <developerConnection>scm:git:https://github.com/wso2/message-broker.git</developerConnection>
         <url>https://github.com/wso2/message-broker.git</url>
-        <tag>HEAD</tag>
+        <tag>v1.0.0</tag>
     </scm>
 
     <modules>
@@ -115,7 +113,7 @@
     </build>
 
     <properties>
-        <broker.version>1.0.0-SNAPSHOT</broker.version>
+        <broker.version>1.0.0</broker.version>
         <netty-all.version>4.1.17.Final</netty-all.version>
         <slf4j.version>1.7.25</slf4j.version>
         <testng.version>6.11</testng.version>
