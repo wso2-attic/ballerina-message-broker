@@ -45,6 +45,7 @@ public class AmqpBadMessage {
 
     /**
      * Getter  method for cause.
+     * @return cause
      */
     public Throwable getCause() {
         return cause;
@@ -52,6 +53,7 @@ public class AmqpBadMessage {
 
     /**
      * Getter method for reason.
+     * @return reason
      */
     public String getReason() {
         return reason;

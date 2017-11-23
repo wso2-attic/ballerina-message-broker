@@ -40,6 +40,7 @@ public abstract class GeneralFrame {
 
     /**
      * Getter for channel.
+     * @return channel
      */
     public int getChannel() {
         return channel;
