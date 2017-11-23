@@ -21,51 +21,37 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
- * AMQP frame for connection.tune-ok.
- *
+ * AMQP frame for basic.qos
  * Parameter Summary:
- *     1. channel­max (short) - proposed maximum channels
- *     2. frame­max (long) - proposed maximum frame size
- *     3. heartbeat (short) - desired heartbeat delay
+ *     No parameters
  */
-public class ConnectionTuneOk extends MethodFrame {
-    private final int channelMax;
-    private final long frameMax;
-    private final int heartbeat;
+public class BasicQosOk extends MethodFrame {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicQosOk.class);
 
-    public ConnectionTuneOk(int channelMax, long frameMax, int heartbeat) {
-        super(0, (short) 10, (short) 30);
-        this.channelMax = channelMax;
-        this.frameMax = frameMax;
-        this.heartbeat = heartbeat;
+    public BasicQosOk(int channel) {
+        super(channel, (short) 60, (short) 11);
     }
 
     @Override
     protected long getMethodBodySize() {
-        return 2L + 4L + 2L;
+        return 0L;
     }
 
     @Override
     protected void writeMethod(ByteBuf buf) {
-        buf.writeShort(channelMax);
-        buf.writeInt((int) frameMax);
-        buf.writeShort(heartbeat);
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // TODO add tuning logic
+        // Server does not handle Qos frame
     }
 
     public static AmqMethodBodyFactory getFactory() {
-        return (buf, channel, size) -> {
-            int channelMax = buf.readUnsignedShort();
-            long frameMax = buf.readUnsignedInt();
-            int heartbeat = buf.readUnsignedShort();
-            return new ConnectionTuneOk(channelMax, frameMax, heartbeat);
-        };
+        return (buf, channel, size) -> new BasicQosOk(channel);
     }
 }

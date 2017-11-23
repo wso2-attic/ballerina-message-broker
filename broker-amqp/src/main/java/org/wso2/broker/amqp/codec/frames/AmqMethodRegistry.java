@@ -19,44 +19,48 @@
 
 package org.wso2.broker.amqp.codec.frames;
 
-import org.wso2.broker.amqp.codec.AMQConstant;
-import org.wso2.broker.amqp.codec.AMQFrameDecodingException;
+import org.wso2.broker.amqp.codec.AmqConstant;
+import org.wso2.broker.amqp.codec.AmqFrameDecodingException;
 
 /**
  * Keep factory classes for different class IDs and method IDs.
  */
-public class AMQMethodRegistry {
-    public AMQMethodBodyFactory[][] factories = new AMQMethodBodyFactory[101][];
+public class AmqMethodRegistry {
+    public AmqMethodBodyFactory[][] factories = new AmqMethodBodyFactory[101][];
 
-    public AMQMethodRegistry() {
-        factories[10] = new AMQMethodBodyFactory[52];
+    public AmqMethodRegistry() {
+        factories[10] = new AmqMethodBodyFactory[52];
         factories[10][11] = ConnectionStartOk.getFactory();
         factories[10][31] = ConnectionTuneOk.getFactory();
         factories[10][40] = ConnectionOpen.getFactory();
         factories[10][41] = ConnectionOpenOk.getFactory();
 
-        factories[20] = new AMQMethodBodyFactory[42];
+        factories[20] = new AmqMethodBodyFactory[42];
         factories[20][10] = ChannelOpen.getFactory();
         factories[20][11] = ChannelOpenOk.getFactory();
+
+        factories[60] = new AmqMethodBodyFactory[112];
+        factories[60][10] = BasicQos.getFactory();
+        factories[60][11] = BasicQosOk.getFactory();
     }
 
-    public AMQMethodBodyFactory getFactory(short classId, short methodId) throws AMQFrameDecodingException {
+    public AmqMethodBodyFactory getFactory(short classId, short methodId) throws AmqFrameDecodingException {
         try {
             return factories[classId][methodId];
         } catch (NullPointerException e) {
-            throw new AMQFrameDecodingException(AMQConstant.COMMAND_INVALID,
+            throw new AmqFrameDecodingException(AmqConstant.COMMAND_INVALID,
                                                 "Class " + classId + " unknown in AMQP version 0-91"
                                                         + " (while trying to decode class " + classId + " method "
                                                         + methodId + ".");
         } catch (IndexOutOfBoundsException e) {
             if (classId >= factories.length) {
-                throw new AMQFrameDecodingException(AMQConstant.COMMAND_INVALID,
+                throw new AmqFrameDecodingException(AmqConstant.COMMAND_INVALID,
                                                     "Class " + classId + " unknown in AMQP version 0-91"
                                                             + " (while trying to decode class " + classId + " method "
                                                             + methodId + ".");
 
             } else {
-                throw new AMQFrameDecodingException(AMQConstant.COMMAND_INVALID,
+                throw new AmqFrameDecodingException(AmqConstant.COMMAND_INVALID,
                                                     "Method " + methodId + " unknown in AMQP version 0-91"
                                                             + " (while trying to decode class " + classId + " method "
                                                             + methodId + ".");

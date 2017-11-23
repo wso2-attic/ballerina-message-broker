@@ -24,6 +24,6 @@ import io.netty.buffer.ByteBuf;
 /**
  * Factory interface used to create AMQP method frame objects.
  */
-public interface AMQMethodBodyFactory {
+public interface AmqMethodBodyFactory {
     MethodFrame newInstance(ByteBuf buf, int channel, long size) throws Exception;
 }

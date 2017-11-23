@@ -62,7 +62,7 @@ public class ConnectionStartOk extends MethodFrame {
         ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
     }
 
-    public static AMQMethodBodyFactory getFactory() {
+    public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             FieldTable clientProperties = FieldTable.parse(buf);
             ShortString mechanisms = ShortString.parse(buf);

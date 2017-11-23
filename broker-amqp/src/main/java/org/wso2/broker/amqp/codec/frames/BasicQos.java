@@ -26,40 +26,51 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
- * AMQP frame for channel.open-ok
+ * AMQP frame for basic.qos
  * Parameter Summary:
- *     1. reserved-1 (LongString) - deprecated param
+ *     1. prefetch­size (long) - prefetch window in octets
+ *     2. prefetch­count (short) - prefetch window in messages
+ *     3. global (bit) - apply to entire connection
  */
-public class ChannelOpenOk extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelOpenOk.class);
+public class BasicQos extends MethodFrame {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicQos.class);
 
+    private final long prefetchWindowSize;
+    private final int prefetchCount;
+    private final boolean global;
 
-    public ChannelOpenOk(int channel) {
-        super(channel, (short) 20, (short) 11);
+    public BasicQos(int channel, long prefetchWindowSize, int prefetchCount, boolean global) {
+        super(channel, (short) 60, (short) 10);
+        this.prefetchWindowSize = prefetchWindowSize;
+        this.prefetchCount = prefetchCount;
+        this.global = global;
     }
 
     @Override
     protected long getMethodBodySize() {
-        return 4L;
+        return 4L + 2L + 1L;
     }
 
     @Override
     protected void writeMethod(ByteBuf buf) {
-        // write deprecated LongString size as 0
-        buf.writeInt(0);
+        buf.writeInt((int) prefetchWindowSize);
+        buf.writeShort(prefetchCount);
+        buf.writeBoolean(global);
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // Server does not handle channel open ok
+        // TODO QoS Parameters should be propogated to message prefetch logic
+        int channelId = getChannel();
+        ctx.writeAndFlush(new BasicQosOk(channelId));
     }
 
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
-            // read the size of deprecated short string value
-            int stringSize = buf.readInt();
-            buf.skipBytes(stringSize);
-            return new ChannelOpenOk(channel);
+            long prefetchWindowSize = buf.readUnsignedInt();
+            int prefetchCount = buf.readUnsignedShort();
+            boolean global = buf.readBoolean();
+            return new BasicQos(channel, prefetchWindowSize, prefetchCount, global);
         };
     }
 }
