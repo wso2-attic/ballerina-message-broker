@@ -37,6 +37,7 @@ public class ProtocolInitFrame {
 
     /**
      * Getter for majorVersion.
+     * @return major version
      */
     public byte getMajorVersion() {
         return majorVersion;
@@ -44,6 +45,7 @@ public class ProtocolInitFrame {
 
     /**
      * Getter for minorVersion.
+     * @return minor version
      */
     public byte getMinorVersion() {
         return minorVersion;
@@ -51,6 +53,7 @@ public class ProtocolInitFrame {
 
     /**
      * Getter for revision.
+     * @return revision
      */
     public byte getRevision() {
         return revision;
