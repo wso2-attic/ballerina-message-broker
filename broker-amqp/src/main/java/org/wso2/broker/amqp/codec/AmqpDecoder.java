@@ -57,7 +57,6 @@ public class AmqpDecoder extends ByteToMessageDecoder {
                 currentState = State.READ_FRAME;
                 return;
             case READ_FRAME:
-                LOGGER.debug("reading frame");
                 AmqpMethodDecoder.parse(buffer, out);
                 return;
             case BAD_MESSAGE:

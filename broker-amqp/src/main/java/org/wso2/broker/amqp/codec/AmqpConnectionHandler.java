@@ -28,18 +28,22 @@ import org.wso2.broker.amqp.codec.frames.ConnectionStart;
 import org.wso2.broker.amqp.codec.frames.MethodFrame;
 import org.wso2.broker.amqp.codec.frames.ProtocolInitFrame;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Netty handler for handling an AMQP connection.
  */
 public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConnectionHandler.class);
+    private final Map<Integer, AmqpChannel> channels = new HashMap<>();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ProtocolInitFrame) {
             handleProtocolInit(ctx, (ProtocolInitFrame) msg);
         } else if (msg instanceof MethodFrame) {
-            ((MethodFrame) msg).handle(ctx);
+            ((MethodFrame) msg).handle(ctx, this);
         } else if (msg instanceof AmqpBadMessage) {
             LOGGER.warn("Bad message received", ((AmqpBadMessage) msg).getCause());
             // TODO need to send error back to client
@@ -59,5 +63,14 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         } else {
             ctx.writeAndFlush(ProtocolInitFrame.V_091);
         }
+    }
+
+    public void createChannel(int channelId) throws Exception {
+        AmqpChannel channel = channels.get(channelId);
+        if (channel != null) {
+            throw new Exception("Channel Already exists");
+        }
+
+        channels.put(channelId, new AmqpChannel());
     }
 }

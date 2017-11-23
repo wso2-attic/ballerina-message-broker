@@ -21,6 +21,7 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.data.ShortString;
 
 /**
@@ -51,7 +52,7 @@ public class ConnectionOpen extends MethodFrame {
     }
 
     @Override
-    public void handle(ChannelHandlerContext ctx) {
+    public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         ctx.writeAndFlush(new ConnectionOpenOk());
     }
 
