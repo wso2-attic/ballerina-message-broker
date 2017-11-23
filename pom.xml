@@ -36,9 +36,9 @@
     <description>A high performing, lightweight broker component</description>
 
     <modules>
-        <module>broker-core</module>
-        <module>broker-amqp</module>
-        <module>launcher</module>
+        <module>modules/broker-core</module>
+        <module>modules/broker-amqp</module>
+        <module>modules/launcher</module>
     </modules>
 
     <dependencyManagement>

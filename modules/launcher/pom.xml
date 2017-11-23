@@ -24,6 +24,7 @@
         <artifactId>message-broker</artifactId>
         <groupId>org.wso2</groupId>
         <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>Broker Launcher</name>
