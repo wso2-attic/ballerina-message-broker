@@ -41,9 +41,9 @@
     <dependencySets>
         <dependencySet>
             <includes>
-                <include>org.wso2:broker-amqp:jar</include>
-                <include>org.wso2:broker-core:jar</include>
-                <include>org.wso2:broker-launcher:jar</include>
+                <include>org.wso2.messaging:broker-amqp:jar</include>
+                <include>org.wso2.messaging:broker-core:jar</include>
+                <include>org.wso2.messaging:broker-launcher:jar</include>
             </includes>
             <outputDirectory>lib</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
