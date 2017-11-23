@@ -20,8 +20,23 @@
 package org.wso2.broker.amqp.codec;
 
 /**
- * Keep constants related to AMQP codec which are shared in many places.
+ * AMQFrameDecodingException indicates that an AMQP frame cannot be decoded because it does not have the correct
+ * format as defined by the protocol.
+ *
+ * <p/><table id="crc"><caption>CRC Card</caption>
+ * <tr><th> Responsibilities <th> Collaborations
+ * <tr><td> Represents a format error in a protocol frame.
+ * </table>
  */
-public class AMQConstant {
-    public static final int COMMAND_INVALID = 503;
+public class AmqFrameDecodingException extends Exception {
+    private final int errorCode;
+
+    public AmqFrameDecodingException(int errorCode, String msg, Throwable cause) {
+        super(((msg == null) ? "" : msg), cause);
+        this.errorCode = errorCode;
+    }
+
+    public AmqFrameDecodingException(int errorCode, String msg) {
+        this(errorCode, msg, null);
+    }
 }

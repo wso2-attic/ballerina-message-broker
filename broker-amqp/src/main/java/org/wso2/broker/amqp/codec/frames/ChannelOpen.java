@@ -61,7 +61,7 @@ public class ChannelOpen extends MethodFrame {
         }
     }
 
-    public static AMQMethodBodyFactory getFactory() {
+    public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             // read the size of deprecated short string value
             short stringSize = buf.readUnsignedByte();

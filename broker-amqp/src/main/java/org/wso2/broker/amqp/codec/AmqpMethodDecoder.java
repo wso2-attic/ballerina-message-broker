@@ -20,8 +20,8 @@
 package org.wso2.broker.amqp.codec;
 
 import io.netty.buffer.ByteBuf;
-import org.wso2.broker.amqp.codec.frames.AMQMethodBodyFactory;
-import org.wso2.broker.amqp.codec.frames.AMQMethodRegistry;
+import org.wso2.broker.amqp.codec.frames.AmqMethodBodyFactory;
+import org.wso2.broker.amqp.codec.frames.AmqMethodRegistry;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class AmqpMethodDecoder {
     private static final int SIZE_WITHOUT_PAYLOAD = 8;
-    private static final AMQMethodRegistry methodRegistry = new AMQMethodRegistry();
+    private static final AmqMethodRegistry methodRegistry = new AmqMethodRegistry();
 
     public static void parse(ByteBuf buffer, List<Object> out) throws Exception {
         buffer.markReaderIndex();
@@ -50,7 +50,7 @@ public class AmqpMethodDecoder {
                 case 1: // Method
                     short amqpClass = buffer.readShort();
                     short amqpMethod = buffer.readShort();
-                    AMQMethodBodyFactory factory = methodRegistry.getFactory(amqpClass, amqpMethod);
+                    AmqMethodBodyFactory factory = methodRegistry.getFactory(amqpClass, amqpMethod);
                     out.add(factory.newInstance(buffer, channel, payloadSize));
                     // TODO: check if end frame is correct
                     buffer.readByte();

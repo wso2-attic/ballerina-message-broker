@@ -56,7 +56,7 @@ public class ConnectionOpen extends MethodFrame {
         ctx.writeAndFlush(new ConnectionOpenOk());
     }
 
-    public static AMQMethodBodyFactory getFactory() {
+    public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             ShortString virtualHost = ShortString.parse(buf);
 

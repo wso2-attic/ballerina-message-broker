@@ -48,7 +48,7 @@ public class ConnectionOpenOk extends MethodFrame {
         // Server does not handle this
     }
 
-    public static AMQMethodBodyFactory getFactory() {
+    public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             // read the size of deprecated short string value
             short stringSize = buf.readUnsignedByte();
