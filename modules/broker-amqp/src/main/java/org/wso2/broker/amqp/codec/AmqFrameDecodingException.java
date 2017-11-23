@@ -22,17 +22,6 @@ package org.wso2.broker.amqp.codec;
 /**
  * AMQFrameDecodingException indicates that an AMQP frame cannot be decoded because it does not have the correct
  * format as defined by the protocol.
- *
- * <p>
- * <table id="crc">
- * <caption>CRC Card</caption>
- * <tr>
- * <th>Responsibilities
- * <th>Collaborations
- * <tr>
- * <td>Represents a format error in a protocol frame.
- * </table>
- * </p>
  */
 public class AmqFrameDecodingException extends Exception {
     private final int errorCode;
