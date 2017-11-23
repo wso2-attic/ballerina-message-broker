@@ -36,6 +36,13 @@
     <name>Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
+    <scm>
+        <connection>scm:https://github.com/wso2/message-broker.git</connection>
+        <developerConnection>scm:git:https://github.com/wso2/message-broker.git</developerConnection>
+        <url>https://github.com/wso2/message-broker.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <modules>
         <module>modules/broker-core</module>
         <module>modules/broker-amqp</module>
@@ -117,5 +124,6 @@
         <guava.version>23.0</guava.version>
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.scm.id>wso2-scm-server</project.scm.id>
     </properties>
 </project>
