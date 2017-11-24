@@ -24,7 +24,7 @@ package org.wso2.broker.core;
  */
 public interface Consumer {
 
-    void send(Message message) throws BrokerException;
+    void send(Message message, long deliveryTag) throws BrokerException;
 
     String getSubscribedQueue();
 

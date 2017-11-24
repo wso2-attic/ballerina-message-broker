@@ -21,9 +21,11 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
+import org.wso2.broker.core.BrokerException;
 
 /**
  * AMQP frame for exchange.declare
@@ -87,8 +89,16 @@ public class ExchangeDeclare extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // TODO handle declare frame
-        ctx.writeAndFlush(new ExchangeDeclareOk(getChannel()));
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+
+        try {
+            channel.declareExchange(exchange.toString(), type.toString(), passive, durable);
+            ctx.writeAndFlush(new ExchangeDeclareOk(getChannel()));
+        } catch (BrokerException e) {
+            // TODO: update with a channel error rather than a frame error
+            ctx.writeAndFlush(new AmqpBadMessage(e));
+        }
+
     }
 
     public static AmqMethodBodyFactory getFactory() {

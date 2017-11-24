@@ -30,16 +30,20 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.AmqpDecoder;
 import org.wso2.broker.amqp.codec.AmqpEncoder;
+import org.wso2.broker.core.Broker;
 
 /**
  * AMQP Server implementation.
  */
 public class Server {
 
-    private int port;
+    private final int port;
+
+    private final Broker broker;
 
     public Server(int port) {
         this.port = port;
+        this.broker = new Broker();
     }
 
     /**
@@ -71,13 +75,13 @@ public class Server {
         }
     }
 
-    private static class SocketChannelInitializer extends ChannelInitializer<SocketChannel> {
+    private class SocketChannelInitializer extends ChannelInitializer<SocketChannel> {
 
         protected void initChannel(SocketChannel socketChannel) throws Exception {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler());
+                         .addLast(new AmqpConnectionHandler(broker));
         }
     }
 

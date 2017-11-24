@@ -26,7 +26,7 @@ public final class Broker {
 
     private final MessagingEngine messagingEngine;
 
-    Broker() {
+    public Broker() {
         this.messagingEngine = new MessagingEngine();
     }
 
@@ -34,16 +34,27 @@ public final class Broker {
         messagingEngine.publish(message);
     }
 
+    /**
+     * Acknowledge single or a given set of messages. Removes the message from underlying queue
+     *
+     * @param queueName name of the queue the relevant messages belongs to
+     * @param deliveryTag delivery tag of the message sent by the broker
+     * @param multiple if true acknowledge multiple messages
+     */
+    public void acknowledge(String queueName, long deliveryTag, boolean multiple) {
+        messagingEngine.acknowledge(queueName, deliveryTag, multiple);
+    }
+
     public void consumeFromQueue(Consumer consumer) throws BrokerException {
         messagingEngine.consume(consumer);
     }
 
-    public void createExchange(String exchangeName, Exchange.Type type,
+    public void createExchange(String exchangeName, String type,
                                boolean passive, boolean durable) throws BrokerException {
         messagingEngine.createExchange(exchangeName, type, passive, durable);
     }
 
-    public void deleteExchange(String exchangeName, Exchange.Type type, boolean ifUnused) throws BrokerException {
+    public void deleteExchange(String exchangeName, String type, boolean ifUnused) throws BrokerException {
         messagingEngine.deleteExchange(exchangeName, type, ifUnused);
     }
 

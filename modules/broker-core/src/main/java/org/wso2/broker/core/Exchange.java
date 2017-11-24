@@ -26,20 +26,15 @@ import java.util.Set;
  */
 class Exchange {
 
-    /**
-     * Represents the Type of the exchange.
-     */
-    public enum Type {
-        DIRECT
-    }
+    public static final String DIRECT = "direct";
 
     private final String name;
 
-    private final Type type;
+    private final String type;
 
     private final BindingsRegistry bindingsRegistry;
 
-    Exchange(String name, Type type) {
+    Exchange(String name, String type) {
         this.name = name;
         this.type = type;
         this.bindingsRegistry = new BindingsRegistry();
@@ -49,7 +44,7 @@ class Exchange {
         return name;
     }
 
-    Type getType() {
+    String getType() {
         return type;
     }
 

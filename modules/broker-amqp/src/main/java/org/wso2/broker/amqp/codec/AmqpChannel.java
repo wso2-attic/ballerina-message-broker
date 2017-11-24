@@ -19,8 +19,22 @@
 
 package org.wso2.broker.amqp.codec;
 
+import org.wso2.broker.core.Broker;
+import org.wso2.broker.core.BrokerException;
+
 /**
  * AMQP channel representation
  */
 public class AmqpChannel {
+
+    private final Broker broker;
+
+    AmqpChannel(Broker broker) {
+        this.broker = broker;
+    }
+
+    public void declareExchange(String exchangeName, String exchangeType,
+                                boolean passive, boolean durable) throws BrokerException {
+        broker.createExchange(exchangeName, exchangeType, passive, durable);
+    }
 }

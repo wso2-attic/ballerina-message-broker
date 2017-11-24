@@ -26,7 +26,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -50,6 +52,8 @@ final class QueueHandler {
 
     private final boolean autoDelete;
 
+    private final Map<Long, Message> pendingMessages;
+
     QueueHandler(String name, boolean durable, boolean autoDelete, int capacity) {
         this.name = name;
         this.durable = durable;
@@ -57,6 +61,7 @@ final class QueueHandler {
         this.messageQueue = new LinkedBlockingQueue<>(capacity);
         this.consumers = new ConcurrentSkipListSet<>();
         consumerIterator = new CyclicConsumerIterator();
+        pendingMessages = new ConcurrentHashMap<>();
     }
 
     /**
@@ -114,7 +119,17 @@ final class QueueHandler {
      * @return Message
      */
     Message dequeue() {
-        return messageQueue.poll();
+        Message message = messageQueue.poll();
+        if (message != null) {
+            pendingMessages.put(message.getMetadata().getMessageId(), message);
+        }
+        return message;
+    }
+
+    void acknowledge(long messageId, boolean multiple) {
+        // TODO handle nacks
+        // TODO handle multiple
+        pendingMessages.remove(messageId);
     }
 
     /**
