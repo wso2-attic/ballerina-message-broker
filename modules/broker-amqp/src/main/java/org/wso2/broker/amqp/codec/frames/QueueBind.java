@@ -23,9 +23,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
+import org.wso2.broker.core.BrokerException;
 
 /**
  * AMQP frame for queue.bind
@@ -74,7 +76,13 @@ public class QueueBind extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         // TODO handle queue bind frame
-        ctx.writeAndFlush(new QueueBindOk(getChannel()));
+        try {
+            AmqpChannel channel = connectionHandler.getChannel(getChannel());
+            channel.bind(queue, exchange, routingKey);
+            ctx.writeAndFlush(new QueueBindOk(getChannel()));
+        } catch (BrokerException e) {
+            // TODO handle exception
+        }
     }
 
     public static AmqMethodBodyFactory getFactory() {

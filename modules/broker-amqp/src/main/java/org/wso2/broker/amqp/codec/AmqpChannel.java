@@ -19,6 +19,7 @@
 
 package org.wso2.broker.amqp.codec;
 
+import org.wso2.broker.amqp.codec.data.ShortString;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 
@@ -36,5 +37,14 @@ public class AmqpChannel {
     public void declareExchange(String exchangeName, String exchangeType,
                                 boolean passive, boolean durable) throws BrokerException {
         broker.createExchange(exchangeName, exchangeType, passive, durable);
+    }
+
+    public void declareQueue(ShortString queue, boolean passive,
+                             boolean durable, boolean autoDelete) throws BrokerException {
+        broker.createQueue(queue.toString(), passive, durable, autoDelete);
+    }
+
+    public void bind(ShortString queue, ShortString exchange, ShortString routingKey) throws BrokerException {
+        broker.bind(queue.toString(), exchange.toString(), routingKey.toString());
     }
 }

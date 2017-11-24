@@ -67,11 +67,11 @@ public final class Broker {
         messagingEngine.deleteQueue(queueName, ifUnused, ifEmpty);
     }
 
-    void bind(String queueName, String exchangeName, String routingKey) throws BrokerException {
+    public void bind(String queueName, String exchangeName, String routingKey) throws BrokerException {
         messagingEngine.bind(queueName, exchangeName, routingKey);
     }
 
-    void unbind(String queueName, String exchangeName, String routingKey) throws BrokerException {
+    public void unbind(String queueName, String exchangeName, String routingKey) throws BrokerException {
         messagingEngine.unbind(queueName, exchangeName, routingKey);
     }
 
