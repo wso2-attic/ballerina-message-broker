@@ -19,7 +19,8 @@
 
 package org.wso2.broker.core;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Object representation of a message metadata.
@@ -56,10 +57,7 @@ public class Metadata {
      */
     private final int contentLength;
 
-    /**
-     * Message reference count.
-     */
-    private AtomicInteger referenceCount;
+    private final List<String> queueList;
 
     public Metadata(long messageId, long arrivalTime, String routingKey, String exchangeName,
                     boolean isPersistent, int contentLength) {
@@ -69,7 +67,7 @@ public class Metadata {
         this.exchangeName = exchangeName;
         this.isPersistent = isPersistent;
         this.contentLength = contentLength;
-        this.referenceCount = new AtomicInteger(1);
+        this.queueList = new ArrayList<>();
     }
 
     public long getMessageId() {
@@ -100,11 +98,7 @@ public class Metadata {
         this.messageId = messageId;
     }
 
-    public int addReference() {
-        return referenceCount.incrementAndGet();
-    }
-
-    public int removeReference() {
-        return referenceCount.decrementAndGet();
+    public void addOwnedQueue(String queueName) {
+        queueList.add(queueName);
     }
 }

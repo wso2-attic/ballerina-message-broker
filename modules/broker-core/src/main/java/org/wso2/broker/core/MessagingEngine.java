@@ -106,11 +106,17 @@ final class MessagingEngine {
             Set<Binding> bindings = exchange.getBindingsForRoute(metadata.getRoutingKey());
             bindings.forEach(binding -> {
                 QueueHandler queueHandler = queueRegistry.get(binding.getQueueName());
+                metadata.addOwnedQueue(binding.getQueueName());
                 queueHandler.enqueue(message);
             });
         } else {
             throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
         }
+    }
+
+    void acknowledge(String queueName, long deliveryTag, boolean multiple) {
+        QueueHandler queueHandler = queueRegistry.get(queueName);
+        queueHandler.acknowledge(deliveryTag, multiple);
     }
 
     void deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
