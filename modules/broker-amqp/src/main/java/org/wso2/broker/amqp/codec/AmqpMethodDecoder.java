@@ -22,6 +22,7 @@ package org.wso2.broker.amqp.codec;
 import io.netty.buffer.ByteBuf;
 import org.wso2.broker.amqp.codec.frames.AmqMethodBodyFactory;
 import org.wso2.broker.amqp.codec.frames.AmqMethodRegistry;
+import org.wso2.broker.amqp.codec.frames.MethodFrame;
 
 import java.util.List;
 
@@ -52,8 +53,11 @@ public class AmqpMethodDecoder {
                     short amqpMethod = buffer.readShort();
                     AmqMethodBodyFactory factory = methodRegistry.getFactory(amqpClass, amqpMethod);
                     out.add(factory.newInstance(buffer, channel, payloadSize));
-                    // TODO: check if end frame is correct
-                    buffer.readByte();
+
+                    byte frameEnd = buffer.readByte();
+                    if (frameEnd != (byte) MethodFrame.FRAME_END) {
+                        throw new Exception("Invalid AMQP frame");
+                    }
                     return;
                 case 2: // Header
                     throw new Exception("Method Not implemented");

@@ -40,6 +40,8 @@ public class AmqMethodRegistry {
         factories[20][11] = ChannelOpenOk.getFactory();
         factories[20][20] = ChannelFlow.getFactory();
         factories[20][21] = ChannelFlowOk.getFactory();
+        factories[20][40] = ChannelClose.getFactory();
+        factories[20][41] = ChannelCloseOk.getFactory();
 
         factories[40] = new AmqMethodBodyFactory[24];
         factories[40][10] = ExchangeDeclare.getFactory();

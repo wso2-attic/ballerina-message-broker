@@ -21,38 +21,37 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
- * AMQP Method frame.
+ * AMQP frame for channel.close-ok
+ * Parameter Summary:
+ *     No parameters
  */
-public abstract class MethodFrame extends GeneralFrame {
-    public static final int FRAME_END = 0xCE;
-    private final short classId;
-    private final short methodId;
+public class ChannelCloseOk extends MethodFrame {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelCloseOk.class);
 
-    public MethodFrame(int channel, short classId, short methodId) {
-        super((byte) 1, channel);
-        this.classId = classId;
-        this.methodId = methodId;
+    public ChannelCloseOk(int channel) {
+        super(channel, (short) 20, (short) 41);
     }
 
-    protected abstract long getMethodBodySize();
-
-    protected abstract void writeMethod(ByteBuf buf);
-
-    public abstract void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler);
-
-    public long getPayloadSize() {
-        return getMethodBodySize() + 4;
+    @Override
+    protected long getMethodBodySize() {
+        return 0L;
     }
 
-    public void writePayload(ByteBuf buf) {
-        buf.writeShort(classId);
-        buf.writeShort(methodId);
+    @Override
+    protected void writeMethod(ByteBuf buf) {
+    }
 
-        writeMethod(buf);
+    @Override
+    public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
+        // Server does not support
+    }
 
-        buf.writeByte(FRAME_END);
+    public static AmqMethodBodyFactory getFactory() {
+        return (buf, channel, size) -> new ChannelCloseOk(channel);
     }
 }
