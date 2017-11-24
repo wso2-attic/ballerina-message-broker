@@ -107,7 +107,7 @@ public class ExchangeDeclare extends MethodFrame {
             ShortString exchange = ShortString.parse(buf);
             ShortString type = ShortString.parse(buf);
             byte flags = buf.readByte();
-            boolean passive = (flags & 0x1) == 1;
+            boolean passive = (flags & 0x1) == 0x1;
             boolean durable = (flags & 0x2) == 0x2;
             boolean noWait = (flags & 0x10) == 0x10;
             FieldTable arguments = FieldTable.parse(buf);
