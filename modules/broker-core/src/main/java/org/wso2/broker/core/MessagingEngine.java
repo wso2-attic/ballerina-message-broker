@@ -158,10 +158,10 @@ final class MessagingEngine {
 
     void createExchange(String exchangeName, String type,
                         boolean passive, boolean durable) throws BrokerException {
-        exchangeRegistry.declareExchange(exchangeName, type, passive, durable);
+        exchangeRegistry.declareExchange(exchangeName, Exchange.Type.from(type), passive, durable);
     }
 
     void deleteExchange(String exchangeName, String type, boolean ifUnused) throws BrokerException {
-        exchangeRegistry.deleteExchange(exchangeName, type, ifUnused);
+        exchangeRegistry.deleteExchange(exchangeName, Exchange.Type.from(type), ifUnused);
     }
 }

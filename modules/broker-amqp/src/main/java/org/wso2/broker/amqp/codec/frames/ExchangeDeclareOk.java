@@ -24,7 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
- * AMQP frame for exchange.declare-ok
+ * AMQP frame for exchange.declare-ok.
  * Parameter Summary:
  *     No parameters
  */
