@@ -44,7 +44,6 @@ final class BindingsRegistry {
             routingKeyToBindingMap.put(routingKey, bindingList);
         }
         bindingList.add(binding);
-
     }
 
     void unbind(String queueName, String routingKey) {
