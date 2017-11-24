@@ -26,15 +26,33 @@ import java.util.Set;
  */
 class Exchange {
 
-    public static final String DIRECT = "direct";
+    public enum Type {
+        DIRECT("direct");
+
+        String typeName;
+
+        Type(String name) {
+            typeName = name;
+        }
+
+        public static Type from(String typeString) {
+            
+            if (typeString.equals(DIRECT.typeName)) {
+                return DIRECT;
+            } else {
+                throw new IllegalArgumentException("unknown exchange type: " + typeString);
+            }
+        }
+
+    }
 
     private final String name;
 
-    private final String type;
+    private final Type type;
 
     private final BindingsRegistry bindingsRegistry;
 
-    Exchange(String name, String type) {
+    Exchange(String name, Type type) {
         this.name = name;
         this.type = type;
         this.bindingsRegistry = new BindingsRegistry();
@@ -44,7 +62,7 @@ class Exchange {
         return name;
     }
 
-    String getType() {
+    Type getType() {
         return type;
     }
 

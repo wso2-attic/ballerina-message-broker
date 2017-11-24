@@ -20,7 +20,6 @@
 package org.wso2.broker.core;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -36,18 +35,18 @@ final class ExchangeRegistry {
 
     ExchangeRegistry() {
         exchangeMap = new ConcurrentHashMap<>(3);
-        exchangeMap.put(DIRECT, new Exchange(DIRECT, Exchange.DIRECT));
-        exchangeMap.put(DEFAULT, new Exchange(DEFAULT, Exchange.DIRECT));
+        exchangeMap.put(DIRECT, new Exchange(DIRECT, Exchange.Type.DIRECT));
+        exchangeMap.put(DEFAULT, new Exchange(DEFAULT, Exchange.Type.DIRECT));
     }
 
     Exchange getExchange(String exchangeName) {
         return exchangeMap.get(exchangeName);
     }
 
-    void deleteExchange(String exchangeName, String type, boolean ifUnused) throws BrokerException {
+    void deleteExchange(String exchangeName, Exchange.Type type, boolean ifUnused) throws BrokerException {
         // TODO: Go through the logic with exchange type in mind
         Exchange exchange = exchangeMap.get(exchangeName);
-        if (exchange != null && Objects.equals(type, exchange.getType()) &&
+        if (exchange != null && type == exchange.getType() &&
                 ((DIRECT.compareTo(exchangeName) != 0) || (DEFAULT.compareTo(exchangeName) != 0))) {
             exchangeMap.remove(exchangeName);
         } else {
@@ -55,7 +54,15 @@ final class ExchangeRegistry {
         }
     }
 
-    void declareExchange(String exchangeName, String type,
+    /**
+     * TODO : behavior around durable is not implemented
+     * @param exchangeName name of the exchange 
+     * @param type type of the exchange 
+     * @param passive passive parameter
+     * @param durable is the exchange durable or not.
+     * @throws BrokerException
+     */
+    void declareExchange(String exchangeName, Exchange.Type type,
                          boolean passive, boolean durable) throws BrokerException {
         if (exchangeName.isEmpty()) {
             throw new BrokerException("Exchange name cannot be empty.");
