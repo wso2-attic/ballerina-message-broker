@@ -27,6 +27,7 @@ import org.wso2.broker.amqp.codec.frames.AmqpBadMessage;
 import org.wso2.broker.amqp.codec.frames.ConnectionStart;
 import org.wso2.broker.amqp.codec.frames.MethodFrame;
 import org.wso2.broker.amqp.codec.frames.ProtocolInitFrame;
+import org.wso2.broker.core.Broker;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,11 @@ import java.util.Map;
 public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConnectionHandler.class);
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
+    private final Broker broker;
+
+    public AmqpConnectionHandler(Broker broker) {
+        this.broker = broker;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -71,6 +77,16 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
             throw new Exception("Channel Already exists");
         }
 
-        channels.put(channelId, new AmqpChannel());
+        channels.put(channelId, new AmqpChannel(broker));
+    }
+
+    /**
+     * Returns the {@link AmqpChannel} for the specified channelId
+     *
+     * @param channelId channel id
+     * @return AmqpChannel
+     */
+    public AmqpChannel getChannel(int channelId) {
+        return channels.get(channelId);
     }
 }

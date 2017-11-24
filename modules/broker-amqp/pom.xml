@@ -32,6 +32,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
         </dependency>

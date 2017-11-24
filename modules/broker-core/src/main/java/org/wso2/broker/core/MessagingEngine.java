@@ -150,12 +150,12 @@ final class MessagingEngine {
         deliveryTaskService.stop();
     }
 
-    void createExchange(String exchangeName, Exchange.Type type,
+    void createExchange(String exchangeName, String type,
                         boolean passive, boolean durable) throws BrokerException {
         exchangeRegistry.declareExchange(exchangeName, type, passive, durable);
     }
 
-    void deleteExchange(String exchangeName, Exchange.Type type, boolean ifUnused) throws BrokerException {
+    void deleteExchange(String exchangeName, String type, boolean ifUnused) throws BrokerException {
         exchangeRegistry.deleteExchange(exchangeName, type, ifUnused);
     }
 }
