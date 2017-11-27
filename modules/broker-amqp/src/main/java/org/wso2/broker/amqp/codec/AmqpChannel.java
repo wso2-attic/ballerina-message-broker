@@ -19,9 +19,15 @@
 
 package org.wso2.broker.amqp.codec;
 
+import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.codec.data.ShortString;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
+
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * AMQP channel representation
@@ -30,8 +36,11 @@ public class AmqpChannel {
 
     private final Broker broker;
 
+    private final Map<ShortString, AmqpConsumer> consumerMap;
+
     AmqpChannel(Broker broker) {
         this.broker = broker;
+        this.consumerMap = new HashMap<>();
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
@@ -46,5 +55,17 @@ public class AmqpChannel {
 
     public void bind(ShortString queue, ShortString exchange, ShortString routingKey) throws BrokerException {
         broker.bind(queue.toString(), exchange.toString(), routingKey.toString());
+    }
+
+    public ShortString consume(ShortString queueName,
+                               ShortString consumerTag, boolean exclusive) throws BrokerException {
+        String tag = consumerTag.toString();
+        if (tag.isEmpty()) {
+            tag = UUID.randomUUID().toString();
+        }
+        AmqpConsumer amqpConsumer = new AmqpConsumer(queueName.toString(), tag, exclusive);
+        consumerMap.put(consumerTag, amqpConsumer);
+        broker.consumeFromQueue(amqpConsumer);
+        return new ShortString(tag.length(), tag.getBytes(StandardCharsets.UTF_8));
     }
 }
