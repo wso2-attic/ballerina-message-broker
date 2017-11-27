@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -59,7 +58,7 @@ final class QueueHandler {
         this.durable = durable;
         this.autoDelete = autoDelete;
         this.messageQueue = new LinkedBlockingQueue<>(capacity);
-        this.consumers = new ConcurrentSkipListSet<>();
+        this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
         pendingMessages = new ConcurrentHashMap<>();
     }
@@ -99,6 +98,13 @@ final class QueueHandler {
      */
     void removeConsumer(Consumer consumer) {
         consumers.remove(consumer);
+        if (consumers.isEmpty() && isAutoDelete()) {
+            removeQueue();
+        }
+    }
+
+    private void removeQueue() {
+        messageQueue.clear();
     }
 
     /**

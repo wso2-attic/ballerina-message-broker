@@ -23,6 +23,7 @@ import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.codec.data.ShortString;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
+import org.wso2.broker.core.Consumer;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -65,7 +66,18 @@ public class AmqpChannel {
         }
         AmqpConsumer amqpConsumer = new AmqpConsumer(queueName.toString(), tag, exclusive);
         consumerMap.put(consumerTag, amqpConsumer);
-        broker.consumeFromQueue(amqpConsumer);
+        broker.addConsumer(amqpConsumer);
         return new ShortString(tag.length(), tag.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public void close() {
+        for (Consumer consumer: consumerMap.values()) {
+            broker.removeConsumer(consumer);
+        }
+
+    }
+
+    public void cancelConsumer(Consumer consumer) {
+        broker.removeConsumer(consumer);
     }
 }

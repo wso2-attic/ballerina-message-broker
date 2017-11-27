@@ -38,7 +38,7 @@ public interface Consumer {
      *
      * @return queue name
      */
-    String getSubscribedQueue();
+    String getQueueName();
 
     /**
      * Close the underlying transport consumer

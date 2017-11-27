@@ -50,8 +50,18 @@ public final class Broker {
         messagingEngine.acknowledge(queueName, deliveryTag, multiple);
     }
 
-    public void consumeFromQueue(Consumer consumer) throws BrokerException {
+    /**
+     * Adds a consumer for a queue. Queue will be the queue returned from {@link Consumer#getQueueName()}
+     *
+     * @param consumer {@link Consumer} implementation
+     * @throws BrokerException throws {@link BrokerException} if unable to add the consumer
+     */
+    public void addConsumer(Consumer consumer) throws BrokerException {
         messagingEngine.consume(consumer);
+    }
+
+    public void removeConsumer(Consumer consumer) {
+        messagingEngine.closeConsumer(consumer);
     }
 
     public void createExchange(String exchangeName, String type,

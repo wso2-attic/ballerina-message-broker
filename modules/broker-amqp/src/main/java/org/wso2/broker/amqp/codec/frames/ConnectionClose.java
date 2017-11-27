@@ -66,6 +66,7 @@ public class ConnectionClose extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
+        connectionHandler.close();
         ctx.writeAndFlush(new ConnectionCloseOk(getChannel())).addListener(ChannelFutureListener.CLOSE);
     }
 

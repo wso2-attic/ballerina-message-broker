@@ -46,7 +46,7 @@ public class AmqpConsumer implements Consumer {
     }
 
     @Override
-    public String getSubscribedQueue() {
+    public String getQueueName() {
         return queueName;
     }
 

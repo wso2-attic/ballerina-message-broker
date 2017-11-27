@@ -93,4 +93,10 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     public void closeChannel(int channel) {
         channels.remove(channel);
     }
+
+    public void close() {
+        for (AmqpChannel channel: channels.values()) {
+            channel.close();
+        }
+    }
 }
