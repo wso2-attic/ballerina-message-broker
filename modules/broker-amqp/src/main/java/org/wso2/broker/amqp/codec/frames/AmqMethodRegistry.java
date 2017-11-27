@@ -34,6 +34,8 @@ public class AmqMethodRegistry {
         factories[10][31] = ConnectionTuneOk.getFactory();
         factories[10][40] = ConnectionOpen.getFactory();
         factories[10][41] = ConnectionOpenOk.getFactory();
+        factories[10][50] = ConnectionClose.getFactory();
+        factories[10][51] = ConnectionCloseOk.getFactory();
 
         factories[20] = new AmqMethodBodyFactory[42];
         factories[20][10] = ChannelOpen.getFactory();
