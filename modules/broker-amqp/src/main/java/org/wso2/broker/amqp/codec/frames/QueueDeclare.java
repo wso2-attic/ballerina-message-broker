@@ -103,6 +103,7 @@ public class QueueDeclare extends MethodFrame {
             ctx.writeAndFlush(new QueueDeclareOk(getChannel(), queue, 0, 0));
         } catch (BrokerException e) {
             // TODO handle exception
+            LOGGER.error("Error declaring queue.", e);
         }
     }
 

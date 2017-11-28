@@ -19,10 +19,15 @@
 
 package org.wso2.broker.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Broker API class.
  */
 public final class Broker {
+
+    private static final Logger log = LoggerFactory.getLogger(Broker.class);
 
     private final MessagingEngine messagingEngine;
 
@@ -37,16 +42,26 @@ public final class Broker {
     /**
      * Acknowledge single or a given set of messages. Removes the message from underlying queue
      *
-     * @param queueName name of the queue the relevant messages belongs to
+     * @param queueName   name of the queue the relevant messages belongs to
      * @param deliveryTag delivery tag of the message sent by the broker
-     * @param multiple if true acknowledge multiple messages
+     * @param multiple    if true acknowledge multiple messages
      */
     public void acknowledge(String queueName, long deliveryTag, boolean multiple) {
         messagingEngine.acknowledge(queueName, deliveryTag, multiple);
     }
 
-    public void consumeFromQueue(Consumer consumer) throws BrokerException {
+    /**
+     * Adds a consumer for a queue. Queue will be the queue returned from {@link Consumer#getQueueName()}
+     *
+     * @param consumer {@link Consumer} implementation
+     * @throws BrokerException throws {@link BrokerException} if unable to add the consumer
+     */
+    public void addConsumer(Consumer consumer) throws BrokerException {
         messagingEngine.consume(consumer);
+    }
+
+    public void removeConsumer(Consumer consumer) {
+        messagingEngine.closeConsumer(consumer);
     }
 
     public void createExchange(String exchangeName, String type,
@@ -76,10 +91,12 @@ public final class Broker {
     }
 
     public void startMessageDelivery() {
+        log.info("Starting message delivery threads.");
         messagingEngine.startMessageDelivery();
     }
 
     public void stopMessageDelivery() {
+        log.info("Stopping message delivery threads.");
         messagingEngine.stopMessageDelivery();
     }
 }

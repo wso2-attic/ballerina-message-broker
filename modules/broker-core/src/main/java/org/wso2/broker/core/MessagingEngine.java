@@ -139,11 +139,11 @@ final class MessagingEngine {
     }
 
     void consume(Consumer consumer) throws BrokerException {
-        QueueHandler queueHandler = queueRegistry.get(consumer.getSubscribedQueue());
+        QueueHandler queueHandler = queueRegistry.get(consumer.getQueueName());
         if (queueHandler != null) {
             queueHandler.addConsumer(consumer);
         } else {
-            throw new BrokerException("Cannot add consumer. Queue [ " + consumer.getSubscribedQueue() + " ] " +
+            throw new BrokerException("Cannot add consumer. Queue [ " + consumer.getQueueName() + " ] " +
                     "not found. Create the queue before attempting to consume.");
         }
     }
@@ -163,5 +163,12 @@ final class MessagingEngine {
 
     void deleteExchange(String exchangeName, String type, boolean ifUnused) throws BrokerException {
         exchangeRegistry.deleteExchange(exchangeName, Exchange.Type.from(type), ifUnused);
+    }
+
+    void closeConsumer(Consumer consumer) {
+        QueueHandler queueHandler = queueRegistry.get(consumer.getQueueName());
+        if (queueHandler != null)  {
+            queueHandler.removeConsumer(consumer);
+        }
     }
 }

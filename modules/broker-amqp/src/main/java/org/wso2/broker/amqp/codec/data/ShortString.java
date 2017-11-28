@@ -23,6 +23,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * AMQP Short String.
@@ -65,5 +66,29 @@ public class ShortString implements EncodableData {
     @Override
     public String toString() {
         return new String(content, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Compares {@link ShortString} underlying byte array content
+     *
+     * @param obj {@link Object} to compare with
+     * @return True if underlying content is equal
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        return (obj instanceof ShortString) && (Arrays.equals(content, ((ShortString) obj).content));
+    }
+
+    /**
+     * Hashcode of the underlying byte array content
+     *
+     * @return content based hashcode
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(content);
     }
 }

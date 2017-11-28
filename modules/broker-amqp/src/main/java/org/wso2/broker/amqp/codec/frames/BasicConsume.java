@@ -23,9 +23,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
+import org.wso2.broker.core.BrokerException;
 
 /**
  * AMQP frame for basic.consume
@@ -93,8 +95,14 @@ public class BasicConsume extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // TODO handle basic consume frame
-        ctx.writeAndFlush(new BasicConsumeOk(getChannel(), consumerTag));
+        ShortString usedConsumerTag;
+        try {
+            AmqpChannel channel = connectionHandler.getChannel(getChannel());
+            usedConsumerTag = channel.consume(queue, consumerTag, exclusive);
+            ctx.writeAndFlush(new BasicConsumeOk(getChannel(), usedConsumerTag));
+        } catch (BrokerException e) {
+            // TODO handle channel exception and send the error
+        }
     }
 
     public static AmqMethodBodyFactory getFactory() {
