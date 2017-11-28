@@ -68,6 +68,8 @@ public class FieldValue implements EncodableData {
         switch (type) {
             case 'S':
                 return new FieldValue(type, LongString.parse(buf));
+            case 'I':
+                return new FieldValue(type, LongInt.parse(buf));
             default:
                 throw new Exception("Invalid AMQP Field value type");
         }
