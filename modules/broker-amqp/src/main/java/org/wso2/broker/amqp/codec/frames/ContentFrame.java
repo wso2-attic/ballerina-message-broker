@@ -36,12 +36,11 @@ public class ContentFrame extends GeneralFrame {
 
     @Override
     public long getPayloadSize() {
-        return 4L + length;
+        return length;
     }
 
     @Override
     public void writePayload(ByteBuf buf) {
-        buf.writeInt((int) length);
         buf.writeBytes(payload);
     }
 

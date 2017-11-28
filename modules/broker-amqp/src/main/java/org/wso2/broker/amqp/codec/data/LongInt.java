@@ -26,7 +26,7 @@ import io.netty.buffer.ByteBuf;
 public class LongInt implements EncodableData {
     private final int value;
 
-    private LongInt(int value) {
+    public LongInt(int value) {
         this.value = value;
     }
 

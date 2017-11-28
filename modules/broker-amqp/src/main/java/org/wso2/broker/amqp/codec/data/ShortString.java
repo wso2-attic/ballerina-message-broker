@@ -63,6 +63,10 @@ public class ShortString implements EncodableData {
         return new ShortString(size, data);
     }
 
+    public static ShortString parseString(String data) {
+        return new ShortString(data.length(), data.getBytes(StandardCharsets.UTF_8));
+    }
+
     @Override
     public String toString() {
         return new String(content, StandardCharsets.UTF_8);

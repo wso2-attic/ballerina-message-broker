@@ -58,7 +58,7 @@ public class FieldValue implements EncodableData {
 
     @Override
     public void write(ByteBuf buf) {
-        buf.writeChar(type);
+        buf.writeByte(type);
         value.write(buf);
     }
 
