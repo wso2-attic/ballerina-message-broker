@@ -20,36 +20,35 @@
 package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
- * AMQP Method frame.
+ * AMQP content frame
  */
-public abstract class MethodFrame extends GeneralFrame {
-    private final short classId;
-    private final short methodId;
+public class ContentFrame extends GeneralFrame {
+    private final long length;
+    private final ByteBuf payload;
 
-    public MethodFrame(int channel, short classId, short methodId) {
-        super((byte) 1, channel);
-        this.classId = classId;
-        this.methodId = methodId;
+    public ContentFrame(int channel, long length, ByteBuf payload) {
+        super((byte) 3, channel);
+        this.length = length;
+        this.payload = payload;
     }
 
-    protected abstract long getMethodBodySize();
-
-    protected abstract void writeMethod(ByteBuf buf);
-
-    public abstract void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler);
-
+    @Override
     public long getPayloadSize() {
-        return getMethodBodySize() + 4;
+        return 4L + length;
     }
 
+    @Override
     public void writePayload(ByteBuf buf) {
-        buf.writeShort(classId);
-        buf.writeShort(methodId);
+        buf.writeInt((int) length);
+        buf.writeBytes(payload);
+    }
 
-        writeMethod(buf);
+    public static ContentFrame parse(ByteBuf buf, int channel, long payloadSize) {
+        ByteBuf payload = buf.retainedSlice(buf.readerIndex(), (int) payloadSize);
+        buf.skipBytes((int) payloadSize);
+
+        return new ContentFrame(channel, payloadSize, payload);
     }
 }

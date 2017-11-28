@@ -26,6 +26,8 @@ import io.netty.buffer.ByteBufAllocator;
  * AMQP General Frame.
  */
 public abstract class GeneralFrame {
+    public static final short FRAME_END = 0xCE;
+
     private final byte type;
     private final int channel;
 
@@ -56,6 +58,8 @@ public abstract class GeneralFrame {
         buf.writeInt((int) payloadSize);
 
         writePayload(buf);
+
+        buf.writeByte(FRAME_END);
 
         return buf;
     }

@@ -25,7 +25,12 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.frames.AmqMethodBodyFactory;
+import org.wso2.broker.amqp.codec.frames.AmqMethodRegistry;
 import org.wso2.broker.amqp.codec.frames.AmqpBadMessage;
+import org.wso2.broker.amqp.codec.frames.ContentFrame;
+import org.wso2.broker.amqp.codec.frames.GeneralFrame;
+import org.wso2.broker.amqp.codec.frames.HeaderFrame;
 import org.wso2.broker.amqp.codec.frames.ProtocolInitFrame;
 
 import java.util.List;
@@ -35,7 +40,19 @@ import java.util.List;
  */
 public class AmqpDecoder extends ByteToMessageDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpDecoder.class);
+
+    /**
+     * Used to lookup AMQP method frames depending on their class ID and method ID. We keep this as a static variable
+     * since it is read only
+     */
+    private static final AmqMethodRegistry methodRegistry = new AmqMethodRegistry();
+    private static final int FRAME_SIZE_WITHOUT_PAYLOAD = 8;
     private static final CharSequence AMQP_PROTOCOL_IDENTIFIER = "AMQP";
+
+    /**
+     * class-id(short) + weight(short) + body-size(long long) + property-flags(short)
+     */
+    private static final int MIN_HEADER_FRAME_SIZE = 14;
 
     /**
      * The internal state of {@link AmqpDecoder}.
@@ -57,7 +74,7 @@ public class AmqpDecoder extends ByteToMessageDecoder {
                 currentState = State.READ_FRAME;
                 return;
             case READ_FRAME:
-                AmqpMethodDecoder.parse(buffer, out);
+                parseFrame(buffer, out);
                 return;
             case BAD_MESSAGE:
                 // Keep discarding until disconnection.
@@ -94,5 +111,46 @@ public class AmqpDecoder extends ByteToMessageDecoder {
         LOGGER.warn("Exception while handling request", cause);
         currentState = State.BAD_MESSAGE;
         ctx.close();
+    }
+
+    private void parseFrame(ByteBuf buffer, List<Object> out) throws Exception {
+        buffer.markReaderIndex();
+        if (buffer.readableBytes() > FRAME_SIZE_WITHOUT_PAYLOAD) {
+            byte type = buffer.readByte();
+            int channel = buffer.readShort();
+            long payloadSize = buffer.readInt();
+
+            long estimatedRemainingSize = payloadSize + 1;
+            if (buffer.readableBytes() < estimatedRemainingSize) {
+                buffer.resetReaderIndex();
+                return;
+            }
+
+            GeneralFrame frame = null;
+            switch (type) {
+                case 1: // Method
+                    short amqpClass = buffer.readShort();
+                    short amqpMethod = buffer.readShort();
+                    AmqMethodBodyFactory factory = methodRegistry.getFactory(amqpClass, amqpMethod);
+
+                    frame = factory.newInstance(buffer, channel, payloadSize);
+                    break;
+                case 2: // Header
+                    frame = HeaderFrame.parse(buffer, channel);
+                    break;
+                case 3: // Body
+                    frame = ContentFrame.parse(buffer, channel, payloadSize);
+                    break;
+                case 4: // Heartbeat
+                    throw new Exception("Method Not implemented");
+            }
+
+            byte frameEnd = buffer.readByte();
+            if (frameEnd != (byte) GeneralFrame.FRAME_END) {
+                throw new Exception("Invalid AMQP frame");
+            }
+
+            out.add(frame);
+        }
     }
 }
