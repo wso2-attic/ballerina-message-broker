@@ -36,6 +36,7 @@ import java.util.Map;
  * Netty handler for handling an AMQP connection.
  */
 public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConnectionHandler.class);
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
     private final Broker broker;
@@ -76,8 +77,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         if (channel != null) {
             throw new Exception("Channel Already exists");
         }
-
-        channels.put(channelId, new AmqpChannel(broker));
+        channels.put(channelId, new AmqpChannel(broker, channelId));
     }
 
     /**

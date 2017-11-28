@@ -20,6 +20,7 @@
 package org.wso2.broker.amqp.codec;
 
 import org.wso2.broker.amqp.AmqpConsumer;
+import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.amqp.codec.data.ShortString;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
@@ -37,10 +38,13 @@ public class AmqpChannel {
 
     private final Broker broker;
 
+    private final int channelId;
+
     private final Map<ShortString, AmqpConsumer> consumerMap;
 
-    AmqpChannel(Broker broker) {
+    AmqpChannel(Broker broker, int channelId) {
         this.broker = broker;
+        this.channelId = channelId;
         this.consumerMap = new HashMap<>();
     }
 
@@ -77,7 +81,12 @@ public class AmqpChannel {
 
     }
 
-    public void cancelConsumer(Consumer consumer) {
-        broker.removeConsumer(consumer);
+    public void cancelConsumer(ShortString consumerTag) throws AmqpException {
+        AmqpConsumer amqpConsumer = consumerMap.get(consumerTag);
+        if (amqpConsumer != null) {
+            broker.removeConsumer(amqpConsumer);
+        } else {
+            throw new AmqpException("Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
+        }
     }
 }

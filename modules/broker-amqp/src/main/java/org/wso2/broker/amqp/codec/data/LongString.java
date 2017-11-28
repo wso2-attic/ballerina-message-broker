@@ -23,6 +23,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * AMQP Long String.
@@ -66,5 +67,29 @@ public class LongString implements EncodableData {
         buf.readBytes(data);
 
         return new LongString(size, data);
+    }
+
+    /**
+     * Compares {@link LongString} underlying byte array content
+     *
+     * @param obj {@link Object} to compare with
+     * @return True if underlying content is equal
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        return (obj instanceof LongString) && (Arrays.equals(content, ((LongString) obj).content));
+    }
+
+    /**
+     * Hashcode of the underlying byte array content
+     *
+     * @return content based hashcode
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(content);
     }
 }
