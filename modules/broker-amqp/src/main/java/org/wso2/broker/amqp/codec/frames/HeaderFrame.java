@@ -102,7 +102,7 @@ public class HeaderFrame extends GeneralFrame {
 
     private long getPropertySize(long property) {
         if (property != LONG_DEFAULT) {
-            return property;
+            return 8L;
         } else {
             return 0L;
         }
@@ -110,7 +110,7 @@ public class HeaderFrame extends GeneralFrame {
 
     private long getPropertySize(short property) {
         if (property != BYTE_DEFAULT) {
-            return property;
+            return 1L;
         } else {
             return 0L;
         }
@@ -159,7 +159,7 @@ public class HeaderFrame extends GeneralFrame {
 
     private void writeProperty(ByteBuf buf, int property) {
         if (property != BYTE_DEFAULT) {
-            buf.writeShort(property);
+            buf.writeByte(property);
         }
     }
 
@@ -222,67 +222,67 @@ public class HeaderFrame extends GeneralFrame {
         return headerFrame;
     }
 
-    private void setContentType(ShortString contentType) {
+    public void setContentType(ShortString contentType) {
         propertyFlags |= CONTENT_TYPE_MASK;
         this.contentType = contentType;
     }
 
-    private void setContentEncoding(ShortString contentEncoding) {
+    public void setContentEncoding(ShortString contentEncoding) {
         propertyFlags |= ENCODING_MASK;
         this.contentEncoding = contentEncoding;
     }
 
-    private void setHeaders(FieldTable headers) {
+    public void setHeaders(FieldTable headers) {
         propertyFlags |= HEADERS_MASK;
         this.headers = headers;
     }
 
-    private void setDeliveryMode(short deliveryMode) {
+    public void setDeliveryMode(short deliveryMode) {
         propertyFlags |= DELIVERY_MODE_MASK;
         this.deliveryMode = deliveryMode;
     }
 
-    private void setPriority(short priority) {
+    public void setPriority(short priority) {
         propertyFlags |= PRIORITY_MASK;
         this.priority = priority;
     }
 
-    private void setCorrelationId(ShortString correlationId) {
+    public void setCorrelationId(ShortString correlationId) {
         propertyFlags |= CORRELATION_ID_MASK;
         this.correlationId = correlationId;
     }
 
-    private void setReplyTo(ShortString replyTo) {
+    public void setReplyTo(ShortString replyTo) {
         propertyFlags |= REPLY_TO_MASK;
         this.replyTo = replyTo;
     }
 
-    private void setExpiration(ShortString expiration) {
+    public void setExpiration(ShortString expiration) {
         propertyFlags |= EXPIRATION_MASK;
         this.expiration = expiration;
     }
 
-    private void setMessageId(ShortString messageId) {
+    public void setMessageId(ShortString messageId) {
         propertyFlags |= MESSAGE_ID_MASK;
         this.messageId = messageId;
     }
 
-    private void setTimestamp(long timestamp) {
+    public void setTimestamp(long timestamp) {
         propertyFlags |= TIMESTAMP_MASK;
         this.timestamp = timestamp;
     }
 
-    private void setType(ShortString type) {
+    public void setType(ShortString type) {
         propertyFlags |= TYPE_MASK;
         this.type = type;
     }
 
-    private void setUserId(ShortString userId) {
+    public void setUserId(ShortString userId) {
         propertyFlags |= USER_ID_MASK;
         this.userId = userId;
     }
 
-    private void setAppId(ShortString appId) {
+    public void setAppId(ShortString appId) {
         propertyFlags |= APPLICATION_ID_MASK;
         this.appId = appId;
     }
