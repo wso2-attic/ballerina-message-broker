@@ -59,6 +59,7 @@ public class ConnectionStartOk extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
+        // TODO add authentication
         ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
     }
 

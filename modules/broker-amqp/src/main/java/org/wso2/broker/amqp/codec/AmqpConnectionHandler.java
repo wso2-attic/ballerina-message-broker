@@ -72,10 +72,11 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    public void createChannel(int channelId) throws Exception {
+    public void createChannel(int channelId) throws ConnectionException {
         AmqpChannel channel = channels.get(channelId);
         if (channel != null) {
-            throw new Exception("Channel Already exists");
+            throw new ConnectionException(ConnectionException.CHANNEL_ERROR,
+                                          "Channel ID " + channelId + " Already exists");
         }
         channels.put(channelId, new AmqpChannel(broker, channelId));
     }

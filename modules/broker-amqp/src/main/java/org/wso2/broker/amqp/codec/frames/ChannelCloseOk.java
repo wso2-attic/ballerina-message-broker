@@ -48,7 +48,7 @@ public class ChannelCloseOk extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // Server does not support
+        ctx.close();
     }
 
     public static AmqMethodBodyFactory getFactory() {
