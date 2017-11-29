@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
 import org.wso2.broker.core.BrokerException;
@@ -41,6 +42,8 @@ import org.wso2.broker.core.BrokerException;
  */
 public class QueueBind extends MethodFrame {
     private static final Logger LOGGER = LoggerFactory.getLogger(QueueBind.class);
+    private static final short CLASS_ID = 50;
+    private static final short METHOD_ID = 20;
 
     private final ShortString queue;
     private final ShortString exchange;
@@ -50,7 +53,7 @@ public class QueueBind extends MethodFrame {
 
     public QueueBind(int channel, ShortString queue, ShortString exchange, ShortString routingKey, boolean noWait,
             FieldTable arguments) {
-        super(channel, (short) 50, (short) 20);
+        super(channel, CLASS_ID, METHOD_ID);
         this.queue = queue;
         this.exchange = exchange;
         this.routingKey = routingKey;
@@ -75,13 +78,16 @@ public class QueueBind extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // TODO handle queue bind frame
         try {
             AmqpChannel channel = connectionHandler.getChannel(getChannel());
             channel.bind(queue, exchange, routingKey);
             ctx.writeAndFlush(new QueueBindOk(getChannel()));
         } catch (BrokerException e) {
-            // TODO handle exception
+            ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                               ChannelException.NOT_ALLOWED,
+                                               ShortString.parseString(e.getMessage()),
+                                               CLASS_ID,
+                                               METHOD_ID));
         }
     }
 

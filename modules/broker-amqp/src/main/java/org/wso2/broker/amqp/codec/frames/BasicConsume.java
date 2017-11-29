@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
 import org.wso2.broker.core.BrokerException;
@@ -43,6 +44,8 @@ import org.wso2.broker.core.BrokerException;
  */
 public class BasicConsume extends MethodFrame {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicConsume.class);
+    private static final short CLASS_ID = 60;
+    private static final short METHOD_ID = 20;
 
     private final ShortString queue;
     private final ShortString consumerTag;
@@ -54,7 +57,7 @@ public class BasicConsume extends MethodFrame {
 
     public BasicConsume(int channel, ShortString queue, ShortString consumerTag, boolean noLocal, boolean noAck,
             boolean exclusive, boolean noWait, FieldTable arguments) {
-        super(channel, (short) 60, (short) 20);
+        super(channel, CLASS_ID, METHOD_ID);
         this.queue = queue;
         this.consumerTag = consumerTag;
         this.noLocal = noLocal;
@@ -101,7 +104,11 @@ public class BasicConsume extends MethodFrame {
             usedConsumerTag = channel.consume(queue, consumerTag, exclusive);
             ctx.writeAndFlush(new BasicConsumeOk(getChannel(), usedConsumerTag));
         } catch (BrokerException e) {
-            // TODO handle channel exception and send the error
+            ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                               ChannelException.NOT_ALLOWED,
+                                               ShortString.parseString(e.getMessage()),
+                                               CLASS_ID,
+                                               METHOD_ID));
         }
     }
 
