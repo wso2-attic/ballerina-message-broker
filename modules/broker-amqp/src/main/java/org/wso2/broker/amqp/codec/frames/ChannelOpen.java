@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.ConnectionException;
 
 /**
  * AMQP frame for channel.open
@@ -32,10 +33,11 @@ import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
  */
 public class ChannelOpen extends MethodFrame {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChannelOpen.class);
-
+    public static final short CLASS_ID = 20;
+    public static final short METHOD_ID = 10;
 
     public ChannelOpen(int channel) {
-        super(channel, (short) 20, (short) 10);
+        super(channel, CLASS_ID, METHOD_ID);
     }
 
     @Override
@@ -55,9 +57,9 @@ public class ChannelOpen extends MethodFrame {
             int channelId = getChannel();
             connectionHandler.createChannel(channelId);
             ctx.writeAndFlush(new ChannelOpenOk(channelId));
-        } catch (Exception e) {
-            // TODO we should send an error frame back
-            LOGGER.warn("Error while creating channel", e);
+        } catch (ConnectionException e) {
+            LOGGER.warn("Error while creating channel for ID " + getChannel(), e);
+            ctx.writeAndFlush(ConnectionClose.getInstance(CLASS_ID, METHOD_ID, e));
         }
     }
 

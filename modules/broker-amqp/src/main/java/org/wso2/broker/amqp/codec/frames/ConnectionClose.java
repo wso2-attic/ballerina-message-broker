@@ -25,6 +25,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.ConnectionException;
 import org.wso2.broker.amqp.codec.data.ShortString;
 
 /**
@@ -78,5 +79,11 @@ public class ConnectionClose extends MethodFrame {
             int methodId = buf.readUnsignedShort();
             return new ConnectionClose(replyCode, replyText, classId, methodId);
         };
+    }
+
+    public static ConnectionClose getInstance(short classId, short methodId, ConnectionException exception) {
+        int replyCode = exception.getReplyCode();
+        ShortString replyText = ShortString.parseString(exception.getMessage());
+        return new ConnectionClose(replyCode, replyText, classId, methodId);
     }
 }

@@ -56,9 +56,10 @@ final class ExchangeRegistry {
 
     /**
      * TODO : behavior around durable is not implemented
+     * TODO : Need to make this method synchronized since this can be called concurrently.
      * @param exchangeName name of the exchange 
      * @param type type of the exchange 
-     * @param passive passive parameter
+     * @param passive if true do not create exchange
      * @param durable is the exchange durable or not.
      * @throws BrokerException
      */
@@ -72,13 +73,14 @@ final class ExchangeRegistry {
         if (passive && exchange == null) {
             throw new BrokerException("Exchange [ " + exchangeName + " ] doesn't exists. Passive parameter is set," +
                     " hence not creating the exchange.");
-        }
-
-        if (exchange == null) {
+        } else if (exchange == null) {
             exchange = new Exchange(exchangeName, type);
             exchangeMap.put(exchange.getName(), exchange);
         } else if (!passive) {
             throw new BrokerException("Exchange [ " + exchangeName + " ] already exists.");
+        } else if (exchange.getType() != type) {
+            throw new BrokerException("Exchange type [ " + type + " ] does not match the existing one [ "
+                                              + exchange.getType() + " ].");
         }
     }
 }
