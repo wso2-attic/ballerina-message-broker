@@ -60,7 +60,7 @@ public class BasicQos extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // TODO QoS Parameters should be propogated to message prefetch logic
+        // TODO QoS Parameters should be propagated to message prefetch logic
         int channelId = getChannel();
         ctx.writeAndFlush(new BasicQosOk(channelId));
     }

@@ -33,6 +33,9 @@ import java.util.Arrays;
 public class ShortString implements EncodableData {
     private static final int MAX_LENGTH = 0xFF;
     private final long length;
+
+    // TODO maybe we should keep a char sequence instead of a byte array.
+    // We should do a perf test before switching to char sequence.
     private final byte[] content;
 
     public ShortString(long length, char[] content) {
