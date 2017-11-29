@@ -19,6 +19,7 @@
 
 package org.wso2.broker.core;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +63,11 @@ final class BindingsRegistry {
     }
 
     Set<Binding> getBindingsForRoute(String routingKey) {
-        return routingKeyToBindingMap.get(routingKey);
+        Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
+        if (bindings == null) {
+            bindings = Collections.emptySet();
+        }
+        return bindings;
     }
 
     boolean isEmpty() {

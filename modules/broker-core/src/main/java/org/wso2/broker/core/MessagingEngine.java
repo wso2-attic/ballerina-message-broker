@@ -26,11 +26,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Broker's messaging core which handles message publishing, create and delete queue operations.
  */
 final class MessagingEngine {
+
+    /**
+     * Delay for waiting for an idle task.
+     */
+    private static final long IDLE_TASK_DELAY_MILLIS = 100;
+
+    /**
+     * Number of worker.
+     */
+    private static final int WORKER_COUNT = 5;
 
     private final Map<String, QueueHandler> queueRegistry;
 
@@ -39,14 +50,9 @@ final class MessagingEngine {
     private final ExchangeRegistry exchangeRegistry;
 
     /**
-     * Number of worker.
+     * In memory message id
      */
-    private static final int WORKER_COUNT = 5;
-
-    /**
-     * Delay for waiting for an idle task.
-     */
-    private static final long IDLE_TASK_DELAY_MILLIS = 100;
+    private final AtomicLong messageIdGenerator;
 
     MessagingEngine() {
         queueRegistry = new ConcurrentHashMap<>();
@@ -54,6 +60,7 @@ final class MessagingEngine {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("MessageDeliveryTaskThreadPool-%d").build();
         deliveryTaskService = new TaskExecutorService<>(WORKER_COUNT, IDLE_TASK_DELAY_MILLIS, threadFactory);
+        messageIdGenerator = new AtomicLong(0);
     }
 
     void bind(String queueName, String exchangeName, String routingKey) throws BrokerException {
@@ -170,5 +177,9 @@ final class MessagingEngine {
         if (queueHandler != null)  {
             queueHandler.removeConsumer(consumer);
         }
+    }
+
+    long getNextMessageId() {
+        return messageIdGenerator.incrementAndGet();
     }
 }

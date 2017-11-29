@@ -99,4 +99,8 @@ public final class Broker {
         log.info("Stopping message delivery threads.");
         messagingEngine.stopMessageDelivery();
     }
+
+    public long getNextMessageId() {
+        return messagingEngine.getNextMessageId();
+    }
 }

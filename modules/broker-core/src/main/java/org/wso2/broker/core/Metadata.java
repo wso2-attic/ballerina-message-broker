@@ -19,6 +19,8 @@
 
 package org.wso2.broker.core;
 
+import io.netty.buffer.ByteBuf;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,12 +32,7 @@ public class Metadata {
     /**
      * Unique id of the message.
      */
-    private long messageId;
-
-    /**
-     * Time the message arrived at the broker.
-     */
-    private final long arrivalTime;
+    private final long messageId;
 
     /**
      * Key value used by the router (exchange) to identify the relevant queue(s) for this message.
@@ -48,34 +45,24 @@ public class Metadata {
     private final String exchangeName;
 
     /**
-     * True if the message needs to be persisted, false otherwise.
-     */
-    private final boolean isPersistent;
-
-    /**
      * Byte length of the content.
      */
-    private final int contentLength;
+    private final long contentLength;
 
     private final List<String> queueList;
 
-    public Metadata(long messageId, long arrivalTime, String routingKey, String exchangeName,
-                    boolean isPersistent, int contentLength) {
+    private ByteBuf rawMetadata;
+
+    public Metadata(long messageId, String routingKey, String exchangeName, long contentLength) {
         this.messageId = messageId;
-        this.arrivalTime = arrivalTime;
         this.routingKey = routingKey;
         this.exchangeName = exchangeName;
-        this.isPersistent = isPersistent;
         this.contentLength = contentLength;
         this.queueList = new ArrayList<>();
     }
 
     public long getMessageId() {
         return messageId;
-    }
-
-    public long getArrivalTime() {
-        return arrivalTime;
     }
 
     public String getRoutingKey() {
@@ -86,19 +73,19 @@ public class Metadata {
         return exchangeName;
     }
 
-    public boolean isPersistent() {
-        return isPersistent;
-    }
-
-    public int getContentLength() {
+    public long getContentLength() {
         return contentLength;
-    }
-
-    public void setMessageId(long messageId) {
-        this.messageId = messageId;
     }
 
     public void addOwnedQueue(String queueName) {
         queueList.add(queueName);
+    }
+
+    public ByteBuf getRawMetadata() {
+        return rawMetadata;
+    }
+
+    public void setRawMetadata(ByteBuf rawMetadata) {
+        this.rawMetadata = rawMetadata;
     }
 }

@@ -136,7 +136,7 @@ public class AmqpDecoder extends ByteToMessageDecoder {
                     frame = factory.newInstance(buffer, channel, payloadSize);
                     break;
                 case 2: // Header
-                    frame = HeaderFrame.parse(buffer, channel);
+                    frame = HeaderFrame.lazyParse(buffer, channel, payloadSize);
                     break;
                 case 3: // Body
                     frame = ContentFrame.parse(buffer, channel, payloadSize);

@@ -20,6 +20,10 @@
 package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.codec.AmqpChannel;
+import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.InboundMessageHandler;
 import org.wso2.broker.amqp.codec.data.EncodableData;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
@@ -68,11 +72,13 @@ public class HeaderFrame extends GeneralFrame {
     private ShortString userId;
     private ShortString appId;
     private int propertyFlags = 0;
+    private ByteBuf rawMetadata;
 
     public HeaderFrame(int channel, int classId, long bodySize) {
         super((byte) 2, channel);
         this.classId = classId;
         this.bodySize = bodySize;
+        this.rawMetadata = null;
     }
 
     @Override
@@ -143,6 +149,13 @@ public class HeaderFrame extends GeneralFrame {
         writeProperty(buf, type);
         writeProperty(buf, userId);
         writeProperty(buf, appId);
+    }
+
+    @Override
+    public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+        InboundMessageHandler inboundMessageHandler = channel.getInboundMessageHandler();
+        inboundMessageHandler.headerFrameReceived(rawMetadata, bodySize);
     }
 
     private void writeProperty(ByteBuf buf, long property) {
@@ -222,6 +235,20 @@ public class HeaderFrame extends GeneralFrame {
         return headerFrame;
     }
 
+    public static HeaderFrame lazyParse(ByteBuf buf, int channelId, long payloadSize) {
+        buf.markReaderIndex();
+        int classId = buf.readUnsignedShort();
+        // ignore weight
+        buf.skipBytes(2);
+        long bodySize = buf.readLong();
+        HeaderFrame headerFrame = new HeaderFrame(channelId, classId, bodySize);
+        buf.resetReaderIndex();
+        ByteBuf metadata = buf.retainedSlice(buf.readerIndex(), (int) payloadSize);
+        buf.skipBytes((int) payloadSize);
+        headerFrame.setRawMetadata(metadata);
+        return headerFrame;
+    }
+
     public void setContentType(ShortString contentType) {
         propertyFlags |= CONTENT_TYPE_MASK;
         this.contentType = contentType;
@@ -285,5 +312,9 @@ public class HeaderFrame extends GeneralFrame {
     public void setAppId(ShortString appId) {
         propertyFlags |= APPLICATION_ID_MASK;
         this.appId = appId;
+    }
+
+    private void setRawMetadata(ByteBuf rawMetadata) {
+        this.rawMetadata = rawMetadata;
     }
 }

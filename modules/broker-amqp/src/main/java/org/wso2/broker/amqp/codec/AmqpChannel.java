@@ -42,10 +42,13 @@ public class AmqpChannel {
 
     private final Map<ShortString, AmqpConsumer> consumerMap;
 
+    private final InboundMessageHandler inboundMessageHandler;
+
     AmqpChannel(Broker broker, int channelId) {
         this.broker = broker;
         this.channelId = channelId;
         this.consumerMap = new HashMap<>();
+        this.inboundMessageHandler = new InboundMessageHandler(broker);
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
@@ -88,5 +91,9 @@ public class AmqpChannel {
         } else {
             throw new AmqpException("Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
         }
+    }
+
+    public InboundMessageHandler getInboundMessageHandler() {
+        return inboundMessageHandler;
     }
 }

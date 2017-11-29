@@ -20,8 +20,6 @@
 package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
  * AMQP Method frame.
@@ -39,8 +37,6 @@ public abstract class MethodFrame extends GeneralFrame {
     protected abstract long getMethodBodySize();
 
     protected abstract void writeMethod(ByteBuf buf);
-
-    public abstract void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler);
 
     public long getPayloadSize() {
         return getMethodBodySize() + 4;
