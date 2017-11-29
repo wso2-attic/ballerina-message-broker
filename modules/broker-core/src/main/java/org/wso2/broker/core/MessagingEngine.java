@@ -94,8 +94,9 @@ final class MessagingEngine {
             queueHandler = new QueueHandler(queueName, durable, autoDelete, 1000);
             queueRegistry.put(queueName, queueHandler);
             deliveryTaskService.add(new MessageDeliveryTask(queueHandler));
-        } else if (!passive) {
-            throw new BrokerException("QueueHandler [ " + queueName + " ] already exists.");
+        } else if (!passive &&
+                (queueHandler.isDurable() != durable || queueHandler.isAutoDelete() != autoDelete)) {
+            throw new BrokerException("Existing QueueHandler [ " + queueName + " ] does not match given parameters.");
         }
     }
 

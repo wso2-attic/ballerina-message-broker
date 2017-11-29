@@ -33,8 +33,8 @@ import org.wso2.broker.amqp.codec.ConnectionException;
  */
 public class ChannelOpen extends MethodFrame {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChannelOpen.class);
-    public static final short CLASS_ID = 20;
-    public static final short METHOD_ID = 10;
+    private static final short CLASS_ID = 20;
+    private static final short METHOD_ID = 10;
 
     public ChannelOpen(int channel) {
         super(channel, CLASS_ID, METHOD_ID);

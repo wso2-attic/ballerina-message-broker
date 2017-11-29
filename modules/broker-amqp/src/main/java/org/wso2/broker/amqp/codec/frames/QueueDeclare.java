@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
 import org.wso2.broker.core.BrokerException;
@@ -43,6 +44,8 @@ import org.wso2.broker.core.BrokerException;
  */
 public class QueueDeclare extends MethodFrame {
     private static final Logger LOGGER = LoggerFactory.getLogger(QueueDeclare.class);
+    private static final short CLASS_ID = 50;
+    private static final short METHOD_ID = 10;
 
     private final ShortString queue;
     private final boolean passive;
@@ -54,7 +57,7 @@ public class QueueDeclare extends MethodFrame {
 
     public QueueDeclare(int channel, ShortString queue, boolean passive, boolean durable, boolean exclusive,
             boolean autoDelete, boolean noWait, FieldTable arguments) {
-        super(channel, (short) 50, (short) 10);
+        super(channel, CLASS_ID, METHOD_ID);
         this.queue = queue;
         this.passive = passive;
         this.durable = durable;
@@ -103,7 +106,12 @@ public class QueueDeclare extends MethodFrame {
             ctx.writeAndFlush(new QueueDeclareOk(getChannel(), queue, 0, 0));
         } catch (BrokerException e) {
             // TODO handle exception
-            LOGGER.error("Error declaring queue.", e);
+            LOGGER.warn("Error declaring queue.", e);
+            ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                               ChannelException.NOT_ALLOWED,
+                                               ShortString.parseString(e.getMessage()),
+                                               CLASS_ID,
+                                               METHOD_ID));
         }
     }
 
