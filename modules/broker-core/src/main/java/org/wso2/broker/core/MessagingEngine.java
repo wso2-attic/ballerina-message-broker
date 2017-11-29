@@ -93,6 +93,9 @@ final class MessagingEngine {
         if (queueHandler == null) {
             queueHandler = new QueueHandler(queueName, durable, autoDelete, 1000);
             queueRegistry.put(queueName, queueHandler);
+            // we need to bind every queue to the default exchange
+            ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler, queueName);
+
             deliveryTaskService.add(new MessageDeliveryTask(queueHandler));
         } else if (!passive &&
                 (queueHandler.isDurable() != durable || queueHandler.isAutoDelete() != autoDelete)) {
