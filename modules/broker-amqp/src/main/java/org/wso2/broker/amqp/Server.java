@@ -44,6 +44,7 @@ public class Server {
     public Server(int port) {
         this.port = port;
         this.broker = new Broker();
+        broker.startMessageDelivery();
     }
 
     /**

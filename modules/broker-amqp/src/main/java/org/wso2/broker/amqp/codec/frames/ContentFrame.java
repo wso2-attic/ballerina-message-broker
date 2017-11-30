@@ -45,7 +45,11 @@ public class ContentFrame extends GeneralFrame {
 
     @Override
     public void writePayload(ByteBuf buf) {
-        buf.writeBytes(payload);
+        try {
+            buf.writeBytes(payload);
+        } finally {
+            payload.release();
+        }
     }
 
     @Override

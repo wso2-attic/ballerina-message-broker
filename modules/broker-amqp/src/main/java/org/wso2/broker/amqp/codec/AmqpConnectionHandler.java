@@ -55,6 +55,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
             LOGGER.warn("Bad message received", ((AmqpBadMessage) msg).getCause());
             // TODO need to send error back to client
             ctx.close();
+            close();
         }
     }
 
@@ -62,6 +63,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         LOGGER.warn("Exception while handling request", cause);
         ctx.close();
+        close();
     }
 
     private void handleProtocolInit(ChannelHandlerContext ctx, ProtocolInitFrame msg) {

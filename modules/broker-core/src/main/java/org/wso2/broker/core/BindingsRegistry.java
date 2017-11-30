@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Manages the bindings for a given {@link Exchange}.
@@ -39,11 +38,8 @@ final class BindingsRegistry {
 
     void bind(QueueHandler queueHandler, String routingKey) {
         Binding binding = new Binding(routingKey, queueHandler.getName());
-        Set<Binding> bindingList = routingKeyToBindingMap.get(routingKey);
-        if (bindingList == null) {
-            bindingList = new ConcurrentSkipListSet<>();
-            routingKeyToBindingMap.put(routingKey, bindingList);
-        }
+        Set<Binding> bindingList =
+                routingKeyToBindingMap.computeIfAbsent(routingKey, k -> ConcurrentHashMap.newKeySet());
         bindingList.add(binding);
     }
 

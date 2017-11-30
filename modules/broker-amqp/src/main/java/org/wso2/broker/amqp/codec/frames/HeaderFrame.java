@@ -83,27 +83,31 @@ public class HeaderFrame extends GeneralFrame {
 
     @Override
     public long getPayloadSize() {
-        long propertyListSize = 0;
+        if (rawMetadata != null) {
+            return rawMetadata.capacity();
+        } else {
+            long propertyListSize = 0;
 
-        propertyListSize += getPropertySize(contentType);
-        propertyListSize += getPropertySize(contentEncoding);
-        propertyListSize += getPropertySize(headers);
-        propertyListSize += getPropertySize(deliveryMode);
-        propertyListSize += getPropertySize(priority);
-        propertyListSize += getPropertySize(correlationId);
-        propertyListSize += getPropertySize(replyTo);
-        propertyListSize += getPropertySize(expiration);
-        propertyListSize += getPropertySize(messageId);
-        propertyListSize += getPropertySize(timestamp);
-        propertyListSize += getPropertySize(type);
-        propertyListSize += getPropertySize(userId);
-        propertyListSize += getPropertySize(appId);
+            propertyListSize += getPropertySize(contentType);
+            propertyListSize += getPropertySize(contentEncoding);
+            propertyListSize += getPropertySize(headers);
+            propertyListSize += getPropertySize(deliveryMode);
+            propertyListSize += getPropertySize(priority);
+            propertyListSize += getPropertySize(correlationId);
+            propertyListSize += getPropertySize(replyTo);
+            propertyListSize += getPropertySize(expiration);
+            propertyListSize += getPropertySize(messageId);
+            propertyListSize += getPropertySize(timestamp);
+            propertyListSize += getPropertySize(type);
+            propertyListSize += getPropertySize(userId);
+            propertyListSize += getPropertySize(appId);
 
-        return 2L     // classID
-                + 2L // weight
-                + 8L // body size
-                + 2L // property flag
-                + propertyListSize;
+            return 2L     // classID
+                    + 2L // weight
+                    + 8L // body size
+                    + 2L // property flag
+                    + propertyListSize;
+        }
     }
 
     private long getPropertySize(long property) {
@@ -132,23 +136,31 @@ public class HeaderFrame extends GeneralFrame {
 
     @Override
     public void writePayload(ByteBuf buf) {
-        buf.writeShort(classId);
-        buf.writeShort(0); // Write 0 for weight
-        buf.writeLong(bodySize);
-        buf.writeShort(propertyFlags);
-        writeProperty(buf, contentType);
-        writeProperty(buf, contentEncoding);
-        writeProperty(buf, headers);
-        writeProperty(buf, deliveryMode);
-        writeProperty(buf, priority);
-        writeProperty(buf, correlationId);
-        writeProperty(buf, replyTo);
-        writeProperty(buf, expiration);
-        writeProperty(buf, messageId);
-        writeProperty(buf, timestamp);
-        writeProperty(buf, type);
-        writeProperty(buf, userId);
-        writeProperty(buf, appId);
+        if (rawMetadata == null) {
+            buf.writeShort(classId);
+            buf.writeShort(0); // Write 0 for weight
+            buf.writeLong(bodySize);
+            buf.writeShort(propertyFlags);
+            writeProperty(buf, contentType);
+            writeProperty(buf, contentEncoding);
+            writeProperty(buf, headers);
+            writeProperty(buf, deliveryMode);
+            writeProperty(buf, priority);
+            writeProperty(buf, correlationId);
+            writeProperty(buf, replyTo);
+            writeProperty(buf, expiration);
+            writeProperty(buf, messageId);
+            writeProperty(buf, timestamp);
+            writeProperty(buf, type);
+            writeProperty(buf, userId);
+            writeProperty(buf, appId);
+        } else {
+            try {
+                buf.writeBytes(rawMetadata);
+            } finally {
+                rawMetadata.release();
+            }
+        }
     }
 
     @Override
@@ -314,7 +326,7 @@ public class HeaderFrame extends GeneralFrame {
         this.appId = appId;
     }
 
-    private void setRawMetadata(ByteBuf rawMetadata) {
+    public void setRawMetadata(ByteBuf rawMetadata) {
         this.rawMetadata = rawMetadata;
     }
 }
