@@ -37,7 +37,7 @@ final class BindingsRegistry {
     }
 
     void bind(QueueHandler queueHandler, String routingKey) {
-        Binding binding = new Binding(routingKey, queueHandler.getName());
+        Binding binding = new Binding(routingKey, queueHandler.getQueue().getName());
         Set<Binding> bindingList =
                 routingKeyToBindingMap.computeIfAbsent(routingKey, k -> ConcurrentHashMap.newKeySet());
         bindingList.add(binding);
