@@ -78,7 +78,7 @@ final class ExchangeRegistry {
         } else if (exchange == null) {
             exchange = new Exchange(exchangeName, type);
             exchangeMap.put(exchange.getName(), exchange);
-        } else if (!passive) {
+        } else if (!passive && exchange.getType() != type) { // TODO add durable check
             throw new BrokerException("Exchange [ " + exchangeName + " ] already exists.");
         } else if (exchange.getType() != type) {
             throw new BrokerException("Exchange type [ " + type + " ] does not match the existing one [ "
