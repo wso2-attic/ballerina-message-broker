@@ -78,7 +78,7 @@ public class Server {
 
     private class SocketChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-        protected void initChannel(SocketChannel socketChannel) throws Exception {
+        protected void initChannel(SocketChannel socketChannel) {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
