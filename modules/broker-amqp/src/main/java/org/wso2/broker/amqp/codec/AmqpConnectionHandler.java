@@ -45,6 +45,10 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         this.broker = broker;
     }
 
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        ctx.channel().closeFuture().addListener(future -> close());
+    }
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ProtocolInitFrame) {
