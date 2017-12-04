@@ -31,12 +31,14 @@ final class ExchangeRegistry {
 
     private static final String DEFAULT = "<<default>>";
 
+    public static final Exchange DEFAULT_EXCHANGE = new Exchange(DEFAULT, Exchange.Type.DIRECT);
+
     private final Map<String, Exchange> exchangeMap;
 
     ExchangeRegistry() {
         exchangeMap = new ConcurrentHashMap<>(3);
         exchangeMap.put(DIRECT, new Exchange(DIRECT, Exchange.Type.DIRECT));
-        exchangeMap.put(DEFAULT, new Exchange(DEFAULT, Exchange.Type.DIRECT));
+        exchangeMap.put(DEFAULT, DEFAULT_EXCHANGE);
     }
 
     Exchange getExchange(String exchangeName) {
