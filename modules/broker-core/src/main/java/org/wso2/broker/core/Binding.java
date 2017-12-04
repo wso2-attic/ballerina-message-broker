@@ -22,7 +22,7 @@ package org.wso2.broker.core;
 /**
  * Represent a binding that connects a queue to and exchange using a routing key.
  */
-final class Binding implements Comparable<Binding> {
+final class Binding {
 
     private final String routingKey;
 
@@ -63,10 +63,5 @@ final class Binding implements Comparable<Binding> {
     @Override
     public int hashCode() {
         return queueName.hashCode();
-    }
-
-    @Override
-    public int compareTo(Binding binding) {
-        return queueName.compareTo(binding.getQueueName());
     }
 }

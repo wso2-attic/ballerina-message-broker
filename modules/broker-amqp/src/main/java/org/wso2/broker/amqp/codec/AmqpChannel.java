@@ -19,6 +19,7 @@
 
 package org.wso2.broker.amqp.codec;
 
+import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.amqp.codec.data.ShortString;
@@ -42,10 +43,13 @@ public class AmqpChannel {
 
     private final Map<ShortString, AmqpConsumer> consumerMap;
 
+    private final InboundMessageHandler inboundMessageHandler;
+
     AmqpChannel(Broker broker, int channelId) {
         this.broker = broker;
         this.channelId = channelId;
         this.consumerMap = new HashMap<>();
+        this.inboundMessageHandler = new InboundMessageHandler(broker);
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
@@ -62,23 +66,22 @@ public class AmqpChannel {
         broker.bind(queue.toString(), exchange.toString(), routingKey.toString());
     }
 
-    public ShortString consume(ShortString queueName,
-                               ShortString consumerTag, boolean exclusive) throws BrokerException {
+    public ShortString consume(ShortString queueName, ShortString consumerTag, boolean exclusive,
+                               ChannelHandlerContext ctx) throws BrokerException {
         String tag = consumerTag.toString();
         if (tag.isEmpty()) {
             tag = UUID.randomUUID().toString();
         }
-        AmqpConsumer amqpConsumer = new AmqpConsumer(queueName.toString(), tag, exclusive);
+        AmqpConsumer amqpConsumer = new AmqpConsumer(ctx, channelId, queueName.toString(), tag, exclusive);
         consumerMap.put(consumerTag, amqpConsumer);
         broker.addConsumer(amqpConsumer);
         return new ShortString(tag.length(), tag.getBytes(StandardCharsets.UTF_8));
     }
 
     public void close() {
-        for (Consumer consumer: consumerMap.values()) {
+        for (Consumer consumer : consumerMap.values()) {
             broker.removeConsumer(consumer);
         }
-
     }
 
     public void cancelConsumer(ShortString consumerTag) throws AmqpException {
@@ -88,5 +91,9 @@ public class AmqpChannel {
         } else {
             throw new AmqpException("Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
         }
+    }
+
+    public InboundMessageHandler getInboundMessageHandler() {
+        return inboundMessageHandler;
     }
 }

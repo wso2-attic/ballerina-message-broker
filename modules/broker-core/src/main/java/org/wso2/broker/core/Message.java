@@ -33,9 +33,9 @@ public class Message {
 
     private final ArrayList<ContentChunk> contentChunks;
 
-    public Message(Metadata metadata, ArrayList<ContentChunk> contentChunks) {
+    public Message(Metadata metadata) {
         this.metadata = metadata;
-        this.contentChunks = contentChunks;
+        this.contentChunks = new ArrayList<>();
     }
 
     public Metadata getMetadata() {

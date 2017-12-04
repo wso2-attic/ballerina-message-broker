@@ -20,28 +20,29 @@
 package org.wso2.broker.core;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.netty.buffer.ByteBuf;
 
 /**
  * Represents part of the content of a message.
  */
 public class ContentChunk {
 
-    private final int offset;
+    private final long offset;
 
-    private final byte[] content;
+    private final ByteBuf content;
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Data holder class for content chunks.")
-    public ContentChunk(int offset, byte[] content) {
+    public ContentChunk(long offset, ByteBuf content) {
         this.offset = offset;
         this.content = content;
     }
 
-    public int getOffset() {
+    public long getOffset() {
         return offset;
     }
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Data holder class for content chunks.")
-    public byte[] getBytes() {
+    public ByteBuf getBytes() {
         return content;
     }
 }

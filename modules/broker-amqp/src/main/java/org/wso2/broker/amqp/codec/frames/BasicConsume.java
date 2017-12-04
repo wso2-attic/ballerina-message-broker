@@ -101,7 +101,7 @@ public class BasicConsume extends MethodFrame {
         ShortString usedConsumerTag;
         try {
             AmqpChannel channel = connectionHandler.getChannel(getChannel());
-            usedConsumerTag = channel.consume(queue, consumerTag, exclusive);
+            usedConsumerTag = channel.consume(queue, consumerTag, exclusive, ctx);
             ctx.writeAndFlush(new BasicConsumeOk(getChannel(), usedConsumerTag));
         } catch (BrokerException e) {
             ctx.writeAndFlush(new ChannelClose(getChannel(),

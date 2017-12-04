@@ -21,6 +21,8 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
  * AMQP General Frame.
@@ -39,6 +41,8 @@ public abstract class GeneralFrame {
     public abstract long getPayloadSize();
 
     public abstract void writePayload(ByteBuf buf);
+
+    public abstract void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler);
 
     /**
      * Getter for channel.

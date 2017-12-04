@@ -61,11 +61,11 @@ final class MessageDeliveryTask extends Task {
             // TODO: handle send errors
             consumer.send(message, message.getMetadata().getMessageId());
             deliveredCount++;
-
             // TODO: make the value configurable
             if (deliveredCount == 1000) {
                 break;
             }
+            message = queueHandler.dequeue();
         }
         if (deliveredCount > 0) {
             return TaskHint.ACTIVE;

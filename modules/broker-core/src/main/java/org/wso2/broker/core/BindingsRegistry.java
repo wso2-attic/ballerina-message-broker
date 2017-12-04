@@ -19,11 +19,11 @@
 
 package org.wso2.broker.core;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Manages the bindings for a given {@link Exchange}.
@@ -38,11 +38,8 @@ final class BindingsRegistry {
 
     void bind(QueueHandler queueHandler, String routingKey) {
         Binding binding = new Binding(routingKey, queueHandler.getName());
-        Set<Binding> bindingList = routingKeyToBindingMap.get(routingKey);
-        if (bindingList == null) {
-            bindingList = new ConcurrentSkipListSet<>();
-            routingKeyToBindingMap.put(routingKey, bindingList);
-        }
+        Set<Binding> bindingList =
+                routingKeyToBindingMap.computeIfAbsent(routingKey, k -> ConcurrentHashMap.newKeySet());
         bindingList.add(binding);
     }
 
@@ -62,7 +59,11 @@ final class BindingsRegistry {
     }
 
     Set<Binding> getBindingsForRoute(String routingKey) {
-        return routingKeyToBindingMap.get(routingKey);
+        Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
+        if (bindings == null) {
+            bindings = Collections.emptySet();
+        }
+        return bindings;
     }
 
     boolean isEmpty() {

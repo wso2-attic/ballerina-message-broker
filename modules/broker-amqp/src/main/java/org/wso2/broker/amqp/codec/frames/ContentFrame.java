@@ -20,6 +20,10 @@
 package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.AmqpException;
+import org.wso2.broker.amqp.codec.AmqpChannel;
+import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 
 /**
  * AMQP content frame
@@ -41,7 +45,21 @@ public class ContentFrame extends GeneralFrame {
 
     @Override
     public void writePayload(ByteBuf buf) {
-        buf.writeBytes(payload);
+        try {
+            buf.writeBytes(payload);
+        } finally {
+            payload.release();
+        }
+    }
+
+    @Override
+    public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
+        try {
+            AmqpChannel channel = connectionHandler.getChannel(getChannel());
+            channel.getInboundMessageHandler().contentBodyReceived(length, payload);
+        } catch (AmqpException e) {
+            // TODO handle exception
+        }
     }
 
     public static ContentFrame parse(ByteBuf buf, int channel, long payloadSize) {

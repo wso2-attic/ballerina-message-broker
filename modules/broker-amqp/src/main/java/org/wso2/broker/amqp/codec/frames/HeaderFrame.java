@@ -20,6 +20,10 @@
 package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.codec.AmqpChannel;
+import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.InboundMessageHandler;
 import org.wso2.broker.amqp.codec.data.EncodableData;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
@@ -68,36 +72,42 @@ public class HeaderFrame extends GeneralFrame {
     private ShortString userId;
     private ShortString appId;
     private int propertyFlags = 0;
+    private ByteBuf rawMetadata;
 
     public HeaderFrame(int channel, int classId, long bodySize) {
         super((byte) 2, channel);
         this.classId = classId;
         this.bodySize = bodySize;
+        this.rawMetadata = null;
     }
 
     @Override
     public long getPayloadSize() {
-        long propertyListSize = 0;
+        if (rawMetadata != null) {
+            return rawMetadata.capacity();
+        } else {
+            long propertyListSize = 0;
 
-        propertyListSize += getPropertySize(contentType);
-        propertyListSize += getPropertySize(contentEncoding);
-        propertyListSize += getPropertySize(headers);
-        propertyListSize += getPropertySize(deliveryMode);
-        propertyListSize += getPropertySize(priority);
-        propertyListSize += getPropertySize(correlationId);
-        propertyListSize += getPropertySize(replyTo);
-        propertyListSize += getPropertySize(expiration);
-        propertyListSize += getPropertySize(messageId);
-        propertyListSize += getPropertySize(timestamp);
-        propertyListSize += getPropertySize(type);
-        propertyListSize += getPropertySize(userId);
-        propertyListSize += getPropertySize(appId);
+            propertyListSize += getPropertySize(contentType);
+            propertyListSize += getPropertySize(contentEncoding);
+            propertyListSize += getPropertySize(headers);
+            propertyListSize += getPropertySize(deliveryMode);
+            propertyListSize += getPropertySize(priority);
+            propertyListSize += getPropertySize(correlationId);
+            propertyListSize += getPropertySize(replyTo);
+            propertyListSize += getPropertySize(expiration);
+            propertyListSize += getPropertySize(messageId);
+            propertyListSize += getPropertySize(timestamp);
+            propertyListSize += getPropertySize(type);
+            propertyListSize += getPropertySize(userId);
+            propertyListSize += getPropertySize(appId);
 
-        return 2L     // classID
-                + 2L // weight
-                + 8L // body size
-                + 2L // property flag
-                + propertyListSize;
+            return 2L     // classID
+                    + 2L // weight
+                    + 8L // body size
+                    + 2L // property flag
+                    + propertyListSize;
+        }
     }
 
     private long getPropertySize(long property) {
@@ -126,23 +136,38 @@ public class HeaderFrame extends GeneralFrame {
 
     @Override
     public void writePayload(ByteBuf buf) {
-        buf.writeShort(classId);
-        buf.writeShort(0); // Write 0 for weight
-        buf.writeLong(bodySize);
-        buf.writeShort(propertyFlags);
-        writeProperty(buf, contentType);
-        writeProperty(buf, contentEncoding);
-        writeProperty(buf, headers);
-        writeProperty(buf, deliveryMode);
-        writeProperty(buf, priority);
-        writeProperty(buf, correlationId);
-        writeProperty(buf, replyTo);
-        writeProperty(buf, expiration);
-        writeProperty(buf, messageId);
-        writeProperty(buf, timestamp);
-        writeProperty(buf, type);
-        writeProperty(buf, userId);
-        writeProperty(buf, appId);
+        if (rawMetadata == null) {
+            buf.writeShort(classId);
+            buf.writeShort(0); // Write 0 for weight
+            buf.writeLong(bodySize);
+            buf.writeShort(propertyFlags);
+            writeProperty(buf, contentType);
+            writeProperty(buf, contentEncoding);
+            writeProperty(buf, headers);
+            writeProperty(buf, deliveryMode);
+            writeProperty(buf, priority);
+            writeProperty(buf, correlationId);
+            writeProperty(buf, replyTo);
+            writeProperty(buf, expiration);
+            writeProperty(buf, messageId);
+            writeProperty(buf, timestamp);
+            writeProperty(buf, type);
+            writeProperty(buf, userId);
+            writeProperty(buf, appId);
+        } else {
+            try {
+                buf.writeBytes(rawMetadata);
+            } finally {
+                rawMetadata.release();
+            }
+        }
+    }
+
+    @Override
+    public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+        InboundMessageHandler inboundMessageHandler = channel.getInboundMessageHandler();
+        inboundMessageHandler.headerFrameReceived(rawMetadata, bodySize);
     }
 
     private void writeProperty(ByteBuf buf, long property) {
@@ -222,6 +247,20 @@ public class HeaderFrame extends GeneralFrame {
         return headerFrame;
     }
 
+    public static HeaderFrame lazyParse(ByteBuf buf, int channelId, long payloadSize) {
+        buf.markReaderIndex();
+        int classId = buf.readUnsignedShort();
+        // ignore weight
+        buf.skipBytes(2);
+        long bodySize = buf.readLong();
+        HeaderFrame headerFrame = new HeaderFrame(channelId, classId, bodySize);
+        buf.resetReaderIndex();
+        ByteBuf metadata = buf.retainedSlice(buf.readerIndex(), (int) payloadSize);
+        buf.skipBytes((int) payloadSize);
+        headerFrame.setRawMetadata(metadata);
+        return headerFrame;
+    }
+
     public void setContentType(ShortString contentType) {
         propertyFlags |= CONTENT_TYPE_MASK;
         this.contentType = contentType;
@@ -285,5 +324,9 @@ public class HeaderFrame extends GeneralFrame {
     public void setAppId(ShortString appId) {
         propertyFlags |= APPLICATION_ID_MASK;
         this.appId = appId;
+    }
+
+    public void setRawMetadata(ByteBuf rawMetadata) {
+        this.rawMetadata = rawMetadata;
     }
 }
