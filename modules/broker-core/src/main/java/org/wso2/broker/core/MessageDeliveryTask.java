@@ -44,7 +44,7 @@ final class MessageDeliveryTask extends Task {
 
     @Override
     public String getId() {
-        return queueHandler.getName();
+        return queueHandler.getQueue().getName();
     }
 
     @Override
