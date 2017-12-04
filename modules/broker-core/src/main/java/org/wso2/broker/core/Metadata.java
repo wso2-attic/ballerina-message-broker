@@ -81,6 +81,10 @@ public class Metadata {
         queueList.add(queueName);
     }
 
+    public List<String> getOwnedQueues() {
+        return queueList;
+    }
+    
     public ByteBuf getRawMetadata() {
         return rawMetadata;
     }
