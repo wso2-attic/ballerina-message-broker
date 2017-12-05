@@ -49,4 +49,10 @@ public class Message {
     public void addChunk(ContentChunk contentChunk) {
         contentChunks.add(contentChunk);
     }
+
+    public void release() {
+        for (ContentChunk contentChunk : contentChunks) {
+            contentChunk.release();
+        }
+    }
 }
