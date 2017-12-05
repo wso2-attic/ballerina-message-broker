@@ -45,4 +45,8 @@ public class ContentChunk {
     public ByteBuf getBytes() {
         return content;
     }
+
+    public void release() {
+        content.release();
+    }
 }

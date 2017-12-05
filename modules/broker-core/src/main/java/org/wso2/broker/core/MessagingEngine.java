@@ -20,6 +20,8 @@
 package org.wso2.broker.core;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.task.TaskExecutorService;
 
 import java.util.Map;
@@ -32,6 +34,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * Broker's messaging core which handles message publishing, create and delete queue operations.
  */
 final class MessagingEngine {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessagingEngine.class);
 
     /**
      * Delay for waiting for an idle task.
@@ -118,7 +122,10 @@ final class MessagingEngine {
             bindings.forEach(binding -> {
                 QueueHandler queueHandler = queueRegistry.get(binding.getQueueName());
                 metadata.addOwnedQueue(binding.getQueueName());
-                queueHandler.enqueue(message);
+                if (!queueHandler.enqueue(message)) {
+                    LOGGER.info("Dropping message since queue full for " + binding.getQueueName());
+                    message.release();
+                }
             });
         } else {
             throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
