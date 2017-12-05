@@ -28,7 +28,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
- * Tests the functionality for {@link #ExchangeRegistry}. 
+ * Tests the functionality for {@link #exchangeRegistry}.
  */
 public class ExchangeRegistryTest {
 

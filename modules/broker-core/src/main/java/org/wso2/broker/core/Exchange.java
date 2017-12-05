@@ -24,10 +24,11 @@ import java.util.Set;
 /**
  * Represents an Exchange for the broker.
  */
-class Exchange {
+interface Exchange {
 
-    public enum Type {
-        DIRECT("direct");
+    enum Type {
+        DIRECT("direct"),
+        TOPIC("topic");
 
         String typeName;
 
@@ -36,9 +37,11 @@ class Exchange {
         }
 
         public static Type from(String typeString) {
-            
+
             if (typeString.equals(DIRECT.typeName)) {
                 return DIRECT;
+            } else if (typeString.equals(TOPIC.typeName)) {
+                return TOPIC;
             } else {
                 throw new IllegalArgumentException("unknown exchange type: " + typeString);
             }
@@ -46,43 +49,19 @@ class Exchange {
 
     }
 
-    private final String name;
+    String getName();
 
-    private final Type type;
+    Type getType();
 
-    private final BindingsRegistry bindingsRegistry;
+    void bind(QueueHandler queueHandler, String routingKey);
 
-    Exchange(String name, Type type) {
-        this.name = name;
-        this.type = type;
-        this.bindingsRegistry = new BindingsRegistry();
-    }
+    void unbind(String queueName, String routingKey);
 
-    String getName() {
-        return name;
-    }
-
-    Type getType() {
-        return type;
-    }
-
-    void bind(QueueHandler queueHandler, String routingKey) {
-        bindingsRegistry.bind(queueHandler, routingKey);
-    }
-
-    void unbind(String queueName, String routingKey) {
-        bindingsRegistry.unbind(queueName, routingKey);
-    }
-
-    Set<Binding> getBindingsForRoute(String routingKey) {
-        return bindingsRegistry.getBindingsForRoute(routingKey);
-    }
+    Set<Binding> getBindingsForRoute(String routingKey);
 
     /**
      * Whether there are any bindings for the exchange.
      */
-    boolean isUnused() {
-        return bindingsRegistry.isEmpty();
-    }
+    boolean isUnused();
 
 }
