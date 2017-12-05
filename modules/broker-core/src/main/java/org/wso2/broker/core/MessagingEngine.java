@@ -118,7 +118,14 @@ final class MessagingEngine {
         Metadata metadata = message.getMetadata();
         Exchange exchange = exchangeRegistry.getExchange(metadata.getExchangeName());
         if (exchange != null) {
-            Set<Binding> bindings = exchange.getBindingsForRoute(metadata.getRoutingKey());
+            String routingKey = metadata.getRoutingKey();
+            Set<Binding> bindings = exchange.getBindingsForRoute(routingKey);
+
+            if (bindings.isEmpty()) {
+                LOGGER.info("Dropping message since no bindings found for routing key " + routingKey);
+                message.release();
+            }
+
             bindings.forEach(binding -> {
                 QueueHandler queueHandler = queueRegistry.get(binding.getQueueName());
                 metadata.addOwnedQueue(binding.getQueueName());
