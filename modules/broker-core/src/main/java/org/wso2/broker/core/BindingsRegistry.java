@@ -69,4 +69,8 @@ final class BindingsRegistry {
     boolean isEmpty() {
         return routingKeyToBindingMap.isEmpty();
     }
+
+    int uniqueRoutingKeyCount() {
+        return routingKeyToBindingMap.keySet().size();
+    }
 }
