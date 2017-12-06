@@ -27,9 +27,12 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.AmqpDecoder;
 import org.wso2.broker.amqp.codec.AmqpEncoder;
+import org.wso2.broker.amqp.codec.BlockingTaskHandler;
 import org.wso2.broker.core.Broker;
 
 /**
@@ -37,6 +40,11 @@ import org.wso2.broker.core.Broker;
  */
 public class Server {
 
+    /**
+     * Number of threads used for blocking tasks like I/O operations.
+     * TODO This should be read from
+     */
+    private static final int BLOCKING_TASK_EXECUTOR_THREADS = 2;
     private final int port;
 
     private final Broker broker;
@@ -55,11 +63,12 @@ public class Server {
     public void run() throws InterruptedException {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
+        EventExecutorGroup ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new SocketChannelInitializer())
+                    .childHandler(new SocketChannelInitializer(ioExecutors))
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
@@ -78,11 +87,18 @@ public class Server {
 
     private class SocketChannelInitializer extends ChannelInitializer<SocketChannel> {
 
+        private final EventExecutorGroup ioExecutors;
+
+        public SocketChannelInitializer(EventExecutorGroup ioExecutors) {
+            this.ioExecutors = ioExecutors;
+        }
+
         protected void initChannel(SocketChannel socketChannel) {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(broker));
+                         .addLast(new AmqpConnectionHandler(broker))
+                         .addLast(ioExecutors, new BlockingTaskHandler());
         }
     }
 
