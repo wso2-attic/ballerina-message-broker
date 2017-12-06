@@ -33,6 +33,7 @@
             <outputDirectory>conf</outputDirectory>
             <includes>
                 <include>log4j.properties</include>
+                <include>broker.yaml</include>
             </includes>
         </fileSet>
     </fileSets>

@@ -87,7 +87,7 @@ final class QueueHandler {
 
     /**
      * Remove consumer from the queue.
-     * NOTE: This method is synchronised with getting next subscriber for the queue to avoid concurrent issues
+     * NOTE: This method is synchronized with getting next subscriber for the queue to avoid concurrent issues
      *
      * @param consumer {@link Consumer} to be removed
      */

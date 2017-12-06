@@ -50,7 +50,8 @@ public class TopicExchangeTest {
 
     @Test(dataProvider = "positiveTopicPairs", description = "Test positive topic matching")
     public void testPositiveSingleTopicMatching(String subscribedPattern, String publishedTopic) {
-        topicExchange.bind(new QueueHandler(subscribedPattern, false, false, 10), subscribedPattern);
+        Queue queue = new Queue(subscribedPattern, false, false, false, 10);
+        topicExchange.bind(new QueueHandler(queue), subscribedPattern);
 
         Set<Binding> bindingsForRoute = topicExchange.getBindingsForRoute(publishedTopic);
 
@@ -62,7 +63,8 @@ public class TopicExchangeTest {
 
     @Test(dataProvider = "negativeTopicPairs", description = "Test negative topic matching")
     public void testNegativeSingleTopicMatching(String subscribedPattern, String publishedTopic) {
-        topicExchange.bind(new QueueHandler(subscribedPattern, false, false, 10), subscribedPattern);
+        Queue queue = new Queue(subscribedPattern, false, false, false, 10);
+        topicExchange.bind(new QueueHandler(queue), subscribedPattern);
 
         Set<Binding> bindingsForRoute = topicExchange.getBindingsForRoute(publishedTopic);
 
@@ -72,7 +74,8 @@ public class TopicExchangeTest {
     @Test(dataProvider = "positiveTopicPairs", description = "Test topic removal")
     public void testTopicRemoval(String subscribedPattern, String publishedTopic) {
 
-        topicExchange.bind(new QueueHandler(subscribedPattern, false, false, 10), subscribedPattern);
+        Queue  queue = new Queue(subscribedPattern, false, false, false, 1000);
+        topicExchange.bind(new QueueHandler(queue), subscribedPattern);
         topicExchange.unbind(subscribedPattern, subscribedPattern);
 
         Set<Binding> bindingsForRoute = topicExchange.getBindingsForRoute(publishedTopic);

@@ -151,10 +151,7 @@ final class MessagingEngine {
                         message.release();
                     }
                 });
-
-            }
-            
-            
+            }            
         } else {
             throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
         }
@@ -163,7 +160,7 @@ final class MessagingEngine {
     /**
      * 
      * @param queueName
-     * @param deliveryTag synonimous for message id
+     * @param deliveryTag synonymous for message id
      * @param multiple
      */
     void acknowledge(String queueName, long deliveryTag, boolean multiple) {

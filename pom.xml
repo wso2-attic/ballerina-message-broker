@@ -96,6 +96,11 @@
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -120,6 +125,7 @@
         <mockito.version>2.12.0</mockito.version>
         <maven.checkstyleplugin.version>2.17</maven.checkstyleplugin.version>
         <guava.version>23.0</guava.version>
+        <snakeyaml.version>1.19</snakeyaml.version>
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.scm.id>wso2-scm-server</project.scm.id>
