@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
@@ -78,17 +79,23 @@ public class QueueBind extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        try {
-            AmqpChannel channel = connectionHandler.getChannel(getChannel());
-            channel.bind(queue, exchange, routingKey);
-            ctx.writeAndFlush(new QueueBindOk(getChannel()));
-        } catch (BrokerException e) {
-            ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                               ChannelException.NOT_ALLOWED,
-                                               ShortString.parseString(e.getMessage()),
-                                               CLASS_ID,
-                                               METHOD_ID));
-        }
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.bind(queue, exchange, routingKey);
+                ctx.writeAndFlush(new QueueBindOk(getChannel()));
+
+            } catch (BrokerException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.NOT_ALLOWED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            }
+
+        });
+
     }
 
     public static AmqMethodBodyFactory getFactory() {

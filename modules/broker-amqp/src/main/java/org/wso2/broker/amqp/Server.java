@@ -41,10 +41,11 @@ import org.wso2.broker.core.Broker;
 public class Server {
 
     /**
-     * Number of threads used for blocking tasks like I/O operations.
+     * Number of threads used for blocking tasks like I/O operations. Putting a higher number of threads here is OK
+     * since these are I/O bound threads.
      * TODO This should be read from
      */
-    private static final int BLOCKING_TASK_EXECUTOR_THREADS = 2;
+    private static final int BLOCKING_TASK_EXECUTOR_THREADS = 32;
     private final int port;
 
     private final Broker broker;

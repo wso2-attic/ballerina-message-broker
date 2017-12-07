@@ -21,14 +21,22 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
 
 /**
  * AMQP content frame
  */
 public class ContentFrame extends GeneralFrame {
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContentFrame.class);
+
     private final long length;
     private final ByteBuf payload;
 
@@ -54,12 +62,16 @@ public class ContentFrame extends GeneralFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        try {
-            AmqpChannel channel = connectionHandler.getChannel(getChannel());
-            channel.getInboundMessageHandler().contentBodyReceived(length, payload);
-        } catch (AmqpException e) {
-            // TODO handle exception
-        }
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.getInboundMessageHandler().contentBodyReceived(length, payload);
+            } catch (AmqpException e) {
+                LOGGER.warn("Content receiving failed", e);
+            }
+        });
+
     }
 
     public static ContentFrame parse(ByteBuf buf, int channel, long payloadSize) {

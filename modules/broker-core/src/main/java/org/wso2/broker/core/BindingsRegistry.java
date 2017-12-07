@@ -20,57 +20,73 @@
 package org.wso2.broker.core;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Manages the bindings for a given {@link Exchange}.
+ * TODO why do we repeat routing key in two places (as key and as field in binding object)?
+ * Feels like we need to refactor this class.
  */
 final class BindingsRegistry {
 
     private final Map<String, Set<Binding>> routingKeyToBindingMap;
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     BindingsRegistry() {
         this.routingKeyToBindingMap = new ConcurrentHashMap<>();
     }
 
     void bind(QueueHandler queueHandler, String routingKey) {
-        Binding binding = new Binding(routingKey, queueHandler.getName());
-        Set<Binding> bindingList =
-                routingKeyToBindingMap.computeIfAbsent(routingKey, k -> ConcurrentHashMap.newKeySet());
-        bindingList.add(binding);
+        lock.writeLock().lock();
+        try {
+            Binding binding = new Binding(routingKey, queueHandler.getName());
+            Set<Binding> bindingList =
+                    routingKeyToBindingMap.computeIfAbsent(routingKey, k -> ConcurrentHashMap.newKeySet());
+            bindingList.add(binding);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     void unbind(String queueName, String routingKey) {
-        Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
-        Iterator<Binding> iterator = bindings.iterator();
-        while (iterator.hasNext()) {
-            Binding binding = iterator.next();
-            if (queueName.compareTo(binding.getQueueName()) == 0) {
-                iterator.remove();
-                break;
+        lock.writeLock().lock();
+        try {
+            Binding deadBind = new Binding(routingKey, queueName);
+            Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
+            bindings.remove(deadBind);
+
+            if (bindings.isEmpty()) {
+                routingKeyToBindingMap.remove(routingKey);
             }
-        }
-        if (bindings.isEmpty()) {
-            routingKeyToBindingMap.remove(routingKey);
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     Set<Binding> getBindingsForRoute(String routingKey) {
-        Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
-        if (bindings == null) {
-            bindings = Collections.emptySet();
+        lock.readLock().lock();
+        try {
+            Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
+            if (bindings == null) {
+                bindings = Collections.emptySet();
+            }
+            return bindings;
+        } finally {
+            lock.readLock().unlock();
         }
-        return bindings;
     }
 
     boolean isEmpty() {
-        return routingKeyToBindingMap.isEmpty();
+        lock.readLock().lock();
+        try {
+            return routingKeyToBindingMap.isEmpty();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
-    int uniqueRoutingKeyCount() {
-        return routingKeyToBindingMap.keySet().size();
-    }
 }
