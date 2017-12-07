@@ -18,7 +18,7 @@
   ~
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <artifactId>message-broker</artifactId>
         <groupId>org.wso2.messaging</groupId>
@@ -26,51 +26,40 @@
         <relativePath>../..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <packaging>jar</packaging>
-    <artifactId>broker-core</artifactId>
-    <name>Broker - Core</name>
+    <artifactId>broker-code-coverage</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-    </dependencies>
+    <name>Broker - Code Coverage</name>
+    <description>Broker - Code Coverage</description>
+    <packaging>pom</packaging>
+    <url>http://synapse.apache.org</url>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <configuration>
-                    <destFile>${basedir}/target/coverage-reports/jacoco-unit-fix.exec</destFile>
-                </configuration>
                 <executions>
                     <execution>
-                        <id>jacoco-initialize</id>
+                        <id>report-aggregate</id>
+                        <phase>prepare-package</phase>
                         <goals>
-                            <goal>prepare-agent</goal>
+                            <goal>report-aggregate</goal>
                         </goals>
+                        <configuration>
+                            <dataFileIncludes>
+                                <dataFileInclude>**/target/coverage-reports/jacoco-unit-fix.exec</dataFileInclude>
+                            </dataFileIncludes>
+                            <outputDirectory>${basedir}/target/coverage-reports/site</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-core</artifactId>
+        </dependency>
+    </dependencies>
 </project>
