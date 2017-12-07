@@ -76,7 +76,7 @@ public class ShortString implements EncodableData {
     }
 
     /**
-     * Compares {@link ShortString} underlying byte array content
+     * Compares {@link ShortString} underlying byte array content.
      *
      * @param obj {@link Object} to compare with
      * @return True if underlying content is equal
@@ -90,7 +90,7 @@ public class ShortString implements EncodableData {
     }
 
     /**
-     * Hashcode of the underlying byte array content
+     * Hashcode of the underlying byte array content.
      *
      * @return content based hashcode
      */

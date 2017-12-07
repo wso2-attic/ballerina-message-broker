@@ -25,7 +25,7 @@ package org.wso2.broker.core;
 public interface Consumer {
 
     /**
-     * Send message to the consumer
+     * Send message to the consumer.
      *
      * @param message {@link Message} to be sent to the consumer
      * @param deliveryTag unique identification used track the acknowledgment for the sent message
@@ -34,14 +34,14 @@ public interface Consumer {
     void send(Message message, long deliveryTag) throws BrokerException;
 
     /**
-     * Queue name of the subscriber queue
+     * Queue name of the subscriber queue.
      *
      * @return queue name
      */
     String getQueueName();
 
     /**
-     * Close the underlying transport consumer
+     * Close the underlying transport consumer.
      *
      * @throws BrokerException
      */
@@ -54,7 +54,7 @@ public interface Consumer {
     String getConsumerTag();
 
     /**
-     * If true only this consumer can access the queue and consume messages
+     * If true only this consumer can access the queue and consume messages.
      *
      * @return True if the consumer is exclusive. False otherwise
      */

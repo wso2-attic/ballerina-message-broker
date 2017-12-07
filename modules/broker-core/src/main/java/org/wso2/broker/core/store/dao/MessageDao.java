@@ -8,7 +8,7 @@ import org.wso2.broker.core.Message;
 public interface MessageDao {
 
     /**
-     * Storage a message in the persistant storage
+     * Storage a message in the persistant storage.
      * 
      * @param message the message.
      */

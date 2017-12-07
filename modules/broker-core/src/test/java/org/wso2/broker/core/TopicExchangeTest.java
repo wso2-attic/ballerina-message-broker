@@ -27,6 +27,9 @@ import org.testng.annotations.Test;
 
 import java.util.Set;
 
+/**
+ * Unit tests verifying topic exchange related functionality.
+ */
 public class TopicExchangeTest {
 
     private TopicExchange topicExchange;

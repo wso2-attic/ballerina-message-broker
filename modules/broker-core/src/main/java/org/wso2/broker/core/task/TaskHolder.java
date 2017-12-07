@@ -85,7 +85,7 @@ final class TaskHolder<T extends Task> implements Delayed {
     }
 
     /**
-     * Underlying {@link Task} implementation
+     * Underlying {@link Task} implementation.
      *
      * @return {@link Task}
      */
@@ -113,7 +113,7 @@ final class TaskHolder<T extends Task> implements Delayed {
     }
 
     /**
-     * Disable processing {@link Task}
+     * Disable processing {@link Task}.
      */
     void disableProcessing() {
         isDisabled.set(true);
@@ -123,7 +123,7 @@ final class TaskHolder<T extends Task> implements Delayed {
     }
 
     /**
-     * Unique id of the {@link TaskHolder}
+     * Unique id of the {@link TaskHolder}.
      *
      * @return unique string representing the {@link TaskHolder}
      */
@@ -140,7 +140,7 @@ final class TaskHolder<T extends Task> implements Delayed {
     }
 
     /**
-     * Set the expiry time for the {@link Delayed}
+     * Set the expiry time for the {@link Delayed}.
      *
      * @param delay    delay
      * @param timeUnit {@link TimeUnit}

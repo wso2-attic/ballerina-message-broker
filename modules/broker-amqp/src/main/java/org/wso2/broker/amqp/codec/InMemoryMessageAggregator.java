@@ -53,7 +53,7 @@ public class InMemoryMessageAggregator {
     }
 
     /**
-     * Add the header frame that gives the relevant metadata for the given message
+     * Add the header frame that gives the relevant metadata for the given message.
      *
      * @param rawMetadata unprocessed raw metadata {@link ByteBuf}
      * @param payloadSize total message content length in bytes

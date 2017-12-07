@@ -68,7 +68,7 @@ final class QueueHandler {
     
     
     /**
-     * Retrieve all the current consumers for the queue
+     * Retrieve all the current consumers for the queue.
      *
      * @return Set of unmodifiable subscription objects
      */
@@ -77,7 +77,7 @@ final class QueueHandler {
     }
 
     /**
-     * Add a new consumer to the queue
+     * Add a new consumer to the queue.
      *
      * @param consumer {@link Consumer} implementation
      */
@@ -136,7 +136,7 @@ final class QueueHandler {
 
     /**
      * Get the current consumer list iterator for the queue. This is a snapshot of the consumers at the time
-     * when the when this method is invoked
+     * when the when this method is invoked.
      *
      * @return CyclicConsumerIterator
      */
@@ -146,7 +146,7 @@ final class QueueHandler {
     }
 
     /**
-     * True if there are no {@link Message} objects in the queue and false otherwise
+     * True if there are no {@link Message} objects in the queue and false otherwise.
      *
      * @return True if the queue doesn't contain any {@link Message} objects
      */
@@ -164,7 +164,7 @@ final class QueueHandler {
     }
 
     /**
-     * True if there are no consumers and false otherwise
+     * True if there are no consumers and false otherwise.
      *
      * @return True if there are no {@link Consumer} for the queue.
      */

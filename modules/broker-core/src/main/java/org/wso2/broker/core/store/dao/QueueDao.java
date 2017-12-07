@@ -8,14 +8,14 @@ import org.wso2.broker.core.Queue;
 public interface QueueDao {
 
     /**
-     * Save a Queue in persistent storage
+     * Save a Queue in persistent storage.
      * 
      * @param queue the queue
      */
     void persist(Queue queue);
 
     /**
-     * Remove a queue from persistent storage
+     * Remove a queue from persistent storage.
      * 
      * @param queue the queue.
      */

@@ -23,10 +23,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.broker.core.store.dao.DaoFactory;
 import org.wso2.broker.core.store.dao.MessageDao;
 import org.wso2.broker.core.store.dao.QueueDao;
-import org.wso2.broker.core.store.dao.impl.MessageDaoImpl;
-import org.wso2.broker.core.store.dao.impl.QueueDaoImpl;
 import org.wso2.broker.core.task.TaskExecutorService;
 
 import java.util.Map;
@@ -64,15 +64,16 @@ final class MessagingEngine {
     private final QueueDao queueDao;
 
     /**
-     * In memory message id
+     * In memory message id.
      */
     private final AtomicLong messageIdGenerator;
 
-    MessagingEngine() {
+    MessagingEngine(BrokerConfiguration brokerConfiguration) {
         queueRegistry = new ConcurrentHashMap<>();
         exchangeRegistry = new ExchangeRegistry();
-        messageDao = new MessageDaoImpl();
-        queueDao = new QueueDaoImpl();
+        DaoFactory daoFactory = new DaoFactory(brokerConfiguration.getDatasource());
+        messageDao = daoFactory.createMesageDao();
+        queueDao = daoFactory.createQueueDao();
         
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("MessageDeliveryTaskThreadPool-%d").build();

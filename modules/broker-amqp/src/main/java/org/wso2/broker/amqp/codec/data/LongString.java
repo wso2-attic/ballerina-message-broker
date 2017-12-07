@@ -70,7 +70,7 @@ public class LongString implements EncodableData {
     }
 
     /**
-     * Compares {@link LongString} underlying byte array content
+     * Compares {@link LongString} underlying byte array content.
      *
      * @param obj {@link Object} to compare with
      * @return True if underlying content is equal
@@ -84,7 +84,7 @@ public class LongString implements EncodableData {
     }
 
     /**
-     * Hashcode of the underlying byte array content
+     * Hashcode of the underlying byte array content.
      *
      * @return content based hashcode
      */

@@ -34,11 +34,11 @@ import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
 
 /**
- * AMQP based message consumer
+ * AMQP based message consumer.
  */
 public class AmqpConsumer implements Consumer {
     /**
-     * Class logger
+     * Class logger.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConsumer.class);
 

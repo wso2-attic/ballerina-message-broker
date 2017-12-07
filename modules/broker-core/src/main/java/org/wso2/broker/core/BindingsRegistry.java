@@ -20,7 +20,6 @@
 package org.wso2.broker.core;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,10 +43,10 @@ final class BindingsRegistry {
     void bind(QueueHandler queueHandler, String routingKey) {
         lock.writeLock().lock();
         try {
-        Binding binding = new Binding(routingKey, queueHandler.getQueue().getName());
-        Set<Binding> bindingList =
-                routingKeyToBindingMap.computeIfAbsent(routingKey, k -> ConcurrentHashMap.newKeySet());
-        bindingList.add(binding);
+            Binding binding = new Binding(routingKey, queueHandler.getQueue().getName());
+            Set<Binding> bindingList = routingKeyToBindingMap.computeIfAbsent(routingKey,
+                    k -> ConcurrentHashMap.newKeySet());
+            bindingList.add(binding);
         } finally {
             lock.writeLock().unlock();
         }
@@ -57,11 +56,11 @@ final class BindingsRegistry {
         lock.writeLock().lock();
         try {
             Binding deadBind = new Binding(routingKey, queueName);
-        Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
+            Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
             bindings.remove(deadBind);
 
-        if (bindings.isEmpty()) {
-            routingKeyToBindingMap.remove(routingKey);
+            if (bindings.isEmpty()) {
+                routingKeyToBindingMap.remove(routingKey);
             }
         } finally {
             lock.writeLock().unlock();
@@ -71,11 +70,11 @@ final class BindingsRegistry {
     Set<Binding> getBindingsForRoute(String routingKey) {
         lock.readLock().lock();
         try {
-        Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
-        if (bindings == null) {
-            bindings = Collections.emptySet();
-        }
-        return bindings;
+            Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
+            if (bindings == null) {
+                bindings = Collections.emptySet();
+            }
+            return bindings;
         } finally {
             lock.readLock().unlock();
         }
@@ -84,7 +83,7 @@ final class BindingsRegistry {
     boolean isEmpty() {
         lock.readLock().lock();
         try {
-        return routingKeyToBindingMap.isEmpty();
+            return routingKeyToBindingMap.isEmpty();
         } finally {
             lock.readLock().unlock();
         }

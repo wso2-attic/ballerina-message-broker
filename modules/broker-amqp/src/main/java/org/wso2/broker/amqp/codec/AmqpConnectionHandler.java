@@ -88,7 +88,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Returns the {@link AmqpChannel} for the specified channelId
+     * Returns the {@link AmqpChannel} for the specified channelId.
      *
      * @param channelId channel id
      * @return AmqpChannel

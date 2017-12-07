@@ -6,13 +6,10 @@ package org.wso2.broker.core;
 public class Queue {
 
     /**
-     * Name of the queue
+     * Name of the queue.
      */
     private String name;
 
-    /**
-     * 
-     */
     private boolean passive;
 
     private boolean durable;
@@ -22,7 +19,7 @@ public class Queue {
     private int capacity;
 
     /**
-     * Creates a queue
+     * Creates a queue.
      * 
      * @param name
      * @param passive
@@ -52,7 +49,7 @@ public class Queue {
 
     /**
      * If true the queue will be durable. Durable queues remain active when the broker restarts
-     * Non­durable queues (transient queues) are purged if/when the broker restarts
+     * Non­durable queues (transient queues) are purged if/when the broker restarts.
      *
      * @return True if the queue is durable. False otherwise
      */
@@ -61,7 +58,7 @@ public class Queue {
     }
 
     /**
-     * If true queue can be deleted once there are no consumers for the queue
+     * If true queue can be deleted once there are no consumers for the queue.
      *
      * @return True if the queue is auto deletable
      */

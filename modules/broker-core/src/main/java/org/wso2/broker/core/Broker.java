@@ -35,7 +35,7 @@ public final class Broker {
     private final BrokerConfiguration brokerConfiguration;
     
     public Broker(BrokerConfiguration configuration) {
-        this.messagingEngine = new MessagingEngine();
+        this.messagingEngine = new MessagingEngine(configuration);
         this.brokerConfiguration = configuration;
     }
 

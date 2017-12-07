@@ -34,16 +34,16 @@ public class BrokerConfiguration {
      */
     public static final String SYSTEM_PARAM_BROKER_CONFIG_FILE = "broker.config";
     
-    DatasourceConfigurations datasource;
+    DatasourceConfiguration datasource;
 
     Transport transport;
 
     
-    public DatasourceConfigurations getDatasource() {
+    public DatasourceConfiguration getDatasource() {
         return datasource;
     }
 
-    public void setDatasource(DatasourceConfigurations datasource) {
+    public void setDatasource(DatasourceConfiguration datasource) {
         this.datasource = datasource;
     }
 
@@ -56,7 +56,7 @@ public class BrokerConfiguration {
     }
 
     /**
-     * Represents a server side transport configuration for broker
+     * Represents a server side transport configuration for broker.
      */
     public static class Transport {
 
@@ -100,7 +100,7 @@ public class BrokerConfiguration {
     /**
      * Represents a datasource configuration for broker ( e.g. database)
      */
-    public static class DatasourceConfigurations {
+    public static class DatasourceConfiguration {
 
         private String url;
 
