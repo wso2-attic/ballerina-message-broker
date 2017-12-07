@@ -21,6 +21,8 @@ package org.wso2.broker.core;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Registry object which contains all the registered exchanges of the broker.
@@ -37,6 +39,8 @@ final class ExchangeRegistry {
 
     private final Map<String, Exchange> exchangeMap;
 
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
     ExchangeRegistry() {
         exchangeMap = new ConcurrentHashMap<>(3);
         exchangeMap.put(DIRECT, new DirectExchange(DIRECT));
@@ -45,16 +49,26 @@ final class ExchangeRegistry {
     }
 
     Exchange getExchange(String exchangeName) {
-        return exchangeMap.get(exchangeName);
+        lock.readLock().lock();
+        try {
+            return exchangeMap.get(exchangeName);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     void deleteExchange(String exchangeName, Exchange.Type type, boolean ifUnused) throws BrokerException {
-        // TODO: Go through the logic with exchange type in mind
-        Exchange exchange = exchangeMap.get(exchangeName);
-        if (exchange != null && type == exchange.getType() && !isBuiltInExchange(exchange)) {
-            exchangeMap.remove(exchangeName);
-        } else {
-            throw new BrokerException("Cannot delete exchange.");
+        lock.writeLock().lock();
+        try {
+            // TODO: Go through the logic with exchange type in mind
+            Exchange exchange = exchangeMap.get(exchangeName);
+            if (exchange != null && type == exchange.getType() && !isBuiltInExchange(exchange)) {
+                exchangeMap.remove(exchangeName);
+            } else {
+                throw new BrokerException("Cannot delete exchange.");
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
@@ -78,18 +92,24 @@ final class ExchangeRegistry {
             throw new BrokerException("Exchange name cannot be empty.");
         }
 
-        Exchange exchange = exchangeMap.get(exchangeName);
-        if (passive && exchange == null) {
-            throw new BrokerException("Exchange [ " + exchangeName + " ] doesn't exists. Passive parameter is set," +
-                    " hence not creating the exchange.");
-        } else if (exchange == null) {
-            exchange = ExchangeFactory.newInstance(exchangeName, type);
-            exchangeMap.put(exchange.getName(), exchange);
-        } else if (!passive && exchange.getType() != type) { // TODO add durable check
-            throw new BrokerException("Exchange [ " + exchangeName + " ] already exists.");
-        } else if (exchange.getType() != type) {
-            throw new BrokerException("Exchange type [ " + type + " ] does not match the existing one [ "
-                                              + exchange.getType() + " ].");
+        lock.writeLock().lock();
+        try {
+            Exchange exchange = exchangeMap.get(exchangeName);
+            if (passive && exchange == null) {
+                throw new BrokerException(
+                        "Exchange [ " + exchangeName
+                                + " ] doesn't exists. Passive parameter is set, hence not creating the exchange.");
+            } else if (exchange == null) {
+                exchange = ExchangeFactory.newInstance(exchangeName, type);
+                exchangeMap.put(exchange.getName(), exchange);
+            } else if (!passive && exchange.getType() != type) { // TODO add durable check
+                throw new BrokerException("Exchange [ " + exchangeName + " ] already exists.");
+            } else if (exchange.getType() != type) {
+                throw new BrokerException("Exchange type [ " + type + " ] does not match the existing one [ "
+                                                  + exchange.getType() + " ].");
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 

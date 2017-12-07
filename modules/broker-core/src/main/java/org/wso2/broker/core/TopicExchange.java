@@ -70,6 +70,8 @@ final class TopicExchange implements Exchange {
     public void bind(QueueHandler queueHandler, String routingPattern) {
         lock.writeLock().lock();
         try {
+            // TODO even though we put a binding with routing pattern we never query using that.
+            // Therefore we can get rid of this bind call
             bindingsRegistry.bind(queueHandler, routingPattern);
             fastTopicMatcher.add(routingPattern);
         } finally {

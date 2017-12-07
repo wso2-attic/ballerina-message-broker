@@ -43,13 +43,12 @@ public class AmqpChannel {
 
     private final Map<ShortString, AmqpConsumer> consumerMap;
 
-    private final InboundMessageHandler inboundMessageHandler;
+    private InMemoryMessageAggregator messageAggregator;
 
     AmqpChannel(Broker broker, int channelId) {
         this.broker = broker;
         this.channelId = channelId;
         this.consumerMap = new HashMap<>();
-        this.inboundMessageHandler = new InboundMessageHandler(broker);
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
@@ -93,7 +92,12 @@ public class AmqpChannel {
         }
     }
 
-    public InboundMessageHandler getInboundMessageHandler() {
-        return inboundMessageHandler;
+    public InMemoryMessageAggregator createMessageAggregator() {
+        this.messageAggregator = new InMemoryMessageAggregator(broker);
+        return messageAggregator;
+    }
+
+    public InMemoryMessageAggregator getMessageAggregator() {
+        return messageAggregator;
     }
 }

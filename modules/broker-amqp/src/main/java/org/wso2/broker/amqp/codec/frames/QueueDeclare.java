@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
@@ -100,19 +101,21 @@ public class QueueDeclare extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         // TODO handle exclusive param
-        try {
-            AmqpChannel channel = connectionHandler.getChannel(getChannel());
-            channel.declareQueue(queue, passive, durable, autoDelete);
-            ctx.writeAndFlush(new QueueDeclareOk(getChannel(), queue, 0, 0));
-        } catch (BrokerException e) {
-            // TODO handle exception
-            LOGGER.warn("Error declaring queue.", e);
-            ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                               ChannelException.NOT_ALLOWED,
-                                               ShortString.parseString(e.getMessage()),
-                                               CLASS_ID,
-                                               METHOD_ID));
-        }
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.declareQueue(queue, passive, durable, autoDelete);
+                ctx.writeAndFlush(new QueueDeclareOk(getChannel(), queue, 0, 0));
+            } catch (BrokerException e) {
+                LOGGER.warn("Error declaring queue.", e);
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.NOT_ALLOWED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            }
+        });
     }
 
     public static AmqMethodBodyFactory getFactory() {

@@ -21,14 +21,25 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
+import org.wso2.broker.amqp.codec.InMemoryMessageAggregator;
+import org.wso2.broker.core.BrokerException;
+import org.wso2.broker.core.Message;
 
 /**
  * AMQP content frame
  */
 public class ContentFrame extends GeneralFrame {
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContentFrame.class);
+
     private final long length;
     private final ByteBuf payload;
 
@@ -54,11 +65,28 @@ public class ContentFrame extends GeneralFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+
+        boolean allContentReceived;
+        InMemoryMessageAggregator messageAggregator = channel.getMessageAggregator();
+
         try {
-            AmqpChannel channel = connectionHandler.getChannel(getChannel());
-            channel.getInboundMessageHandler().contentBodyReceived(length, payload);
+            allContentReceived = messageAggregator.contentBodyReceived(length, payload);
         } catch (AmqpException e) {
-            // TODO handle exception
+            LOGGER.warn("Content receiving failed", e);
+            return;
+        }
+
+        if (allContentReceived) {
+            Message message = messageAggregator.getMessage();
+
+            ctx.fireChannelRead((BlockingTask) () -> {
+                try {
+                    messageAggregator.publish(message);
+                } catch (BrokerException e) {
+                    LOGGER.warn("Content receiving failed", e);
+                }
+            });
         }
     }
 
