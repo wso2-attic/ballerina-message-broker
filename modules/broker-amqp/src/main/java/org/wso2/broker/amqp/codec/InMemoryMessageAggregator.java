@@ -31,7 +31,7 @@ import org.wso2.broker.core.Metadata;
 /**
  * Handles incoming AMQP message frames and creates {@link Message}.
  */
-public class InboundMessageHandler {
+public class InMemoryMessageAggregator {
 
     private Message message;
 
@@ -43,7 +43,7 @@ public class InboundMessageHandler {
 
     private long receivedPayloadSize;
 
-    public InboundMessageHandler(Broker broker) {
+    public InMemoryMessageAggregator(Broker broker) {
         this.broker = broker;
     }
 
@@ -66,31 +66,34 @@ public class InboundMessageHandler {
     }
 
     private void clear() {
+        message.release();
         message = null;
         routingKey = null;
         exchangeName = null;
         receivedPayloadSize = 0;
     }
 
-    private void publish(Message message) throws BrokerException {
+    public void publish(Message message) throws BrokerException {
         broker.publish(message);
     }
 
-    public void contentBodyReceived(long length, ByteBuf payload) throws AmqpException {
+    public boolean contentBodyReceived(long length, ByteBuf payload) throws AmqpException {
         ContentChunk contentChunk = new ContentChunk(receivedPayloadSize, payload);
         message.addChunk(contentChunk);
         receivedPayloadSize += length;
         long contentLength = message.getMetadata().getContentLength();
-        try {
-            if (contentLength == receivedPayloadSize) {
-                publish(message);
-                clear();
-            } else if (contentLength < receivedPayloadSize) {
-                clear();
-                throw new AmqpException("Content length mismatch. Received content more than the expected size");
-            }
-        } catch (BrokerException e) {
-            throw new AmqpException("Error publishing message to the broker");
+
+        if (contentLength == receivedPayloadSize) {
+            return true;
+        } else if (contentLength < receivedPayloadSize) {
+            clear();
+            throw new AmqpException("Content length mismatch. Received content more than the expected size");
         }
+
+        return false;
+    }
+
+    public Message getMessage() {
+        return message;
     }
 }

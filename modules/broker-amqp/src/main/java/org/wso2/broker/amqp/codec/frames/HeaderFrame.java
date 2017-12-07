@@ -23,7 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
-import org.wso2.broker.amqp.codec.InboundMessageHandler;
+import org.wso2.broker.amqp.codec.InMemoryMessageAggregator;
 import org.wso2.broker.amqp.codec.data.EncodableData;
 import org.wso2.broker.amqp.codec.data.FieldTable;
 import org.wso2.broker.amqp.codec.data.ShortString;
@@ -166,8 +166,8 @@ public class HeaderFrame extends GeneralFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
-        InboundMessageHandler inboundMessageHandler = channel.getInboundMessageHandler();
-        inboundMessageHandler.headerFrameReceived(rawMetadata, bodySize);
+        InMemoryMessageAggregator inMemoryMessageAggregator = channel.getMessageAggregator();
+        inMemoryMessageAggregator.headerFrameReceived(rawMetadata, bodySize);
     }
 
     private void writeProperty(ByteBuf buf, long property) {

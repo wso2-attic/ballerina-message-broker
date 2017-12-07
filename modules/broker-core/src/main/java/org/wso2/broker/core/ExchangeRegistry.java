@@ -96,8 +96,9 @@ final class ExchangeRegistry {
         try {
             Exchange exchange = exchangeMap.get(exchangeName);
             if (passive && exchange == null) {
-                throw new BrokerException("Exchange [ " + exchangeName + " ] doesn't exists. Passive parameter is set," +
-                        " hence not creating the exchange.");
+                throw new BrokerException(
+                        "Exchange [ " + exchangeName
+                                + " ] doesn't exists. Passive parameter is set, hence not creating the exchange.");
             } else if (exchange == null) {
                 exchange = ExchangeFactory.newInstance(exchangeName, type);
                 exchangeMap.put(exchange.getName(), exchange);

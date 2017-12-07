@@ -27,6 +27,9 @@ import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.BlockingTask;
+import org.wso2.broker.amqp.codec.InMemoryMessageAggregator;
+import org.wso2.broker.core.BrokerException;
+import org.wso2.broker.core.Message;
 
 /**
  * AMQP content frame
@@ -64,14 +67,27 @@ public class ContentFrame extends GeneralFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
 
-        ctx.fireChannelRead((BlockingTask) () -> {
-            try {
-                channel.getInboundMessageHandler().contentBodyReceived(length, payload);
-            } catch (AmqpException e) {
-                LOGGER.warn("Content receiving failed", e);
-            }
-        });
+        boolean allContentReceived;
+        InMemoryMessageAggregator messageAggregator = channel.getMessageAggregator();
 
+        try {
+            allContentReceived = messageAggregator.contentBodyReceived(length, payload);
+        } catch (AmqpException e) {
+            LOGGER.warn("Content receiving failed", e);
+            return;
+        }
+
+        if (allContentReceived) {
+            Message message = messageAggregator.getMessage();
+
+            ctx.fireChannelRead((BlockingTask) () -> {
+                try {
+                    messageAggregator.publish(message);
+                } catch (BrokerException e) {
+                    LOGGER.warn("Content receiving failed", e);
+                }
+            });
+        }
     }
 
     public static ContentFrame parse(ByteBuf buf, int channel, long payloadSize) {

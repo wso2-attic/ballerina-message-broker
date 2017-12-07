@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
-import org.wso2.broker.amqp.codec.InboundMessageHandler;
+import org.wso2.broker.amqp.codec.InMemoryMessageAggregator;
 import org.wso2.broker.amqp.codec.data.ShortString;
 
 /**
@@ -78,8 +78,8 @@ public class BasicPublish extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
-        InboundMessageHandler inboundMessageHandler = channel.getInboundMessageHandler();
-        inboundMessageHandler.basicPublishReceived(routingKey, exchange);
+        InMemoryMessageAggregator inMemoryMessageAggregator = channel.createMessageAggregator();
+        inMemoryMessageAggregator.basicPublishReceived(routingKey, exchange);
     }
 
     public static AmqMethodBodyFactory getFactory() {
