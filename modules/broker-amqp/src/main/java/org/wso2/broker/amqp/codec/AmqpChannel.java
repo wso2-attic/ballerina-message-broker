@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * AMQP channel representation
+ * AMQP channel representation.
  */
 public class AmqpChannel {
 

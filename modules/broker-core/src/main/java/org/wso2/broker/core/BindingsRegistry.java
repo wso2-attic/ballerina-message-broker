@@ -43,9 +43,9 @@ final class BindingsRegistry {
     void bind(QueueHandler queueHandler, String routingKey) {
         lock.writeLock().lock();
         try {
-            Binding binding = new Binding(routingKey, queueHandler.getName());
-            Set<Binding> bindingList =
-                    routingKeyToBindingMap.computeIfAbsent(routingKey, k -> ConcurrentHashMap.newKeySet());
+            Binding binding = new Binding(routingKey, queueHandler.getQueue().getName());
+            Set<Binding> bindingList = routingKeyToBindingMap.computeIfAbsent(routingKey,
+                    k -> ConcurrentHashMap.newKeySet());
             bindingList.add(binding);
         } finally {
             lock.writeLock().unlock();
@@ -89,4 +89,7 @@ final class BindingsRegistry {
         }
     }
 
+    int uniqueRoutingKeyCount() {
+        return routingKeyToBindingMap.keySet().size();
+    }
 }

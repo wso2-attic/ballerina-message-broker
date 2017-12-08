@@ -21,6 +21,7 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.core.configuration.BrokerConfiguration;
 
 /**
  * Broker API class.
@@ -31,8 +32,11 @@ public final class Broker {
 
     private final MessagingEngine messagingEngine;
 
-    public Broker() {
-        this.messagingEngine = new MessagingEngine();
+    private final BrokerConfiguration brokerConfiguration;
+    
+    public Broker(BrokerConfiguration configuration) {
+        this.messagingEngine = new MessagingEngine(configuration);
+        this.brokerConfiguration = configuration;
     }
 
     public void publish(Message message) throws BrokerException {

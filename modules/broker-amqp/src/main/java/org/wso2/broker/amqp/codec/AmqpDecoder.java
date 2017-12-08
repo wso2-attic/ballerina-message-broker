@@ -50,7 +50,7 @@ public class AmqpDecoder extends ByteToMessageDecoder {
     private static final CharSequence AMQP_PROTOCOL_IDENTIFIER = "AMQP";
 
     /**
-     * class-id(short) + weight(short) + body-size(long long) + property-flags(short)
+     * class-id(short) + weight(short) + body-size(long long) + property-flags(short).
      */
     private static final int MIN_HEADER_FRAME_SIZE = 14;
 

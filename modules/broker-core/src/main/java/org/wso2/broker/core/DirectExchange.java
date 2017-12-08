@@ -22,7 +22,7 @@ package org.wso2.broker.core;
 import java.util.Set;
 
 /**
- * AMQP direct exchange implementation
+ * AMQP direct exchange implementation.
  */
 final class DirectExchange implements Exchange {
 

@@ -43,7 +43,10 @@
             <groupId>org.wso2.messaging</groupId>
             <artifactId>broker-core</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -52,16 +55,6 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <targetPath>${project.build.directory}/conf</targetPath>
-                <includes>
-                    <include>log4j.properties</include>
-                </includes>
-            </resource>
-        </resources>
-
         <plugins>
             <plugin>
                 <groupId>org.skife.maven</groupId>

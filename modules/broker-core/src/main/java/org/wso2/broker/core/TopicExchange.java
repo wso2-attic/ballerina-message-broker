@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 /**
- * AMQP topic exchange implementation
+ * AMQP topic exchange implementation.
  */
 final class TopicExchange implements Exchange {
 
@@ -110,7 +110,7 @@ final class TopicExchange implements Exchange {
     }
 
     /**
-     * Represents fast topic matching algorithm with inverted bitmaps
+     * Represents fast topic matching algorithm with inverted bitmaps.
      */
     private class FastTopicMatcher {
 
@@ -131,17 +131,17 @@ final class TopicExchange implements Exchange {
         private static final String MULTIPLE_WORD_WILDCARD = "#";
 
         /**
-         * Topic names in the BitMaps
+         * Topic names in the BitMaps.
          */
         private final List<String> subscribedTopicList;
 
         /**
-         * Subscribed topics broken down into constituents and indexed
+         * Subscribed topics broken down into constituents and indexed.
          */
         private final Map<Integer, String[]> subscribedTopicConstituentsMap;
 
         /**
-         * Set of all the bit maps
+         * Set of all the bit maps.
          */
         private final List<Map<String, BitSet>> constituentTables;
 
@@ -233,7 +233,7 @@ final class TopicExchange implements Exchange {
         }
 
         /**
-         * Creates a new constituent table with null and other constituent values for all the subscriptions
+         * Creates a new constituent table with null and other constituent values for all the subscriptions.
          *
          * @param constituentIndex index of the constituentTable
          * @return returns the new constituentTable

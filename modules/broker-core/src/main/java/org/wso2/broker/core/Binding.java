@@ -29,7 +29,7 @@ final class Binding {
     private final String queueName;
 
     /**
-     * Creates a binding object
+     * Creates a binding object.
      *
      * @param routingKey routingKey
      * @param queueName  queueName

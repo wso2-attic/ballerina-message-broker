@@ -39,41 +39,36 @@ final class QueueHandler {
 
     private static final Logger log = LoggerFactory.getLogger(QueueHandler.class);
 
-    private final String name;
-
+    private Queue queue;
+      
     private final LinkedBlockingQueue<Message> messageQueue;
 
     private final CyclicConsumerIterator consumerIterator;
 
     private final Set<Consumer> consumers;
 
-    private final boolean durable;
-
-    private final boolean autoDelete;
-
     private final Map<Long, Message> pendingMessages;
-
-    QueueHandler(String name, boolean durable, boolean autoDelete, int capacity) {
-        this.name = name;
-        this.durable = durable;
-        this.autoDelete = autoDelete;
-        this.messageQueue = new LinkedBlockingQueue<>(capacity);
+ 
+        
+    QueueHandler(Queue queue) {
+       
+        this.queue = queue;
+        this.messageQueue = new LinkedBlockingQueue<>(queue.getCapacity());
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
         pendingMessages = new ConcurrentHashMap<>();
+           
     }
 
-    /**
-     * Name of the underlying queue
-     *
-     * @return String representation of the underlying queue name
-     */
-    String getName() {
-        return name;
+    
+    
+    Queue getQueue() {
+        return queue;
     }
-
+    
+    
     /**
-     * Retrieve all the current consumers for the queue
+     * Retrieve all the current consumers for the queue.
      *
      * @return Set of unmodifiable subscription objects
      */
@@ -82,7 +77,7 @@ final class QueueHandler {
     }
 
     /**
-     * Add a new consumer to the queue
+     * Add a new consumer to the queue.
      *
      * @param consumer {@link Consumer} implementation
      */
@@ -92,13 +87,13 @@ final class QueueHandler {
 
     /**
      * Remove consumer from the queue.
-     * NOTE: This method is synchronised with getting next subscriber for the queue to avoid concurrent issues
+     * NOTE: This method is synchronized with getting next subscriber for the queue to avoid concurrent issues
      *
      * @param consumer {@link Consumer} to be removed
      */
     void removeConsumer(Consumer consumer) {
         consumers.remove(consumer);
-        if (consumers.isEmpty() && isAutoDelete()) {
+        if (consumers.isEmpty() && queue.isAutoDelete()) {
             removeQueue();
         }
     }
@@ -125,6 +120,7 @@ final class QueueHandler {
      * @return Message
      */
     Message dequeue() {
+       
         Message message = messageQueue.poll();
         if (message != null) {
             pendingMessages.put(message.getMetadata().getMessageId(), message);
@@ -140,7 +136,7 @@ final class QueueHandler {
 
     /**
      * Get the current consumer list iterator for the queue. This is a snapshot of the consumers at the time
-     * when the when this method is invoked
+     * when the when this method is invoked.
      *
      * @return CyclicConsumerIterator
      */
@@ -150,7 +146,7 @@ final class QueueHandler {
     }
 
     /**
-     * True if there are no {@link Message} objects in the queue and false otherwise
+     * True if there are no {@link Message} objects in the queue and false otherwise.
      *
      * @return True if the queue doesn't contain any {@link Message} objects
      */
@@ -168,7 +164,7 @@ final class QueueHandler {
     }
 
     /**
-     * True if there are no consumers and false otherwise
+     * True if there are no consumers and false otherwise.
      *
      * @return True if there are no {@link Consumer} for the queue.
      */
@@ -176,24 +172,7 @@ final class QueueHandler {
         return consumers.isEmpty();
     }
 
-    /**
-     * If true the queue will be durable. Durable queues remain active when the broker restarts
-     * Non­durable queues (transient queues) are purged if/when the broker restarts
-     *
-     * @return True if the queue is durable. False otherwise
-     */
-    public boolean isDurable() {
-        return durable;
-    }
 
-    /**
-     * If true queue can be deleted once there are no consumers for the queue
-     *
-     * @return True if the queue is auto deletable
-     */
-    public boolean isAutoDelete() {
-        return autoDelete;
-    }
 
     void closeAllConsumers() {
         Iterator<Consumer> iterator = consumers.iterator();
@@ -204,7 +183,7 @@ final class QueueHandler {
                 consumer.close();
             } catch (BrokerException e) {
                 log.error("Error occurred while closing the consumer [ " + consumer + " ] " +
-                        "for queue [ " + name + " ]", e);
+                        "for queue [ " + queue.toString() + " ]", e);
             } finally {
                 iterator.remove();
             }

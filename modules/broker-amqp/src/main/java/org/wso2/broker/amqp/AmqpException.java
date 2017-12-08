@@ -20,7 +20,7 @@
 package org.wso2.broker.amqp;
 
 /**
- * AMQP specific exception class
+ * AMQP specific exception class.
  */
 public class AmqpException extends Exception {
 

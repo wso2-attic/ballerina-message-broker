@@ -34,6 +34,7 @@ import org.wso2.broker.amqp.codec.AmqpDecoder;
 import org.wso2.broker.amqp.codec.AmqpEncoder;
 import org.wso2.broker.amqp.codec.BlockingTaskHandler;
 import org.wso2.broker.core.Broker;
+import org.wso2.broker.core.configuration.BrokerConfiguration;
 
 /**
  * AMQP Server implementation.
@@ -50,10 +51,9 @@ public class Server {
 
     private final Broker broker;
 
-    public Server(int port) {
-        this.port = port;
-        this.broker = new Broker();
-        broker.startMessageDelivery();
+    public Server(Broker broker, BrokerConfiguration configuration) {
+        this.port = Integer.parseInt(configuration.getTransport().getPort());
+        this.broker = broker;
     }
 
     /**

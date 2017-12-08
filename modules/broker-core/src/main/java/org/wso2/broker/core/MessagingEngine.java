@@ -20,8 +20,13 @@
 package org.wso2.broker.core;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.broker.core.store.dao.DaoFactory;
+import org.wso2.broker.core.store.dao.MessageDao;
+import org.wso2.broker.core.store.dao.QueueDao;
 import org.wso2.broker.core.task.TaskExecutorService;
 
 import java.util.Map;
@@ -53,14 +58,23 @@ final class MessagingEngine {
 
     private final ExchangeRegistry exchangeRegistry;
 
+    
+    private final MessageDao messageDao;
+    
+    private final QueueDao queueDao;
+
     /**
-     * In memory message id
+     * In memory message id.
      */
     private final AtomicLong messageIdGenerator;
 
-    MessagingEngine() {
+    MessagingEngine(BrokerConfiguration brokerConfiguration) {
         queueRegistry = new ConcurrentHashMap<>();
         exchangeRegistry = new ExchangeRegistry();
+        DaoFactory daoFactory = new DaoFactory(brokerConfiguration.getDatasource());
+        messageDao = daoFactory.createMesageDao();
+        queueDao = daoFactory.createQueueDao();
+        
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("MessageDeliveryTaskThreadPool-%d").build();
         deliveryTaskService = new TaskExecutorService<>(WORKER_COUNT, IDLE_TASK_DELAY_MILLIS, threadFactory);
@@ -94,6 +108,7 @@ final class MessagingEngine {
     }
 
     void createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete) throws BrokerException {
+
         QueueHandler queueHandler = queueRegistry.get(queueName);
 
         if (passive && queueHandler == null) {
@@ -102,14 +117,15 @@ final class MessagingEngine {
         }
 
         if (queueHandler == null) {
-            queueHandler = new QueueHandler(queueName, durable, autoDelete, 1000);
+            Queue queue = new Queue(queueName, passive, durable, autoDelete, 1000);
+            queueHandler = new QueueHandler(queue);
             queueRegistry.put(queueName, queueHandler);
             // we need to bind every queue to the default exchange
             ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler, queueName);
 
             deliveryTaskService.add(new MessageDeliveryTask(queueHandler));
-        } else if (!passive &&
-                (queueHandler.isDurable() != durable || queueHandler.isAutoDelete() != autoDelete)) {
+        } else if (!passive && (queueHandler.getQueue().isDurable() != durable
+                || queueHandler.getQueue().isAutoDelete() != autoDelete)) {
             throw new BrokerException("Existing QueueHandler [ " + queueName + " ] does not match given parameters.");
         }
     }
@@ -124,24 +140,36 @@ final class MessagingEngine {
             if (bindings.isEmpty()) {
                 LOGGER.info("Dropping message since no bindings found for routing key " + routingKey);
                 message.release();
-            }
+            } else {
 
-            bindings.forEach(binding -> {
-                QueueHandler queueHandler = queueRegistry.get(binding.getQueueName());
-                metadata.addOwnedQueue(binding.getQueueName());
-                if (!queueHandler.enqueue(message)) {
-                    LOGGER.info("Dropping message since queue full for " + binding.getQueueName());
-                    message.release();
-                }
-            });
+                messageDao.persist(message); // save the message
+
+                bindings.forEach(binding -> {
+                    QueueHandler queueHandler = queueRegistry.get(binding.getQueueName());
+                    metadata.addOwnedQueue(binding.getQueueName());
+                    if (!queueHandler.enqueue(message)) {
+                        LOGGER.info("Dropping message since queue full for " + binding.getQueueName());
+                        message.release();
+                    }
+                });
+            }            
         } else {
             throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
         }
     }
 
+    /**
+     * 
+     * @param queueName
+     * @param deliveryTag synonymous for message id
+     * @param multiple
+     */
     void acknowledge(String queueName, long deliveryTag, boolean multiple) {
         QueueHandler queueHandler = queueRegistry.get(queueName);
         queueHandler.acknowledge(deliveryTag, multiple);
+        
+        messageDao.detachFromQueue(queueName, deliveryTag);
+        
     }
 
     void deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
@@ -160,6 +188,9 @@ final class MessagingEngine {
             deliveryTaskService.remove(queueName);
             queueRegistry.remove(queueName);
             queueHandler.closeAllConsumers();
+            queueDao.delete(queueHandler.getQueue());
+            
+            
         }
     }
 
