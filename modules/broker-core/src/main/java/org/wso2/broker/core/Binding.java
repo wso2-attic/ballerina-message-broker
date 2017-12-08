@@ -31,11 +31,11 @@ final class Binding {
     /**
      * Creates a binding object.
      *
-     * @param routingKey routingKey
+     * @param bindingKey bindingKey
      * @param queueName  queueName
      */
-    Binding(String routingKey, String queueName) {
-        this.routingKey = routingKey;
+    Binding(String bindingKey, String queueName) {
+        this.routingKey = bindingKey;
         this.queueName = queueName;
     }
 

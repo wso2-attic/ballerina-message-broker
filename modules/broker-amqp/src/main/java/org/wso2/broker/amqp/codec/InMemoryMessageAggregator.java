@@ -66,7 +66,6 @@ public class InMemoryMessageAggregator {
     }
 
     private void clear() {
-        message.release();
         message = null;
         routingKey = null;
         exchangeName = null;
@@ -87,13 +86,17 @@ public class InMemoryMessageAggregator {
             return true;
         } else if (contentLength < receivedPayloadSize) {
             clear();
+            message.release();
             throw new AmqpException("Content length mismatch. Received content more than the expected size");
         }
 
         return false;
     }
 
-    public Message getMessage() {
+    public Message popMessage() {
+        Message message = this.message;
+        clear();
+
         return message;
     }
 }

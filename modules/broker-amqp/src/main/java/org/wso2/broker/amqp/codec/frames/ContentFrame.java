@@ -78,7 +78,7 @@ public class ContentFrame extends GeneralFrame {
         }
 
         if (allContentReceived) {
-            Message message = messageAggregator.getMessage();
+            Message message = messageAggregator.popMessage();
 
             ctx.fireChannelRead((BlockingTask) () -> {
                 try {
