@@ -83,6 +83,7 @@ public class Server {
         } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
+            ioExecutors.shutdownGracefully();
         }
     }
 
