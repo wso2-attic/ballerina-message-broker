@@ -11,36 +11,21 @@
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
+ * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
  *
  */
 
-package org.wso2.broker.amqp.codec.data;
+package org.wso2.broker.common.data.types;
 
 import io.netty.buffer.ByteBuf;
+
 /**
- * AMQP long-int.
+ *
  */
-public class LongInt implements EncodableData {
-    private final int value;
+public interface EncodableData {
+    long getSize();
 
-    public LongInt(int value) {
-        this.value = value;
-    }
-
-    @Override
-    public long getSize() {
-        return 4L;
-    }
-
-    @Override
-    public void write(ByteBuf buf) {
-        buf.writeInt(value);
-    }
-
-    public static LongInt parse(ByteBuf buf) {
-        return new LongInt(buf.readInt());
-    }
+    void write(ByteBuf buf);
 }

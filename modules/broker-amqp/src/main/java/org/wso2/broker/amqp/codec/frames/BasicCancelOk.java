@@ -22,7 +22,7 @@ package org.wso2.broker.amqp.codec.frames;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
-import org.wso2.broker.amqp.codec.data.ShortString;
+import org.wso2.broker.common.data.types.ShortString;
 
 /**
  * AMQP frame for basic cancel-ok. Responds to server on successful removal of a consumer

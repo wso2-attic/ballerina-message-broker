@@ -22,9 +22,9 @@ package org.wso2.broker.amqp.codec.frames;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
-import org.wso2.broker.amqp.codec.data.FieldTable;
-import org.wso2.broker.amqp.codec.data.LongString;
-import org.wso2.broker.amqp.codec.data.ShortString;
+import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.common.data.types.LongString;
+import org.wso2.broker.common.data.types.ShortString;
 
 /**
  * AMQP connection.start frame.

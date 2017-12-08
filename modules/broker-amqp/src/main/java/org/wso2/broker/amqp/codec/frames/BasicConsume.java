@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.ChannelException;
-import org.wso2.broker.amqp.codec.data.FieldTable;
-import org.wso2.broker.amqp.codec.data.ShortString;
+import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.BrokerException;
 
 /**
