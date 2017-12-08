@@ -78,7 +78,7 @@ public class BasicPublish extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
-        InMemoryMessageAggregator inMemoryMessageAggregator = channel.createMessageAggregator();
+        InMemoryMessageAggregator inMemoryMessageAggregator = channel.getMessageAggregator();
         inMemoryMessageAggregator.basicPublishReceived(routingKey, exchange);
     }
 

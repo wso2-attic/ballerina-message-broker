@@ -49,6 +49,7 @@ public class AmqpChannel {
         this.broker = broker;
         this.channelId = channelId;
         this.consumerMap = new HashMap<>();
+        this.messageAggregator = new InMemoryMessageAggregator(broker);
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
@@ -90,11 +91,6 @@ public class AmqpChannel {
         } else {
             throw new AmqpException("Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
         }
-    }
-
-    public InMemoryMessageAggregator createMessageAggregator() {
-        this.messageAggregator = new InMemoryMessageAggregator(broker);
-        return messageAggregator;
     }
 
     public InMemoryMessageAggregator getMessageAggregator() {
