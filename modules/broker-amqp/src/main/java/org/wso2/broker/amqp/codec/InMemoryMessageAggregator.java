@@ -21,7 +21,7 @@ package org.wso2.broker.amqp.codec;
 
 import io.netty.buffer.ByteBuf;
 import org.wso2.broker.amqp.AmqpException;
-import org.wso2.broker.amqp.codec.data.ShortString;
+import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.ContentChunk;

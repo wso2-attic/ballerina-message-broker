@@ -42,6 +42,7 @@
     </scm>
 
     <modules>
+        <module>modules/broker-common</module>
         <module>modules/broker-core</module>
         <module>modules/broker-amqp</module>
         <module>modules/launcher</module>
@@ -58,6 +59,11 @@
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-amqp</artifactId>
+                <version>${broker.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.messaging</groupId>
+                <artifactId>broker-common</artifactId>
                 <version>${broker.version}</version>
             </dependency>
             <dependency>

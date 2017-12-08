@@ -24,7 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
-import org.wso2.broker.amqp.codec.data.ShortString;
+import org.wso2.broker.common.data.types.ShortString;
 
 /**
  * AMQP frame for basic.cancel.
