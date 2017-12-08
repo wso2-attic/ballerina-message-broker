@@ -45,6 +45,7 @@
         <module>modules/broker-core</module>
         <module>modules/broker-amqp</module>
         <module>modules/launcher</module>
+        <module>modules/coverage-report</module>
     </modules>
 
     <dependencyManagement>
@@ -109,6 +110,11 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.plugin.version}</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -123,5 +129,6 @@
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.scm.id>wso2-scm-server</project.scm.id>
+        <jacoco.plugin.version>0.7.9</jacoco.plugin.version>
     </properties>
 </project>
