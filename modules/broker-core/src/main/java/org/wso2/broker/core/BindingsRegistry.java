@@ -33,33 +33,31 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 final class BindingsRegistry {
 
-    private final Map<String, Set<Binding>> routingKeyToBindingMap;
+    private final Map<String, Set<Queue>> routingKeyToBindingMap;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     BindingsRegistry() {
         this.routingKeyToBindingMap = new ConcurrentHashMap<>();
     }
 
-    void bind(QueueHandler queueHandler, String bindingKey) {
+    void bind(Queue queue, String bindingKey) {
         lock.writeLock().lock();
         try {
-            Binding binding = new Binding(bindingKey, queueHandler.getQueue().getName());
-            Set<Binding> bindingList =
+            Set<Queue> queues =
                     routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> ConcurrentHashMap.newKeySet());
-            bindingList.add(binding);
+            queues.add(queue);
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    void unbind(String queueName, String routingKey) {
+    void unbind(Queue queue, String routingKey) {
         lock.writeLock().lock();
         try {
-            Binding deadBind = new Binding(routingKey, queueName);
-            Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
-            bindings.remove(deadBind);
+            Set<Queue> queues = routingKeyToBindingMap.get(routingKey);
+            queues.remove(queue);
 
-            if (bindings.isEmpty()) {
+            if (queues.isEmpty()) {
                 routingKeyToBindingMap.remove(routingKey);
             }
         } finally {
@@ -67,14 +65,14 @@ final class BindingsRegistry {
         }
     }
 
-    Set<Binding> getBindingsForRoute(String routingKey) {
+    Set<Queue> getBindingsForRoute(String routingKey) {
         lock.readLock().lock();
         try {
-            Set<Binding> bindings = routingKeyToBindingMap.get(routingKey);
-            if (bindings == null) {
-                bindings = Collections.emptySet();
+            Set<Queue> queues = routingKeyToBindingMap.get(routingKey);
+            if (queues == null) {
+                queues = Collections.emptySet();
             }
-            return bindings;
+            return queues;
         } finally {
             lock.readLock().unlock();
         }
@@ -89,7 +87,4 @@ final class BindingsRegistry {
         }
     }
 
-    int uniqueRoutingKeyCount() {
-        return routingKeyToBindingMap.keySet().size();
-    }
 }

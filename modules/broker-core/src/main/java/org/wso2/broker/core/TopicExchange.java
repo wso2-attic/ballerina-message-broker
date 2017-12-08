@@ -67,12 +67,12 @@ final class TopicExchange implements Exchange {
     }
 
     @Override
-    public void bind(QueueHandler queueHandler, String routingPattern) {
+    public void bind(Queue queue, String routingPattern) {
         lock.writeLock().lock();
         try {
             // TODO even though we put a binding with routing pattern we never query using that.
             // Therefore we can get rid of this bind call
-            bindingsRegistry.bind(queueHandler, routingPattern);
+            bindingsRegistry.bind(queue, routingPattern);
             fastTopicMatcher.add(routingPattern);
         } finally {
             lock.writeLock().unlock();
@@ -80,10 +80,10 @@ final class TopicExchange implements Exchange {
     }
 
     @Override
-    public void unbind(String queueName, String routingPattern) {
+    public void unbind(Queue queue, String routingPattern) {
         lock.writeLock().lock();
         try {
-            bindingsRegistry.unbind(queueName, routingPattern);
+            bindingsRegistry.unbind(queue, routingPattern);
             fastTopicMatcher.remove(routingPattern);
         } finally {
             lock.writeLock().unlock();
@@ -91,7 +91,7 @@ final class TopicExchange implements Exchange {
     }
 
     @Override
-    public Set<Binding> getBindingsForRoute(String routingKey) {
+    public Set<Queue> getQueuesForRoute(String routingKey) {
         if (routingKey.isEmpty()) {
             return Collections.emptySet();
         }
@@ -291,7 +291,7 @@ final class TopicExchange implements Exchange {
             subscribedTopicConstituentsMap.remove(removeIndex);
         }
 
-        Set<Binding> matchingBindings(String topicName) {
+        Set<Queue> matchingBindings(String topicName) {
 
             if (topicName.isEmpty()) {
                 return Collections.emptySet();
@@ -354,7 +354,7 @@ final class TopicExchange implements Exchange {
                 nextSetBit = matchedBitSet.nextSetBit(0);
             }
 
-            Set<Binding> matchingBindings = new HashSet<>();
+            Set<Queue> matchingBindings = new HashSet<>();
             while (nextSetBit > -1) {
                 String subscribedQueue = subscribedTopicList.get(nextSetBit);
                 matchingBindings.addAll(bindingsRegistry.getBindingsForRoute(subscribedQueue));

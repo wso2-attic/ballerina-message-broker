@@ -43,15 +43,15 @@ final class DirectExchange implements Exchange {
         return Type.DIRECT;
     }
 
-    public void bind(QueueHandler queueHandler, String routingKey) {
-        bindingsRegistry.bind(queueHandler, routingKey);
+    public void bind(Queue queue, String routingKey) {
+        bindingsRegistry.bind(queue, routingKey);
     }
 
-    public void unbind(String queueName, String routingKey) {
-        bindingsRegistry.unbind(queueName, routingKey);
+    public void unbind(Queue queue, String routingKey) {
+        bindingsRegistry.unbind(queue, routingKey);
     }
 
-    public Set<Binding> getBindingsForRoute(String routingKey) {
+    public Set<Queue> getQueuesForRoute(String routingKey) {
         return bindingsRegistry.getBindingsForRoute(routingKey);
     }
 
