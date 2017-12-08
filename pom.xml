@@ -30,7 +30,7 @@
     <groupId>org.wso2.messaging</groupId> 
     <artifactId>message-broker</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.22-SNAPSHOT</version>
+    <version>1.0.23-SNAPSHOT</version>
     <name>Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
@@ -130,7 +130,7 @@
     </build>
 
     <properties>
-        <broker.version>1.0.22-SNAPSHOT</broker.version>
+        <broker.version>1.0.23-SNAPSHOT</broker.version>
         <netty-all.version>4.1.17.Final</netty-all.version>
         <slf4j.version>1.7.25</slf4j.version>
         <testng.version>6.11</testng.version>
