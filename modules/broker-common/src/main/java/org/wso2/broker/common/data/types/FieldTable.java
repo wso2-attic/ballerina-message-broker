@@ -85,6 +85,20 @@ public class FieldTable implements EncodableData {
         }
     }
 
+    @Override
+    public int hashCode() {
+        return properties.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        return (obj instanceof FieldTable)
+                && properties.equals(((FieldTable) obj).properties);
+    }
+
     public static FieldTable parse(ByteBuf buf) throws Exception {
         long size = buf.readUnsignedInt();
         long readBytes = 0L;
