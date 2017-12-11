@@ -54,22 +54,22 @@ public class TopicExchangeTest {
     @Test(dataProvider = "positiveTopicPairs", description = "Test positive topic matching")
     public void testPositiveSingleTopicMatching(String subscribedPattern, String publishedTopic) {
         Queue queue = new Queue(subscribedPattern, false, false, false, 10);
-        topicExchange.bind(new QueueHandler(queue), subscribedPattern);
+        topicExchange.bind(queue, subscribedPattern);
 
-        Set<Binding> bindingsForRoute = topicExchange.getBindingsForRoute(publishedTopic);
+        Set<Queue> bindingsForRoute = topicExchange.getQueuesForRoute(publishedTopic);
 
 
         Assert.assertEquals(bindingsForRoute.iterator().hasNext(), true, "No matches found.");
         Assert.assertEquals(
-                bindingsForRoute.iterator().next().getQueueName(), subscribedPattern, "No matches found.");
+                bindingsForRoute.iterator().next().getName(), subscribedPattern, "No matches found.");
     }
 
     @Test(dataProvider = "negativeTopicPairs", description = "Test negative topic matching")
     public void testNegativeSingleTopicMatching(String subscribedPattern, String publishedTopic) {
         Queue queue = new Queue(subscribedPattern, false, false, false, 10);
-        topicExchange.bind(new QueueHandler(queue), subscribedPattern);
+        topicExchange.bind(queue, subscribedPattern);
 
-        Set<Binding> bindingsForRoute = topicExchange.getBindingsForRoute(publishedTopic);
+        Set<Queue> bindingsForRoute = topicExchange.getQueuesForRoute(publishedTopic);
 
         Assert.assertEquals(bindingsForRoute.iterator().hasNext(), false, "No topic should match");
     }
@@ -77,11 +77,11 @@ public class TopicExchangeTest {
     @Test(dataProvider = "positiveTopicPairs", description = "Test topic removal")
     public void testTopicRemoval(String subscribedPattern, String publishedTopic) {
 
-        Queue  queue = new Queue(subscribedPattern, false, false, false, 1000);
-        topicExchange.bind(new QueueHandler(queue), subscribedPattern);
-        topicExchange.unbind(subscribedPattern, subscribedPattern);
+        Queue queue = new Queue(subscribedPattern, false, false, false, 1000);
+        topicExchange.bind(queue, subscribedPattern);
+        topicExchange.unbind(queue, subscribedPattern);
 
-        Set<Binding> bindingsForRoute = topicExchange.getBindingsForRoute(publishedTopic);
+        Set<Queue> bindingsForRoute = topicExchange.getQueuesForRoute(publishedTopic);
 
         Assert.assertEquals(bindingsForRoute.iterator().hasNext(), false, "No topic should match");
     }

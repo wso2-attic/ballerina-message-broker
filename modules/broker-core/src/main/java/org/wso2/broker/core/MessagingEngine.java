@@ -93,18 +93,24 @@ final class MessagingEngine {
         }
 
         if (!routingKey.isEmpty()) {
-            exchange.bind(queueHandler, routingKey);
+            exchange.bind(queueHandler.getQueue(), routingKey);
         }
 
     }
 
     void unbind(String queueName, String exchangeName, String routingKey) throws BrokerException {
         Exchange exchange = exchangeRegistry.getExchange(exchangeName);
+        QueueHandler queueHandler = queueRegistry.get(queueName);
+
         if (exchange == null) {
             throw new BrokerException("Unknown exchange name: " + exchangeName);
         }
 
-        exchange.unbind(queueName, routingKey);
+        if (queueHandler == null) {
+            throw new BrokerException("Unknown queue name: " + queueName);
+        }
+
+        exchange.unbind(queueHandler.getQueue(), routingKey);
     }
 
     void createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete) throws BrokerException {
@@ -121,7 +127,7 @@ final class MessagingEngine {
             queueHandler = new QueueHandler(queue);
             queueRegistry.put(queueName, queueHandler);
             // we need to bind every queue to the default exchange
-            ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler, queueName);
+            ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler.getQueue(), queueName);
 
             deliveryTaskService.add(new MessageDeliveryTask(queueHandler));
         } else if (!passive && (queueHandler.getQueue().isDurable() != durable
@@ -135,20 +141,20 @@ final class MessagingEngine {
         Exchange exchange = exchangeRegistry.getExchange(metadata.getExchangeName());
         if (exchange != null) {
             String routingKey = metadata.getRoutingKey();
-            Set<Binding> bindings = exchange.getBindingsForRoute(routingKey);
+            Set<Queue> queues = exchange.getQueuesForRoute(routingKey);
 
-            if (bindings.isEmpty()) {
-                LOGGER.info("Dropping message since no bindings found for routing key " + routingKey);
+            if (queues.isEmpty()) {
+                LOGGER.info("Dropping message since no queues found for routing key " + routingKey);
                 message.release();
             } else {
 
                 messageDao.persist(message); // save the message
 
-                bindings.forEach(binding -> {
-                    QueueHandler queueHandler = queueRegistry.get(binding.getQueueName());
-                    metadata.addOwnedQueue(binding.getQueueName());
+                queues.forEach(queue -> {
+                    QueueHandler queueHandler = queueRegistry.get(queue.getName());
+                    metadata.addOwnedQueue(queue.getName());
                     if (!queueHandler.enqueue(message)) {
-                        LOGGER.info("Dropping message since queue full for " + binding.getQueueName());
+                        LOGGER.info("Dropping message since queue full for " + queue.getName());
                         message.release();
                     }
                 });

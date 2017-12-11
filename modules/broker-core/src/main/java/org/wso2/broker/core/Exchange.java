@@ -53,11 +53,11 @@ interface Exchange {
 
     Type getType();
 
-    void bind(QueueHandler queueHandler, String routingKey);
+    void bind(Queue queue, String routingKey);
 
-    void unbind(String queueName, String routingKey);
+    void unbind(Queue queue, String routingKey);
 
-    Set<Binding> getBindingsForRoute(String routingKey);
+    Set<Queue> getQueuesForRoute(String routingKey);
 
     /**
      * Whether there are any bindings for the exchange.

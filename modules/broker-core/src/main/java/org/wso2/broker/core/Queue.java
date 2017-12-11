@@ -76,7 +76,21 @@ public class Queue {
                 + ", capacity=" + capacity + "]";
     }
 
-    
-    
-    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof Queue) {
+            return name.equals(((Queue) obj).name);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }
