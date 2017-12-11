@@ -61,5 +61,13 @@
             <groupId>org.wso2.messaging</groupId>
             <artifactId>broker-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-amqp</artifactId>
+        </dependency>
     </dependencies>
 </project>
