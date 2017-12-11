@@ -20,6 +20,7 @@
 package org.wso2.broker.common.data.types;
 
 import io.netty.buffer.ByteBuf;
+
 /**
  * AMQP long-int.
  */
@@ -42,5 +43,18 @@ public class LongInt implements EncodableData {
 
     public static LongInt parse(ByteBuf buf) {
         return new LongInt(buf.readInt());
+    }
+
+    @Override
+    public int hashCode() {
+        return value;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        return (obj instanceof LongInt) && (value == ((LongInt) obj).value);
     }
 }
