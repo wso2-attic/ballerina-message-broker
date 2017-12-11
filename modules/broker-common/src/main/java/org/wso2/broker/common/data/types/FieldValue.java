@@ -74,4 +74,28 @@ public class FieldValue implements EncodableData {
                 throw new Exception("Invalid AMQP Field value type");
         }
     }
+
+    public static FieldValue parseLongInt(int value) {
+        return new FieldValue('I', LongInt.parse(value));
+    }
+
+    public static FieldValue parseLongString(String value) {
+        return new FieldValue('S', LongString.parseString(value));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        return (obj instanceof FieldValue)
+                && type == ((FieldValue) obj).type && (value.equals(((FieldValue) obj).value));
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = value.hashCode();
+        hash += type;
+        return hash;
+    }
 }

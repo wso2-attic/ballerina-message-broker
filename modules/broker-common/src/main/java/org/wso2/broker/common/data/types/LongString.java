@@ -92,4 +92,9 @@ public class LongString implements EncodableData {
     public int hashCode() {
         return Arrays.hashCode(content);
     }
+
+    @Override
+    public String toString() {
+        return new String(content, StandardCharsets.UTF_8);
+    }
 }

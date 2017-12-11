@@ -38,11 +38,6 @@ public class ShortString implements EncodableData {
     // We should do a perf test before switching to char sequence.
     private final byte[] content;
 
-    public ShortString(long length, char[] content) {
-        this.length = length;
-        this.content = new String(content).getBytes(StandardCharsets.UTF_8);
-    }
-
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public ShortString(long length, byte[] content) {
         this.length = length;
