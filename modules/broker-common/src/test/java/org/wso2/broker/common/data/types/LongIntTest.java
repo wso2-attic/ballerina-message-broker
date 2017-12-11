@@ -26,7 +26,7 @@ import org.testng.annotations.Test;
 
 public class LongIntTest {
 
-    private static final LongInt TEST_OBJECT = new LongInt(1);
+    private static final LongInt TEST_OBJECT = LongInt.parse(1);
     private static final int DATA_VALUE = 1;
 
     @Test
@@ -36,8 +36,8 @@ public class LongIntTest {
 
     @Test
     public void testEquals() throws Exception {
-        LongInt other = new LongInt(3);
-        LongInt similar = new LongInt(DATA_VALUE);
+        LongInt other = LongInt.parse(3);
+        LongInt similar = LongInt.parse(DATA_VALUE);
 
         Assert.assertTrue(TEST_OBJECT.equals(TEST_OBJECT),
                           "equals() should return true for similar objects");
@@ -51,7 +51,7 @@ public class LongIntTest {
 
     @Test
     public void testHashCode() throws Exception {
-        LongInt similar = new LongInt(DATA_VALUE);
+        LongInt similar = LongInt.parse(DATA_VALUE);
         Assert.assertEquals(similar.hashCode(), TEST_OBJECT.hashCode(), "Hashcode should match for similar "
                 + "data");
     }
