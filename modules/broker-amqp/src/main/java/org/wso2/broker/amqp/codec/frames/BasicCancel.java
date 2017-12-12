@@ -63,6 +63,20 @@ public class BasicCancel extends MethodFrame {
         }
     }
 
+    /**
+     * Getter for consumerTag
+     */
+    public ShortString getConsumerTag() {
+        return consumerTag;
+    }
+
+    /**
+     * Getter for noWait
+     */
+    public boolean isNoWait() {
+        return noWait;
+    }
+
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             ShortString consumerTag = ShortString.parse(buf);
