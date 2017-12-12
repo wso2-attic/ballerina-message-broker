@@ -69,5 +69,9 @@
             <groupId>org.wso2.messaging</groupId>
             <artifactId>broker-amqp</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>integration</artifactId>
+        </dependency>
     </dependencies>
 </project>

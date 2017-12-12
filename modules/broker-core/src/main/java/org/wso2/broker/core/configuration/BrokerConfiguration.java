@@ -36,8 +36,7 @@ public class BrokerConfiguration {
     
     DatasourceConfiguration datasource;
 
-    Transport transport;
-
+    Transport transport = new Transport();
     
     public DatasourceConfiguration getDatasource() {
         return datasource;
@@ -62,9 +61,9 @@ public class BrokerConfiguration {
 
         private String name;
 
-        private String hostName;
+        private String hostName = "localhost";
 
-        private String port;
+        private String port = "5672";
 
         public String getName() {
             return name;

@@ -46,6 +46,7 @@
         <module>modules/broker-core</module>
         <module>modules/broker-amqp</module>
         <module>modules/launcher</module>
+        <module>modules/integration</module>
         <module>modules/coverage-report</module>
     </modules>
 
@@ -64,6 +65,11 @@
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-common</artifactId>
+                <version>${broker.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.messaging</groupId>
+                <artifactId>integration</artifactId>
                 <version>${broker.version}</version>
             </dependency>
             <dependency>
@@ -108,6 +114,16 @@
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.andes.wso2</groupId>
+                <artifactId>andes-client</artifactId>
+                <version>${andes.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.geronimo.specs.wso2</groupId>
+                <artifactId>geronimo-jms_1.1_spec</artifactId>
+                <version>${geronimo-jms_1.1_spec.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -142,5 +158,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.scm.id>wso2-scm-server</project.scm.id>
         <jacoco.plugin.version>0.7.9</jacoco.plugin.version>
+        <andes.version>3.2.19</andes.version>
+        <geronimo-jms_1.1_spec.version>1.1.0.wso2v1</geronimo-jms_1.1_spec.version>
     </properties>
 </project>
