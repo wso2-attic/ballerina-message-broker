@@ -107,6 +107,48 @@ public class ExchangeDeclare extends MethodFrame {
 
     }
 
+    /**
+     * Getter for exchange
+     */
+    public ShortString getExchange() {
+        return exchange;
+    }
+
+    /**
+     * Getter for type
+     */
+    public ShortString getType() {
+        return type;
+    }
+
+    /**
+     * Getter for passive
+     */
+    public boolean isPassive() {
+        return passive;
+    }
+
+    /**
+     * Getter for durable
+     */
+    public boolean isDurable() {
+        return durable;
+    }
+
+    /**
+     * Getter for noWait
+     */
+    public boolean isNoWait() {
+        return noWait;
+    }
+
+    /**
+     * Getter for arguments
+     */
+    public FieldTable getArguments() {
+        return arguments;
+    }
+
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             buf.skipBytes(2);
