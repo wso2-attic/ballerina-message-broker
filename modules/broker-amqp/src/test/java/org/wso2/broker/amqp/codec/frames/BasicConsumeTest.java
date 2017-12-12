@@ -26,12 +26,12 @@ import org.testng.annotations.Test;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 
-public class QueueDeclareTest {
+public class BasicConsumeTest {
     @Test
     public void testEncodeDecode() throws Exception {
-        QueueDeclare testFrame = new QueueDeclare(1,
+        BasicConsume testFrame = new BasicConsume(1,
                                                   ShortString.parseString("queue"),
-                                                  true,
+                                                  ShortString.parseString("1"),
                                                   true,
                                                   true,
                                                   true,
@@ -39,33 +39,32 @@ public class QueueDeclareTest {
                                                   FieldTable.EMPTY_TABLE);
         ByteBuf buf = Unpooled.buffer((int) testFrame.getMethodBodySize());
         testFrame.writeMethod(buf);
-        QueueDeclare decodedFrame = (QueueDeclare) QueueDeclare.getFactory()
+        BasicConsume decodedFrame = (BasicConsume) BasicConsume.getFactory()
                                                                .newInstance(buf, 1, testFrame.getMethodBodySize());
 
         Assert.assertEquals(decodedFrame.getChannel(), testFrame.getChannel(), "Decoded frame's channel should match"
                 + " the original frame's channel");
         Assert.assertEquals(decodedFrame.getQueue(), testFrame.getQueue(), "Decoded frame's queue should match"
                 + " the original frame's queue");
-        Assert.assertEquals(decodedFrame.isPassive(), testFrame.isPassive(), "Decoded frame's passive bit should match"
-                + " the original frame's passive bit");
-        Assert.assertEquals(decodedFrame.isDurable(), testFrame.isDurable(), "Decoded frame's durable bit should match"
-                + " the original frame's durable bit");
+        Assert.assertEquals(decodedFrame.getConsumerTag(), testFrame.getConsumerTag(), "Decoded frame's consumer-tag "
+                + "should match the original frame's consumer-tag");
+        Assert.assertEquals(decodedFrame.isNoLocal(), testFrame.isNoLocal(), "Decoded frame's no-local bit should "
+                + "match the original frame's no-local bit");
+        Assert.assertEquals(decodedFrame.isNoAck(), testFrame.isNoAck(), "Decoded frame's no-ack bit should match"
+                + " the original frame's no-ack bit");
         Assert.assertEquals(decodedFrame.isExclusive(), testFrame.isExclusive(), "Decoded frame's exclusive bit "
                 + "should match the original frame's exclusive bit");
-        Assert.assertEquals(decodedFrame.isAutoDelete(), testFrame.isAutoDelete(), "Decoded frame's auto-delete bit "
-                + "should match the original frame's auto-delete bit");
-        Assert.assertEquals(decodedFrame.isNoWait(), testFrame.isNoWait(), "Decoded frame's no-wait bit should match"
-                + " the original frame's no-wait bit");
+        Assert.assertEquals(decodedFrame.isNoWait(), testFrame.isNoWait(), "Decoded frame's no-wait bit "
+                + "should match the original frame's no-wait bit");
         Assert.assertEquals(decodedFrame.getArguments(), decodedFrame.getArguments(), "Decoded frame's arguments "
                 + "should match the original frame's arguments");
-
     }
 
     @Test
-    public void testEncodeDecodeWithFlaseFlags() throws Exception {
-        QueueDeclare testFrame = new QueueDeclare(1,
+    public void testEncodeDecodeWithFalseFlags() throws Exception {
+        BasicConsume testFrame = new BasicConsume(1,
                                                   ShortString.parseString("queue"),
-                                                  false,
+                                                  ShortString.parseString("1"),
                                                   false,
                                                   false,
                                                   false,
@@ -73,23 +72,25 @@ public class QueueDeclareTest {
                                                   FieldTable.EMPTY_TABLE);
         ByteBuf buf = Unpooled.buffer((int) testFrame.getMethodBodySize());
         testFrame.writeMethod(buf);
-        QueueDeclare decodedFrame = (QueueDeclare) QueueDeclare.getFactory()
+        BasicConsume decodedFrame = (BasicConsume) BasicConsume.getFactory()
                                                                .newInstance(buf, 1, testFrame.getMethodBodySize());
 
         Assert.assertEquals(decodedFrame.getChannel(), testFrame.getChannel(), "Decoded frame's channel should match"
                 + " the original frame's channel");
-        Assert.assertEquals(decodedFrame.isPassive(), testFrame.isPassive(), "Decoded frame's passive bit should match"
-                + " the original frame's passive bit");
-        Assert.assertEquals(decodedFrame.isDurable(), testFrame.isDurable(), "Decoded frame's durable bit should match"
-                + " the original frame's durable bit");
+        Assert.assertEquals(decodedFrame.getQueue(), testFrame.getQueue(), "Decoded frame's queue should match"
+                + " the original frame's queue");
+        Assert.assertEquals(decodedFrame.getConsumerTag(), testFrame.getConsumerTag(), "Decoded frame's consumer-tag "
+                + "should match the original frame's consumer-tag");
+        Assert.assertEquals(decodedFrame.isNoLocal(), testFrame.isNoLocal(), "Decoded frame's no-local bit should "
+                + "match the original frame's no-local bit");
+        Assert.assertEquals(decodedFrame.isNoAck(), testFrame.isNoAck(), "Decoded frame's no-ack bit should match"
+                + " the original frame's no-ack bit");
         Assert.assertEquals(decodedFrame.isExclusive(), testFrame.isExclusive(), "Decoded frame's exclusive bit "
                 + "should match the original frame's exclusive bit");
-        Assert.assertEquals(decodedFrame.isAutoDelete(), testFrame.isAutoDelete(), "Decoded frame's auto-delete bit "
-                + "should match the original frame's auto-delete bit");
-        Assert.assertEquals(decodedFrame.isNoWait(), testFrame.isNoWait(), "Decoded frame's no-wait bit should match"
-                + " the original frame's no-wait bit");
+        Assert.assertEquals(decodedFrame.isNoWait(), testFrame.isNoWait(), "Decoded frame's no-wait bit "
+                + "should match the original frame's no-wait bit");
         Assert.assertEquals(decodedFrame.getArguments(), decodedFrame.getArguments(), "Decoded frame's arguments "
                 + "should match the original frame's arguments");
-
     }
+
 }
