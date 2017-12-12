@@ -98,6 +98,41 @@ public class QueueBind extends MethodFrame {
 
     }
 
+    /**
+     * Getter for queue
+     */
+    public ShortString getQueue() {
+        return queue;
+    }
+
+    /**
+     * Getter for exchange
+     */
+    public ShortString getExchange() {
+        return exchange;
+    }
+
+    /**
+     * Getter for routingKey
+     */
+    public ShortString getRoutingKey() {
+        return routingKey;
+    }
+
+    /**
+     * Getter for noWait
+     */
+    public boolean isNoWait() {
+        return noWait;
+    }
+
+    /**
+     * Getter for arguments
+     */
+    public FieldTable getArguments() {
+        return arguments;
+    }
+
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             buf.skipBytes(2);
