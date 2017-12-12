@@ -82,6 +82,34 @@ public class BasicPublish extends MethodFrame {
         inMemoryMessageAggregator.basicPublishReceived(routingKey, exchange);
     }
 
+    /**
+     * Getter for exchange
+     */
+    public ShortString getExchange() {
+        return exchange;
+    }
+
+    /**
+     * Getter for routingKey
+     */
+    public ShortString getRoutingKey() {
+        return routingKey;
+    }
+
+    /**
+     * Getter for mandatory
+     */
+    public boolean isMandatory() {
+        return mandatory;
+    }
+
+    /**
+     * Getter for immediate
+     */
+    public boolean isImmediate() {
+        return immediate;
+    }
+
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             buf.skipBytes(2);

@@ -60,7 +60,7 @@ public class QueueBindTest {
                                             ShortString.parseString("queue"),
                                             ShortString.parseString("amq.topic"),
                                             ShortString.parseString("a.b.c"),
-                                            true,
+                                            false,
                                             FieldTable.EMPTY_TABLE);
         ByteBuf buf = Unpooled.buffer((int) testFrame.getMethodBodySize());
         testFrame.writeMethod(buf);
