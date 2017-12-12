@@ -71,6 +71,34 @@ public class ConnectionClose extends MethodFrame {
         ctx.writeAndFlush(new ConnectionCloseOk(getChannel())).addListener(ChannelFutureListener.CLOSE);
     }
 
+    /**
+     * Getter for replyCode
+     */
+    public int getReplyCode() {
+        return replyCode;
+    }
+
+    /**
+     * Getter for replyText
+     */
+    public ShortString getReplyText() {
+        return replyText;
+    }
+
+    /**
+     * Getter for classId
+     */
+    public int getClassId() {
+        return classId;
+    }
+
+    /**
+     * Getter for methodId
+     */
+    public int getMethodId() {
+        return methodId;
+    }
+
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             int replyCode = buf.readUnsignedShort();
