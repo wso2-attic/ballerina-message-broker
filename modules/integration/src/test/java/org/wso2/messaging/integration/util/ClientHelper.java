@@ -34,7 +34,7 @@ public class ClientHelper {
     /**
      * Queue connection factory name used
      */
-    public static final String QUEUE_CONNECTION_FACTORY = "andesConnectionFactory";
+    public static final String CONNECTION_FACTORY = "ConnectionFactory";
 
     public static InitialContextBuilder getInitialContextBuilder(String username,
             String password,
@@ -51,7 +51,7 @@ public class ClientHelper {
             contextProperties = new Properties();
             contextProperties.put(Context.INITIAL_CONTEXT_FACTORY, ANDES_INITIAL_CONTEXT_FACTORY);
             String connectionString = getBrokerConnectionString(username, password, brokerHost, port);
-            contextProperties.put("connectionfactory." + QUEUE_CONNECTION_FACTORY, connectionString);
+            contextProperties.put("connectionfactory." + CONNECTION_FACTORY, connectionString);
         }
 
         public InitialContextBuilder withQueue(String queueName) {
@@ -72,18 +72,14 @@ public class ClientHelper {
     /**
      * Generate broker connection string
      *
-     * @param userName
-     *         Username
-     * @param password
-     *         Password
-     * @param brokerHost
-     *         Hostname of broker (E.g. localhost)
-     * @param port
-     *         Port (E.g. 5672)
+     * @param userName   Username
+     * @param password   Password
+     * @param brokerHost Hostname of broker (E.g. localhost)
+     * @param port       Port (E.g. 5672)
      * @return Broker Connection String
      */
     private static String getBrokerConnectionString(String userName, String password,
-            String brokerHost, String port) {
+                                                    String brokerHost, String port) {
 
         return "amqp://" + userName + ":" + password + "@clientID/carbon?brokerlist='tcp://"
                 + brokerHost + ":" + port + "'";

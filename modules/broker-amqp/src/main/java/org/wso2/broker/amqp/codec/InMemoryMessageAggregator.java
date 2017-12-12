@@ -28,6 +28,8 @@ import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
 
+import java.util.function.BiFunction;
+
 /**
  * Handles incoming AMQP message frames and creates {@link Message}.
  */
@@ -58,10 +60,11 @@ public class InMemoryMessageAggregator {
      * @param rawMetadata unprocessed raw metadata {@link ByteBuf}
      * @param payloadSize total message content length in bytes
      */
-    public void headerFrameReceived(ByteBuf rawMetadata, long payloadSize) {
+    public void headerFrameReceived(ByteBuf rawMetadata, long payloadSize,
+                                    BiFunction<ByteBuf, Metadata, Boolean> headerParser) {
         long messageId = broker.getNextMessageId();
         Metadata metadata = new Metadata(messageId, routingKey, exchangeName, payloadSize);
-        metadata.setRawMetadata(rawMetadata);
+        metadata.setRawMetadata(rawMetadata, headerParser);
         message = new Message(metadata);
     }
 

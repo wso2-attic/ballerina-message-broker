@@ -44,10 +44,36 @@ import io.netty.buffer.ByteBuf;
  *               'V'               ; no field
  */
 public class FieldValue implements EncodableData {
-    private final char type;
+
+    private final Type type;
+
     private final EncodableData value;
 
-    public FieldValue(char type, EncodableData value) {
+    /**
+     * Denotes the {@link FieldValue} data type
+     */
+    public enum Type {
+        BOOLEAN('t'),
+        SHORT_SHORT_INT('b'),
+        SHORT_SHORT_UINT('B'),
+        SHORT_INT('U'),
+        SHORT_UINT('u'),
+        SHORT_STRING('s'),
+        LONG_STRING('S'),
+        LONG_INT('I');
+
+        private char type;
+
+        Type(char type) {
+            this.type = type;
+        }
+
+        public char getChar() {
+            return type;
+        }
+    }
+
+    public FieldValue(Type type, EncodableData value) {
         this.type = type;
         this.value = value;
     }
@@ -58,7 +84,7 @@ public class FieldValue implements EncodableData {
 
     @Override
     public void write(ByteBuf buf) {
-        buf.writeByte(type);
+        buf.writeByte(type.getChar());
         value.write(buf);
     }
 
@@ -67,20 +93,28 @@ public class FieldValue implements EncodableData {
 
         switch (type) {
             case 'S':
-                return new FieldValue(type, LongString.parse(buf));
+                return new FieldValue(Type.LONG_STRING, LongString.parse(buf));
             case 'I':
-                return new FieldValue(type, LongInt.parse(buf));
+                return new FieldValue(Type.LONG_INT, LongInt.parse(buf));
             default:
                 throw new Exception("Invalid AMQP Field value type");
         }
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public EncodableData getValue() {
+        return value;
+    }
+
     public static FieldValue parseLongInt(int value) {
-        return new FieldValue('I', LongInt.parse(value));
+        return new FieldValue(Type.LONG_INT, LongInt.parse(value));
     }
 
     public static FieldValue parseLongString(String value) {
-        return new FieldValue('S', LongString.parseString(value));
+        return new FieldValue(Type.LONG_STRING, LongString.parseString(value));
     }
 
     @Override
@@ -95,7 +129,7 @@ public class FieldValue implements EncodableData {
     @Override
     public int hashCode() {
         int hash = value.hashCode();
-        hash += type;
+        hash += type.getChar();
         return hash;
     }
 }

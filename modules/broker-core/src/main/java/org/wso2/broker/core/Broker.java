@@ -21,6 +21,7 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
 
 /**
@@ -86,8 +87,9 @@ public final class Broker {
         messagingEngine.deleteQueue(queueName, ifUnused, ifEmpty);
     }
 
-    public void bind(String queueName, String exchangeName, String routingKey) throws BrokerException {
-        messagingEngine.bind(queueName, exchangeName, routingKey);
+    public void bind(String queueName, String exchangeName,
+                     String routingKey, FieldTable arguments) throws BrokerException {
+        messagingEngine.bind(queueName, exchangeName, routingKey, arguments);
     }
 
     public void unbind(String queueName, String exchangeName, String routingKey) throws BrokerException {

@@ -19,7 +19,7 @@
 
 package org.wso2.broker.core;
 
-import java.util.Set;
+import org.wso2.broker.common.data.types.FieldTable;
 
 /**
  * AMQP direct exchange implementation.
@@ -43,15 +43,15 @@ final class DirectExchange implements Exchange {
         return Type.DIRECT;
     }
 
-    public void bind(Queue queue, String routingKey) {
-        bindingsRegistry.bind(queue, routingKey);
+    public void bind(Queue queue, String routingKey, FieldTable arguments) throws BrokerException {
+        bindingsRegistry.bind(queue, routingKey, arguments);
     }
 
     public void unbind(Queue queue, String routingKey) {
         bindingsRegistry.unbind(queue, routingKey);
     }
 
-    public Set<Queue> getQueuesForRoute(String routingKey) {
+    public BindingSet getBindingsForRoute(String routingKey) {
         return bindingsRegistry.getBindingsForRoute(routingKey);
     }
 

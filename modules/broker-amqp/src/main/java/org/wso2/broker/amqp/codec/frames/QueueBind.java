@@ -83,7 +83,7 @@ public class QueueBind extends MethodFrame {
 
         ctx.fireChannelRead((BlockingTask) () -> {
             try {
-                channel.bind(queue, exchange, routingKey);
+                channel.bind(queue, exchange, routingKey, arguments);
                 ctx.writeAndFlush(new QueueBindOk(getChannel()));
 
             } catch (BrokerException e) {

@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBuf;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * AMQP FieldTable data
@@ -37,6 +38,10 @@ public class FieldTable implements EncodableData {
      * Used to cache size to avoid recalculating size.
      */
     private long size = -1L;
+
+    public FieldTable() {
+        this.properties = new ConcurrentHashMap<>();
+    }
 
     public FieldTable(Map<ShortString, FieldValue> properties) {
         this.properties = properties;
@@ -113,5 +118,9 @@ public class FieldTable implements EncodableData {
         }
 
         return new FieldTable(properties);
+    }
+
+    public FieldValue getValue(ShortString propertyName) {
+        return properties.get(propertyName);
     }
 }

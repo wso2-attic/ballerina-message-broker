@@ -19,9 +19,9 @@
 
 package org.wso2.broker.core;
 
-import java.util.Collections;
+import org.wso2.broker.common.data.types.FieldTable;
+
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -33,19 +33,18 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 final class BindingsRegistry {
 
-    private final Map<String, Set<Queue>> routingKeyToBindingMap;
+    private final Map<String, BindingSet> routingKeyToBindingMap;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     BindingsRegistry() {
         this.routingKeyToBindingMap = new ConcurrentHashMap<>();
     }
 
-    void bind(Queue queue, String bindingKey) {
+    void bind(Queue queue, String bindingKey, FieldTable arguments) throws BrokerException {
         lock.writeLock().lock();
         try {
-            Set<Queue> queues =
-                    routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> ConcurrentHashMap.newKeySet());
-            queues.add(queue);
+            BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
+            bindingSet.add(new Binding(queue, bindingKey, arguments));
         } finally {
             lock.writeLock().unlock();
         }
@@ -54,10 +53,10 @@ final class BindingsRegistry {
     void unbind(Queue queue, String routingKey) {
         lock.writeLock().lock();
         try {
-            Set<Queue> queues = routingKeyToBindingMap.get(routingKey);
-            queues.remove(queue);
+            BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
+            bindingSet.remove(queue);
 
-            if (queues.isEmpty()) {
+            if (bindingSet.isEmpty()) {
                 routingKeyToBindingMap.remove(routingKey);
             }
         } finally {
@@ -65,14 +64,14 @@ final class BindingsRegistry {
         }
     }
 
-    Set<Queue> getBindingsForRoute(String routingKey) {
+    BindingSet getBindingsForRoute(String routingKey) {
         lock.readLock().lock();
         try {
-            Set<Queue> queues = routingKeyToBindingMap.get(routingKey);
-            if (queues == null) {
-                queues = Collections.emptySet();
+            BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
+            if (bindingSet == null) {
+                bindingSet = BindingSet.emptySet();
             }
-            return queues;
+            return bindingSet;
         } finally {
             lock.readLock().unlock();
         }

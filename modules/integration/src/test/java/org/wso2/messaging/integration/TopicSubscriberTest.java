@@ -48,7 +48,7 @@ public class TopicSubscriberTest {
                 .build();
 
         TopicConnectionFactory connectionFactory
-                = (TopicConnectionFactory) initialContext.lookup(ClientHelper.QUEUE_CONNECTION_FACTORY);
+                = (TopicConnectionFactory) initialContext.lookup(ClientHelper.CONNECTION_FACTORY);
         TopicConnection connection = connectionFactory.createTopicConnection();
         connection.start();
 
