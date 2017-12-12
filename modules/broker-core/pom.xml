@@ -32,6 +32,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-common</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <scope>test</scope>
@@ -56,6 +60,7 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -72,6 +77,27 @@
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>javacc-maven-plugin</artifactId>
+                <version>${javacc.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>jms-selector-generated</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>javacc</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>src/main/java/</outputDirectory>
+                            <sourceDirectory>src/main/grammar</sourceDirectory>
+                            <includes>
+                                <include>SelectorParser.jj</include>
+                            </includes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

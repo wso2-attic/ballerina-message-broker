@@ -160,5 +160,10 @@
         <jacoco.plugin.version>0.7.9</jacoco.plugin.version>
         <andes.version>3.2.19</andes.version>
         <geronimo-jms_1.1_spec.version>1.1.0.wso2v1</geronimo-jms_1.1_spec.version>
+        <javacc.plugin.version>2.6</javacc.plugin.version>
+        <maven.checkstyleplugin.excludes>
+            **org/wso2/broker/core/selector/generated/*
+        </maven.checkstyleplugin.excludes>
+        <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
     </properties>
 </project>
