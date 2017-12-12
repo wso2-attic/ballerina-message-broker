@@ -20,6 +20,7 @@
 package org.wso2.broker.amqp;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -50,10 +51,17 @@ public class Server {
     private final int port;
 
     private final Broker broker;
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
+    private EventExecutorGroup ioExecutors;
+    private Channel serverChannel;
 
     public Server(Broker broker, BrokerConfiguration configuration) {
         this.port = Integer.parseInt(configuration.getTransport().getPort());
         this.broker = broker;
+        bossGroup = new NioEventLoopGroup();
+        workerGroup = new NioEventLoopGroup();
+        ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS);
     }
 
     /**
@@ -62,28 +70,46 @@ public class Server {
      * @throws InterruptedException throws Exception when binding to port
      */
     public void run() throws InterruptedException {
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
-        EventExecutorGroup ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS);
         try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(new SocketChannelInitializer(ioExecutors))
-                    .option(ChannelOption.SO_BACKLOG, 128)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
-
-            // Bind and start to accept incoming connections.
-            ChannelFuture f = b.bind(port).sync(); // (7)
+            ChannelFuture f = bindToSocket();
 
             // Wait until the server socket is closed.
             // In this example, this does not happen, but you can do that to gracefully
             // shut down your server.
             f.channel().closeFuture().sync();
         } finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
-            ioExecutors.shutdownGracefully();
+            shutdownExecutors();
+        }
+    }
+
+    private void shutdownExecutors() {
+        workerGroup.shutdownGracefully();
+        bossGroup.shutdownGracefully();
+        ioExecutors.shutdownGracefully();
+    }
+
+    private ChannelFuture bindToSocket() throws InterruptedException {
+        ServerBootstrap b = new ServerBootstrap();
+        b.group(bossGroup, workerGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new SocketChannelInitializer(ioExecutors))
+                .option(ChannelOption.SO_BACKLOG, 128)
+                .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+        // Bind and start to accept incoming connections.
+        return b.bind(port).sync();
+    }
+
+    public void start() throws InterruptedException {
+        ChannelFuture channelFuture = bindToSocket();
+        serverChannel = channelFuture.channel();
+    }
+
+    public void stop() throws InterruptedException {
+        try {
+            serverChannel.close().sync();
+        } finally {
+            shutdownExecutors();
         }
     }
 
