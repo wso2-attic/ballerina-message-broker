@@ -34,44 +34,40 @@ public class ClientHelper {
     /**
      * Queue connection factory name used
      */
-    public static final String QUEUE_CONNECTION_FACTORY = "andesQueueConnectionfactory";
+    public static final String QUEUE_CONNECTION_FACTORY = "andesConnectionFactory";
 
-    /**
-     * Topic connection factory name used
-     */
-    public static final String TOPIC_CONNECTION_FACTORY = "andesTopicConnectionfactory";
-
-    /**
-     * Create a inital context with the given parameters
-     *
-     * @param username
-     *         Username
-     * @param password
-     *         Password
-     * @param brokerHost
-     *         Hostname or IP address of the broker
-     * @param port
-     *         Port used for AMQP transport
-     * @param queueName
-     *         Queue name
-     * @return InitialContext
-     * @throws NamingException
-     */
-    public static InitialContext getInitialContextForQueue(String username,
+    public static InitialContextBuilder getInitialContextBuilder(String username,
             String password,
             String brokerHost,
-            String port,
-            String queueName) throws NamingException {
-
-        Properties contextProperties = new Properties();
-        contextProperties.put(Context.INITIAL_CONTEXT_FACTORY, ANDES_INITIAL_CONTEXT_FACTORY);
-        String connectionString = getBrokerConnectionString(username, password, brokerHost, port);
-        contextProperties.put("connectionfactory." + QUEUE_CONNECTION_FACTORY, connectionString);
-        contextProperties.put("queue." + queueName, queueName);
-
-        return new InitialContext(contextProperties);
+            String port) {
+        return new InitialContextBuilder(username, password, brokerHost, port);
     }
 
+    public static class InitialContextBuilder {
+
+        private final Properties contextProperties;
+
+        public InitialContextBuilder(String username, String password, String brokerHost, String port) {
+            contextProperties = new Properties();
+            contextProperties.put(Context.INITIAL_CONTEXT_FACTORY, ANDES_INITIAL_CONTEXT_FACTORY);
+            String connectionString = getBrokerConnectionString(username, password, brokerHost, port);
+            contextProperties.put("connectionfactory." + QUEUE_CONNECTION_FACTORY, connectionString);
+        }
+
+        public InitialContextBuilder withQueue(String queueName) {
+            contextProperties.put("queue." + queueName, queueName);
+            return this;
+        }
+
+        public InitialContextBuilder withTopic(String topicName) {
+            contextProperties.put("topic." + topicName, topicName);
+            return this;
+        }
+
+        public InitialContext build() throws NamingException {
+            return new InitialContext(contextProperties);
+        }
+    }
 
     /**
      * Generate broker connection string
