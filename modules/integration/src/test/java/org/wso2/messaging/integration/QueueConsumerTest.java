@@ -38,8 +38,8 @@ public class QueueConsumerTest {
 
     @Parameters({ "broker-port"})
     @Test
-    public void testConsumerProducer(String port) throws Exception {
-        String queueName = "MyQueue1";
+    public void testConsumerProducerWithAutoAck(String port) throws Exception {
+        String queueName = "testConsumerProducerWithAutoAck";
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin", "localhost", port)
                 .withQueue(queueName)
@@ -70,6 +70,48 @@ public class QueueConsumerTest {
             Message message = consumer.receive(1000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
         }
+
+        connection.close();
+    }
+
+    @Parameters({ "broker-port"})
+    @Test
+    public void testConsumerProducerWithClientAck(String port) throws Exception {
+        String queueName = "testConsumerProducerWithClientAck";
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .withQueue(queueName)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.QUEUE_CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // publish 100 messages
+        Session producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = producerSession.createQueue(queueName);
+        MessageProducer producer = producerSession.createProducer(queue);
+
+        int numberOfMessages = 100;
+        for (int i = 0; i < numberOfMessages; i++) {
+            producer.send(producerSession.createTextMessage("Test message " + i));
+        }
+        producerSession.close();
+
+        // Consume published messages
+        Session subscriberSession = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
+
+        for (int i = 0; i < numberOfMessages; i++) {
+            Message message = consumer.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+            message.acknowledge();
+        }
+
+        Message message = consumer.receive(1000);
+        Assert.assertNull(message, "Messages should not receive after acknowledging all");
 
         connection.close();
     }
