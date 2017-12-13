@@ -45,6 +45,7 @@
         <module>modules/broker-common</module>
         <module>modules/broker-core</module>
         <module>modules/broker-amqp</module>
+        <module>modules/broker-coordination</module>
         <module>modules/launcher</module>
         <module>modules/integration</module>
         <module>modules/coverage-report</module>
@@ -65,6 +66,11 @@
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-common</artifactId>
+                <version>${broker.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.messaging</groupId>
+                <artifactId>broker-coordination</artifactId>
                 <version>${broker.version}</version>
             </dependency>
             <dependency>
@@ -128,6 +134,11 @@
                 <artifactId>org.wso2.carbon.config</artifactId>
                 <version>${carbon.config.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>${hikari.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -171,5 +182,6 @@
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <carbon.config.version>2.1.5</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
+        <hikari.version>2.7.4</hikari.version>
     </properties>
 </project>
