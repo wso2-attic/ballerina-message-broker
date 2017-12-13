@@ -47,6 +47,7 @@
             <includes>
                 <include>org.wso2.messaging:broker-amqp:jar</include>
                 <include>org.wso2.messaging:broker-core:jar</include>
+                <include>org.wso2.messaging:broker-common:jar</include>
                 <include>org.wso2.messaging:broker-launcher:jar</include>
             </includes>
             <outputDirectory>lib</outputDirectory>
