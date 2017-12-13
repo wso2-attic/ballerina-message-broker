@@ -113,49 +113,49 @@ public class BasicConsume extends MethodFrame {
     }
 
     /**
-     * Getter for queue
+     * Getter for queue.
      */
     public ShortString getQueue() {
         return queue;
     }
 
     /**
-     * Getter for consumerTag
+     * Getter for consumerTag.
      */
     public ShortString getConsumerTag() {
         return consumerTag;
     }
 
     /**
-     * Getter for noLocal
+     * Getter for noLocal.
      */
     public boolean isNoLocal() {
         return noLocal;
     }
 
     /**
-     * Getter for noAck
+     * Getter for noAck.
      */
     public boolean isNoAck() {
         return noAck;
     }
 
     /**
-     * Getter for exclusive
+     * Getter for exclusive.
      */
     public boolean isExclusive() {
         return exclusive;
     }
 
     /**
-     * Getter for noWait
+     * Getter for noWait.
      */
     public boolean isNoWait() {
         return noWait;
     }
 
     /**
-     * Getter for arguments
+     * Getter for arguments.
      */
     public FieldTable getArguments() {
         return arguments;

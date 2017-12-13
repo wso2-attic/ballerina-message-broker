@@ -119,49 +119,49 @@ public class QueueDeclare extends MethodFrame {
     }
 
     /**
-     * Getter for queue
+     * Getter for queue.
      */
     public ShortString getQueue() {
         return queue;
     }
 
     /**
-     * Getter for passive
+     * Getter for passive.
      */
     public boolean isPassive() {
         return passive;
     }
 
     /**
-     * Getter for durable
+     * Getter for durable.
      */
     public boolean isDurable() {
         return durable;
     }
 
     /**
-     * Getter for exclusive
+     * Getter for exclusive.
      */
     public boolean isExclusive() {
         return exclusive;
     }
 
     /**
-     * Getter for autoDelete
+     * Getter for autoDelete.
      */
     public boolean isAutoDelete() {
         return autoDelete;
     }
 
     /**
-     * Getter for noWait
+     * Getter for noWait.
      */
     public boolean isNoWait() {
         return noWait;
     }
 
     /**
-     * Getter for arguments
+     * Getter for arguments.
      */
     public FieldTable getArguments() {
         return arguments;

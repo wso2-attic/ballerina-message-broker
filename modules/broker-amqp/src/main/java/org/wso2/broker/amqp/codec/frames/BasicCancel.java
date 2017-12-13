@@ -64,14 +64,14 @@ public class BasicCancel extends MethodFrame {
     }
 
     /**
-     * Getter for consumerTag
+     * Getter for consumerTag.
      */
     public ShortString getConsumerTag() {
         return consumerTag;
     }
 
     /**
-     * Getter for noWait
+     * Getter for noWait.
      */
     public boolean isNoWait() {
         return noWait;

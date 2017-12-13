@@ -53,7 +53,7 @@ public class ExchangeDeclareTest {
                 + " the original frame's durable bit");
         Assert.assertEquals(decodedFrame.isNoWait(), testFrame.isNoWait(), "Decoded frame's no-wait bit should match"
                 + " the original frame's no-wait bit");
-        Assert.assertEquals(decodedFrame.getArguments(), decodedFrame.getArguments(), "Decoded frame's arguments "
+        Assert.assertEquals(decodedFrame.getArguments(), testFrame.getArguments(), "Decoded frame's arguments "
                 + "should match the original frame's arguments");
 
     }
@@ -86,7 +86,7 @@ public class ExchangeDeclareTest {
                 + " the original frame's durable bit");
         Assert.assertEquals(decodedFrame.isNoWait(), testFrame.isNoWait(), "Decoded frame's no-wait bit should match"
                 + " the original frame's no-wait bit");
-        Assert.assertEquals(decodedFrame.getArguments(), decodedFrame.getArguments(), "Decoded frame's arguments "
+        Assert.assertEquals(decodedFrame.getArguments(), testFrame.getArguments(), "Decoded frame's arguments "
                 + "should match the original frame's arguments");
 
     }

@@ -50,7 +50,7 @@ public class BasicCancelTest {
     public void testEncodeDecodeWithFalseFlags() throws Exception {
         BasicCancel testFrame = new BasicCancel(1,
                                                 ShortString.parseString("1"),
-                                                true);
+                                                false);
         ByteBuf buf = Unpooled.buffer((int) testFrame.getMethodBodySize());
         testFrame.writeMethod(buf);
         BasicCancel decodedFrame = (BasicCancel) BasicCancel.getFactory()

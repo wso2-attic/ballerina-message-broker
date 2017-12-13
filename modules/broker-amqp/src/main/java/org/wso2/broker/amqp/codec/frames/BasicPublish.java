@@ -83,28 +83,28 @@ public class BasicPublish extends MethodFrame {
     }
 
     /**
-     * Getter for exchange
+     * Getter for exchange.
      */
     public ShortString getExchange() {
         return exchange;
     }
 
     /**
-     * Getter for routingKey
+     * Getter for routingKey.
      */
     public ShortString getRoutingKey() {
         return routingKey;
     }
 
     /**
-     * Getter for mandatory
+     * Getter for mandatory.
      */
     public boolean isMandatory() {
         return mandatory;
     }
 
     /**
-     * Getter for immediate
+     * Getter for immediate.
      */
     public boolean isImmediate() {
         return immediate;

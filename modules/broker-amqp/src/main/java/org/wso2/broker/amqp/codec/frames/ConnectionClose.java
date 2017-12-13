@@ -72,28 +72,28 @@ public class ConnectionClose extends MethodFrame {
     }
 
     /**
-     * Getter for replyCode
+     * Getter for replyCode.
      */
     public int getReplyCode() {
         return replyCode;
     }
 
     /**
-     * Getter for replyText
+     * Getter for replyText.
      */
     public ShortString getReplyText() {
         return replyText;
     }
 
     /**
-     * Getter for classId
+     * Getter for classId.
      */
     public int getClassId() {
         return classId;
     }
 
     /**
-     * Getter for methodId
+     * Getter for methodId.
      */
     public int getMethodId() {
         return methodId;
