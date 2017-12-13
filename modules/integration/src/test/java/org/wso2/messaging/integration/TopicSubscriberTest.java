@@ -24,50 +24,51 @@ import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 import org.wso2.messaging.integration.util.ClientHelper;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 
-public class QueueConsumerTest {
+public class TopicSubscriberTest {
 
     @Parameters({ "broker-port"})
     @Test
-    public void testConsumerProducer(String port) throws Exception {
-        String queueName = "MyQueue1";
-        InitialContext initialContextForQueue = ClientHelper
+    public void testSubscriberPublisher(String port) throws Exception {
+        String topicName = "MyTopic1";
+        int numberOfMessages = 100;
+
+        InitialContext initialContext = ClientHelper
                 .getInitialContextBuilder("admin", "admin", "localhost", port)
-                .withQueue(queueName)
+                .withTopic(topicName)
                 .build();
 
-        ConnectionFactory connectionFactory
-                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.QUEUE_CONNECTION_FACTORY);
-        Connection connection = connectionFactory.createConnection();
+        TopicConnectionFactory connectionFactory
+                = (TopicConnectionFactory) initialContext.lookup(ClientHelper.QUEUE_CONNECTION_FACTORY);
+        TopicConnection connection = connectionFactory.createTopicConnection();
         connection.start();
 
-        // publish 100 messages
-        Session producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        Queue queue = producerSession.createQueue(queueName);
-        MessageProducer producer = producerSession.createProducer(queue);
+        // Initialize subscriber
+        TopicSession subscriberSession = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+        Topic subscriberDestination = (Topic) initialContext.lookup(topicName);
+        TopicSubscriber subscriber = subscriberSession.createSubscriber(subscriberDestination);
 
-        int numberOfMessages = 100;
+        // publish 100 messages
+        TopicSession producerSession = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+        TopicPublisher producer = producerSession.createPublisher(subscriberDestination);
+
         for (int i = 0; i < numberOfMessages; i++) {
-            producer.send(producerSession.createTextMessage("Test message " + i));
+            producer.publish(producerSession.createTextMessage("Test message " + i));
         }
+
         producerSession.close();
 
-        // Consume published messages
-        Session subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
-        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
-
         for (int i = 0; i < numberOfMessages; i++) {
-            Message message = consumer.receive(1000);
+            Message message = subscriber.receive(1000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
         }
 

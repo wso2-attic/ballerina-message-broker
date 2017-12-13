@@ -112,6 +112,55 @@ public class BasicConsume extends MethodFrame {
         }
     }
 
+    /**
+     * Getter for queue.
+     */
+    public ShortString getQueue() {
+        return queue;
+    }
+
+    /**
+     * Getter for consumerTag.
+     */
+    public ShortString getConsumerTag() {
+        return consumerTag;
+    }
+
+    /**
+     * Getter for noLocal.
+     */
+    public boolean isNoLocal() {
+        return noLocal;
+    }
+
+    /**
+     * Getter for noAck.
+     */
+    public boolean isNoAck() {
+        return noAck;
+    }
+
+    /**
+     * Getter for exclusive.
+     */
+    public boolean isExclusive() {
+        return exclusive;
+    }
+
+    /**
+     * Getter for noWait.
+     */
+    public boolean isNoWait() {
+        return noWait;
+    }
+
+    /**
+     * Getter for arguments.
+     */
+    public FieldTable getArguments() {
+        return arguments;
+    }
+
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             buf.skipBytes(2);
