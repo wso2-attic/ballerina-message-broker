@@ -61,4 +61,8 @@ public class LongInt implements EncodableData {
     public static LongInt parse(int value) {
         return new LongInt(value);
     }
+
+    public int getInt() {
+        return value;
+    }
 }

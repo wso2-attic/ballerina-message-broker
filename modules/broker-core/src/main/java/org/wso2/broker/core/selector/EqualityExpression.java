@@ -25,13 +25,13 @@ import org.wso2.broker.core.Metadata;
 /**
  * Implementation of a boolean expression. Here we compare two expressions and evaluate to a boolean value.
  */
-public class ComparisonExpression implements BooleanExpression {
+public class EqualityExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
 
     private final Expression<Metadata> right;
 
-    public ComparisonExpression(Expression<Metadata> left, Expression<Metadata> right) {
+    public EqualityExpression(Expression<Metadata> left, Expression<Metadata> right) {
         this.left = left;
         this.right = right;
     }
@@ -40,8 +40,14 @@ public class ComparisonExpression implements BooleanExpression {
     public boolean evaluate(Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
+        if (leftValue == null || rightValue == null) {
+            return false;
+        }
 
-        return (leftValue != null) && (rightValue != null) && leftValue.equals(rightValue);
+        if (rightValue == leftValue || leftValue.equals(rightValue)) {
+            return true;
+        }
 
+        return false;
     }
 }

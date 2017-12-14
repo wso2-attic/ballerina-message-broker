@@ -92,7 +92,7 @@ public class JMSSelectorTest {
                                                         String adminUsername,
                                                         String adminPassword,
                                                         String brokerHostname) throws NamingException, JMSException {
-        String queueName = "testPositiveJMSSelectorConsumerProducer";
+        String queueName = "testNegativeJMSSelectorConsumerProducer";
         InitialContext initialContext = ClientHelper
                 .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(queueName)
@@ -130,5 +130,75 @@ public class JMSSelectorTest {
 
         producerSession.close();
         connection.close();
+    }
+
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
+    @Test
+    public void testMultipleSelectorConsumersForTopic(String port,
+                                                      String adminUsername,
+                                                      String adminPassword,
+                                                      String brokerHostname) throws NamingException, JMSException {
+        String queueName = "testMultipleSelectorConsumersForTopic";
+        InitialContext initialContext = ClientHelper
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
+                .withTopic(queueName)
+                .build();
+
+        TopicConnectionFactory connectionFactory
+                = (TopicConnectionFactory) initialContext.lookup(ClientHelper.CONNECTION_FACTORY);
+        TopicConnection connection = connectionFactory.createTopicConnection();
+        connection.start();
+
+        TopicSession subscriberSession = connection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
+        Topic topic = (Topic) initialContext.lookup(queueName);
+
+        // Subscribe with selectors.
+        TopicSubscriber consumer1 = subscriberSession.createSubscriber(topic, "Age = 10", false);
+        TopicSubscriber consumer2 = subscriberSession.createSubscriber(topic, "Age = 15", false);
+        TopicSubscriber consumer3 = subscriberSession.createSubscriber(topic, "Name = 'John'", false);
+
+        // publish messages with property.
+        TopicSession producerSession = connection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
+        TopicPublisher producer = producerSession.createPublisher(topic);
+
+        String consumer1Message = "Age 10 group";
+        String consumer2Message = "Age 15 group";
+        String consumer3Message = "Name John group";
+        TextMessage textMessage = producerSession.createTextMessage(consumer1Message);
+        textMessage.setIntProperty("Age", 10);
+        producer.send(textMessage);
+
+        textMessage = producerSession.createTextMessage(consumer2Message);
+        textMessage.setIntProperty("Age", 15);
+        producer.send(textMessage);
+
+        textMessage = producerSession.createTextMessage(consumer3Message);
+        textMessage.setStringProperty("Name", "John");
+        producer.send(textMessage);
+
+
+        // Receive and test messages.
+        Message message = consumer1.receive(1000);
+        Assert.assertNotNull(message, "Message not received.");
+        textMessage = (TextMessage) message;
+        Assert.assertEquals(textMessage.getText(), consumer1Message, "Incorrect message received.");
+
+        message = consumer2.receive(1000);
+        Assert.assertNotNull(message, "Message not received.");
+        textMessage = (TextMessage) message;
+        Assert.assertEquals(textMessage.getText(), consumer2Message, "Incorrect message received.");
+
+        message = consumer3.receive(1000);
+        Assert.assertNotNull(message, "Message not received.");
+        textMessage = (TextMessage) message;
+        Assert.assertEquals(textMessage.getText(), consumer3Message, "Incorrect message received.");
+
+        producer.close();
+        consumer1.close();
+        consumer2.close();
+        consumer3.close();
+
+        connection.close();
+
     }
 }

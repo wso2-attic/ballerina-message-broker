@@ -19,6 +19,8 @@
 
 package org.wso2.broker.core.selector;
 
+import java.math.BigDecimal;
+
 /**
  * Represents a constant value in an expression
  */
@@ -33,5 +35,25 @@ public class ConstantExpression implements Expression<Object> {
     @Override
     public Object evaluate(Object object) {
         return value;
+    }
+
+    public static ConstantExpression createFromNumericInteger(String text) {
+
+        if (text.endsWith("l") || text.endsWith("L")) {
+            text = text.substring(0, text.length() - 1);
+        }
+
+        Number value;
+        try {
+            value = Long.valueOf(text);
+        } catch (NumberFormatException e) {
+            value = new BigDecimal(text);
+        }
+
+        if (value.intValue() < Integer.MAX_VALUE && value.intValue() > Integer.MIN_VALUE) {
+            value = value.intValue();
+        }
+
+        return new ConstantExpression(value);
     }
 }

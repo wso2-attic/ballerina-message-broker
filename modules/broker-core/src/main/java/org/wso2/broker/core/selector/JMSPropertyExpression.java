@@ -22,6 +22,7 @@ package org.wso2.broker.core.selector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.data.types.FieldValue;
+import org.wso2.broker.common.data.types.LongInt;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Metadata;
 
@@ -65,9 +66,11 @@ public class JMSPropertyExpression implements Expression<Metadata> {
                 case LONG_STRING:
                 case SHORT_STRING:
                     return header.getValue().toString();
+                case LONG_INT:
+                    return ((LongInt) header.getValue()).getInt();
                 default:
                     return null;
-                    // TODO handle other data types
+                // TODO handle other data types
             }
         }
     }

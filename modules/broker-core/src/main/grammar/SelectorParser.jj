@@ -50,7 +50,7 @@ package org.wso2.broker.core.selector.generated;
 
 import java.io.StringReader;
 import org.wso2.broker.core.selector.BooleanExpression;
-import org.wso2.broker.core.selector.ComparisonExpression;
+import org.wso2.broker.core.selector.EqualityExpression;
 import org.wso2.broker.core.selector.ConstantExpression;
 import org.wso2.broker.core.selector.Expression;
 import org.wso2.broker.core.selector.JMSPropertyExpression;
@@ -103,11 +103,11 @@ TOKEN :
 BooleanExpression parseSelector() :
 { BooleanExpression value; }
 {
-     value=EqualityExpression() <EOF>
+     value=ComparisonExpression() <EOF>
      { return value; }
 }
 
-BooleanExpression EqualityExpression() :
+BooleanExpression ComparisonExpression() :
 {
     BooleanExpression value;
     Expression left;
@@ -118,7 +118,7 @@ BooleanExpression EqualityExpression() :
     (
         "=" right = value()
         {
-            value = new ComparisonExpression(left, right);
+            value = new EqualityExpression(left, right);
         }
     )
 
@@ -144,22 +144,49 @@ Expression identifier() :
 
 Expression value() :
 {
-    Token t;
     Expression expr;
 }
 {
     (
-        t = <STRING_LITERAL>
-        {
-            String text = t.image;
-            char[] charArray = new char[text.length()-2];
-            for (int i = 1; i < text.length() - 1; i++) {
-                charArray[i-1] = text.charAt(i);
-            }
-            expr = new ConstantExpression(new String(charArray));
-        }
-        // TODO: numeric literal
+        expr = stringLiteral()
+        | expr = numericLiteral()
     )
+    {
+        return expr;
+    }
+}
+
+Expression stringLiteral() :
+{
+    Token t;
+    Expression expr;
+}
+{
+    t = <STRING_LITERAL>
+    {
+        String text = t.image;
+        char[] charArray = new char[text.length()-2];
+        for (int i = 1; i < text.length() - 1; i++) {
+            charArray[i-1] = text.charAt(i);
+        }
+        expr = new ConstantExpression(new String(charArray));
+    }
+    {
+        return expr;
+    }
+}
+
+Expression numericLiteral() :
+{
+    Token t;
+    Expression expr;
+}
+{
+    t = <NUMERIC_LITERAL>
+    {
+        String text = t.image;
+        expr = ConstantExpression.createFromNumericInteger(text);
+    }
     {
         return expr;
     }
