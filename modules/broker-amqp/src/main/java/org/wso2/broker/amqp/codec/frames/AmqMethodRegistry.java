@@ -69,7 +69,15 @@ public class AmqMethodRegistry {
 
     public AmqMethodBodyFactory getFactory(short classId, short methodId) throws AmqFrameDecodingException {
         try {
-            return factories[classId][methodId];
+            AmqMethodBodyFactory factory = factories[classId][methodId];
+            if (factory == null) {
+                throw new AmqFrameDecodingException(AmqConstant.COMMAND_INVALID,
+                                              "Method " + methodId + " unknown in AMQP version 0-91"
+                                                      + " (while trying to decode class " + classId + " method "
+                                                      + methodId + ".");
+            }
+
+            return factory;
         } catch (NullPointerException e) {
             throw new AmqFrameDecodingException(AmqConstant.COMMAND_INVALID,
                                                 "Class " + classId + " unknown in AMQP version 0-91"

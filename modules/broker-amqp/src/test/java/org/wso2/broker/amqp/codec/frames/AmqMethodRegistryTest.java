@@ -39,4 +39,9 @@ public class AmqMethodRegistryTest {
         AmqMethodBodyFactory factory = new AmqMethodRegistry().getFactory((short) 2000, (short) 10);
     }
 
+    @Test(expectedExceptions = AmqFrameDecodingException.class)
+    public void testInvalidMethodValueInValidClass() throws Exception {
+        AmqMethodBodyFactory factory = new AmqMethodRegistry().getFactory((short) 60, (short) 5);
+    }
+
 }
