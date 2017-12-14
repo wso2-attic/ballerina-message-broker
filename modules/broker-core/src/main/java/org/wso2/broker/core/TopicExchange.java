@@ -354,8 +354,8 @@ final class TopicExchange implements Exchange {
 
             BindingSet matchedBindingSet = new BindingSet();
             while (nextSetBit > -1) {
-                String subscribedQueue = subscribedTopicList.get(nextSetBit);
-                BindingSet bindingSet = bindingsRegistry.getBindingsForRoute(subscribedQueue);
+                String subscribedPattern = subscribedTopicList.get(nextSetBit);
+                BindingSet bindingSet = bindingsRegistry.getBindingsForRoute(subscribedPattern);
                 matchedBindingSet.add(bindingSet);
                 nextSetBit = matchedBitSet.nextSetBit(nextSetBit + 1);
             }

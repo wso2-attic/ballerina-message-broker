@@ -57,7 +57,6 @@ final class MessagingEngine {
 
     private final ExchangeRegistry exchangeRegistry;
 
-    
     private final MessageDao messageDao;
     
     private final QueueDao queueDao;
@@ -126,7 +125,7 @@ final class MessagingEngine {
             queueHandler = new QueueHandler(queue);
             queueRegistry.put(queueName, queueHandler);
             // we need to bind every queue to the default exchange
-            ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler.getQueue(), queueName, null);
+            ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler.getQueue(), queueName, FieldTable.EMPTY_TABLE);
 
             deliveryTaskService.add(new MessageDeliveryTask(queueHandler));
         } else if (!passive && (queueHandler.getQueue().isDurable() != durable
@@ -179,16 +178,15 @@ final class MessagingEngine {
 
     /**
      * 
-     * @param queueName
+     * @param queueName name of the queue
      * @param deliveryTag synonymous for message id
-     * @param multiple
+     * @param multiple if true acknowledges multiple messages with delivery tag less than the provided delivery tag
      */
     void acknowledge(String queueName, long deliveryTag, boolean multiple) {
         QueueHandler queueHandler = queueRegistry.get(queueName);
         queueHandler.acknowledge(deliveryTag, multiple);
-        
+
         messageDao.detachFromQueue(queueName, deliveryTag);
-        
     }
 
     void deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
@@ -208,8 +206,6 @@ final class MessagingEngine {
             queueRegistry.remove(queueName);
             queueHandler.closeAllConsumers();
             queueDao.delete(queueHandler.getQueue());
-            
-            
         }
     }
 

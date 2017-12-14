@@ -41,7 +41,7 @@ public class BindingSet {
     private final Map<Queue, Binding> unfilteredQueueBindings;
 
 
-    public BindingSet() {
+    BindingSet() {
         filteredQueueBindings = new ConcurrentHashMap<>();
         unfilteredQueueBindings = new ConcurrentHashMap<>();
     }

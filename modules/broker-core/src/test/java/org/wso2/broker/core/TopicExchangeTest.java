@@ -24,6 +24,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.broker.common.data.types.FieldTable;
 
 import java.util.Collection;
 
@@ -55,7 +56,7 @@ public class TopicExchangeTest {
     public void testPositiveSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException {
         Queue queue = new Queue(subscribedPattern, false, false, false, 10);
-        topicExchange.bind(queue, subscribedPattern, null);
+        topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
         BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
 
@@ -71,7 +72,7 @@ public class TopicExchangeTest {
     public void testNegativeSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException {
         Queue queue = new Queue(subscribedPattern, false, false, false, 10);
-        topicExchange.bind(queue, subscribedPattern, null);
+        topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
         BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
         Collection<Binding> unfilteredBindings = bindingSet.getUnfilteredBindings();
@@ -82,7 +83,7 @@ public class TopicExchangeTest {
     public void testTopicRemoval(String subscribedPattern, String publishedTopic) throws BrokerException {
 
         Queue queue = new Queue(subscribedPattern, false, false, false, 1000);
-        topicExchange.bind(queue, subscribedPattern, null);
+        topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
         topicExchange.unbind(queue, subscribedPattern);
 
         BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
