@@ -33,6 +33,7 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.AmqpDecoder;
 import org.wso2.broker.amqp.codec.AmqpEncoder;
+import org.wso2.broker.amqp.codec.AmqpMessageWriter;
 import org.wso2.broker.amqp.codec.BlockingTaskHandler;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
@@ -126,6 +127,7 @@ public class Server {
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
                          .addLast(new AmqpConnectionHandler(broker))
+                         .addLast(new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
     }

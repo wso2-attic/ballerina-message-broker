@@ -24,14 +24,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.amqp.codec.frames.BasicDeliver;
-import org.wso2.broker.amqp.codec.frames.ContentFrame;
-import org.wso2.broker.amqp.codec.frames.HeaderFrame;
-import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Consumer;
-import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
-import org.wso2.broker.core.Metadata;
 
 /**
  * AMQP based message consumer.
@@ -65,25 +59,9 @@ public class AmqpConsumer implements Consumer {
 
     @Override
     public void send(Message message, long deliveryTag) {
-        Metadata metadata = message.getMetadata();
-
-        BasicDeliver basicDeliver = new BasicDeliver(
-                channelId,
-                ShortString.parseString(consumerTag),
-                deliveryTag,
-                false,
-                ShortString.parseString(metadata.getExchangeName()),
-                ShortString.parseString(metadata.getRoutingKey()));
-
-        HeaderFrame headerFrame = new HeaderFrame(channelId, 60, metadata.getContentLength());
-        headerFrame.setRawMetadata(metadata.getRawMetadata());
-        context.write(basicDeliver).addListener(errorLogger);
-        context.write(headerFrame).addListener(errorLogger);
-        for (ContentChunk chunk : message.getContentChunks()) {
-            ContentFrame contentFrame = new ContentFrame(channelId, chunk.getBytes().capacity(), chunk.getBytes());
-            context.write(contentFrame).addListener(errorLogger);
-        }
-        context.flush();
+        AmqpDeliverMessage deliverMessage = new AmqpDeliverMessage(message, consumerTag, channelId, deliveryTag);
+        ChannelFuture channelFuture = context.channel().writeAndFlush(deliverMessage);
+        channelFuture.addListener(errorLogger);
     }
 
     @Override
@@ -113,7 +91,7 @@ public class AmqpConsumer implements Consumer {
         }
 
         @Override
-        public void operationComplete(ChannelFuture future) throws Exception {
+        public void operationComplete(ChannelFuture future) {
             if (!future.isSuccess()) {
                 LOGGER.warn("Error while sending message for " + queueName, future.cause());
             }
