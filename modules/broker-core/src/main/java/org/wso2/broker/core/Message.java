@@ -51,8 +51,15 @@ public class Message {
     }
 
     public void release() {
+        metadata.release();
         for (ContentChunk contentChunk : contentChunks) {
             contentChunk.release();
         }
+    }
+
+    public Message shallowCopy() {
+        Message message = new Message(metadata.shallowCopy());
+        contentChunks.stream().map(ContentChunk::shallowCopy).forEach(message::addChunk);
+        return message;
     }
 }

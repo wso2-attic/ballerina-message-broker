@@ -63,7 +63,6 @@ public class AmqpDeliverMessage {
             ContentFrame contentFrame = new ContentFrame(channelId, chunk.getBytes().capacity(), chunk.getBytes());
             ctx.write(contentFrame);
         }
-
     }
 
 }
