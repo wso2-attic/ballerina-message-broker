@@ -257,4 +257,35 @@ public class Metadata {
             headersPassed = headerParser.apply(rawMetadata, this);
         }
     }
+
+    public Metadata shallowCopy() {
+        Metadata metadata = new Metadata(internalId, routingKey, exchangeName, contentLength);
+        if (rawMetadata != null) {
+            metadata.rawMetadata = rawMetadata.retainedSlice();
+            metadata.headerParser = headerParser;
+        }
+
+        metadata.queueList.addAll(queueList);
+        metadata.headers = headers;
+        metadata.deliveryMode = deliveryMode;
+        metadata.priority = priority;
+        metadata.correlationId = correlationId;
+        metadata.replyTo = replyTo;
+        metadata.expiration = expiration;
+        metadata.messageId = messageId;
+        metadata.timestamp = timestamp;
+        metadata.type = type;
+        metadata.userId = userId;
+        metadata.appId = appId;
+        metadata.contentType = contentType;
+        metadata.contentEncoding = contentEncoding;
+        metadata.headersPassed = headersPassed;
+        return metadata;
+    }
+
+    public void release() {
+        if (rawMetadata != null) {
+            rawMetadata.release();
+        }
+    }
 }

@@ -49,4 +49,8 @@ public class ContentChunk {
     public void release() {
         content.release();
     }
+
+    public ContentChunk shallowCopy() {
+        return new ContentChunk(offset, content.retainedSlice());
+    }
 }

@@ -155,13 +155,12 @@ final class MessagingEngine {
                         published |= pushToInMemoryQueue(message, binding);
                     }
                 }
-                if (published) {
-                    messageDao.persist(message); // save the message
-                } else {
+                if (!published) {
                     LOGGER.info("Dropping message since message didn't have any routes for routing key "
                             + metadata.getRoutingKey());
-                    message.release();
                 }
+                // Release the original message. Shallow copies are distributed
+                message.release(); // TODO: avoid shallow copying when there is only one binding
             }
         } else {
             throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
@@ -173,7 +172,12 @@ final class MessagingEngine {
         String queueName = binding.getQueue().getName();
         QueueHandler queueHandler = queueRegistry.get(queueName);
         metadata.addOwnedQueue(queueName);
-        return queueHandler.enqueue(message);
+        Message copiedMessage = message.shallowCopy();
+        boolean success = queueHandler.enqueue(copiedMessage);
+        if (!success) {
+            copiedMessage.release();
+        }
+        return success;
     }
 
     /**
