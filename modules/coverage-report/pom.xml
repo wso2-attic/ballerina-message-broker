@@ -50,6 +50,9 @@
                                 <dataFileInclude>**/target/coverage-reports/jacoco-unit-fix.exec</dataFileInclude>
                             </dataFileIncludes>
                             <outputDirectory>${basedir}/target/coverage-reports/site</outputDirectory>
+                            <excludes>
+                                <exclude>**/*org/wso2/broker/core/selector/generated/**/*</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                 </executions>

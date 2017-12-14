@@ -24,8 +24,9 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.broker.common.data.types.FieldTable;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Unit tests verifying topic exchange related functionality.
@@ -52,38 +53,42 @@ public class TopicExchangeTest {
     }
 
     @Test(dataProvider = "positiveTopicPairs", description = "Test positive topic matching")
-    public void testPositiveSingleTopicMatching(String subscribedPattern, String publishedTopic) {
+    public void testPositiveSingleTopicMatching(String subscribedPattern,
+                                                String publishedTopic) throws BrokerException {
         Queue queue = new Queue(subscribedPattern, false, false, false, 10);
-        topicExchange.bind(queue, subscribedPattern);
+        topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
-        Set<Queue> bindingsForRoute = topicExchange.getQueuesForRoute(publishedTopic);
+        BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
 
-
-        Assert.assertEquals(bindingsForRoute.iterator().hasNext(), true, "No matches found.");
+        Collection<Binding> unfilteredBindings = bindingSet.getUnfilteredBindings();
+        Assert.assertEquals(unfilteredBindings.iterator().hasNext(), true,
+                "No matches found.");
         Assert.assertEquals(
-                bindingsForRoute.iterator().next().getName(), subscribedPattern, "No matches found.");
+                unfilteredBindings.iterator().next().getQueue().getName(), subscribedPattern,
+                "No matches found.");
     }
 
     @Test(dataProvider = "negativeTopicPairs", description = "Test negative topic matching")
-    public void testNegativeSingleTopicMatching(String subscribedPattern, String publishedTopic) {
+    public void testNegativeSingleTopicMatching(String subscribedPattern,
+                                                String publishedTopic) throws BrokerException {
         Queue queue = new Queue(subscribedPattern, false, false, false, 10);
-        topicExchange.bind(queue, subscribedPattern);
+        topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
-        Set<Queue> bindingsForRoute = topicExchange.getQueuesForRoute(publishedTopic);
-
-        Assert.assertEquals(bindingsForRoute.iterator().hasNext(), false, "No topic should match");
+        BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
+        Collection<Binding> unfilteredBindings = bindingSet.getUnfilteredBindings();
+        Assert.assertEquals(unfilteredBindings.iterator().hasNext(), false, "No topic should match");
     }
 
     @Test(dataProvider = "positiveTopicPairs", description = "Test topic removal")
-    public void testTopicRemoval(String subscribedPattern, String publishedTopic) {
+    public void testTopicRemoval(String subscribedPattern, String publishedTopic) throws BrokerException {
 
         Queue queue = new Queue(subscribedPattern, false, false, false, 1000);
-        topicExchange.bind(queue, subscribedPattern);
+        topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
         topicExchange.unbind(queue, subscribedPattern);
 
-        Set<Queue> bindingsForRoute = topicExchange.getQueuesForRoute(publishedTopic);
-
-        Assert.assertEquals(bindingsForRoute.iterator().hasNext(), false, "No topic should match");
+        BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
+        Collection<Binding> unfilteredBindings = bindingSet.getUnfilteredBindings();
+        Assert.assertEquals(unfilteredBindings.iterator().hasNext(), false, "No topic should match");
     }
 
     @Test

@@ -21,15 +21,13 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.data.types.FieldTable;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
@@ -67,12 +65,12 @@ final class TopicExchange implements Exchange {
     }
 
     @Override
-    public void bind(Queue queue, String routingPattern) {
+    public void bind(Queue queue, String routingPattern, FieldTable arguments) throws BrokerException {
         lock.writeLock().lock();
         try {
             // TODO even though we put a binding with routing pattern we never query using that.
             // Therefore we can get rid of this bind call
-            bindingsRegistry.bind(queue, routingPattern);
+            bindingsRegistry.bind(queue, routingPattern, arguments);
             fastTopicMatcher.add(routingPattern);
         } finally {
             lock.writeLock().unlock();
@@ -91,9 +89,9 @@ final class TopicExchange implements Exchange {
     }
 
     @Override
-    public Set<Queue> getQueuesForRoute(String routingKey) {
+    public BindingSet getBindingsForRoute(String routingKey) {
         if (routingKey.isEmpty()) {
-            return Collections.emptySet();
+            return BindingSet.emptySet();
         }
 
         lock.readLock().lock();
@@ -291,10 +289,10 @@ final class TopicExchange implements Exchange {
             subscribedTopicConstituentsMap.remove(removeIndex);
         }
 
-        Set<Queue> matchingBindings(String topicName) {
+        BindingSet matchingBindings(String topicName) {
 
             if (topicName.isEmpty()) {
-                return Collections.emptySet();
+                return BindingSet.emptySet();
             }
 
             BitSet matchedBitSet = new BitSet(subscribedTopicList.size());
@@ -354,14 +352,15 @@ final class TopicExchange implements Exchange {
                 nextSetBit = matchedBitSet.nextSetBit(0);
             }
 
-            Set<Queue> matchingBindings = new HashSet<>();
+            BindingSet matchedBindingSet = new BindingSet();
             while (nextSetBit > -1) {
-                String subscribedQueue = subscribedTopicList.get(nextSetBit);
-                matchingBindings.addAll(bindingsRegistry.getBindingsForRoute(subscribedQueue));
+                String subscribedPattern = subscribedTopicList.get(nextSetBit);
+                BindingSet bindingSet = bindingsRegistry.getBindingsForRoute(subscribedPattern);
+                matchedBindingSet.add(bindingSet);
                 nextSetBit = matchedBitSet.nextSetBit(nextSetBit + 1);
             }
 
-            return matchingBindings;
+            return matchedBindingSet;
         }
     }
 }

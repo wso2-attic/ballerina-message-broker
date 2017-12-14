@@ -19,7 +19,7 @@
 
 package org.wso2.broker.core;
 
-import java.util.Set;
+import org.wso2.broker.common.data.types.FieldTable;
 
 /**
  * Represents an Exchange for the broker.
@@ -53,11 +53,11 @@ interface Exchange {
 
     Type getType();
 
-    void bind(Queue queue, String routingKey);
+    void bind(Queue queue, String routingKey, FieldTable arguments) throws BrokerException;
 
     void unbind(Queue queue, String routingKey);
 
-    Set<Queue> getQueuesForRoute(String routingKey);
+    BindingSet getBindingsForRoute(String routingKey);
 
     /**
      * Whether there are any bindings for the exchange.

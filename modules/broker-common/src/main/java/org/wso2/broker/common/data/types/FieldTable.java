@@ -114,4 +114,8 @@ public class FieldTable implements EncodableData {
 
         return new FieldTable(properties);
     }
+
+    public FieldValue getValue(ShortString propertyName) {
+        return properties.get(propertyName);
+    }
 }

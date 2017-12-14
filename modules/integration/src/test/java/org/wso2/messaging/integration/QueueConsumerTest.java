@@ -46,7 +46,7 @@ public class QueueConsumerTest {
                 .build();
 
         ConnectionFactory connectionFactory
-                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.QUEUE_CONNECTION_FACTORY);
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
         Connection connection = connectionFactory.createConnection();
         connection.start();
 
@@ -84,7 +84,7 @@ public class QueueConsumerTest {
                 .build();
 
         ConnectionFactory connectionFactory
-                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.QUEUE_CONNECTION_FACTORY);
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
         Connection connection = connectionFactory.createConnection();
         connection.start();
 

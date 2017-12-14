@@ -22,6 +22,7 @@ package org.wso2.broker.amqp.codec;
 import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.AmqpException;
+import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
@@ -43,7 +44,7 @@ public class AmqpChannel {
 
     private final Map<ShortString, AmqpConsumer> consumerMap;
 
-    private InMemoryMessageAggregator messageAggregator;
+    private final InMemoryMessageAggregator messageAggregator;
 
     AmqpChannel(Broker broker, int channelId) {
         this.broker = broker;
@@ -62,8 +63,9 @@ public class AmqpChannel {
         broker.createQueue(queue.toString(), passive, durable, autoDelete);
     }
 
-    public void bind(ShortString queue, ShortString exchange, ShortString routingKey) throws BrokerException {
-        broker.bind(queue.toString(), exchange.toString(), routingKey.toString());
+    public void bind(ShortString queue, ShortString exchange,
+                     ShortString routingKey, FieldTable arguments) throws BrokerException {
+        broker.bind(queue.toString(), exchange.toString(), routingKey.toString(), arguments);
     }
 
     public ShortString consume(ShortString queueName, ShortString consumerTag, boolean exclusive,

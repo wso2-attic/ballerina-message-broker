@@ -1,0 +1,193 @@
+/*
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+
+options {
+  STATIC = false;
+  UNICODE_INPUT = true;
+
+  // some performance optimizations
+  ERROR_REPORTING = false;
+}
+
+PARSER_BEGIN(MessageFilter)
+
+/*
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+
+package org.wso2.broker.core.selector.generated;
+
+import java.io.StringReader;
+import org.wso2.broker.core.selector.BooleanExpression;
+import org.wso2.broker.core.selector.EqualityExpression;
+import org.wso2.broker.core.selector.ConstantExpression;
+import org.wso2.broker.core.selector.Expression;
+import org.wso2.broker.core.selector.JMSPropertyExpression;
+
+public class MessageFilter {
+
+    public MessageFilter() {
+        this(new StringReader(""));
+    }
+
+    public BooleanExpression parse(String selectorString) throws Exception {
+        this.ReInit(new StringReader(selectorString));
+        return parseSelector();
+    }
+
+}
+
+PARSER_END(MessageFilter)
+SKIP :
+{
+  " "|"\t"|"\n"|"\r"
+}
+
+TOKEN [IGNORE_CASE] :
+{
+    <  NOT     : "NOT">
+  | <  AND     : "AND">
+  | <  OR      : "OR">
+  | <  BETWEEN : "BETWEEN">
+  | <  LIKE    : "LIKE">
+  | <  ESCAPE  : "ESCAPE">
+  | <  IN      : "IN">
+  | <  IS      : "IS">
+  | <  TRUE    : "TRUE" >
+  | <  FALSE   : "FALSE" >
+  | <  NULL    : "NULL" >
+}
+
+TOKEN [IGNORE_CASE] :
+{
+    <NUMERIC_LITERAL: (["0"-"9"])+>
+   | <STRING_LITERAL: "'" (("''") | ~["'"] )* "'">
+}
+
+TOKEN :
+{
+    <IDENTIFIER : ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_","$"])*>
+}
+
+BooleanExpression parseSelector() :
+{ BooleanExpression value; }
+{
+     value=ComparisonExpression() <EOF>
+     { return value; }
+}
+
+BooleanExpression ComparisonExpression() :
+{
+    BooleanExpression value;
+    Expression left;
+    Expression right;
+}
+{
+    left = identifier()
+    (
+        "=" right = value()
+        {
+            value = new EqualityExpression(left, right);
+        }
+    )
+
+    { return value; }
+}
+
+Expression identifier() :
+{
+    Token t;
+    Expression expr;
+}
+{
+    (
+        t = <IDENTIFIER>
+        {
+            expr = new JMSPropertyExpression(t.image);
+        }
+    )
+    {
+        return expr;
+    }
+}
+
+Expression value() :
+{
+    Expression expr;
+}
+{
+    (
+        expr = stringLiteral()
+        | expr = numericLiteral()
+    )
+    {
+        return expr;
+    }
+}
+
+Expression stringLiteral() :
+{
+    Token t;
+    Expression expr;
+}
+{
+    t = <STRING_LITERAL>
+    {
+        String text = t.image;
+        char[] charArray = new char[text.length()-2];
+        for (int i = 1; i < text.length() - 1; i++) {
+            charArray[i-1] = text.charAt(i);
+        }
+        expr = new ConstantExpression(new String(charArray));
+    }
+    {
+        return expr;
+    }
+}
+
+Expression numericLiteral() :
+{
+    Token t;
+    Expression expr;
+}
+{
+    t = <NUMERIC_LITERAL>
+    {
+        String text = t.image;
+        expr = ConstantExpression.createFromNumericInteger(text);
+    }
+    {
+        return expr;
+    }
+}

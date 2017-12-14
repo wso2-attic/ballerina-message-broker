@@ -20,9 +20,9 @@
 package org.wso2.broker.core;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.store.dao.DaoFactory;
 import org.wso2.broker.core.store.dao.MessageDao;
@@ -30,7 +30,6 @@ import org.wso2.broker.core.store.dao.QueueDao;
 import org.wso2.broker.core.task.TaskExecutorService;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
@@ -58,7 +57,6 @@ final class MessagingEngine {
 
     private final ExchangeRegistry exchangeRegistry;
 
-    
     private final MessageDao messageDao;
     
     private final QueueDao queueDao;
@@ -81,7 +79,7 @@ final class MessagingEngine {
         messageIdGenerator = new AtomicLong(0);
     }
 
-    void bind(String queueName, String exchangeName, String routingKey) throws BrokerException {
+    void bind(String queueName, String exchangeName, String routingKey, FieldTable arguments) throws BrokerException {
         Exchange exchange = exchangeRegistry.getExchange(exchangeName);
         QueueHandler queueHandler = queueRegistry.get(queueName);
         if (exchange == null) {
@@ -93,7 +91,7 @@ final class MessagingEngine {
         }
 
         if (!routingKey.isEmpty()) {
-            exchange.bind(queueHandler.getQueue(), routingKey);
+            exchange.bind(queueHandler.getQueue(), routingKey, arguments);
         }
 
     }
@@ -127,7 +125,7 @@ final class MessagingEngine {
             queueHandler = new QueueHandler(queue);
             queueRegistry.put(queueName, queueHandler);
             // we need to bind every queue to the default exchange
-            ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler.getQueue(), queueName);
+            ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler.getQueue(), queueName, FieldTable.EMPTY_TABLE);
 
             deliveryTaskService.add(new MessageDeliveryTask(queueHandler));
         } else if (!passive && (queueHandler.getQueue().isDurable() != durable
@@ -141,41 +139,54 @@ final class MessagingEngine {
         Exchange exchange = exchangeRegistry.getExchange(metadata.getExchangeName());
         if (exchange != null) {
             String routingKey = metadata.getRoutingKey();
-            Set<Queue> queues = exchange.getQueuesForRoute(routingKey);
+            BindingSet bindingSet = exchange.getBindingsForRoute(routingKey);
 
-            if (queues.isEmpty()) {
+            if (bindingSet.isEmpty()) {
                 LOGGER.info("Dropping message since no queues found for routing key " + routingKey);
                 message.release();
             } else {
+                boolean published = false;
+                for (Binding binding : bindingSet.getUnfilteredBindings()) {
+                    published |= pushToInMemoryQueue(message, binding);
+                }
 
-                messageDao.persist(message); // save the message
-
-                queues.forEach(queue -> {
-                    QueueHandler queueHandler = queueRegistry.get(queue.getName());
-                    metadata.addOwnedQueue(queue.getName());
-                    if (!queueHandler.enqueue(message)) {
-                        LOGGER.info("Dropping message since queue full for " + queue.getName());
-                        message.release();
+                for (Binding binding : bindingSet.getFilteredBindings()) {
+                    if (binding.getJmsFilter().evaluate(metadata)) {
+                        published |= pushToInMemoryQueue(message, binding);
                     }
-                });
-            }            
+                }
+                if (published) {
+                    messageDao.persist(message); // save the message
+                } else {
+                    LOGGER.info("Dropping message since message didn't have any routes for routing key "
+                            + metadata.getRoutingKey());
+                    message.release();
+                }
+            }
         } else {
             throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
         }
     }
 
+    private boolean pushToInMemoryQueue(Message message, Binding binding) {
+        Metadata metadata = message.getMetadata();
+        String queueName = binding.getQueue().getName();
+        QueueHandler queueHandler = queueRegistry.get(queueName);
+        metadata.addOwnedQueue(queueName);
+        return queueHandler.enqueue(message);
+    }
+
     /**
      * 
-     * @param queueName
+     * @param queueName name of the queue
      * @param deliveryTag synonymous for message id
-     * @param multiple
+     * @param multiple if true acknowledges multiple messages with delivery tag less than the provided delivery tag
      */
     void acknowledge(String queueName, long deliveryTag, boolean multiple) {
         QueueHandler queueHandler = queueRegistry.get(queueName);
         queueHandler.acknowledge(deliveryTag, multiple);
-        
+
         messageDao.detachFromQueue(queueName, deliveryTag);
-        
     }
 
     void deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
@@ -195,8 +206,6 @@ final class MessagingEngine {
             queueRegistry.remove(queueName);
             queueHandler.closeAllConsumers();
             queueDao.delete(queueHandler.getQueue());
-            
-            
         }
     }
 

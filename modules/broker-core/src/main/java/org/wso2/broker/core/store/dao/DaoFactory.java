@@ -34,7 +34,7 @@ public class DaoFactory {
     
     public DaoFactory(BrokerConfiguration.DatasourceConfiguration datasourceConfiguration) {
        // this.datasourceConfiguration = datasourceConfiguration;
-        
+
     }
     
     public QueueDao createQueueDao() {

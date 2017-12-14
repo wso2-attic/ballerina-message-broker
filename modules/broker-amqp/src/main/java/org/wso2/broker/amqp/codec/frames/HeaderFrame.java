@@ -21,17 +21,22 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.InMemoryMessageAggregator;
 import org.wso2.broker.common.data.types.EncodableData;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
+import org.wso2.broker.core.Metadata;
 
 /**
  * AMQP header frame
  */
 public class HeaderFrame extends GeneralFrame {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HeaderFrame.class);
 
     private static final short BYTE_DEFAULT = -1;
     private static final long LONG_DEFAULT = -1L;
@@ -167,7 +172,15 @@ public class HeaderFrame extends GeneralFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
         InMemoryMessageAggregator inMemoryMessageAggregator = channel.getMessageAggregator();
-        inMemoryMessageAggregator.headerFrameReceived(rawMetadata, bodySize);
+        inMemoryMessageAggregator.headerFrameReceived(rawMetadata, bodySize, (byteBuf, metadata) -> {
+            try {
+                parse(byteBuf, metadata);
+                return true;
+            } catch (Exception e) {
+                LOGGER.error("Error occurred while parsing metadata headers", e);
+            }
+            return false;
+        });
     }
 
     private void writeProperty(ByteBuf buf, long property) {
@@ -188,12 +201,11 @@ public class HeaderFrame extends GeneralFrame {
         }
     }
 
-    public static HeaderFrame parse(ByteBuf buf, int channel) throws Exception {
-        int classId = buf.readUnsignedShort();
-        // ignore weight
-        buf.skipBytes(2);
-        long bodySize = buf.readLong();
-        HeaderFrame headerFrame = new HeaderFrame(channel, classId, bodySize);
+    public Metadata parse(ByteBuf buf, Metadata metadata) throws Exception {
+        buf.markReaderIndex();
+        // skip class id (2), weight (2) and body size (8) bytes
+        buf.skipBytes(12);
+
         int propertyFlags = buf.readUnsignedShort();
 
         // Skip other property flags if exists
@@ -205,46 +217,46 @@ public class HeaderFrame extends GeneralFrame {
 
         // read known properties
         if ((propertyFlags & CONTENT_TYPE_MASK) != 0) {
-            headerFrame.setContentType(ShortString.parse(buf));
+            metadata.setContentType(ShortString.parse(buf));
         }
         if ((propertyFlags & ENCODING_MASK) != 0) {
-            headerFrame.setContentEncoding(ShortString.parse(buf));
+            metadata.setContentEncoding(ShortString.parse(buf));
         }
         if ((propertyFlags & HEADERS_MASK) != 0) {
-            headerFrame.setHeaders(FieldTable.parse(buf));
+            metadata.setHeaders(FieldTable.parse(buf));
         }
         if ((propertyFlags & DELIVERY_MODE_MASK) != 0) {
-            headerFrame.setDeliveryMode(buf.readUnsignedByte());
+            metadata.setDeliveryMode(buf.readUnsignedByte());
         }
         if ((propertyFlags & PRIORITY_MASK) != 0) {
-            headerFrame.setPriority(buf.readUnsignedByte());
+            metadata.setPriority(buf.readUnsignedByte());
         }
         if ((propertyFlags & CORRELATION_ID_MASK) != 0) {
-            headerFrame.setCorrelationId(ShortString.parse(buf));
+            metadata.setCorrelationId(ShortString.parse(buf));
         }
         if ((propertyFlags & REPLY_TO_MASK) != 0) {
-            headerFrame.setReplyTo(ShortString.parse(buf));
+            metadata.setReplyTo(ShortString.parse(buf));
         }
         if ((propertyFlags & EXPIRATION_MASK) != 0) {
-            headerFrame.setExpiration(ShortString.parse(buf));
+            metadata.setExpiration(ShortString.parse(buf));
         }
         if ((propertyFlags & MESSAGE_ID_MASK) != 0) {
-            headerFrame.setMessageId(ShortString.parse(buf));
+            metadata.setMessageId(ShortString.parse(buf));
         }
         if ((propertyFlags & TIMESTAMP_MASK) != 0) {
-            headerFrame.setTimestamp(buf.readLong());
+            metadata.setTimestamp(buf.readLong());
         }
         if ((propertyFlags & TYPE_MASK) != 0) {
-            headerFrame.setType(ShortString.parse(buf));
+            metadata.setType(ShortString.parse(buf));
         }
         if ((propertyFlags & USER_ID_MASK) != 0) {
-            headerFrame.setUserId(ShortString.parse(buf));
+            metadata.setUserId(ShortString.parse(buf));
         }
         if ((propertyFlags & APPLICATION_ID_MASK) != 0) {
-            headerFrame.setAppId(ShortString.parse(buf));
+            metadata.setAppId(ShortString.parse(buf));
         }
-
-        return headerFrame;
+        buf.resetReaderIndex();
+        return metadata;
     }
 
     public static HeaderFrame lazyParse(ByteBuf buf, int channelId, long payloadSize) {

@@ -123,7 +123,7 @@ final class QueueHandler {
        
         Message message = messageQueue.poll();
         if (message != null) {
-            pendingMessages.put(message.getMetadata().getMessageId(), message);
+            pendingMessages.put(message.getMetadata().getInternalId(), message);
         }
         return message;
     }
