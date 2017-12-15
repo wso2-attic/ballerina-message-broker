@@ -25,6 +25,7 @@ import org.testng.ITestContext;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Parameters;
+import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.Server;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
@@ -38,16 +39,18 @@ public class SuiteInitializer {
     private Broker broker;
     private Server server;
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "broker-hostname"})
     @BeforeSuite
-    public void beforeSuite(String port, ITestContext context) throws Exception {
+    public void beforeSuite(String port, String hostname, ITestContext context) throws Exception {
         LOGGER.info("Starting broker on " + port + " for suite " + context.getSuite().getName());
         BrokerConfiguration configuration = new BrokerConfiguration();
-        configuration.getTransport().setPort(port);
+        AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
+        serverConfiguration.getNonSecure().setPort(port);
+        serverConfiguration.getNonSecure().setHostName(hostname);
 
         broker = new Broker(configuration);
         broker.startMessageDelivery();
-        server = new Server(broker, configuration);
+        server = new Server(broker, serverConfiguration);
         server.start();
     }
 

@@ -36,7 +36,6 @@ import org.wso2.broker.amqp.codec.AmqpEncoder;
 import org.wso2.broker.amqp.codec.AmqpMessageWriter;
 import org.wso2.broker.amqp.codec.BlockingTaskHandler;
 import org.wso2.broker.core.Broker;
-import org.wso2.broker.core.configuration.BrokerConfiguration;
 
 /**
  * AMQP Server implementation.
@@ -52,13 +51,15 @@ public class Server {
     private final int port;
 
     private final Broker broker;
+    private final String hostname;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private EventExecutorGroup ioExecutors;
     private Channel serverChannel;
 
-    public Server(Broker broker, BrokerConfiguration configuration) {
-        this.port = Integer.parseInt(configuration.getTransport().getPort());
+    public Server(Broker broker, AmqpServerConfiguration configuration) {
+        this.hostname = configuration.getNonSecure().getHostName();
+        this.port = Integer.parseInt(configuration.getNonSecure().getPort());
         this.broker = broker;
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
@@ -98,7 +99,7 @@ public class Server {
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
         // Bind and start to accept incoming connections.
-        return b.bind(port).sync();
+        return b.bind(hostname, port).sync();
     }
 
     public void start() throws InterruptedException {

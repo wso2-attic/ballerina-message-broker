@@ -35,8 +35,6 @@ public class BrokerConfiguration {
     public static final String SYSTEM_PARAM_BROKER_CONFIG_FILE = "broker.config";
     
     DatasourceConfiguration datasource;
-
-    Transport transport = new Transport();
     
     public DatasourceConfiguration getDatasource() {
         return datasource;
@@ -44,56 +42,6 @@ public class BrokerConfiguration {
 
     public void setDatasource(DatasourceConfiguration datasource) {
         this.datasource = datasource;
-    }
-
-    public Transport getTransport() {
-        return transport;
-    }
-
-    public void setTransport(Transport transport) {
-        this.transport = transport;
-    }
-
-    /**
-     * Represents a server side transport configuration for broker.
-     */
-    public static class Transport {
-
-        private String name;
-
-        private String hostName = "localhost";
-
-        private String port = "5672";
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getHostName() {
-            return hostName;
-        }
-
-        public void setHostName(String hostName) {
-            this.hostName = hostName;
-        }
-
-        public String getPort() {
-            return port;
-        }
-
-        public void setPort(String port) {
-            this.port = port;
-        }
-
-        @Override
-        public String toString() {
-            return "Transport [name=" + name + ", hostName=" + hostName + ", port=" + port + "]";
-        }
-
     }
 
     /**

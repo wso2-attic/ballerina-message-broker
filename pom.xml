@@ -124,6 +124,11 @@
                 <artifactId>geronimo-jms_1.1_spec</artifactId>
                 <version>${geronimo-jms_1.1_spec.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.config</groupId>
+                <artifactId>org.wso2.carbon.config</artifactId>
+                <version>${carbon.config.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -165,5 +170,6 @@
             **org/wso2/broker/core/selector/generated/*
         </maven.checkstyleplugin.excludes>
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
+        <carbon.config.version>2.1.5</carbon.config.version>
     </properties>
 </project>
