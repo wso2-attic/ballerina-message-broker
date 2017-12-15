@@ -151,7 +151,7 @@ final class MessagingEngine {
                 }
 
                 for (Binding binding : bindingSet.getFilteredBindings()) {
-                    if (binding.getJmsFilter().evaluate(metadata)) {
+                    if (binding.getFilterExpression().evaluate(metadata)) {
                         published |= pushToInMemoryQueue(message, binding);
                     }
                 }
