@@ -38,7 +38,7 @@ final class Binding {
 
     private final FieldTable arguments;
 
-    private final BooleanExpression jmsFilter;
+    private final BooleanExpression filterExpression;
 
     Binding(Queue queue, String routingKey, FieldTable arguments) throws BrokerException {
         this.queue = queue;
@@ -46,14 +46,14 @@ final class Binding {
         this.arguments = arguments;
         String filterString = null;
         try {
-            MessageFilter messageFilter = new MessageFilter();
             FieldValue fieldValue = arguments.getValue(JMS_SELECTOR_ARGUMENT);
             if (fieldValue != null &&
                     fieldValue.getType() == FieldValue.Type.LONG_STRING &&
                     !(filterString = fieldValue.getValue().toString()).isEmpty()) {
-                jmsFilter = messageFilter.parse(filterString);
+                MessageFilter messageFilter = new MessageFilter(filterString);
+                filterExpression = messageFilter.parse();
             } else {
-                jmsFilter = null;
+                filterExpression = null;
             }
         } catch (Exception e) {
             throw new BrokerException("Error parsing the message filter string [ " + filterString + " ]", e);
@@ -73,7 +73,7 @@ final class Binding {
         return arguments.getValue(propertyName);
     }
 
-    BooleanExpression getJmsFilter() {
-        return jmsFilter;
+    BooleanExpression getFilterExpression() {
+        return filterExpression;
     }
 }

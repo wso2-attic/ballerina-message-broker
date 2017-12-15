@@ -61,8 +61,11 @@ public class MessageFilter {
         this(new StringReader(""));
     }
 
-    public BooleanExpression parse(String selectorString) throws Exception {
-        this.ReInit(new StringReader(selectorString));
+    public MessageFilter(String selectorString) {
+        this(new StringReader(selectorString));
+    }
+
+    public BooleanExpression parse() throws Exception {
         return parseSelector();
     }
 
@@ -91,7 +94,7 @@ TOKEN [IGNORE_CASE] :
 
 TOKEN [IGNORE_CASE] :
 {
-    <NUMERIC_LITERAL: (["0"-"9"])+>
+    <NUMERIC_LITERAL: (["0"-"9"])+(["L"])?>
    | <STRING_LITERAL: "'" (("''") | ~["'"] )* "'">
 }
 
