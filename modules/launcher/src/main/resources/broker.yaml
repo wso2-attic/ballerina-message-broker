@@ -14,14 +14,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-datasource:
- url: jdbc:mysql://localhost/broker
- databaseDriver: com.mysql.jdbc.Driver
- user: root
- password: root
+broker:
+ datasource:
+  url: jdbc:mysql://localhost/broker
+  databaseDriver: com.mysql.jdbc.Driver
+  user: root
+  password: root
 
-transport:
- name: amqp
- hostName: localhost
- port: 5672
- 
+transport.amqp:
+ nonSecure:
+  hostName: localhost
+  port: 5672
+
+ ssl:
+  hostName: localhost
+  port: 8672
+
+  keyStore:
+   location: resources/security/wso2carbon.jks
+   password: wso2carbon
+   certType: SunX509
+
+  trustStore:
+   location: resources/security/client-truststore.jks
+   password: wso2carbon
+   certType: SunX509
