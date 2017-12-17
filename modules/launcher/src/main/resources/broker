@@ -73,6 +73,7 @@ $JAVACMD \
     $JAVA_OPTS \
     -classpath "$MESSAGE_BROKER_CLASSPATH" \
     -Dfile.encoding=UTF8 \
-    -Djava.util.logging.config.file="$MESSAGE_BROKER_HOME/conf/log4j.properties" \
+    -Dmessage.broker.home="$MESSAGE_BROKER_HOME" \
+    -Dlog4j.configuration="file:$MESSAGE_BROKER_HOME/conf/log4j.properties" \
     -Dbroker.config="$MESSAGE_BROKER_HOME/conf/broker.yaml" \
     org.wso2.broker.Main
