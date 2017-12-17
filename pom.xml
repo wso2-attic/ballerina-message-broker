@@ -90,8 +90,7 @@
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>annotations</artifactId>
-                <scope>compile</scope>
-                <version>3.0.1</version>
+                <version>${findbugs.annotations.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
@@ -171,5 +170,6 @@
         </maven.checkstyleplugin.excludes>
         <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <carbon.config.version>2.1.5</carbon.config.version>
+        <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
     </properties>
 </project>
