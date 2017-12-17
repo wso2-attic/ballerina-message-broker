@@ -12,8 +12,8 @@ Please follow the steps below to build message broker from source code.
 
 1. Clone or download the source code from this repository (https://github.com/wso2/message-broker)
 2. Run the Maven command `mvn clean install` from the root directory of the repository
-3. Extract the message broker distribution created at `message-broker/modules/launcher/target/message-broker-<version>
-.zip`
+3. Extract the message broker distribution created at 
+`message-broker/modules/launcher/target/message-broker-<version>.zip`
 
 ## Folder Structure of the distribution
 
@@ -31,6 +31,10 @@ Please follow the steps below to build message broker from source code.
 - **conf/broker.yaml** - main configuration file
 - **conf/log4j.properties** - logging configuration file
 - **lib** - contains all the required jars
+
+## Documentation
+
+Please refer to the document on [message broker architecture](docs/architecture.md) for more information on the internal design.
 
 ## Licence
 
