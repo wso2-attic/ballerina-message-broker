@@ -139,6 +139,12 @@
                 <artifactId>HikariCP</artifactId>
                 <version>${hikari.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.derby</groupId>
+                <artifactId>derby</artifactId>
+                <version>${derby.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -183,5 +189,6 @@
         <carbon.config.version>2.1.5</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
         <hikari.version>2.7.4</hikari.version>
+        <derby.version>10.13.1.1</derby.version>
     </properties>
 </project>

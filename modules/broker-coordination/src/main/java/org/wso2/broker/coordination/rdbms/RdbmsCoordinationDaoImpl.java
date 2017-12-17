@@ -52,7 +52,7 @@ public class RdbmsCoordinationDaoImpl {
     private DataSource datasource;
 
     /**
-     * Default constructor.
+     * Constructor which uses the provided datasource configuration to create the datasource.
      *
      * @param datasourceConfiguration the configuration for the datasource
      */
@@ -64,6 +64,15 @@ public class RdbmsCoordinationDaoImpl {
         hikariDatasourceConfig.setPassword(datasourceConfiguration.getPassword());
         hikariDatasourceConfig.setAutoCommit(false);
         datasource = new HikariDataSource(hikariDatasourceConfig);
+    }
+
+    /**
+     * Constructor which uses the provided datasource.
+     *
+     * @param datasource the datasource to use
+     */
+    public RdbmsCoordinationDaoImpl(DataSource datasource) {
+        this.datasource = datasource;
     }
 
     /**

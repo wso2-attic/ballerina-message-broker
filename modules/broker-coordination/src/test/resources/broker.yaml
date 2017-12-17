@@ -1,0 +1,3 @@
+haConfig:
+ enabled: true
+ strategy: org.wso2.broker.coordination.rdbms.RdbmsHaStrategy

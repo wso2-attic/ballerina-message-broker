@@ -25,7 +25,6 @@ import org.wso2.broker.coordination.CoordinationException;
 import org.wso2.broker.coordination.CoordinationStrategy;
 import org.wso2.broker.coordination.node.NodeDetail;
 import org.wso2.broker.coordination.node.NodeHeartbeatData;
-import org.wso2.broker.core.configuration.BrokerConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,8 +119,11 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
 
     /**
      * Default constructor.
+     *
+     * @param rdbmsCoordinationDaoImpl       the RdbmsCoordinationDaoImpl to use for communication with the database
+     * @param rdbmsCoordinationConfiguration the configuration for RDBMS coordination
      */
-    public RdbmsCoordinationStrategy(BrokerConfiguration brokerConfiguration,
+    public RdbmsCoordinationStrategy(RdbmsCoordinationDaoImpl rdbmsCoordinationDaoImpl,
                                      CoordinationConfiguration.RdbmsCoordinationConfiguration
                                              rdbmsCoordinationConfiguration) {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("RdbmsCoordinationStrategy-%d")
@@ -144,7 +146,7 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
         }
 
         localNodeId = rdbmsCoordinationConfiguration.getNodeId();
-        coordinationDao = new RdbmsCoordinationDaoImpl(brokerConfiguration.getDatasource());
+        coordinationDao = rdbmsCoordinationDaoImpl;
     }
 
     /*
