@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.broker.core.security.AuthenticationManager;
 
 /**
  * Broker API class.
@@ -34,10 +35,21 @@ public final class Broker {
     private final MessagingEngine messagingEngine;
 
     private final BrokerConfiguration brokerConfiguration;
-    
+
+    private final AuthenticationManager authenticationManager;
+
     public Broker(BrokerConfiguration configuration) {
         this.messagingEngine = new MessagingEngine(configuration);
         this.brokerConfiguration = configuration;
+        this.authenticationManager = new AuthenticationManager();
+    }
+
+    public BrokerConfiguration getBrokerConfiguration() {
+        return brokerConfiguration;
+    }
+
+    public AuthenticationManager getAuthenticationManager() {
+        return authenticationManager;
     }
 
     public void publish(Message message) throws BrokerException {

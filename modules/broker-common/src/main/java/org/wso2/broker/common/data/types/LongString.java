@@ -97,4 +97,8 @@ public class LongString implements EncodableData {
     public String toString() {
         return new String(content, StandardCharsets.UTF_8);
     }
+
+    public byte[] getBytes() {
+        return content.clone();
+    }
 }
