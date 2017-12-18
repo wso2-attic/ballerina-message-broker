@@ -3,7 +3,7 @@ package org.wso2.broker.core.store.dao;
 import org.wso2.broker.core.Queue;
 
 /**
- * Defines functionality required at persistence layer for managing {@link org.wso2.broker.core.Queue}s.
+ * Defines functionality required at persistence layer for managing {@link Queue}s.
  */
 public interface QueueDao {
 

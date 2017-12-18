@@ -10,12 +10,12 @@ import org.wso2.broker.core.store.dao.QueueDao;
 public class QueueDaoImpl implements QueueDao {
 
     @Override
-    public void persist(Queue queueHandler) {
+    public void persist(Queue queue) {
 
     }
 
     @Override
-    public void delete(Queue queueHandler) {
+    public void delete(Queue queue) {
 
     }
 

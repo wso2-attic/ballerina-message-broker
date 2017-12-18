@@ -22,6 +22,8 @@ package org.wso2.broker.core;
 import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.core.store.dao.MessageDao;
+import org.wso2.broker.core.store.dao.QueueDao;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +31,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -41,32 +44,37 @@ final class QueueHandler {
 
     private Queue queue;
       
-    private final LinkedBlockingQueue<Message> messageQueue;
-
     private final CyclicConsumerIterator consumerIterator;
 
     private final Set<Consumer> consumers;
 
     private final Map<Long, Message> pendingMessages;
- 
-        
-    QueueHandler(Queue queue) {
+
+    private QueueHandler(Queue queue) {
        
         this.queue = queue;
-        this.messageQueue = new LinkedBlockingQueue<>(queue.getCapacity());
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
         pendingMessages = new ConcurrentHashMap<>();
            
     }
 
-    
-    
+    public static QueueHandler createNonDurableQueue(String queueName, int capacity, boolean autoDelete) {
+        Queue queue = new MemQueueImpl(queueName, capacity, autoDelete);
+        return new QueueHandler(queue);
+    }
+
+    public static QueueHandler createDurableQueue(String queueName, MessageDao messageDao,
+                                                  QueueDao queueDao, boolean autoDelete) {
+        Queue queue = new DbBackedQueueImpl(queueName, messageDao, autoDelete);
+        queueDao.persist(queue);
+        return new QueueHandler(queue);
+    }
+
     Queue getQueue() {
         return queue;
     }
-    
-    
+
     /**
      * Retrieve all the current consumers for the queue.
      *
@@ -93,13 +101,6 @@ final class QueueHandler {
      */
     void removeConsumer(Consumer consumer) {
         consumers.remove(consumer);
-        if (consumers.isEmpty() && queue.isAutoDelete()) {
-            removeQueue();
-        }
-    }
-
-    private void removeQueue() {
-        messageQueue.clear();
     }
 
     /**
@@ -111,7 +112,7 @@ final class QueueHandler {
      * @return True if successfully enqueued, false otherwise
      */
     boolean enqueue(Message message) {
-        return messageQueue.offer(message);
+        return queue.enqueue(message);
     }
 
     /**
@@ -121,7 +122,7 @@ final class QueueHandler {
      */
     Message dequeue() {
        
-        Message message = messageQueue.poll();
+        Message message = queue.dequeue();
         if (message != null) {
             pendingMessages.put(message.getMetadata().getInternalId(), message);
         }
@@ -151,7 +152,7 @@ final class QueueHandler {
      * @return True if the queue doesn't contain any {@link Message} objects
      */
     boolean isEmpty() {
-        return messageQueue.isEmpty();
+        return queue.size() == 0;
     }
 
     /**
@@ -160,7 +161,7 @@ final class QueueHandler {
      * @return Number of {@link Message} objects in the queue.
      */
     int size() {
-        return messageQueue.size();
+        return queue.size();
     }
 
     /**
@@ -171,8 +172,6 @@ final class QueueHandler {
     boolean isUnused() {
         return consumers.isEmpty();
     }
-
-
 
     void closeAllConsumers() {
         Iterator<Consumer> iterator = consumers.iterator();
@@ -187,6 +186,81 @@ final class QueueHandler {
             } finally {
                 iterator.remove();
             }
+        }
+    }
+
+    /**
+     * In memory queue implementation for non durable queues.
+     */
+    private static class MemQueueImpl extends Queue {
+
+        private final int capacity;
+
+        private final java.util.Queue<Message> queue;
+
+        MemQueueImpl(String name, int capacity, boolean autoDelete) {
+            super(name, false, autoDelete);
+            this.capacity = capacity;
+            queue = new LinkedBlockingDeque<>(capacity);
+        }
+
+        @Override
+        public int capacity() {
+            return capacity;
+        }
+
+        @Override
+        public int size() {
+            return queue.size();
+        }
+
+        @Override
+        public boolean enqueue(Message message) {
+            return queue.offer(message);
+        }
+
+        @Override
+        public Message dequeue() {
+            return queue.poll();
+        }
+
+    }
+
+    /**
+     * Database backed queue implementation.
+     * // TODO: need to write the db related logic
+     */
+    private static class DbBackedQueueImpl extends Queue {
+
+        private final java.util.Queue<Message> memQueue;
+
+        private final MessageDao messageDao;
+
+        DbBackedQueueImpl(String queueName, MessageDao messageDao, boolean autoDelete) {
+            super(queueName, true, autoDelete);
+            this.messageDao = messageDao;
+            this.memQueue = new LinkedBlockingQueue<>();
+        }
+
+        @Override
+        public int capacity() {
+            return Queue.UNBOUNDED;
+        }
+
+        @Override
+        public int size() {
+            return memQueue.size();
+        }
+
+        @Override
+        public boolean enqueue(Message message) {
+            messageDao.persist(message);
+            return memQueue.offer(message);
+        }
+
+        @Override
+        public Message dequeue() {
+            return memQueue.poll();
         }
     }
 }
