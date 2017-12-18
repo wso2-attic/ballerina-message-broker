@@ -26,8 +26,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.wso2.broker.coordination.rdbms.CoordinationConfiguration.RDBMS_COORDINATION_CONFIG_FILE;
-
 /**
  * Class to RDBMS coordination configuration.
  */
@@ -40,7 +38,7 @@ public class RdbmsCoordinationConfigurationTest {
     @BeforeClass
     public void setUp() throws Exception {
         String brokerFilePath = new File(this.getClass()
-                .getResource("rdbms" + File.separator + RDBMS_COORDINATION_CONFIG_FILE)
+                .getResource("rdbms" + File.separator + "broker.yaml")
                 .getFile())
                 .getAbsolutePath();
         Path brokerYamlFile = Paths.get(brokerFilePath).toAbsolutePath();

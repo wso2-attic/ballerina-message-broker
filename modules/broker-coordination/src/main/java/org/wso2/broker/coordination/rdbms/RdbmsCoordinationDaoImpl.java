@@ -18,13 +18,10 @@
 
 package org.wso2.broker.coordination.rdbms;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.coordination.CoordinationException;
 import org.wso2.broker.coordination.node.NodeHeartbeatData;
-import org.wso2.broker.core.configuration.BrokerConfiguration;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,22 +49,7 @@ public class RdbmsCoordinationDaoImpl {
     private DataSource datasource;
 
     /**
-     * Constructor which uses the provided datasource configuration to create the datasource.
-     *
-     * @param datasourceConfiguration the configuration for the datasource
-     */
-    public RdbmsCoordinationDaoImpl(BrokerConfiguration.DatasourceConfiguration datasourceConfiguration) {
-        HikariConfig hikariDatasourceConfig = new HikariConfig();
-        hikariDatasourceConfig.setJdbcUrl(datasourceConfiguration.getUrl());
-        hikariDatasourceConfig.setDriverClassName(datasourceConfiguration.getDatabaseDriver());
-        hikariDatasourceConfig.setUsername(datasourceConfiguration.getUser());
-        hikariDatasourceConfig.setPassword(datasourceConfiguration.getPassword());
-        hikariDatasourceConfig.setAutoCommit(false);
-        datasource = new HikariDataSource(hikariDatasourceConfig);
-    }
-
-    /**
-     * Constructor which uses the provided datasource.
+     * Default constructor which uses the provided datasource.
      *
      * @param datasource the datasource to use
      */

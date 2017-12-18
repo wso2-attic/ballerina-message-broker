@@ -16,6 +16,8 @@
  * under the License.
  */
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -27,13 +29,13 @@ import org.wso2.broker.coordination.node.NodeDetail;
 import org.wso2.broker.coordination.rdbms.CoordinationConfiguration;
 import org.wso2.broker.coordination.rdbms.RdbmsCoordinationDaoImpl;
 import org.wso2.broker.coordination.rdbms.RdbmsCoordinationStrategy;
-import org.wso2.broker.core.configuration.BrokerConfiguration;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import javax.sql.DataSource;
 
 /**
  * Test class for RDBMS coordination with Derby.
@@ -83,13 +85,6 @@ public class RdbmsCoordinationStrategyTest {
         statement.executeUpdate(CREATE_MB_MEMBERSHIP_TABLE);
         connection.close();
 
-        BrokerConfiguration.DatasourceConfiguration datasourceConfiguration =
-                new BrokerConfiguration.DatasourceConfiguration();
-        datasourceConfiguration.setUrl("jdbc:derby:memory:mbDB");
-        datasourceConfiguration.setDatabaseDriver("org.apache.derby.jdbc.EmbeddedDriver");
-        datasourceConfiguration.setUser("");
-        datasourceConfiguration.setPassword("");
-
         CoordinationConfiguration.RdbmsCoordinationConfiguration rdbmsCoordinationConfiguration =
                 new CoordinationConfiguration.RdbmsCoordinationConfiguration();
         rdbmsCoordinationConfiguration.setNodeId(nodeOneId);
@@ -97,7 +92,13 @@ public class RdbmsCoordinationStrategyTest {
         rdbmsCoordinationConfiguration.setCoordinatorEntryCreationWaitTime(3000);
         rdbmsCoordinationConfiguration.setEventPollingInterval(4000);
 
-        RdbmsCoordinationDaoImpl rdbmsCoordinationDaoImpl = new RdbmsCoordinationDaoImpl(datasourceConfiguration);
+        HikariConfig hikariDatasourceConfig = new HikariConfig();
+        hikariDatasourceConfig.setJdbcUrl(databaseUrl);
+        hikariDatasourceConfig.setDriverClassName("org.apache.derby.jdbc.EmbeddedDriver");
+        hikariDatasourceConfig.setAutoCommit(false);
+        DataSource datasource = new HikariDataSource(hikariDatasourceConfig);
+
+        RdbmsCoordinationDaoImpl rdbmsCoordinationDaoImpl = new RdbmsCoordinationDaoImpl(datasource);
         rdbmsCoordinationStrategy =
                 new RdbmsCoordinationStrategy(rdbmsCoordinationDaoImpl, rdbmsCoordinationConfiguration);
         rdbmsCoordinationStrategy.start();

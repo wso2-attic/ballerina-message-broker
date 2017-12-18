@@ -21,7 +21,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.broker.coordination.BrokerHaConfiguration;
-import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.carbon.config.ConfigProviderFactory;
 
 import java.io.File;
@@ -39,7 +38,7 @@ public class BrokerHaConfigurationTest {
 
     @BeforeClass
     public void setUp() throws Exception {
-        String brokerFilePath = new File(this.getClass().getResource(BrokerConfiguration.BROKER_FILE_NAME).getFile())
+        String brokerFilePath = new File(this.getClass().getResource("broker.yaml").getFile())
                 .getAbsolutePath();
         Path brokerYamlFile = Paths.get(brokerFilePath).toAbsolutePath();
         haConfiguration = ConfigProviderFactory.getConfigProvider(brokerYamlFile, null)
