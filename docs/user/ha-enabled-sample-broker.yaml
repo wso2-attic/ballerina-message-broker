@@ -84,7 +84,13 @@ wso2.broker.transport.amqp:
 # Failover related configurations
 wso2.broker.failover:
  # Whether or not failover is enabled
- enabled: false
+ enabled: true
+ # The strategy to use in providing failover
+ strategy: org.wso2.broker.coordination.rdbms.RdbmsHaStrategy
+ # Properties/options required by the strategy
+ options:
+  heartbeatInterval: 5000
+  coordinatorEntryCreationWaitTime: 3000
 
 # Admin service related configurations.
 wso2.broker.admin.service:

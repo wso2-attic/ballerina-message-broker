@@ -50,6 +50,11 @@
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <scope>test</scope>
@@ -63,6 +68,10 @@
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-common</artifactId>
         </dependency>
     </dependencies>
 

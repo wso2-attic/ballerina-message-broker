@@ -20,6 +20,11 @@ concepts. This module only depends on the broker-common module.
 AMQP transport in the message broker is implemented using Netty as the transport framework. This module depends on 
 broker-core to provide the messaging capabilities.   
 
+### broker-coordination
+
+This module contains the classes providing the functionality required to support high-availability with the message 
+broker. The current implementation is based on an RDBMS based coordinator election approach.  
+
 ### launcher
 
 Launcher is responsible for initializing and integrating different modules used in the message broker.

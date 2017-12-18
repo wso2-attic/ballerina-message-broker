@@ -39,6 +39,9 @@ import org.wso2.broker.amqp.codec.handlers.AmqpMessageWriter;
 import org.wso2.broker.amqp.codec.handlers.BlockingTaskHandler;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
+import org.wso2.broker.coordination.BasicHaListener;
+import org.wso2.broker.coordination.HaListener;
+import org.wso2.broker.coordination.HaStrategy;
 import org.wso2.broker.core.Broker;
 
 import java.io.IOException;
@@ -70,22 +73,36 @@ public class Server {
     private Channel plainServerChannel;
     private Channel sslServerChannel;
 
-    public Server(StartupContext context) throws Exception {
-        BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
+    /**
+     * The {@link HaStrategy} for which the HA listener is registered.
+     */
+    private HaStrategy haStrategy;
+
+    private ServerHelper serverHelper;
+
+    public Server(StartupContext startupContext) throws Exception {
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         this.configuration = configProvider
                 .getConfigurationObject(AmqpServerConfiguration.NAMESPACE, AmqpServerConfiguration.class);
-        this.broker = context.getService(Broker.class);
+        this.broker = startupContext.getService(Broker.class);
 
         if (broker == null) {
             throw new RuntimeException("Could not find the broker class to initialize AMQP server");
         }
-
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
         ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS);
+        haStrategy = startupContext.getService(HaStrategy.class);
+        if (haStrategy == null) {
+            serverHelper = new ServerHelper();
+        } else {
+            LOGGER.info("AMQP Transport is in PASSIVE mode"); //starts up in passive mode
+            serverHelper = new HaEnabledServerHelper();
+        }
     }
 
     private void shutdownExecutors() {
+        LOGGER.info("Shutting down Netty Executors for AMQP transport");
         workerGroup.shutdownGracefully();
         bossGroup.shutdownGracefully();
         ioExecutors.shutdownGracefully();
@@ -127,39 +144,38 @@ public class Server {
         return future;
     }
 
-    public void start()
-            throws InterruptedException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException,
-            KeyStoreException, KeyManagementException, IOException {
-        ChannelFuture channelFuture = bindToPlainSocket();
-        plainServerChannel = channelFuture.channel();
-
-        if (configuration.getSsl().isEnabled()) {
-            ChannelFuture sslSocketFuture = bindToSslSocket();
-            sslServerChannel = sslSocketFuture.channel();
-        }
+    public void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
+                               NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+        serverHelper.start();
     }
 
     public void awaitServerClose() throws InterruptedException {
-        try {
+        if (plainServerChannel != null) {
             plainServerChannel.closeFuture().sync();
+        }
 
-            if (sslServerChannel != null) {
-                sslServerChannel.closeFuture().sync();
-            }
-        } finally {
-            shutdownExecutors();
+        if (sslServerChannel != null) {
+            sslServerChannel.closeFuture().sync();
         }
     }
 
     public void stop() throws InterruptedException {
         try {
-            plainServerChannel.close().sync();
-
-            if (sslServerChannel != null) {
-                sslServerChannel.close().sync();
-            }
+            closeChannels();
         } finally {
             shutdownExecutors();
+        }
+    }
+
+    /**
+     * Method to close the channels.
+     */
+    private void closeChannels() throws InterruptedException {
+        if (plainServerChannel != null) {
+            plainServerChannel.close();
+        }
+        if (sslServerChannel != null) {
+            sslServerChannel.close();
         }
     }
 
@@ -201,4 +217,75 @@ public class Server {
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
     }
+
+    private class ServerHelper {
+        public void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
+                NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
+                IOException {
+            ChannelFuture channelFuture = bindToPlainSocket();
+            plainServerChannel = channelFuture.channel();
+
+            if (configuration.getSsl().isEnabled()) {
+                ChannelFuture sslSocketFuture = bindToSslSocket();
+                sslServerChannel = sslSocketFuture.channel();
+            }
+        }
+    }
+
+    private class HaEnabledServerHelper extends ServerHelper implements HaListener {
+
+        private BasicHaListener basicHaListener;
+
+        HaEnabledServerHelper() {
+            basicHaListener = new BasicHaListener(this);
+            haStrategy.registerListener(basicHaListener, 2);
+        }
+
+        @Override
+        public synchronized void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
+                                   NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
+                                   IOException {
+            basicHaListener.setStartCalled(); //to allow starting when the node becomes active when HA is enabled
+            if (!basicHaListener.isActive()) {
+                return;
+            }
+            super.start();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void activate() {
+            startOnBecomingActive();
+            LOGGER.info("AMQP Transport mode changed from PASSIVE to ACTIVE");
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void deactivate() {
+            LOGGER.info("AMQP Transport mode changed from ACTIVE to PASSIVE");
+            try {
+                closeChannels();
+            } catch (InterruptedException e) {
+                LOGGER.error("Error while stopping the AMQP transport ", e);
+            }
+        }
+
+        /**
+         * Method to start the transport, only if has been called, prior to becoming the active node.
+         */
+        private synchronized void startOnBecomingActive() {
+            if (basicHaListener.isStartCalled()) {
+                try {
+                    start();
+                } catch (InterruptedException | CertificateException | UnrecoverableKeyException
+                        | NoSuchAlgorithmException | KeyStoreException | KeyManagementException | IOException e) {
+                    LOGGER.error("Error while starting the AMQP Transport ", e);
+                }
+            }
+        }
+
+    }
+
 }

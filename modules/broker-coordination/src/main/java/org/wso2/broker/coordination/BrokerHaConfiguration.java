@@ -18,54 +18,58 @@
 
 package org.wso2.broker.coordination;
 
+import org.wso2.broker.coordination.rdbms.RdbmsHaStrategy;
+
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * Configuration for HA.
  */
 public class BrokerHaConfiguration {
 
     /**
-     * Represents HA configuration.
+     * Namespace used in the config file.
      */
-    HaConfiguration haConfig;
+    public static final String NAMESPACE = "wso2.broker.failover";
 
-    public HaConfiguration getHaConfig() {
-        return haConfig;
-    }
-
-    public void setHaConfig(HaConfiguration haConfig) {
-        this.haConfig = haConfig;
-    }
+    private boolean enabled = false;
 
     /**
-     * Represents configuration for HA.
+     * Default to RDBMS coordination based HA strategy if a strategy is not specified.
      */
-    public static class HaConfiguration {
+    private String strategy = RdbmsHaStrategy.class.getCanonicalName();
 
-        private boolean enabled;
+    private Map<String, String> options = Collections.emptyMap();
 
-        private String strategy;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
-        public String getStrategy() {
-            return strategy;
-        }
-
-        public void setStrategy(String strategy) {
-            this.strategy = strategy;
-        }
-
-        @Override
-        public String toString() {
-            return "HA Configuration [enabled=" + enabled
-                    + ", strategy=" + strategy + "]";
-        }
-
+    public boolean isEnabled() {
+        return enabled;
     }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getStrategy() {
+        return strategy;
+    }
+
+    public void setStrategy(String strategy) {
+        this.strategy = strategy;
+    }
+
+    public Map<String, String> getOptions() {
+        return options;
+    }
+
+    public void setOptions(Map<String, String> options) {
+        this.options = options;
+    }
+
+    @Override
+    public String toString() {
+        return "Failover [enabled=" + enabled
+                + ", strategy=" + strategy + "]";
+    }
+
 }
