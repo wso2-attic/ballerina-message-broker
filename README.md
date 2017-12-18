@@ -25,12 +25,15 @@ Please follow the steps below to build message broker from source code.
 │   ├── broker.yaml
 │   └── log4j.properties
 └── lib
+└── logs
+    └── broker.log
 ```
 
 - **bin/broker** - executable used to run message broker
 - **conf/broker.yaml** - main configuration file
 - **conf/log4j.properties** - logging configuration file
 - **lib** - contains all the required jars
+- **logs/broker.log** - main logging file
 
 ## Licence
 
