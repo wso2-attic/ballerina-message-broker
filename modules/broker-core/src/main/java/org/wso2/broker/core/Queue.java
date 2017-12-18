@@ -1,79 +1,56 @@
+/*
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+
 package org.wso2.broker.core;
 
 /**
- * Represents the queue of the broker. Contains a bounded queue to store messages.
+ * Abstract class to represent an underlying queue for the broker
  */
-public class Queue {
+public abstract class Queue {
 
     /**
-     * Name of the queue.
+     * Unbounded queue.
      */
-    private String name;
+    static final int UNBOUNDED = -1;
 
-    private boolean passive;
+    private final String name;
 
-    private boolean durable;
+    private final boolean durable;
 
-    private boolean autoDelete;
+    private final boolean autoDelete;
 
-    private int capacity;
-
-    /**
-     * Creates a queue.
-     * 
-     * @param name
-     * @param passive
-     * @param durable
-     * @param autoDelete
-     * @param capacity
-     */
-    public Queue(String name, boolean passive, boolean durable, boolean autoDelete, int capacity) {
+    public Queue(String name, boolean durable, boolean autoDelete) {
         this.name = name;
-        this.passive = passive;
         this.durable = durable;
         this.autoDelete = autoDelete;
-        this.capacity = capacity;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isPassive() {
-        return passive;
-    }
-
-    /**
-     * If true the queue will be durable. Durable queues remain active when the broker restarts
-     * Non­durable queues (transient queues) are purged if/when the broker restarts.
-     *
-     * @return True if the queue is durable. False otherwise
-     */
-    public boolean isDurable() {
+    boolean isDurable() {
         return durable;
     }
 
-    /**
-     * If true queue can be deleted once there are no consumers for the queue.
-     *
-     * @return True if the queue is auto deletable
-     */
-    public boolean isAutoDelete() {
+    boolean isAutoDelete() {
         return autoDelete;
-    }
-    
-    public int getCapacity() {
-        return capacity;
-    }
-
-    @Override
-    public String toString() {
-        return "Queue [name=" + name + ", passive=" + passive + ", durable=" + durable + ", autoDelete=" + autoDelete
-                + ", capacity=" + capacity + "]";
     }
 
     @Override
@@ -90,7 +67,25 @@ public class Queue {
     }
 
     @Override
+    public String toString() {
+        return "Queue{" +
+                "name='" + name + '\'' +
+                ", durable=" + durable +
+                ", autoDelete=" + autoDelete +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return name.hashCode();
     }
+
+    abstract int capacity();
+
+    abstract int size();
+
+    abstract boolean enqueue(Message message);
+
+    abstract Message dequeue();
+
 }

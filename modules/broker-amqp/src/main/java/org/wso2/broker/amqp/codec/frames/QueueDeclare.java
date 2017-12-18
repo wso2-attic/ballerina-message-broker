@@ -39,7 +39,7 @@ import org.wso2.broker.core.BrokerException;
  *     3. passive (bit) - do not create queue
  *     4. durable (bit) - request a durable queue
  *     5. exclusive (bit) - request an exclusive queue
- *     6. auto­delete (bit) - auto­delete queue when unused
+ *     6. auto-delete (bit) - auto-delete queue when unused
  *     7. no-wait (bit) - No wait
  *     8. arguments (FieldTable) - arguments for declaration
  */

@@ -55,7 +55,8 @@ public class TopicExchangeTest {
     @Test(dataProvider = "positiveTopicPairs", description = "Test positive topic matching")
     public void testPositiveSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException {
-        Queue queue = new Queue(subscribedPattern, false, false, false, 10);
+        QueueHandler handler = QueueHandler.createNonDurableQueue(subscribedPattern, 10, false);
+        Queue queue = handler.getQueue();
         topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
         BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
@@ -71,7 +72,8 @@ public class TopicExchangeTest {
     @Test(dataProvider = "negativeTopicPairs", description = "Test negative topic matching")
     public void testNegativeSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException {
-        Queue queue = new Queue(subscribedPattern, false, false, false, 10);
+        QueueHandler handler = QueueHandler.createNonDurableQueue(subscribedPattern, 10, false);
+        Queue queue = handler.getQueue();
         topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
         BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
@@ -82,7 +84,8 @@ public class TopicExchangeTest {
     @Test(dataProvider = "positiveTopicPairs", description = "Test topic removal")
     public void testTopicRemoval(String subscribedPattern, String publishedTopic) throws BrokerException {
 
-        Queue queue = new Queue(subscribedPattern, false, false, false, 1000);
+        QueueHandler handler = QueueHandler.createNonDurableQueue(subscribedPattern, 1000, false);
+        Queue queue = handler.getQueue();
         topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
         topicExchange.unbind(queue, subscribedPattern);
 

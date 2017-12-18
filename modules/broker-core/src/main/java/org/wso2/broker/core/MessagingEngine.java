@@ -121,8 +121,11 @@ final class MessagingEngine {
         }
 
         if (queueHandler == null) {
-            Queue queue = new Queue(queueName, passive, durable, autoDelete, 1000);
-            queueHandler = new QueueHandler(queue);
+            if (durable) {
+                queueHandler = QueueHandler.createDurableQueue(queueName, messageDao, queueDao, autoDelete);
+            } else {
+                queueHandler = QueueHandler.createNonDurableQueue(queueName, 1000, autoDelete);
+            }
             queueRegistry.put(queueName, queueHandler);
             // we need to bind every queue to the default exchange
             ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler.getQueue(), queueName, FieldTable.EMPTY_TABLE);
