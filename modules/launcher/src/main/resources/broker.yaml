@@ -39,3 +39,6 @@ transport.amqp:
    location: resources/security/client-truststore.jks
    password: wso2carbon
    certType: SunX509
+
+haConfig:
+ enabled: false

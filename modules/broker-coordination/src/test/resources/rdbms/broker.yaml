@@ -1,0 +1,5 @@
+rdbmsCoordinationConfig:
+ nodeId: 7a473f76-e22b-11e7-80c1-9a214cf093ae
+ heartbeatInterval: 5000
+ coordinatorEntryCreationWaitTime: 3000
+ eventPollingInterval: 4000
