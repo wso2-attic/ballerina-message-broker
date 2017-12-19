@@ -107,4 +107,8 @@ public final class Broker {
     public long getNextMessageId() {
         return messagingEngine.getNextMessageId();
     }
+
+    public void requeue(String queueName, long messageId) {
+        messagingEngine.requeue(queueName, messageId);
+    }
 }

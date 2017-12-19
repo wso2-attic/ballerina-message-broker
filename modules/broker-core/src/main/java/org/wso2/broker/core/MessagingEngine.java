@@ -305,4 +305,15 @@ final class MessagingEngine {
     long getNextMessageId() {
         return messageIdGenerator.incrementAndGet();
     }
+
+    public void requeue(String queueName, long messageId) {
+        lock.readLock().lock();
+        try {
+            QueueHandler queueHandler = queueRegistry.get(queueName);
+            queueHandler.requeue(messageId);
+        } finally {
+            lock.readLock().unlock();
+        }
+
+    }
 }

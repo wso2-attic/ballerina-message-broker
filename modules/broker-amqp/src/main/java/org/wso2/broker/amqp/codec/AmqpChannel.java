@@ -20,6 +20,8 @@
 package org.wso2.broker.amqp.codec;
 
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.AckData;
 import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.AmqpException;
@@ -39,6 +41,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * AMQP channel representation.
  */
 public class AmqpChannel {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AmqpChannel.class);
 
     private final Broker broker;
 
@@ -120,8 +124,12 @@ public class AmqpChannel {
 
     public void acknowledge(long deliveryTag, boolean multiple) {
         //TODO handle multiple
-        AckData ackData = unackedMessageMap.get(deliveryTag);
-        broker.acknowledge(ackData.getQueueName(), ackData.getMessage().getMetadata().getInternalId());
+        AckData ackData = unackedMessageMap.remove(deliveryTag);
+        if (ackData != null) {
+            broker.acknowledge(ackData.getQueueName(), ackData.getMessage().getMetadata().getInternalId());
+        } else {
+            LOGGER.warn("Could not find a matching ack data for acking the delivery tag " + deliveryTag);
+        }
     }
 
     public int getNextConsumerTag() {
@@ -141,5 +149,18 @@ public class AmqpChannel {
 
     public void recordMessageDelivery(long deliveryTag, AckData ackData) {
         unackedMessageMap.put(deliveryTag, ackData);
+    }
+
+    public void reject(long deliveryTag, boolean requeue) {
+        AckData ackData = unackedMessageMap.remove(deliveryTag);
+        if (ackData != null) {
+            if (requeue) {
+                broker.requeue(ackData.getQueueName(), ackData.getMessage().getMetadata().getInternalId());
+            } else {
+                LOGGER.debug("Dropping message for delivery tag {}", deliveryTag);
+            }
+        } else {
+            LOGGER.warn("Could not find a matching ack data for rejecting the delivery tag " + deliveryTag);
+        }
     }
 }

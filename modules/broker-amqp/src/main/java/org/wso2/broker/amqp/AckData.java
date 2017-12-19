@@ -34,14 +34,14 @@ public class AckData {
     }
 
     /**
-     * Getter for message
+     * Getter for message.
      */
     public Message getMessage() {
         return message;
     }
 
     /**
-     * Getter for queueName
+     * Getter for queueName.
      */
     public String getQueueName() {
         return queueName;

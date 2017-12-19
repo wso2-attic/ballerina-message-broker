@@ -124,14 +124,20 @@ final class QueueHandler {
        
         Message message = queue.dequeue();
         if (message != null) {
-            pendingMessages.put(message.getMetadata().getInternalId(), message);
+            pendingMessages.put(message.getMetadata().getInternalId(), message.shallowCopy());
         }
         return message;
     }
 
     void acknowledge(long messageId) {
         // TODO handle nacks
-        pendingMessages.remove(messageId);
+        Message message = pendingMessages.remove(messageId);
+        message.release();
+    }
+
+    public void requeue(long messageId) {
+        Message message = pendingMessages.remove(messageId);
+        queue.enqueue(message);
     }
 
     /**
