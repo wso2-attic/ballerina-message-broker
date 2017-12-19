@@ -51,7 +51,7 @@ public class AmqpDeliverMessage {
                 channelId,
                 ShortString.parseString(consumerTag),
                 deliveryTag,
-                false,
+                message.isRedelivered(),
                 ShortString.parseString(metadata.getExchangeName()),
                 ShortString.parseString(metadata.getRoutingKey()));
 

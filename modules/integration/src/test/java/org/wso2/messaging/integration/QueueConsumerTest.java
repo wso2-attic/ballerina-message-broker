@@ -152,6 +152,7 @@ public class QueueConsumerTest {
 
         message = consumer.receive(10000);
         Assert.assertNotNull(message, "Requeued Message was not received");
+        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was not set Message was not received");
         message.acknowledge();
 
         connection.close();

@@ -33,6 +33,8 @@ public class Message {
 
     private final ArrayList<ContentChunk> contentChunks;
 
+    private boolean redelivered = false;
+
     public Message(Metadata metadata) {
         this.metadata = metadata;
         this.contentChunks = new ArrayList<>();
@@ -61,5 +63,19 @@ public class Message {
         Message message = new Message(metadata.shallowCopy());
         contentChunks.stream().map(ContentChunk::shallowCopy).forEach(message::addChunk);
         return message;
+    }
+
+    /**
+     * Set redelivery flag
+     */
+    public void setRedeliver() {
+        redelivered = true;
+    }
+
+    /**
+     * Check if redelivery flag is set
+     */
+    public boolean isRedelivered() {
+        return redelivered;
     }
 }

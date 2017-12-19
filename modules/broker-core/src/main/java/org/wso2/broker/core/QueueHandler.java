@@ -137,6 +137,7 @@ final class QueueHandler {
 
     public void requeue(long messageId) {
         Message message = pendingMessages.remove(messageId);
+        message.setRedeliver();
         queue.enqueue(message);
     }
 
