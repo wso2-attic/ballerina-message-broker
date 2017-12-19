@@ -44,6 +44,10 @@ public class JCAProvider extends Provider {
         register(providerMap);
     }
 
+    /**
+     * Register given Sasl server factory list
+     * @param providerMap Mp of sasl server builder
+     */
     private void register(Map<String, SaslServerBuilder> providerMap) {
 
         for (Map.Entry<String, SaslServerBuilder> saslServerBuilderEntry : providerMap.entrySet()) {

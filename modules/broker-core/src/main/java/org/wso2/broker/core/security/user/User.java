@@ -16,7 +16,7 @@
 package org.wso2.broker.core.security.user;
 
 /**
- * Users mapper class.
+ * User mapper class.
  */
 public class User {
 

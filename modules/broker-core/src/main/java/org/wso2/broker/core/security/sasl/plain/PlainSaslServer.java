@@ -59,11 +59,11 @@ public class PlainSaslServer implements SaslServer {
             authcid = authentication identity
             passwd = password
             */
-            int authzidNullPosition = findNullPosition(response, 0);
+            int authzidNullPosition = getUTF8NULPosition(response, 0);
             if (authzidNullPosition < 0) {
                 throw new SaslException("Invalid PLAIN encoding, Authcid null terminator not found");
             }
-            int authcidNullPosition = findNullPosition(response, authzidNullPosition + 1);
+            int authcidNullPosition = getUTF8NULPosition(response, authzidNullPosition + 1);
             if (authcidNullPosition < 0) {
                 throw new SaslException("Invalid PLAIN encoding, authcid null terminator not found");
             }
@@ -85,7 +85,7 @@ public class PlainSaslServer implements SaslServer {
                 authenticationId = authcid;
                 return new byte[0];
             } catch (LoginException e) {
-                throw new SaslException("Error while authenticate user with logn module ", e);
+                throw new SaslException("Error while authenticate user with login module ", e);
             } finally {
                 if (loginContext != null) {
                     try {
@@ -100,7 +100,7 @@ public class PlainSaslServer implements SaslServer {
         }
     }
 
-    private int findNullPosition(byte[] response, int startPosition) {
+    private int getUTF8NULPosition(byte[] response, int startPosition) {
         int position = startPosition;
         while (position < response.length) {
             if (response[position] == (byte) 0) {

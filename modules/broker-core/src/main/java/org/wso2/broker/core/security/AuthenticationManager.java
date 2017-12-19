@@ -53,8 +53,10 @@ public class AuthenticationManager {
      * Register Plain security provider mechanisms
      */
     private void registerSASLServers() {
+        // create PLAIN SaslServer builder
         PlainSaslServerBuilder plainSaslServerBuilder = new PlainSaslServerBuilder();
         saslMechanisms.put(plainSaslServerBuilder.getMechanismName(), plainSaslServerBuilder);
+        // Register given Sasl Server factories
         if (Security.insertProviderAt(new JCAProvider(BrokerSecurityConstants.PROVIDER_NAME, saslMechanisms), 1)
                 == -1) {
             log.error("Unable to load AMQ security authentication providers.");
