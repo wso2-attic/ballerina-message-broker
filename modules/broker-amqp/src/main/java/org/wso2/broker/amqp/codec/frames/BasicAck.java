@@ -23,7 +23,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
 
 /**
  * AMQP frame for basic.publish
@@ -56,7 +58,8 @@ public class BasicAck extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // TODO handle basic ack frame
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+        ctx.fireChannelRead((BlockingTask) () -> channel.acknowledge(deliveryTag, multiple));
     }
 
     public static AmqMethodBodyFactory getFactory() {

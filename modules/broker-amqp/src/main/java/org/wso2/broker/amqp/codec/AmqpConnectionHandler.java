@@ -46,7 +46,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        ctx.channel().closeFuture().addListener(future -> close());
+        ctx.channel().closeFuture().addListener(future -> closeConnection(ctx));
     }
 
     @Override
@@ -58,16 +58,24 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         } else if (msg instanceof AmqpBadMessage) {
             LOGGER.warn("Bad message received", ((AmqpBadMessage) msg).getCause());
             // TODO need to send error back to client
-            ctx.close();
-            close();
+            closeConnection(ctx);
         }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         LOGGER.warn("Exception while handling request", cause);
-        ctx.close();
-        close();
+        closeConnection(ctx);
+    }
+
+    private ChannelHandlerContext closeConnection(ChannelHandlerContext ctx) {
+        return ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                closeAllChannels();
+            } finally {
+                ctx.close();
+            }
+        });
     }
 
     private void handleProtocolInit(ChannelHandlerContext ctx, ProtocolInitFrame msg) {
@@ -101,7 +109,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         channels.remove(channel);
     }
 
-    public void close() {
+    public void closeAllChannels() {
         for (AmqpChannel channel: channels.values()) {
             channel.close();
         }

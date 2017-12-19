@@ -23,8 +23,6 @@ import org.wso2.broker.common.data.types.FieldTable;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Manages the bindings for a given {@link Exchange}.
@@ -34,56 +32,35 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 final class BindingsRegistry {
 
     private final Map<String, BindingSet> routingKeyToBindingMap;
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     BindingsRegistry() {
         this.routingKeyToBindingMap = new ConcurrentHashMap<>();
     }
 
     void bind(Queue queue, String bindingKey, FieldTable arguments) throws BrokerException {
-        lock.writeLock().lock();
-        try {
-            BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
-            bindingSet.add(new Binding(queue, bindingKey, arguments));
-        } finally {
-            lock.writeLock().unlock();
-        }
+        BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
+        bindingSet.add(new Binding(queue, bindingKey, arguments));
     }
 
     void unbind(Queue queue, String routingKey) {
-        lock.writeLock().lock();
-        try {
-            BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
-            bindingSet.remove(queue);
+        BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
+        bindingSet.remove(queue);
 
-            if (bindingSet.isEmpty()) {
-                routingKeyToBindingMap.remove(routingKey);
-            }
-        } finally {
-            lock.writeLock().unlock();
+        if (bindingSet.isEmpty()) {
+            routingKeyToBindingMap.remove(routingKey);
         }
     }
 
     BindingSet getBindingsForRoute(String routingKey) {
-        lock.readLock().lock();
-        try {
-            BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
-            if (bindingSet == null) {
-                bindingSet = BindingSet.emptySet();
-            }
-            return bindingSet;
-        } finally {
-            lock.readLock().unlock();
+        BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
+        if (bindingSet == null) {
+            bindingSet = BindingSet.emptySet();
         }
+        return bindingSet;
     }
 
     boolean isEmpty() {
-        lock.readLock().lock();
-        try {
-            return routingKeyToBindingMap.isEmpty();
-        } finally {
-            lock.readLock().unlock();
-        }
+        return routingKeyToBindingMap.isEmpty();
     }
 
 }

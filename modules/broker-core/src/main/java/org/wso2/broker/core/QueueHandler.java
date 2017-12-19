@@ -129,9 +129,8 @@ final class QueueHandler {
         return message;
     }
 
-    void acknowledge(long messageId, boolean multiple) {
+    void acknowledge(long messageId) {
         // TODO handle nacks
-        // TODO handle multiple
         pendingMessages.remove(messageId);
     }
 

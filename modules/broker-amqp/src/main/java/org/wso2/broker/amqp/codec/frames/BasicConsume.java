@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
@@ -98,18 +99,19 @@ public class BasicConsume extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        ShortString usedConsumerTag;
-        try {
-            AmqpChannel channel = connectionHandler.getChannel(getChannel());
-            usedConsumerTag = channel.consume(queue, consumerTag, exclusive, ctx);
-            ctx.writeAndFlush(new BasicConsumeOk(getChannel(), usedConsumerTag));
-        } catch (BrokerException e) {
-            ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                               ChannelException.NOT_ALLOWED,
-                                               ShortString.parseString(e.getMessage()),
-                                               CLASS_ID,
-                                               METHOD_ID));
-        }
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                ShortString usedConsumerTag = channel.consume(queue, consumerTag, exclusive, ctx);
+                ctx.writeAndFlush(new BasicConsumeOk(getChannel(), usedConsumerTag));
+            } catch (BrokerException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.NOT_ALLOWED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            }
+        });
     }
 
     /**
