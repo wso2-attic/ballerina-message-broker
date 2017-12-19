@@ -24,6 +24,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.core.Consumer;
 import org.wso2.broker.core.Message;
 
@@ -44,22 +45,29 @@ public class AmqpConsumer implements Consumer {
 
     private final ChannelHandlerContext context;
 
-    private final int channelId;
+    private final AmqpChannel channel;
     private ChannelFutureListener errorLogger;
 
-    public AmqpConsumer(ChannelHandlerContext ctx, int channelId,
+    public AmqpConsumer(ChannelHandlerContext ctx, AmqpChannel channel,
                         String queueName, String consumerTag, boolean isExclusive) {
         this.queueName = queueName;
         this.consumerTag = consumerTag;
         this.isExclusive = isExclusive;
         this.context = ctx;
-        this.channelId = channelId;
+        this.channel = channel;
         this.errorLogger = new ErrorLogger(queueName);
     }
 
     @Override
-    public void send(Message message, long deliveryTag) {
-        AmqpDeliverMessage deliverMessage = new AmqpDeliverMessage(message, consumerTag, channelId, deliveryTag);
+    public void send(Message message) {
+
+        long deliveryTag = channel.getNextDeliveryTag();
+        AmqpDeliverMessage deliverMessage = new AmqpDeliverMessage(message,
+                                                                   consumerTag,
+                                                                   channel.getChannelId(),
+                                                                   deliveryTag);
+
+        channel.recordMessageDelivery(deliveryTag, new AckData(message, queueName));
         ChannelFuture channelFuture = context.channel().writeAndFlush(deliverMessage);
         channelFuture.addListener(errorLogger);
     }

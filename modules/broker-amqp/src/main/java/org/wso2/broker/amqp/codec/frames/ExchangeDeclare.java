@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
@@ -94,17 +95,18 @@ public class ExchangeDeclare extends MethodFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
 
-        try {
-            channel.declareExchange(exchange.toString(), type.toString(), passive, durable);
-            ctx.writeAndFlush(new ExchangeDeclareOk(getChannel()));
-        } catch (BrokerException e) {
-            ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                               ChannelException.NOT_ALLOWED,
-                                               ShortString.parseString(e.getMessage()),
-                                               CLASS_ID,
-                                               METHOD_ID));
-        }
-
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.declareExchange(exchange.toString(), type.toString(), passive, durable);
+                ctx.writeAndFlush(new ExchangeDeclareOk(getChannel()));
+            } catch (BrokerException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.NOT_ALLOWED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            }
+        });
     }
 
     /**

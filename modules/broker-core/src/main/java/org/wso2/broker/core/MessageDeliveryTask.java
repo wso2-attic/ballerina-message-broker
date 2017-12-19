@@ -59,7 +59,7 @@ final class MessageDeliveryTask extends Task {
         while (message != null) {
             Consumer consumer = consumerIterator.next();
             // TODO: handle send errors
-            consumer.send(message, message.getMetadata().getInternalId());
+            consumer.send(message);
             deliveredCount++;
             // TODO: make the value configurable
             if (deliveredCount == 1000) {

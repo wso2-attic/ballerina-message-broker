@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.common.data.types.ShortString;
 
 /**
@@ -67,9 +68,11 @@ public class ChannelClose extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
-        channel.close();
         connectionHandler.closeChannel(getChannel());
-        ctx.writeAndFlush(new ChannelCloseOk(getChannel()));
+        ctx.fireChannelRead((BlockingTask) () -> {
+            channel.close();
+            ctx.writeAndFlush(new ChannelCloseOk(getChannel()));
+        });
     }
 
     public static AmqMethodBodyFactory getFactory() {

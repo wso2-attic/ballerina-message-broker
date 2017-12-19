@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.common.data.types.ShortString;
 
 /**
@@ -54,13 +55,16 @@ public class BasicCancel extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        try {
-            AmqpChannel channel = connectionHandler.getChannel(getChannel());
-            channel.cancelConsumer(consumerTag);
-            ctx.writeAndFlush(new BasicCancelOk(getChannel(), consumerTag));
-        } catch (AmqpException e) {
-            // TODO handle exception: write the error back to client
-        }
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.cancelConsumer(consumerTag);
+                ctx.writeAndFlush(new BasicCancelOk(getChannel(), consumerTag));
+            } catch (AmqpException e) {
+                // TODO handle exception: write the error back to client
+            }
+        });
     }
 
     /**

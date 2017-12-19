@@ -46,13 +46,11 @@ public final class Broker {
 
     /**
      * Acknowledge single or a given set of messages. Removes the message from underlying queue
-     *
      * @param queueName   name of the queue the relevant messages belongs to
-     * @param deliveryTag delivery tag of the message sent by the broker
-     * @param multiple    if true acknowledge multiple messages
+     * @param messageId delivery tag of the message sent by the broker
      */
-    public void acknowledge(String queueName, long deliveryTag, boolean multiple) {
-        messagingEngine.acknowledge(queueName, deliveryTag, multiple);
+    public void acknowledge(String queueName, long messageId) {
+        messagingEngine.acknowledge(queueName, messageId);
     }
 
     /**

@@ -25,6 +25,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ConnectionException;
 import org.wso2.broker.common.data.types.ShortString;
 
@@ -67,8 +68,10 @@ public class ConnectionClose extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        connectionHandler.close();
-        ctx.writeAndFlush(new ConnectionCloseOk(getChannel())).addListener(ChannelFutureListener.CLOSE);
+        ctx.fireChannelRead((BlockingTask) () -> {
+            connectionHandler.closeAllChannels();
+            ctx.writeAndFlush(new ConnectionCloseOk(getChannel())).addListener(ChannelFutureListener.CLOSE);
+        });
     }
 
     /**
