@@ -28,21 +28,21 @@ import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.BlockingTask;
 
 /**
- * AMQP frame for basic.ack.
+ * AMQP frame for basic.reject
  * Parameter Summary:
  *      1. delivery-tag (longlong) - delivery tag
- *      2. multiple (bit) - acknowledge multiple messages
+ *      2. requeue (bit) - requeue message
  */
-public class BasicAck extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicAck.class);
+public class BasicReject extends MethodFrame {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicReject.class);
 
     private final long deliveryTag;
-    private final boolean multiple;
+    private final boolean requeue;
 
-    public BasicAck(int channel, long deliveryTag, boolean multiple) {
+    public BasicReject(int channel, long deliveryTag, boolean requeue) {
         super(channel, (short) 60, (short) 80);
         this.deliveryTag = deliveryTag;
-        this.multiple = multiple;
+        this.requeue = requeue;
     }
 
     @Override
@@ -53,20 +53,20 @@ public class BasicAck extends MethodFrame {
     @Override
     protected void writeMethod(ByteBuf buf) {
         buf.writeLong(deliveryTag);
-        buf.writeBoolean(multiple);
+        buf.writeBoolean(requeue);
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
-        ctx.fireChannelRead((BlockingTask) () -> channel.acknowledge(deliveryTag, multiple));
+        ctx.fireChannelRead((BlockingTask) () -> channel.reject(deliveryTag, requeue));
     }
 
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             long deliveryTag = buf.readLong();
-            boolean multiple = buf.readBoolean();
-            return new BasicAck(channel, deliveryTag, multiple);
+            boolean requeue = buf.readBoolean();
+            return new BasicReject(channel, deliveryTag, requeue);
         };
     }
 }

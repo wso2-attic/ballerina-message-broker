@@ -20,6 +20,8 @@
 package org.wso2.broker.core;
 
 import io.netty.buffer.ByteBuf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.FieldValue;
 import org.wso2.broker.common.data.types.ShortString;
@@ -32,6 +34,7 @@ import java.util.function.BiFunction;
  * Object representation of a message metadata.
  */
 public class Metadata {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
 
     private static final short BYTE_DEFAULT = -1;
 
