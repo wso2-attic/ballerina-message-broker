@@ -30,7 +30,7 @@
     <groupId>org.wso2.messaging</groupId> 
     <artifactId>message-broker</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.43</version>
+    <version>1.0.44-SNAPSHOT</version>
     <name>Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
@@ -38,7 +38,7 @@
         <connection>scm:https://github.com/wso2/message-broker.git</connection>
         <developerConnection>scm:git:https://github.com/wso2/message-broker.git</developerConnection>
         <url>https://github.com/wso2/message-broker.git</url>
-        <tag>v1.0.43</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <modules>
@@ -167,7 +167,7 @@
     </build>
 
     <properties>
-        <broker.version>1.0.43</broker.version>
+        <broker.version>1.0.44-SNAPSHOT</broker.version>
         <netty-all.version>4.1.17.Final</netty-all.version>
         <slf4j.version>1.7.25</slf4j.version>
         <testng.version>6.11</testng.version>
