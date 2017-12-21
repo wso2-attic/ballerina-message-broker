@@ -20,7 +20,8 @@ Please follow the steps below to build message broker from source code.
 ```
 .
 ├── bin
-│   └── broker
+│   ├── broker
+│   └── broker.bat
 ├── conf
 │   ├── broker.yaml
 │   └── log4j.properties
@@ -34,6 +35,7 @@ Please follow the steps below to build message broker from source code.
 ```
 
 - **bin/broker** - executable used to run message broker
+- **bin/broker.bat** - windows executable used to run message broker
 - **conf/broker.yaml** - main configuration file
 - **conf/log4j.properties** - logging configuration file
 - **lib** - contains all the required jars
