@@ -25,8 +25,12 @@ Please follow the steps below to build message broker from source code.
 │   ├── broker.yaml
 │   └── log4j.properties
 └── lib
-└── logs
-    └── broker.log
+├── logs
+│   └── broker.log
+└── resources
+    └── security
+        ├── client-truststore.jks
+        └── keystore.jks
 ```
 
 - **bin/broker** - executable used to run message broker
@@ -34,6 +38,7 @@ Please follow the steps below to build message broker from source code.
 - **conf/log4j.properties** - logging configuration file
 - **lib** - contains all the required jars
 - **logs/broker.log** - main logging file
+- **resources/security** - contains both the keystore and the truststore used to create the SSL engine
 
 ## Documentation
 

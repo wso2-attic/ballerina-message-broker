@@ -159,7 +159,7 @@ public class AmqpServerConfiguration {
     public static class KeyStoreDetails {
         private String type = "JKS";
 
-        private String location = "resources/security/wso2carbon.jks";
+        private String location = "resources/security/keystore.jks";
 
         private String password = "wso2carbon";
 

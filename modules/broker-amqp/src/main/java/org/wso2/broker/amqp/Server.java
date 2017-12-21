@@ -126,7 +126,6 @@ public class Server {
         return future;
     }
 
-
     private ChannelFuture bindToSslSocket()
             throws InterruptedException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException,
             KeyStoreException, KeyManagementException, IOException {
