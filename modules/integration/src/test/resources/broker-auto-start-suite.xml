@@ -21,6 +21,7 @@
 
 <suite name="MBIntegrationTestsuite">
     <parameter name="broker-port" value="5772"/>
+    <parameter name="broker-ssl-port" value="8772"/>
     <parameter name="broker-hostname" value="localhost"/>
     <parameter name="admin-username" value="admin"/>
     <parameter name="admin-password" value="admin"/>

@@ -37,21 +37,30 @@ public class ClientHelper {
     public static final String CONNECTION_FACTORY = "ConnectionFactory";
 
     public static InitialContextBuilder getInitialContextBuilder(String username,
-            String password,
-            String brokerHost,
-            String port) {
+                                                                 String password,
+                                                                 String brokerHost,
+                                                                 String port) {
         return new InitialContextBuilder(username, password, brokerHost, port);
     }
 
     public static class InitialContextBuilder {
 
+        public static final String CONNECTION_FACTORY_PREFIX = "connectionfactory.";
         private final Properties contextProperties;
+        private final String username;
+        private final String password;
+        private final String brokerHost;
+        private final String port;
 
         public InitialContextBuilder(String username, String password, String brokerHost, String port) {
+            this.username = username;
+            this.password = password;
+            this.brokerHost = brokerHost;
+            this.port = port;
             contextProperties = new Properties();
             contextProperties.put(Context.INITIAL_CONTEXT_FACTORY, ANDES_INITIAL_CONTEXT_FACTORY);
-            String connectionString = getBrokerConnectionString(username, password, brokerHost, port);
-            contextProperties.put("connectionfactory." + CONNECTION_FACTORY, connectionString);
+            String connectionString = getBrokerConnectionString();
+            contextProperties.put(CONNECTION_FACTORY_PREFIX + CONNECTION_FACTORY, connectionString);
         }
 
         public InitialContextBuilder withQueue(String queueName) {
@@ -64,24 +73,30 @@ public class ClientHelper {
             return this;
         }
 
+        public InitialContextBuilder enableSsl() {
+            String connectionString = getSslBrokerConnectionString(username, password, brokerHost, port);
+            contextProperties.put(CONNECTION_FACTORY_PREFIX + CONNECTION_FACTORY, connectionString);
+            return this;
+        }
+
+        private String getSslBrokerConnectionString(String username, String password, String brokerHost, String port) {
+            return "amqp://" + username + ":" + password + "@clientID/carbon?brokerlist='tcp://"
+                    + brokerHost + ":" + port
+                    + "?ssl='true'&trust_store='" + TestConstants.TRUST_STORE_LOCATION
+                    + "'&trust_store_password='" + TestConstants.TRUST_STORE_PASSWORD + "'&key_store='"
+                    + TestConstants.KEYSTORE_LOCATION + "'&key_store_password='" + TestConstants.KEYSTORE_PASSWORD
+                    + "''";
+        }
+
         public InitialContext build() throws NamingException {
             return new InitialContext(contextProperties);
         }
+
+        private String getBrokerConnectionString() {
+            return "amqp://" + username + ":" + password + "@clientID/carbon?brokerlist='tcp://"
+                    + brokerHost + ":" + port + "'";
+        }
     }
 
-    /**
-     * Generate broker connection string
-     *
-     * @param userName   Username
-     * @param password   Password
-     * @param brokerHost Hostname of broker (E.g. localhost)
-     * @param port       Port (E.g. 5672)
-     * @return Broker Connection String
-     */
-    private static String getBrokerConnectionString(String userName, String password,
-                                                    String brokerHost, String port) {
 
-        return "amqp://" + userName + ":" + password + "@clientID/carbon?brokerlist='tcp://"
-                + brokerHost + ":" + port + "'";
-    }
 }

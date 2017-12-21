@@ -30,6 +30,7 @@
                 <include>log4j.properties</include>
                 <include>broker.yaml</include>
             </includes>
+            <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
             <directory>src/main/resources/</directory>
@@ -38,6 +39,14 @@
                 <include>broker</include>
             </includes>
             <fileMode>755</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources/</directory>
+            <outputDirectory>resources</outputDirectory>
+            <includes>
+                <include>security/*</include>
+            </includes>
+            <fileMode>644</fileMode>
         </fileSet>
     </fileSets>
 
