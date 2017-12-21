@@ -21,10 +21,13 @@ package org.wso2.broker.amqp;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.SslHandler;
+import org.wso2.broker.common.CommonConstants;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -71,7 +74,9 @@ public class SslHandlerFactory {
         KeyStore keyStore = KeyStore.getInstance(type);
         InputStream in = null;
         try {
-            in = Files.newInputStream(Paths.get(storePath));
+            Path path = getPath(storePath);
+
+            in = Files.newInputStream(path);
             keyStore.load(in, password.toCharArray());
         } finally {
             if (in != null) {
@@ -79,6 +84,16 @@ public class SslHandlerFactory {
             }
         }
         return keyStore;
+    }
+
+    private Path getPath(String storePath) {
+        Path path = Paths.get(storePath);
+
+        if (Files.notExists(path)) {
+            String brokerHome = System.getProperty(CommonConstants.MESSAGE_BROKER_HOME_PROPERTY);
+            path = Paths.get(brokerHome + File.separator + storePath);
+        }
+        return path;
     }
 
     public ChannelHandler create() {
