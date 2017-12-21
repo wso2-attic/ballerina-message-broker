@@ -22,20 +22,24 @@ broker:
   password: root
 
 transport.amqp:
- nonSecure:
+ plain:
   hostName: localhost
   port: 5672
 
  ssl:
+  enabled: true
+  protocol: TLS
   hostName: localhost
   port: 8672
 
   keyStore:
-   location: resources/security/wso2carbon.jks
+   type: JKS
+   location: resources/security/keystore.jks
    password: wso2carbon
    certType: SunX509
 
   trustStore:
+   type: JKS
    location: resources/security/client-truststore.jks
    password: wso2carbon
    certType: SunX509

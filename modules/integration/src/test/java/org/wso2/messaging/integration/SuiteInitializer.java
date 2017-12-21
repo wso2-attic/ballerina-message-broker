@@ -29,6 +29,7 @@ import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.Server;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.messaging.integration.util.TestConstants;
 
 public class SuiteInitializer {
     /**
@@ -39,14 +40,22 @@ public class SuiteInitializer {
     private Broker broker;
     private Server server;
 
-    @Parameters({"broker-port", "broker-hostname"})
+    @Parameters({"broker-port", "broker-ssl-port", "broker-hostname"})
     @BeforeSuite
-    public void beforeSuite(String port, String hostname, ITestContext context) throws Exception {
+    public void beforeSuite(String port, String sslPort, String hostname, ITestContext context) throws Exception {
         LOGGER.info("Starting broker on " + port + " for suite " + context.getSuite().getName());
         BrokerConfiguration configuration = new BrokerConfiguration();
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
-        serverConfiguration.getNonSecure().setPort(port);
-        serverConfiguration.getNonSecure().setHostName(hostname);
+        serverConfiguration.getPlain().setPort(port);
+        serverConfiguration.getPlain().setHostName(hostname);
+
+        serverConfiguration.getSsl().setEnabled(true);
+        serverConfiguration.getSsl().setHostName(hostname);
+        serverConfiguration.getSsl().setPort(sslPort);
+        serverConfiguration.getSsl().getKeyStore().setLocation(TestConstants.KEYSTORE_LOCATION);
+        serverConfiguration.getSsl().getKeyStore().setPassword(TestConstants.KEYSTORE_PASSWORD);
+        serverConfiguration.getSsl().getTrustStore().setLocation(TestConstants.TRUST_STORE_LOCATION);
+        serverConfiguration.getSsl().getTrustStore().setPassword(TestConstants.TRUST_STORE_PASSWORD);
 
         broker = new Broker(configuration);
         broker.startMessageDelivery();

@@ -24,19 +24,19 @@ package org.wso2.broker.amqp;
  */
 public class AmqpServerConfiguration {
 
-    private NonSecureServerDetails nonSecure = new NonSecureServerDetails();
+    private NonSecureServerDetails plain = new NonSecureServerDetails();
 
     private SslServerDetails ssl = new SslServerDetails();
 
     /**
      * Getter for tcp.
      */
-    public NonSecureServerDetails getNonSecure() {
-        return nonSecure;
+    public NonSecureServerDetails getPlain() {
+        return plain;
     }
 
-    public void setNonSecure(NonSecureServerDetails tcp) {
-        this.nonSecure = tcp;
+    public void setPlain(NonSecureServerDetails tcp) {
+        this.plain = tcp;
     }
 
     /**
@@ -80,6 +80,10 @@ public class AmqpServerConfiguration {
      * Contains information required to setup the secured server socket.
      */
     public static class SslServerDetails {
+        private boolean enabled = false;
+
+        private String protocol = "TLS";
+
         private String hostName = "localhost";
 
         private String port = "8672";
@@ -116,6 +120,17 @@ public class AmqpServerConfiguration {
         }
 
         /**
+         * Getter for protocol
+         */
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
+
+        /**
          * Getter for trustStore.
          */
         public TrustStoreDetails getTrustStore() {
@@ -125,17 +140,41 @@ public class AmqpServerConfiguration {
         public void setTrustStore(TrustStoreDetails trustStore) {
             this.trustStore = trustStore;
         }
+
+        /**
+         * Getter for enabled.
+         */
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
     }
 
     /**
      * Contains keystore relate configurations.
      */
     public static class KeyStoreDetails {
-        private String location = "resources/security/wso2carbon.jks";
+        private String type = "JKS";
+
+        private String location = "resources/security/keystore.jks";
 
         private String password = "wso2carbon";
 
         private String certType = "SunX509";
+
+        /**
+         * Getter for type
+         */
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
 
         /**
          * Getter for location.
@@ -175,11 +214,24 @@ public class AmqpServerConfiguration {
      * Contains keystore relate configurations.
      */
     public static class TrustStoreDetails {
+        private String type = "JKS";
+
         private String location = "resources/security/client-truststore.jks";
 
         private String password = "wso2carbon";
 
         private String certType = "SunX509";
+
+        /**
+         * Getter for type
+         */
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
 
         /**
          * Getter for location.
