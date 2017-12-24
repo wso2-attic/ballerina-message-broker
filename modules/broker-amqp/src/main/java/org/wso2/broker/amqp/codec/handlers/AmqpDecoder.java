@@ -17,7 +17,7 @@
  *
  */
 
-package org.wso2.broker.amqp.codec;
+package org.wso2.broker.amqp.codec.handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

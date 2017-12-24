@@ -306,11 +306,11 @@ final class MessagingEngine {
         return messageIdGenerator.incrementAndGet();
     }
 
-    public void requeue(String queueName, long messageId) {
+    public void requeue(String queueName, Message message) {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.get(queueName);
-            queueHandler.requeue(messageId);
+            queueHandler.requeue(message);
         } finally {
             lock.readLock().unlock();
         }

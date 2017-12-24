@@ -93,4 +93,8 @@ public class ShortString implements EncodableData {
     public int hashCode() {
         return Arrays.hashCode(content);
     }
+
+    public boolean isEmpty() {
+        return length == 0;
+    }
 }

@@ -32,11 +32,11 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
-import org.wso2.broker.amqp.codec.AmqpDecoder;
-import org.wso2.broker.amqp.codec.AmqpEncoder;
-import org.wso2.broker.amqp.codec.AmqpMessageWriter;
-import org.wso2.broker.amqp.codec.BlockingTaskHandler;
+import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.handlers.AmqpDecoder;
+import org.wso2.broker.amqp.codec.handlers.AmqpEncoder;
+import org.wso2.broker.amqp.codec.handlers.AmqpMessageWriter;
+import org.wso2.broker.amqp.codec.handlers.BlockingTaskHandler;
 import org.wso2.broker.core.Broker;
 
 import java.io.IOException;

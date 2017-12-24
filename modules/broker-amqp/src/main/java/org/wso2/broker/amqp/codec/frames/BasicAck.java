@@ -24,8 +24,8 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
-import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.BlockingTask;
+import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
  * AMQP frame for basic.ack.

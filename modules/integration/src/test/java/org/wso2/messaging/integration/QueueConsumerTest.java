@@ -152,7 +152,56 @@ public class QueueConsumerTest {
 
         message = consumer.receive(10000);
         Assert.assertNotNull(message, "Requeued Message was not received");
-        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was not set Message was not received");
+        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was not set");
+        message.acknowledge();
+
+        connection.close();
+    }
+
+    @Parameters({ "broker-port", "admin-username", "admin-password", "broker-hostname" })
+    @Test
+    public void testConsumerWithBasicRecover(String port,
+                                            String adminUsername,
+                                            String adminPassword,
+                                            String brokerHostname) throws Exception {
+        String queueName = "testConsumerWithBasicRecover";
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
+                .withQueue(queueName)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // publish message
+        Session producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = producerSession.createQueue(queueName);
+        MessageProducer producer = producerSession.createProducer(queue);
+
+        producer.send(producerSession.createTextMessage("First message for reject test"));
+        producer.send(producerSession.createTextMessage("Second message for reject test"));
+        producerSession.close();
+
+        // Consume published messages
+        Session subscriberSession = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
+
+        Message message = consumer.receive(1000);
+        Assert.assertNotNull(message, "Message was not received");
+
+        subscriberSession.recover();
+
+        message = consumer.receive(5000);
+        Assert.assertNotNull(message, "Requeued first Message was not received");
+        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was not set in first message");
+        message.acknowledge();
+
+        message = consumer.receive(5000);
+        Assert.assertNotNull(message, "Requeued second Message was not received");
+        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was not set in second");
         message.acknowledge();
 
         connection.close();

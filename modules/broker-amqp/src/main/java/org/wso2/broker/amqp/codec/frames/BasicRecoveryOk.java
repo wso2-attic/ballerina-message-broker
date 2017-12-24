@@ -26,15 +26,15 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
- * AMQP frame for queue.bind-ok
+ * AMQP frame for basic.recovery-ok
  * Parameter Summary:
  *     No parameters
  */
-public class QueueBindOk extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(QueueBindOk.class);
+public class BasicRecoveryOk extends MethodFrame {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicRecoveryOk.class);
 
-    public QueueBindOk(int channel) {
-        super(channel, (short) 50, (short) 21);
+    public BasicRecoveryOk(int channel) {
+        super(channel, (short) 60, (short) 111);
     }
 
     @Override
@@ -48,10 +48,10 @@ public class QueueBindOk extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // Server does not handle queue.bind-ok
+        // Server does not handle this frame
     }
 
     public static AmqMethodBodyFactory getFactory() {
-        return (buf, channel, size) -> new QueueBindOk(channel);
+        return (buf, channel, size) -> new BasicRecoveryOk(channel);
     }
 }

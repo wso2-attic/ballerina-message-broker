@@ -22,7 +22,7 @@ package org.wso2.broker.amqp.codec.frames;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
-import org.wso2.broker.amqp.codec.AmqpConnectionHandler;
+import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
  * AMQP General Frame.

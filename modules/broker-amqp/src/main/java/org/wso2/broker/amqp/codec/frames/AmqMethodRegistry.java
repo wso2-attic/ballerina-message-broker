@@ -66,6 +66,8 @@ public class AmqMethodRegistry {
         factories[60][60] = BasicDeliver.getFactory();
         factories[60][80] = BasicAck.getFactory();
         factories[60][90] = BasicReject.getFactory();
+        factories[60][110] = BasicRecover.getFactory();
+        factories[60][111] = BasicRecoveryOk.getFactory();
     }
 
     public AmqMethodBodyFactory getFactory(short classId, short methodId) throws AmqFrameDecodingException {
