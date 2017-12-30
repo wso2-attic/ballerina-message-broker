@@ -19,6 +19,7 @@
 
 package org.wso2.broker.amqp;
 
+import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Message;
 
 /**
@@ -27,10 +28,12 @@ import org.wso2.broker.core.Message;
 public class AckData {
     private final Message message;
     private final String queueName;
+    private final ShortString consumerTag;
 
-    public AckData(Message message, String queueName) {
+    public AckData(Message message, String queueName, ShortString consumerTag) {
         this.message = message;
         this.queueName = queueName;
+        this.consumerTag = consumerTag;
     }
 
     /**
@@ -45,5 +48,12 @@ public class AckData {
      */
     public String getQueueName() {
         return queueName;
+    }
+
+    /**
+     * Getter for consumerTag
+     */
+    public ShortString getConsumerTag() {
+        return consumerTag;
     }
 }

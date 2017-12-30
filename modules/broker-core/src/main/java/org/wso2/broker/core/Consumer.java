@@ -47,15 +47,16 @@ public interface Consumer {
     void close() throws BrokerException;
 
     /**
-     * Identifier for the consumer. This consumer tag should be local to a channel.
-     * @return
-     */
-    String getConsumerTag();
-
-    /**
      * If true only this consumer can access the queue and consume messages.
      *
      * @return True if the consumer is exclusive. False otherwise
      */
     boolean isExclusive();
+
+    /**
+     * Indicate if consumer is ready to receive messages
+     *
+     * @return true if the consumer can receive messages, false otherwise
+     */
+    boolean isActive();
 }

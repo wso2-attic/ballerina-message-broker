@@ -28,7 +28,6 @@ import org.wso2.broker.core.store.dao.QueueDao;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -48,15 +47,11 @@ final class QueueHandler {
 
     private final Set<Consumer> consumers;
 
-    private final Map<Long, Message> pendingMessages;
-
     private QueueHandler(Queue queue) {
        
         this.queue = queue;
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
-        pendingMessages = new ConcurrentHashMap<>();
-           
     }
 
     public static QueueHandler createNonDurableQueue(String queueName, int capacity, boolean autoDelete) {
@@ -123,21 +118,14 @@ final class QueueHandler {
     Message dequeue() {
        
         Message message = queue.dequeue();
-        if (message != null) {
-            pendingMessages.put(message.getMetadata().getInternalId(), message.shallowCopy());
-        }
         return message;
     }
 
     void acknowledge(long messageId) {
         // TODO handle nacks
-        Message message = pendingMessages.remove(messageId);
-        message.release();
     }
 
-    public void requeue(long messageId) {
-        Message message = pendingMessages.remove(messageId);
-        message.setRedeliver();
+    public void requeue(Message message) {
         queue.enqueue(message);
     }
 

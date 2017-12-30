@@ -17,12 +17,13 @@
  *
  */
 
-package org.wso2.broker.amqp.codec;
+package org.wso2.broker.amqp.codec.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.BlockingTask;
 
 /**
  * {@code BlockingTaskHandler} is handles by a separate executor group to handle event so that the Netty event loop

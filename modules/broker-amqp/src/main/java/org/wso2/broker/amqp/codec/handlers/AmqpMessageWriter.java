@@ -17,22 +17,25 @@
  *
  */
 
-package org.wso2.broker.amqp.codec;
+package org.wso2.broker.amqp.codec.handlers;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageEncoder;
-import org.wso2.broker.amqp.codec.frames.GeneralFrame;
-
-import java.util.List;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
+import org.wso2.broker.amqp.AmqpDeliverMessage;
 
 /**
- * Netty based AMQP encoder.
+ * Writes {@link AmqpDeliverMessage} to the outbound channel
  */
-public class AmqpEncoder extends MessageToMessageEncoder<GeneralFrame> {
+public class AmqpMessageWriter extends ChannelOutboundHandlerAdapter {
 
-    protected void encode(ChannelHandlerContext ctx, GeneralFrame frame, List<Object> out) {
-        ByteBuf buf = frame.write(ctx.alloc());
-        out.add(buf);
+    @Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+        if (msg instanceof AmqpDeliverMessage) {
+            ((AmqpDeliverMessage) msg).write(ctx);
+        } else  {
+            ctx.write(msg, promise);
+        }
     }
+
 }

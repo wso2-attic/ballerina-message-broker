@@ -17,12 +17,15 @@
  *
  */
 
-package org.wso2.broker.amqp.codec;
+package org.wso2.broker.amqp.codec.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.AmqpChannel;
+import org.wso2.broker.amqp.codec.BlockingTask;
+import org.wso2.broker.amqp.codec.ConnectionException;
 import org.wso2.broker.amqp.codec.frames.AmqpBadMessage;
 import org.wso2.broker.amqp.codec.frames.ConnectionStart;
 import org.wso2.broker.amqp.codec.frames.GeneralFrame;

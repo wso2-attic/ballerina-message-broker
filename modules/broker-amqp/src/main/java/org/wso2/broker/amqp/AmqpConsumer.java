@@ -25,6 +25,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
+import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Consumer;
 import org.wso2.broker.core.Message;
 
@@ -39,7 +40,7 @@ public class AmqpConsumer implements Consumer {
 
     private final String queueName;
 
-    private final String consumerTag;
+    private final ShortString consumerTag;
 
     private final boolean isExclusive;
 
@@ -49,7 +50,7 @@ public class AmqpConsumer implements Consumer {
     private ChannelFutureListener errorLogger;
 
     public AmqpConsumer(ChannelHandlerContext ctx, AmqpChannel channel,
-                        String queueName, String consumerTag, boolean isExclusive) {
+                        String queueName, ShortString consumerTag, boolean isExclusive) {
         this.queueName = queueName;
         this.consumerTag = consumerTag;
         this.isExclusive = isExclusive;
@@ -61,13 +62,11 @@ public class AmqpConsumer implements Consumer {
     @Override
     public void send(Message message) {
 
-        long deliveryTag = channel.getNextDeliveryTag();
         AmqpDeliverMessage deliverMessage = new AmqpDeliverMessage(message,
                                                                    consumerTag,
-                                                                   channel.getChannelId(),
-                                                                   deliveryTag);
+                                                                   channel,
+                                                                   queueName);
 
-        channel.recordMessageDelivery(deliveryTag, new AckData(message, queueName));
         ChannelFuture channelFuture = context.channel().writeAndFlush(deliverMessage);
         channelFuture.addListener(errorLogger);
     }
@@ -82,13 +81,13 @@ public class AmqpConsumer implements Consumer {
     }
 
     @Override
-    public String getConsumerTag() {
-        return consumerTag;
+    public boolean isExclusive() {
+        return isExclusive;
     }
 
     @Override
-    public boolean isExclusive() {
-        return isExclusive;
+    public boolean isActive() {
+        return channel.isActive();
     }
 
     private static class ErrorLogger implements ChannelFutureListener {

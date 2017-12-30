@@ -20,6 +20,7 @@
 package org.wso2.broker.amqp;
 
 import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.frames.BasicDeliver;
 import org.wso2.broker.amqp.codec.frames.ContentFrame;
 import org.wso2.broker.amqp.codec.frames.HeaderFrame;
@@ -33,36 +34,52 @@ import org.wso2.broker.core.Metadata;
  */
 public class AmqpDeliverMessage {
 
-    private final String consumerTag;
-    private final int channelId;
-    private final long deliveryTag;
+    private final ShortString consumerTag;
+    private final AmqpChannel channel;
     private final Message message;
+    private final String queueName;
 
-    public AmqpDeliverMessage(Message message, String consumerTag, int channelId, long deliveryTag) {
+    public AmqpDeliverMessage(Message message, ShortString consumerTag, AmqpChannel channel, String queueName) {
         this.message = message;
         this.consumerTag = consumerTag;
-        this.channelId = channelId;
-        this.deliveryTag = deliveryTag;
+        this.channel = channel;
+        this.queueName = queueName;
     }
 
     public void write(ChannelHandlerContext ctx) {
-        Metadata metadata = message.getMetadata();
-        BasicDeliver basicDeliverFrame = new BasicDeliver(
-                channelId,
-                ShortString.parseString(consumerTag),
-                deliveryTag,
-                message.isRedelivered(),
-                ShortString.parseString(metadata.getExchangeName()),
-                ShortString.parseString(metadata.getRoutingKey()));
+        if (!channel.isActive()) {
+            channel.hold(this);
+        } else {
 
-        HeaderFrame headerFrame = new HeaderFrame(channelId, 60, metadata.getContentLength());
-        headerFrame.setRawMetadata(metadata.getRawMetadata());
-        ctx.write(basicDeliverFrame);
-        ctx.write(headerFrame);
-        for (ContentChunk chunk : message.getContentChunks()) {
-            ContentFrame contentFrame = new ContentFrame(channelId, chunk.getBytes().capacity(), chunk.getBytes());
-            ctx.write(contentFrame);
+            long deliveryTag = channel.getNextDeliveryTag();
+            channel.recordMessageDelivery(deliveryTag, new AckData(message.shallowCopy(), queueName, consumerTag));
+
+            Metadata metadata = message.getMetadata();
+            BasicDeliver basicDeliverFrame = new BasicDeliver(
+                    channel.getChannelId(),
+                    consumerTag,
+                    deliveryTag,
+                    message.isRedelivered(),
+                    ShortString.parseString(metadata.getExchangeName()),
+                    ShortString.parseString(metadata.getRoutingKey()));
+
+            HeaderFrame headerFrame = new HeaderFrame(channel.getChannelId(), 60, metadata.getContentLength());
+            headerFrame.setRawMetadata(metadata.getRawMetadata());
+            ctx.write(basicDeliverFrame);
+            ctx.write(headerFrame);
+            for (ContentChunk chunk : message.getContentChunks()) {
+                ContentFrame contentFrame = new ContentFrame(channel.getChannelId(),
+                                                             chunk.getBytes().capacity(),
+                                                             chunk.getBytes());
+                ctx.write(contentFrame);
+            }
         }
     }
 
+    /**
+     * Getter for channel
+     */
+    public AmqpChannel getChannel() {
+        return channel;
+    }
 }
