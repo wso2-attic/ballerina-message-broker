@@ -29,8 +29,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.sql.DataSource;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -72,13 +70,6 @@ public class RdbmsCoordinationDaoImplErrorTest {
         when(mockDatasource.getConnection()).thenReturn(mockConnection);
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
-    }
-
-    @Test(expectedExceptions = CoordinationException.class,
-            description = "Test clearing membership events with SQL exception")
-    public void testClearMembershipEventsWithException() throws Exception {
-        doThrow(new SQLException()).when(mockConnection).prepareStatement(anyString());
-        rdbmsCoordinationDaoImpl.clearMembershipEvents(nodeID);
     }
 
     @Test(expectedExceptions = CoordinationException.class,
@@ -174,27 +165,6 @@ public class RdbmsCoordinationDaoImplErrorTest {
     public void testCheckIsCoordinatorWithException() throws Exception {
         doThrow(new SQLException()).when(mockConnection).prepareStatement(anyString());
         rdbmsCoordinationDaoImpl.checkIsCoordinator(nodeID);
-    }
-
-    @Test(expectedExceptions = CoordinationException.class,
-            description = "Test storing membership events with SQL exception")
-    public void testStoreMembershipEventWithException() throws Exception {
-        doThrow(new SQLException()).when(mockConnection).prepareStatement(anyString());
-        String nodeTwoID = "bc993ca8-e22b-11e7-80c1-9a214cf093ae";
-        List<String> clusterNodes = new ArrayList<>();
-        clusterNodes.add(nodeID);
-        clusterNodes.add(nodeTwoID);
-        rdbmsCoordinationDaoImpl.storeMembershipEvent(clusterNodes, 2, nodeTwoID);
-    }
-
-    @Test(expectedExceptions = CoordinationException.class,
-            description = "Test reading membership events with SQL exception")
-    public void testReadMembershipEventsWithException() throws Exception {
-        doThrow(new SQLException()).when(mockConnection).prepareStatement(anyString());
-        when(mockResultSet.getInt("CHANGE_TYPE")).thenReturn(2);
-        when(mockResultSet.getString("CHANGED_MEMBER_ID"))
-                .thenReturn("bc993ca8-e22b-11e7-80c1-9a214cf093ae");
-        rdbmsCoordinationDaoImpl.readMembershipEvents(nodeID);
     }
 
     @Test(expectedExceptions = CoordinationException.class, description = "Test exception with roll back")

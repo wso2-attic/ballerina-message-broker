@@ -69,20 +69,12 @@ public class RdbmsCoordinationStrategyTest {
             + "IS_NEW_NODE SMALLINT NOT NULL, "
             + "PRIMARY KEY (NODE_ID))";
 
-    private static final String CREATE_MB_MEMBERSHIP_TABLE = "CREATE TABLE MB_MEMBERSHIP ("
-            + "EVENT_ID BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), "
-            + "NODE_ID VARCHAR(512) NOT NULL, "
-            + "CHANGE_TYPE SMALLINT NOT NULL, "
-            + "CHANGED_MEMBER_ID VARCHAR(512) NOT NULL, "
-            + "PRIMARY KEY (EVENT_ID))";
-
     @BeforeClass
     public void setUp() throws SQLException {
         Connection connection = DriverManager.getConnection(databaseUrl + ";create=true");
         Statement statement = connection.createStatement();
         statement.executeUpdate(CREATE_MB_COORDINATOR_HEARTBEAT_TABLE);
         statement.executeUpdate(CREATE_MB_NODE_HEARTBEAT_TABLE);
-        statement.executeUpdate(CREATE_MB_MEMBERSHIP_TABLE);
         connection.close();
 
         CoordinationConfiguration.RdbmsCoordinationConfiguration rdbmsCoordinationConfiguration =
@@ -90,7 +82,6 @@ public class RdbmsCoordinationStrategyTest {
         rdbmsCoordinationConfiguration.setNodeId(nodeOneId);
         rdbmsCoordinationConfiguration.setHeartbeatInterval(5000);
         rdbmsCoordinationConfiguration.setCoordinatorEntryCreationWaitTime(3000);
-        rdbmsCoordinationConfiguration.setEventPollingInterval(4000);
 
         HikariConfig hikariDatasourceConfig = new HikariConfig();
         hikariDatasourceConfig.setJdbcUrl(databaseUrl);

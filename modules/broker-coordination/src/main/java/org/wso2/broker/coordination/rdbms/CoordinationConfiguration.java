@@ -52,8 +52,6 @@ public class CoordinationConfiguration  {
 
         private int coordinatorEntryCreationWaitTime = 3000;
 
-        private int eventPollingInterval = 4000;
-
         public String getNodeId() {
             return nodeId;
         }
@@ -78,20 +76,11 @@ public class CoordinationConfiguration  {
             this.coordinatorEntryCreationWaitTime = coordinatorEntryCreationWaitTime;
         }
 
-        public int getEventPollingInterval() {
-            return eventPollingInterval;
-        }
-
-        public void setEventPollingInterval(int eventPollingInterval) {
-            this.eventPollingInterval = eventPollingInterval;
-        }
-
         @Override
         public String toString() {
             return "RDBMSCoordinationConfiguration [nodeID=" + nodeId
                     + ", heartbeatInterval=" + heartbeatInterval
-                    + ", coordinatorEntryCreationWaitTime=" + coordinatorEntryCreationWaitTime
-                    + ", eventPollingInterval=" + eventPollingInterval + "]";
+                    + ", coordinatorEntryCreationWaitTime=" + coordinatorEntryCreationWaitTime + "]";
         }
     }
 

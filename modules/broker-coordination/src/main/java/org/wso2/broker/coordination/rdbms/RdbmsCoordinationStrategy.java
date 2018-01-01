@@ -40,17 +40,12 @@ import java.util.concurrent.TimeUnit;
  * RdbmsCoordinationStrategy uses a RDBMS based approached to identify membership events related to the cluster.
  * This includes electing the coordinator and notifying member added and left events.
  */
-public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMembershipListener {
+public class RdbmsCoordinationStrategy implements CoordinationStrategy {
 
     /**
      * Class logger.
      */
     private Logger logger = LoggerFactory.getLogger(RdbmsCoordinationStrategy.class);
-
-    /**
-     * Used to send and receive cluster notifications.
-     */
-    private RdbmsMembershipEventingEngine membershipEventingEngine;
 
     /**
      * Time to wait before notifying others about coordinator change.
@@ -114,11 +109,6 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
     private final ScheduledExecutorService scheduledExecutorService;
 
     /**
-     * The event polling interval specified in the RDBMS coordination configuration.
-     */
-    private int eventPollingInterval;
-
-    /**
      * Default constructor.
      *
      * @param rdbmsCoordinationDaoImpl       the RdbmsCoordinationDaoImpl to use for communication with the database
@@ -133,7 +123,6 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
         heartBeatInterval = rdbmsCoordinationConfiguration.getHeartbeatInterval();
-        eventPollingInterval = rdbmsCoordinationConfiguration.getEventPollingInterval();
         coordinatorEntryCreationWaitTime = rdbmsCoordinationConfiguration.getCoordinatorEntryCreationWaitTime();
         //(heartBeatInterval / 2) + 1;
 
@@ -153,31 +142,17 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
         coordinationDao = rdbmsCoordinationDaoImpl;
     }
 
-    /*
-    * ======================== Methods from RdbmsMembershipListener ============================
-    */
-
     /**
-     * {@inheritDoc}
+     * Method to be invoked once the node becomes the coordinator node.
      */
-    @Override
-    public void memberAdded(String nodeID) {
+    public void becameCoordinatorNode() {
         //TODO: Intro logic.
     }
 
     /**
-     * {@inheritDoc}
+     * Method to be invoked once the node becomes a candidate node.
      */
-    @Override
-    public void memberRemoved(String nodeID) {
-        //TODO: Intro logic.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void coordinatorChanged(String coordinator) {
+    public void becameCandidateNode() {
         //TODO: Intro logic.
     }
 
@@ -190,23 +165,7 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
      */
     @Override
     public void start() {
-        // TODO detect if already started
-        membershipEventingEngine = new RdbmsMembershipEventingEngine(coordinationDao);
-        membershipEventingEngine.start(localNodeId, eventPollingInterval);
-
-        // Register listener for membership changes
-        membershipEventingEngine.addEventListener(this);
-
         currentNodeState = NodeState.ELECTION;
-
-        // Clear old membership events for current node
-        try {
-            coordinationDao.clearMembershipEvents(localNodeId);
-            coordinationDao.removeNodeHeartbeat(localNodeId);
-        } catch (CoordinationException e) {
-            logger.warn("Error while clearing old membership events for local node (" + localNodeId + ")", e);
-        }
-
         coordinatorElectionTask = new CoordinatorElectionTask();
         threadExecutor.execute(coordinatorElectionTask);
 
@@ -282,7 +241,6 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
                 logger.error("Error occurred while removing coordinator when shutting down", e);
             }
         }
-        membershipEventingEngine.stop();
         coordinatorElectionTask.stop();
         threadExecutor.shutdown();
         scheduledExecutorService.shutdown();
@@ -428,14 +386,10 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
 
                 for (String newNode : newNodes) {
                     logger.info("Member added " + newNode);
-                    membershipEventingEngine.notifyMembershipEvent(allActiveNodeIds, MembershipEventType.MEMBER_ADDED,
-                            newNode);
                 }
 
                 for (String removedNode : removedNodes) {
                     logger.info("Member removed " + removedNode);
-                    membershipEventingEngine.notifyMembershipEvent(allActiveNodeIds, MembershipEventType.MEMBER_REMOVED,
-                            removedNode);
                 }
 
                 // Reduce the time spent in updating membership events from wait time
@@ -494,16 +448,17 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
                     resetScheduleStateExpirationTask();
                     logger.info("Elected current node as the coordinator");
                     nextState = NodeState.COORDINATOR;
-                    // notify nodes about coordinator change
-                    membershipEventingEngine.notifyMembershipEvent(getAllNodeIdentifiers(),
-                            MembershipEventType.COORDINATOR_CHANGED, localNodeId);
+                    //notify node about coordinator change
+                    becameCoordinatorNode();
                 } else {
                     logger.info("Election resulted in current node becoming a " + NodeState.CANDIDATE + " node");
                     nextState = NodeState.CANDIDATE;
+                    becameCandidateNode();
                 }
             } else {
                 logger.info("Election resulted in current node becoming a " + NodeState.CANDIDATE + " node");
                 nextState = NodeState.CANDIDATE;
+                becameCandidateNode();
             }
             return nextState;
         }
