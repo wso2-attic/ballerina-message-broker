@@ -28,6 +28,7 @@ import org.wso2.broker.coordination.node.NodeHeartbeatData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -146,6 +147,9 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy, RdbmsMem
         }
 
         localNodeId = rdbmsCoordinationConfiguration.getNodeId();
+        if (CoordinationConfiguration.DEFAULT_NODE_ID.equals(localNodeId)) {
+            localNodeId = UUID.randomUUID().toString();
+        }
         coordinationDao = rdbmsCoordinationDaoImpl;
     }
 

@@ -23,7 +23,10 @@ package org.wso2.broker.coordination.rdbms;
  */
 public class CoordinationConfiguration  {
 
-    public static final String RDBMS_COORDINATION_CONFIG_FILE = "rdbmsCoordination.yaml";
+    /**
+     * Default node ID indicating the node ID needs to be generated.
+     */
+    public static final String DEFAULT_NODE_ID = "GENERATED";
 
     /**
      * Represents configuration for RDBMS coordination.
@@ -43,13 +46,13 @@ public class CoordinationConfiguration  {
      */
     public static class RdbmsCoordinationConfiguration {
 
-        private String nodeId;
+        private String nodeId = DEFAULT_NODE_ID;
 
-        private int heartbeatInterval;
+        private int heartbeatInterval = 5000;
 
-        private int coordinatorEntryCreationWaitTime;
+        private int coordinatorEntryCreationWaitTime = 3000;
 
-        private int eventPollingInterval;
+        private int eventPollingInterval = 4000;
 
         public String getNodeId() {
             return nodeId;
