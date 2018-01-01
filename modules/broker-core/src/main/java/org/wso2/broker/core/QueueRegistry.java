@@ -19,8 +19,8 @@
 
 package org.wso2.broker.core;
 
-import org.wso2.broker.core.store.dao.MessageDao;
 import org.wso2.broker.core.store.dao.QueueDao;
+import org.wso2.broker.core.store.dao.SharedMessageStore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,12 +34,12 @@ final class QueueRegistry {
 
     private final QueueDao queueDao;
 
-    private final MessageDao messageDao;
+    private final SharedMessageStore sharedMessageStore;
 
-    QueueRegistry(QueueDao queueDao, MessageDao messageDao) throws BrokerException {
+    QueueRegistry(QueueDao queueDao, SharedMessageStore messageStore) throws BrokerException {
         this.queueHandlerMap = new HashMap<>();
         this.queueDao = queueDao;
-        this.messageDao = messageDao;
+        this.sharedMessageStore = messageStore;
         retrieveQueuesFromDao();
     }
 
@@ -57,7 +57,7 @@ final class QueueRegistry {
 
         if (queueHandler == null) {
             if (durable) {
-                queueHandler = QueueHandler.createDurableQueue(queueName, autoDelete, messageDao);
+                queueHandler = QueueHandler.createDurableQueue(queueName, autoDelete, sharedMessageStore);
                 queueDao.persist(queueHandler.getQueue());
             } else {
                 queueHandler = QueueHandler.createNonDurableQueue(queueName, 1000, autoDelete);
@@ -94,7 +94,7 @@ final class QueueRegistry {
 
     private void retrieveQueuesFromDao() throws BrokerException {
             queueDao.retrieveAll((name) -> {
-                QueueHandler handler = QueueHandler.createDurableQueue(name, false, messageDao);
+                QueueHandler handler = QueueHandler.createDurableQueue(name, false, sharedMessageStore);
                 queueHandlerMap.putIfAbsent(name, handler);
             });
     }

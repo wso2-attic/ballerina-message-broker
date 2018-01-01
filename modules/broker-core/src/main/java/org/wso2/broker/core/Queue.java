@@ -88,4 +88,5 @@ public abstract class Queue {
 
     public abstract Message dequeue();
 
+    public abstract void detach(Message message) throws BrokerException;
 }

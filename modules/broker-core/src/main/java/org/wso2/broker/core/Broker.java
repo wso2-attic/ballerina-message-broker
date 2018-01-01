@@ -52,10 +52,10 @@ public final class Broker {
     /**
      * Acknowledge single or a given set of messages. Removes the message from underlying queue
      * @param queueName   name of the queue the relevant messages belongs to
-     * @param messageId delivery tag of the message sent by the broker
+     * @param message delivery tag of the message sent by the broker
      */
-    public void acknowledge(String queueName, long messageId) throws BrokerException {
-        messagingEngine.acknowledge(queueName, messageId);
+    public void acknowledge(String queueName, Message message) throws BrokerException {
+        messagingEngine.acknowledge(queueName, message);
     }
 
     /**
@@ -77,8 +77,8 @@ public final class Broker {
         messagingEngine.createExchange(exchangeName, type, passive, durable);
     }
 
-    public void deleteExchange(String exchangeName, String type, boolean ifUnused) throws BrokerException {
-        messagingEngine.deleteExchange(exchangeName, type, ifUnused);
+    public void deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException {
+        messagingEngine.deleteExchange(exchangeName, ifUnused);
     }
 
     public void createQueue(String destination, boolean passive,

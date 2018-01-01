@@ -61,12 +61,19 @@ abstract class BaseDao {
         close(connection, statement);
     }
 
+    public void close(Connection connection, Statement... statements) {
+        for (Statement statement: statements) {
+            close(statement);
+        }
+        close(connection);
+    }
+
     public void close(Statement statement) {
         if (statement != null) {
             try {
                 statement.close();
             } catch (SQLException e) {
-                LOGGER.error("Error closing statement.", e);
+                LOGGER.error("Error closing statement. " + statement, e);
             }
         }
     }

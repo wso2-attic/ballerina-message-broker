@@ -47,14 +47,17 @@ final class BindingsRegistry {
     void bind(Queue queue, String bindingKey, FieldTable arguments) throws BrokerException {
         BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
         Binding binding = new Binding(queue, bindingKey, arguments);
-        bindingDao.persist(exchange.getName(), binding);
-        bindingSet.add(binding);
-
+        boolean success = bindingSet.add(binding);
+        if (success && queue.isDurable()) {
+            bindingDao.persist(exchange.getName(), binding);
+        }
     }
 
     void unbind(Queue queue, String routingKey) throws BrokerException {
         BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
-        bindingDao.delete(queue.getName(), routingKey, exchange.getName());
+        if (queue.isDurable()) {
+            bindingDao.delete(queue.getName(), routingKey, exchange.getName());
+        }
         bindingSet.remove(queue);
 
         if (bindingSet.isEmpty()) {

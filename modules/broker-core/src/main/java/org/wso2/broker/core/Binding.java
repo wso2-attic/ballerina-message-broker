@@ -76,4 +76,12 @@ public final class Binding {
     BooleanExpression getFilterExpression() {
         return filterExpression;
     }
+
+    @Override
+    public String toString() {
+        return "Binding{" +
+                "queue=" + queue +
+                ", routingKey='" + routingKey + '\'' +
+                '}';
+    }
 }

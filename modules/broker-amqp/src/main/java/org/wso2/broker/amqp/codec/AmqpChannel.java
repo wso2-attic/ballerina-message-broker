@@ -136,7 +136,7 @@ public class AmqpChannel {
     }
 
     public void cancelConsumer(ShortString consumerTag) throws AmqpException {
-        AmqpConsumer amqpConsumer = consumerMap.get(consumerTag);
+        AmqpConsumer amqpConsumer = consumerMap.remove(consumerTag);
         if (amqpConsumer != null) {
             broker.removeConsumer(amqpConsumer);
         } else {
@@ -153,7 +153,7 @@ public class AmqpChannel {
         AckData ackData = unackedMessageMap.remove(deliveryTag);
         if (ackData != null) {
             ackData.getMessage().release();
-            broker.acknowledge(ackData.getQueueName(), ackData.getMessage().getMetadata().getInternalId());
+            broker.acknowledge(ackData.getQueueName(), ackData.getMessage());
         } else {
             LOGGER.warn("Could not find a matching ack data for acking the delivery tag " + deliveryTag);
         }

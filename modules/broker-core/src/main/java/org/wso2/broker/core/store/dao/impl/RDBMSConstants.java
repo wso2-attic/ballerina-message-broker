@@ -27,6 +27,8 @@ final class RDBMSConstants {
     private RDBMSConstants() {
     }
 
+
+
     static final String PS_INSERT_METADATA =
             "INSERT INTO MB_METADATA (MESSAGE_ID, EXCHANGE_NAME, ROUTING_KEY, MESSAGE_METADATA) VALUES(?, ?, ?, ?)";
 
@@ -35,6 +37,9 @@ final class RDBMSConstants {
 
     public static final String PS_DELETE_FROM_QUEUE = "" +
             "DELETE FROM MB_QUEUE_MAPPING WHERE MESSAGE_ID=? AND QUEUE_NAME=?";
+
+    public static final String PS_INSERT_INTO_QUEUE =
+            "INSERT INTO MB_QUEUE_MAPPING (MESSAGE_ID, QUEUE_NAME) VALUES(?,?)";
 
     public static final String PS_INSERT_QUEUE =
             "INSERT INTO MB_QUEUE_METADATA (QUEUE_NAME, QUEUE_ARGUMENTS) VALUES(?,?)";
@@ -63,4 +68,8 @@ final class RDBMSConstants {
     public static final String SELECT_ALL_EXCHANGES =
             "SELECT EXCHANGE_NAME, EXCHANGE_TYPE FROM MB_EXCHANGE";
 
+    public static final String PS_DELETE_MESSAGE = "DELETE FROM MB_METADATA WHERE MESSAGE_ID=?";
+
+    public static final String PS_SELECT_MESSAGES_FOR_QUEUE =
+            "SELECT MESSAGE_ID FROM MB_QUEUE_MAPPING WHERE QUEUE_NAME=?";
 }

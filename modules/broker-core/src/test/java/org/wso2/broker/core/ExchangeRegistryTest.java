@@ -93,7 +93,7 @@ public class ExchangeRegistryTest {
         // This should not throw an exception.
         exchangeRegistry.declareExchange(NON_EXISTING_EXCHANGE, Exchange.Type.DIRECT, false, false);
         
-        exchangeRegistry.deleteExchange(NON_EXISTING_EXCHANGE, Exchange.Type.DIRECT, true);
+        exchangeRegistry.deleteExchange(NON_EXISTING_EXCHANGE, true);
         
         Exchange deletedExchange = exchangeRegistry.getExchange(NON_EXISTING_EXCHANGE);
         
@@ -105,7 +105,7 @@ public class ExchangeRegistryTest {
                                                                             expectedExceptions = BrokerException.class)
     public void testDeleteBuiltInExchanges(String exchangeName) throws BrokerException {
 
-        exchangeRegistry.deleteExchange(NON_EXISTING_EXCHANGE, Exchange.Type.DIRECT, true);
+        exchangeRegistry.deleteExchange(exchangeName,  true);
         Assert.fail("built in exchange type - " + exchangeName + " shouldn't be allowed to delete");
 
     }

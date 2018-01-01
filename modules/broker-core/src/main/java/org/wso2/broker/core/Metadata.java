@@ -26,8 +26,9 @@ import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.FieldValue;
 import org.wso2.broker.common.data.types.ShortString;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
@@ -60,7 +61,7 @@ public class Metadata {
      */
     private final long contentLength;
 
-    private final List<String> queueList;
+    private final Set<String> queueSet;
 
     private FieldTable headers;
 
@@ -99,7 +100,7 @@ public class Metadata {
         this.routingKey = routingKey;
         this.exchangeName = exchangeName;
         this.contentLength = contentLength;
-        this.queueList = new ArrayList<>();
+        this.queueSet = new HashSet<>();
         this.headers = null;
         headersPassed = false;
         headerParser = null;
@@ -122,11 +123,11 @@ public class Metadata {
     }
 
     public void addOwnedQueue(String queueName) {
-        queueList.add(queueName);
+        queueSet.add(queueName);
     }
 
-    public List<String> getOwnedQueues() {
-        return queueList;
+    public boolean hasAttachedQueues() {
+        return !queueSet.isEmpty();
     }
 
     public FieldValue getHeader(ShortString propertyName) {
@@ -268,7 +269,7 @@ public class Metadata {
             metadata.headerParser = headerParser;
         }
 
-        metadata.queueList.addAll(queueList);
+        metadata.queueSet.addAll(queueSet);
         metadata.headers = headers;
         metadata.deliveryMode = deliveryMode;
         metadata.priority = priority;
@@ -307,5 +308,13 @@ public class Metadata {
                 ", contentType=" + contentType +
                 ", contentEncoding=" + contentEncoding +
                 '}';
+    }
+
+    public void removeOwnedQueue(String queueName) {
+        queueSet.remove(queueName);
+    }
+
+    public Collection<String> getAttachedQueues() {
+        return queueSet;
     }
 }

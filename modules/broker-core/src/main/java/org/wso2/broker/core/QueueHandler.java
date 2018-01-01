@@ -22,7 +22,7 @@ package org.wso2.broker.core;
 import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.core.store.dao.MessageDao;
+import org.wso2.broker.core.store.dao.SharedMessageStore;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -49,7 +49,6 @@ public final class QueueHandler {
     private final Set<Consumer> consumers;
 
     private QueueHandler(Queue queue) {
-
         this.queue = queue;
         this.redeliveryQueue = new MemQueueImpl(queue.getName(), 1000, false);
         this.consumers = ConcurrentHashMap.newKeySet();
@@ -62,8 +61,8 @@ public final class QueueHandler {
     }
 
     public static QueueHandler createDurableQueue(String queueName, boolean autoDelete,
-                                                  MessageDao messageDao) {
-        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, messageDao);
+                                                  SharedMessageStore sharedMessageStore) {
+        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, sharedMessageStore);
         return new QueueHandler(queue);
     }
 
@@ -83,20 +82,22 @@ public final class QueueHandler {
     /**
      * Add a new consumer to the queue.
      *
-     * @param consumer {@link Consumer} implementation
+     * @param consumer {@link Consumer} implementation.
+     * @return true if {@link Consumer} was successfully added.
      */
-    void addConsumer(Consumer consumer) {
-        consumers.add(consumer);
+    boolean addConsumer(Consumer consumer) {
+        return consumers.add(consumer);
     }
 
     /**
      * Remove consumer from the queue.
      * NOTE: This method is synchronized with getting next subscriber for the queue to avoid concurrent issues
      *
-     * @param consumer {@link Consumer} to be removed
+     * @param consumer {@link Consumer} to be removed.
+     * @return True if the {@link Consumer} is removed.
      */
-    void removeConsumer(Consumer consumer) {
-        consumers.remove(consumer);
+    boolean removeConsumer(Consumer consumer) {
+        return consumers.remove(consumer);
     }
 
     /**
@@ -125,8 +126,8 @@ public final class QueueHandler {
         return message;
     }
 
-    void acknowledge(long messageId) {
-        // TODO handle nacks
+    void acknowledge(Message message) throws BrokerException {
+        queue.detach(message);
     }
 
     public void requeue(Message message) throws BrokerException {
@@ -188,6 +189,10 @@ public final class QueueHandler {
         }
     }
 
+    public int consumerCount() {
+        return consumers.size();
+    }
+
     /**
      * In memory queue implementation for non durable queues.
      */
@@ -223,6 +228,11 @@ public final class QueueHandler {
             return queue.poll();
         }
 
+        @Override
+        public void detach(Message message) {
+            // nothing to do
+        }
+
     }
 
     /**
@@ -233,11 +243,11 @@ public final class QueueHandler {
 
         private final java.util.Queue<Message> memQueue;
 
-        private final MessageDao messageDao;
+        private final SharedMessageStore sharedMessageStore;
 
-        DbBackedQueueImpl(String queueName, boolean autoDelete, MessageDao messageDao) {
+        DbBackedQueueImpl(String queueName, boolean autoDelete, SharedMessageStore sharedMessageStore) {
             super(queueName, true, autoDelete);
-            this.messageDao = messageDao;
+            this.sharedMessageStore = sharedMessageStore;
             this.memQueue = new LinkedBlockingQueue<>();
         }
 
@@ -253,13 +263,18 @@ public final class QueueHandler {
 
         @Override
         public boolean enqueue(Message message) throws BrokerException {
-            messageDao.persist(message);
+            sharedMessageStore.attach(getName(), message.getMetadata().getInternalId());
             return memQueue.offer(message);
         }
 
         @Override
         public Message dequeue() {
             return memQueue.poll();
+        }
+
+        @Override
+        public void detach(Message message) throws BrokerException {
+            sharedMessageStore.detach(getName(), message);
         }
     }
 }

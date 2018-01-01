@@ -48,7 +48,7 @@ public class BindingDaoImpl extends BindingDao {
             statement.setString(1, exchangeName);
             statement.setString(2, binding.getQueue().getName());
             statement.setString(3, binding.getRoutingKey());
-            // TODO: add support for wrting field tables
+            // TODO: add support for writing field tables
             statement.setString(4, Binding.JMS_SELECTOR_ARGUMENT.toString());
 
             statement.executeUpdate();

@@ -17,11 +17,13 @@
  *
  */
 
-package org.wso2.messaging.integration.util;
+package org.wso2.broker.core;
 
 import com.ibatis.common.jdbc.ScriptRunner;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -31,27 +33,44 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
-public class DbUtils {
+public class DbUtil {
 
     private static final String DATABASE_URL = "jdbc:derby:memory:mbDB";
 
-    private static final String path = "../broker-core/src/main/resources/dbscripts/derby-mb.sql";
+    private static final String DRIVER_CLASS_NAME = "org.apache.derby.jdbc.EmbeddedDriver";
 
-    public static DataSource getDataSource() {
+    private static final String path = "src/main/resources/dbscripts/derby-mb.sql";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbUtil.class);
+
+    private static DataSource dataSource;
+
+    static {
+        try {
+            setupDB();
+            dataSource = createDataSource();
+        } catch (SQLException | IOException e) {
+            LOGGER.error("Error occurred while setting up database for unit tests", e);
+        }
+    }
+
+    private static DataSource createDataSource() {
         HikariConfig hikariDataSourceConfig = new HikariConfig();
         hikariDataSourceConfig.setJdbcUrl(DATABASE_URL);
+        hikariDataSourceConfig.setDriverClassName(DRIVER_CLASS_NAME);
         hikariDataSourceConfig.setAutoCommit(false);
         return new HikariDataSource(hikariDataSourceConfig);
     }
 
-    public static void setupDB() throws SQLException, IOException {
+    public static DataSource getDataSource() {
+        return dataSource;
+    }
 
+    private static void setupDB() throws SQLException, IOException {
         Connection connection = DriverManager.getConnection(DATABASE_URL + ";create=true");
 
         ScriptRunner scriptRunner = new ScriptRunner(connection, true, true);
         scriptRunner.runScript(new BufferedReader(new FileReader(path)));
-
         connection.close();
     }
 }

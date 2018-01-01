@@ -62,13 +62,16 @@ final class ExchangeRegistry {
         return exchangeMap.get(exchangeName);
     }
 
-    void deleteExchange(String exchangeName, Exchange.Type type, boolean ifUnused) throws BrokerException {
-        // TODO: Go through the logic with exchange type in mind
+    void deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException {
+        // TODO: ifUnused property
         Exchange exchange = exchangeMap.get(exchangeName);
-        if (exchange != null && !isBuiltInExchange(exchange)) {
+        if (exchange == null) {
+            return;
+        }
+        if (!isBuiltInExchange(exchange)) {
             exchangeMap.remove(exchangeName);
         } else {
-            throw new BrokerException("Cannot delete exchange.");
+            throw new BrokerException("Cannot delete built in exchange '" + exchangeName + "'");
         }
     }
 
