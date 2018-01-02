@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
@@ -62,6 +63,8 @@ public class BasicQos extends MethodFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         // TODO QoS Parameters should be propagated to message prefetch logic
         int channelId = getChannel();
+        AmqpChannel channel = connectionHandler.getChannel(channelId);
+        channel.setPrefetchCount(prefetchCount);
         ctx.writeAndFlush(new BasicQosOk(channelId));
     }
 

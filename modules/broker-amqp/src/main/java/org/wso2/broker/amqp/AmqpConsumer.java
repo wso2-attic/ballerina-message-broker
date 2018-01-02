@@ -62,6 +62,13 @@ public class AmqpConsumer implements Consumer {
     @Override
     public void send(Message message) {
 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Adding message to AMQP Netty outbound; messageId: {}, consumerTag: {}, queueName: {}",
+                        message.getMetadata().getInternalId(),
+                        consumerTag,
+                        queueName);
+        }
+
         AmqpDeliverMessage deliverMessage = new AmqpDeliverMessage(message,
                                                                    consumerTag,
                                                                    channel,
@@ -86,8 +93,8 @@ public class AmqpConsumer implements Consumer {
     }
 
     @Override
-    public boolean isActive() {
-        return channel.isActive();
+    public boolean isReady() {
+        return channel.isReady();
     }
 
     private static class ErrorLogger implements ChannelFutureListener {

@@ -73,7 +73,7 @@ public class AmqpChannel {
     /**
      * Used to get the ack data matching to a delivery id.
      */
-    private Map<Long, AckData> unackedMessageMap = new LinkedHashMap<>();
+    private UnackedMessageMap unackedMessageMap = new UnackedMessageMap();
 
     /**
      * Indicate if channel is ready to consume messages.
@@ -81,9 +81,19 @@ public class AmqpChannel {
     private AtomicBoolean flow = new AtomicBoolean(true);
 
     /**
+     * Indicate if unack count is within the prefetch limit.
+     */
+    private AtomicBoolean hasRoom = new AtomicBoolean(true);
+
+    /**
      * List of messages blocked due to flow being disabled.
      */
     private List<AmqpDeliverMessage> deliveryPendingMessages = new ArrayList<>();
+
+    /**
+     * Max window size
+     */
+    private int prefetchCount;
 
     public AmqpChannel(Broker broker, int channelId) {
         this.broker = broker;
@@ -190,14 +200,11 @@ public class AmqpChannel {
      * @return all unacknowledged messages
      */
     public Collection<AckData> recover() {
-        Collection<AckData> entries = new ArrayList<>(unackedMessageMap.values());
-        unackedMessageMap.clear();
-        return entries;
+        return unackedMessageMap.clear();
     }
 
     public void rejectAll() {
-        Collection<AckData> entries = unackedMessageMap.values();
-        unackedMessageMap.clear();
+        Collection<AckData> entries = unackedMessageMap.clear();
         for (AckData ackData : entries) {
             Message message = ackData.getMessage();
             message.setRedeliver();
@@ -210,9 +217,20 @@ public class AmqpChannel {
     }
 
     /**
-     * Getter for flow
+     * Channel is ready to deliver messages to clients.
+     *
+     * @return true if messages can be delivered through the channel, false otherwise
      */
-    public boolean isActive() {
+    public boolean isReady() {
+        return flow.get() && hasRoom.get();
+    }
+
+    /**
+     * Indicate if client enforced flow control is enabled
+     *
+     * @return true if flow is enabled. false otherwise
+     */
+    public boolean isFlowEnabled() {
         return flow.get();
     }
 
@@ -224,5 +242,43 @@ public class AmqpChannel {
         List<AmqpDeliverMessage> pendingMessages = new ArrayList<>(deliveryPendingMessages);
         deliveryPendingMessages.clear();
         return pendingMessages;
+    }
+
+    public void setPrefetchCount(int prefetchCount) {
+        this.prefetchCount = prefetchCount;
+    }
+
+    /**
+     * Data-structure to handle unacknowledge messages. This class will update the has room variable depending on the
+     * number of messages in the unackedMessageMap.
+     */
+    private class UnackedMessageMap {
+        private Map<Long, AckData> unackedMessageMap = new LinkedHashMap<>();
+
+        AckData remove(long deliveryTag) {
+            AckData ackData = unackedMessageMap.remove(deliveryTag);
+
+            if (!hasRoom.get() && unackedMessageMap.size() < prefetchCount) {
+                hasRoom.set(true);
+            }
+
+            return ackData;
+        }
+
+        void put(long deliveryTag, AckData ackData) {
+            unackedMessageMap.put(deliveryTag, ackData);
+
+            if (hasRoom.get() && unackedMessageMap.size() >= prefetchCount) {
+                hasRoom.set(false);
+            }
+
+        }
+
+        Collection<AckData> clear() {
+            Collection<AckData> entries = new ArrayList<>(unackedMessageMap.values());
+            unackedMessageMap.clear();
+            hasRoom.set(true);
+            return entries;
+        }
     }
 }

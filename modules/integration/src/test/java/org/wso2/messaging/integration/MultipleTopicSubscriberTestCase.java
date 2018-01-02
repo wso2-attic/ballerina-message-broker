@@ -78,19 +78,25 @@ public class MultipleTopicSubscriberTestCase {
         Message message;
         for (int i = 0; i < 1000; i++) {
             message = consumer1.receive(1000);
-            Assert.assertNotNull(message, "Message not received.");
+            Assert.assertNotNull(message, "Message " + i + " not received for consumer 1.");
             textMessage = (TextMessage) message;
-            Assert.assertEquals(textMessage.getText(), consumerMessage, "Incorrect message received.");
+            Assert.assertEquals(textMessage.getText(),
+                                consumerMessage,
+                                "Incorrect message " + i + " received for consumer 1.");
 
             message = consumer2.receive(1000);
-            Assert.assertNotNull(message, "Message not received.");
+            Assert.assertNotNull(message, "Message " + i + " not received for consumer 2.");
             textMessage = (TextMessage) message;
-            Assert.assertEquals(textMessage.getText(), consumerMessage, "Incorrect message received.");
+            Assert.assertEquals(textMessage.getText(),
+                                consumerMessage,
+                                "Incorrect message " + i + " received for consumer 2.");
 
             message = consumer3.receive(1000);
-            Assert.assertNotNull(message, "Message not received.");
+            Assert.assertNotNull(message, "Message " + i + " not received for consumer 3.");
             textMessage = (TextMessage) message;
-            Assert.assertEquals(textMessage.getText(), consumerMessage, "Incorrect message received.");
+            Assert.assertEquals(textMessage.getText(),
+                                consumerMessage,
+                                "Incorrect message " + i + " received for consumer 3.");
         }
 
         producer.close();

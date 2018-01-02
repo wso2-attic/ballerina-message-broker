@@ -60,7 +60,7 @@ final class MessageDeliveryTask extends Task {
         while (message != null) {
             Consumer consumer = consumerIterator.next();
 
-            if (!consumer.isActive()) {
+            if (!consumer.isReady()) {
                 if (consumer.equals(previousConsumer)) {
                     break;
                 } else {

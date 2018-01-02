@@ -58,5 +58,5 @@ public interface Consumer {
      *
      * @return true if the consumer can receive messages, false otherwise
      */
-    boolean isActive();
+    boolean isReady();
 }
