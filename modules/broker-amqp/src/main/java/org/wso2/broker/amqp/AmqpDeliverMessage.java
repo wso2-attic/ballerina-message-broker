@@ -47,7 +47,7 @@ public class AmqpDeliverMessage {
     }
 
     public void write(ChannelHandlerContext ctx) {
-        if (!channel.isActive()) {
+        if (!channel.isFlowEnabled()) {
             channel.hold(this);
         } else {
 
