@@ -55,8 +55,6 @@ public class RdbmsCoordinationConfigurationTest {
                 "Heartbeat Interval value not set correctly");
         Assert.assertEquals(rdbmsCoordinationConfiguration.getCoordinatorEntryCreationWaitTime(), 3000,
                 "Coordinator Entry Creation Wait Time value not set correctly");
-        Assert.assertEquals(rdbmsCoordinationConfiguration.getEventPollingInterval(), 4000,
-                "Event Polling Interval not set correctly");
     }
 
     @Test(description = "Test setting and retrieving RDBMS coordination configuration")
@@ -64,15 +62,12 @@ public class RdbmsCoordinationConfigurationTest {
         String nodeId = "bc993ca8-e22b-11e7-80c1-9a214cf093ae";
         int heartbeatInterval = 8000;
         int coordinatorEntryCreationWaitTime = 6000;
-        int eventPollingInterval = 7000;
         String rdbmsCoordinationConfigString = "RDBMSCoordinationConfiguration [nodeID=" + nodeId
                 + ", heartbeatInterval=" + heartbeatInterval
-                + ", coordinatorEntryCreationWaitTime=" + coordinatorEntryCreationWaitTime
-                + ", eventPollingInterval=" + eventPollingInterval + "]";
+                + ", coordinatorEntryCreationWaitTime=" + coordinatorEntryCreationWaitTime + "]";
         rdbmsCoordinationConfiguration.setNodeId(nodeId);
         rdbmsCoordinationConfiguration.setHeartbeatInterval(heartbeatInterval);
         rdbmsCoordinationConfiguration.setCoordinatorEntryCreationWaitTime(coordinatorEntryCreationWaitTime);
-        rdbmsCoordinationConfiguration.setEventPollingInterval(eventPollingInterval);
         coordinationConfiguration.setRdbmsCoordinationConfig(rdbmsCoordinationConfiguration);
         Assert.assertEquals(rdbmsCoordinationConfiguration.getNodeId(), nodeId, "Node ID  value does not match the "
                 + "value set");
@@ -81,8 +76,6 @@ public class RdbmsCoordinationConfigurationTest {
         Assert.assertEquals(rdbmsCoordinationConfiguration.getCoordinatorEntryCreationWaitTime(),
                 coordinatorEntryCreationWaitTime, "Coordinator Entry Creation Wait Time value does not match the "
                         + "value set");
-        Assert.assertEquals(rdbmsCoordinationConfiguration.getEventPollingInterval(), eventPollingInterval,
-                "Event Polling Interval value does not match the value set");
         Assert.assertEquals(rdbmsCoordinationConfiguration.toString(), rdbmsCoordinationConfigString, "Incorrect "
                 + "toString() representation of RdbmsCoordinationConfiguration");
         Assert.assertEquals(coordinationConfiguration.getRdbmsCoordinationConfig(), rdbmsCoordinationConfiguration,

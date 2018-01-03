@@ -35,17 +35,12 @@ public class RdbmsCoordinationConstants {
     protected static final String TASK_MARK_NODE_NOT_NEW = "marking node as not new";
     protected static final String TASK_REMOVE_COORDINATOR = "removing coordinator heartbeat";
     protected static final String TASK_REMOVE_NODE_HEARTBEAT = "removing node heartbeat entry";
-    protected static final String TASK_RETRIEVE_MEMBERSHIP_EVENTS = "retrieving membership events";
-    protected static final String TASK_STORE_MEMBERSHIP_EVENT = "storing membership event";
     protected static final String TASK_UPDATE_COORDINATOR_HEARTBEAT = "updating coordinator heartbeat";
     protected static final String TASK_UPDATE_NODE_HEARTBEAT = "updating node heartbeat";
 
     /*
     * ===================================== Database Tables =========================================
     */
-
-    //Membership table for nodes
-    protected static final String MEMBERSHIP_TABLE = "MB_MEMBERSHIP";
 
     //Coordination heartbeat tables
     protected static final String CLUSTER_COORDINATOR_HEARTBEAT_TABLE = "MB_COORDINATOR_HEARTBEAT";
@@ -61,31 +56,12 @@ public class RdbmsCoordinationConstants {
     protected static final String LAST_HEARTBEAT = "LAST_HEARTBEAT";
     protected static final String NODE_ID = "NODE_ID";
 
-    //Columns for cluster membership changes
-    protected static final String EVENT_ID = "EVENT_ID";
-    protected static final String MEMBERSHIP_CHANGE_TYPE = "CHANGE_TYPE";
-    protected static final String MEMBERSHIP_CHANGED_MEMBER_ID = "CHANGED_MEMBER_ID";
-
     // Constants
     protected static final int COORDINATOR_ANCHOR = 1;
 
     /*
     * ===================================== Prepared Statements =========================================
     */
-
-    /**
-     * Prepared statement to clear membership change events destined to a particular member.
-     */
-    protected static final String PS_CLEAN_MEMBERSHIP_EVENTS_FOR_NODE =
-            "DELETE FROM " + MEMBERSHIP_TABLE
-                    + " WHERE " + NODE_ID + "=?";
-
-    /**
-     * Prepared statement to clear the all events of the specified type of membership event.
-     */
-    protected static final String PS_CLEAN_MEMBERSHIP_EVENTS_FOR_EVENT_ID =
-            "DELETE FROM " + MEMBERSHIP_TABLE
-                    + " WHERE " + EVENT_ID + "=?";
 
     /**
      * Prepared statement to retrieve the last updated node heartbeats of all the nodes.
@@ -177,24 +153,5 @@ public class RdbmsCoordinationConstants {
                     + " FROM " + CLUSTER_COORDINATOR_HEARTBEAT_TABLE
                     + " WHERE " + NODE_ID + "=?"
                     + " AND " + ANCHOR + "=" + COORDINATOR_ANCHOR;
-
-    /**
-     * Prepared statement to insert a membership change event entry.
-     */
-    protected static final String PS_INSERT_MEMBERSHIP_EVENT =
-            "INSERT INTO " + MEMBERSHIP_TABLE + " ("
-                    + NODE_ID + ","
-                    + MEMBERSHIP_CHANGE_TYPE + ","
-                    + MEMBERSHIP_CHANGED_MEMBER_ID + ")"
-                    + " VALUES ( ?,?,?)";
-
-    /**
-     * Prepared statement to retrieve membership change events destined to a particular member.
-     */
-    protected static final String PS_SELECT_MEMBERSHIP_EVENT =
-            "SELECT " + EVENT_ID + "," + MEMBERSHIP_CHANGE_TYPE + "," + MEMBERSHIP_CHANGED_MEMBER_ID
-                    + " FROM " + MEMBERSHIP_TABLE
-                    + " WHERE " + NODE_ID + "=?"
-                    + " ORDER BY "  + EVENT_ID;
 
 }

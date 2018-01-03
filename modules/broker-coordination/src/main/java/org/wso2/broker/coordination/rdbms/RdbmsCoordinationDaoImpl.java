@@ -58,29 +58,6 @@ public class RdbmsCoordinationDaoImpl {
     }
 
     /**
-     * Method to remove all membership events for a particular node.
-     */
-    public void clearMembershipEvents(String nodeID) throws CoordinationException {
-        Connection connection = null;
-        PreparedStatement clearMembershipEvents = null;
-        String task = "Clearing all membership events for node: " + nodeID;
-        try {
-            connection = getConnection();
-            clearMembershipEvents = connection.prepareStatement(
-                    RdbmsCoordinationConstants.PS_CLEAN_MEMBERSHIP_EVENTS_FOR_NODE);
-            clearMembershipEvents.setString(1, nodeID);
-            clearMembershipEvents.executeUpdate();
-            connection.commit();
-        } catch (SQLException e) {
-            rollback(connection, task);
-            throw new CoordinationException("Error occurred while " + task, e);
-        } finally {
-            close(clearMembershipEvents, task);
-            close(connection, task);
-        }
-    }
-
-    /**
      * Remove heartbeat entry for the given node. This is normally done when the coordinator detects that the node
      * has left.
      *
@@ -417,83 +394,6 @@ public class RdbmsCoordinationDaoImpl {
         } finally {
             close(resultSet, task);
             close(preparedStatement, task);
-            close(connection, task);
-        }
-    }
-
-    /**
-     * Method to store cluster membership events.
-     *
-     * @param clusterNodes        nodes by which the event is destined to be read
-     * @param membershipEventType the membership change type
-     * @param changedMember       member for which the event was triggered
-     * @throws CoordinationException if an error is detected while storing membership events
-     */
-    public void storeMembershipEvent(List<String> clusterNodes, int membershipEventType, String changedMember)
-            throws CoordinationException {
-        Connection connection = null;
-        PreparedStatement storeMembershipEventPreparedStatement = null;
-        String task = RdbmsCoordinationConstants.TASK_STORE_MEMBERSHIP_EVENT + ": " + membershipEventType
-                + " for member: " + changedMember;
-        try {
-            connection = getConnection();
-            storeMembershipEventPreparedStatement =
-                    connection.prepareStatement(RdbmsCoordinationConstants.PS_INSERT_MEMBERSHIP_EVENT);
-            for (String clusterNode : clusterNodes) {
-                storeMembershipEventPreparedStatement.setString(1, clusterNode);
-                storeMembershipEventPreparedStatement.setInt(2, membershipEventType);
-                storeMembershipEventPreparedStatement.setString(3, changedMember);
-                storeMembershipEventPreparedStatement.addBatch();
-            }
-            storeMembershipEventPreparedStatement.executeBatch();
-            connection.commit();
-        } catch (SQLException e) {
-            rollback(connection, task);
-            throw new CoordinationException(task, e);
-        } finally {
-            close(storeMembershipEventPreparedStatement, task);
-            close(connection, task);
-        }
-    }
-
-    /**
-     * Method to read cluster membership change events for a nodeID.
-     *
-     * @param nodeID local node ID used to read events for current node
-     * @return list of membership events
-     * @throws CoordinationException if an error is detected while retrieving the membership events
-     */
-    public List<MembershipEvent> readMembershipEvents(String nodeID) throws CoordinationException {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        PreparedStatement clearMembershipEvents = null;
-        ResultSet resultSet = null;
-        List<MembershipEvent> membershipEvents = new ArrayList<>();
-        String task = RdbmsCoordinationConstants.TASK_RETRIEVE_MEMBERSHIP_EVENTS + " destined to: " + nodeID;
-        try {
-            connection = getConnection();
-            preparedStatement = connection.prepareStatement(RdbmsCoordinationConstants.PS_SELECT_MEMBERSHIP_EVENT);
-            preparedStatement.setString(1, nodeID);
-            resultSet = preparedStatement.executeQuery();
-            clearMembershipEvents = connection.prepareStatement(
-                    RdbmsCoordinationConstants.PS_CLEAN_MEMBERSHIP_EVENTS_FOR_EVENT_ID);
-            while (resultSet.next()) {
-                MembershipEvent membershipEvent = new MembershipEvent(MembershipEventType.getTypeFromInt(
-                        resultSet.getInt(RdbmsCoordinationConstants.MEMBERSHIP_CHANGE_TYPE)),
-                        resultSet.getString(RdbmsCoordinationConstants.MEMBERSHIP_CHANGED_MEMBER_ID));
-                membershipEvents.add(membershipEvent);
-                clearMembershipEvents.setLong(1, resultSet.getLong(RdbmsCoordinationConstants.EVENT_ID));
-                clearMembershipEvents.addBatch();
-            }
-            clearMembershipEvents.executeBatch();
-            connection.commit();
-            return membershipEvents;
-        } catch (SQLException e) {
-            throw new CoordinationException("Error occurred while " + task, e);
-        } finally {
-            close(resultSet, task);
-            close(preparedStatement, task);
-            close(clearMembershipEvents, task);
             close(connection, task);
         }
     }

@@ -67,7 +67,7 @@ public class QueueConsumerTest {
         MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
 
         for (int i = 0; i < numberOfMessages; i++) {
-            Message message = consumer.receive(1000);
+            Message message = consumer.receive(5000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
         }
 
@@ -105,12 +105,12 @@ public class QueueConsumerTest {
         MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
 
         for (int i = 0; i < numberOfMessages; i++) {
-            Message message = consumer.receive(1000);
+            Message message = consumer.receive(5000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
             message.acknowledge();
         }
 
-        Message message = consumer.receive(1000);
+        Message message = consumer.receive(5000);
         Assert.assertNull(message, "Messages should not receive after acknowledging all");
 
         connection.close();
@@ -147,7 +147,7 @@ public class QueueConsumerTest {
         Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
         MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
 
-        Message message = consumer.receive(1000);
+        Message message = consumer.receive(5000);
         Assert.assertNotNull(message, "Message was not received");
 
         message = consumer.receive(10000);
@@ -189,7 +189,7 @@ public class QueueConsumerTest {
         Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
         MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
 
-        Message message = consumer.receive(1000);
+        Message message = consumer.receive(5000);
         Assert.assertNotNull(message, "Message was not received");
 
         subscriberSession.recover();
