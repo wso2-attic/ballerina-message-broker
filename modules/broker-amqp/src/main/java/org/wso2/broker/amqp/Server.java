@@ -182,7 +182,7 @@ public class Server {
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
                          .addLast(new AmqpConnectionHandler(broker))
-                         .addLast(new AmqpMessageWriter())
+                         .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
     }
@@ -203,7 +203,7 @@ public class Server {
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
                          .addLast(new AmqpConnectionHandler(broker))
-                         .addLast(new AmqpMessageWriter())
+                         .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
     }
