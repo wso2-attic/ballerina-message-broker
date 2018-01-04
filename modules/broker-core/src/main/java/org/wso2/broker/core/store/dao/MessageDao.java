@@ -42,5 +42,5 @@ public abstract class MessageDao extends BaseDao {
      * Retrieve all messages from a given queue.
      * @param queueName name of the queue.
      */
-    public abstract void readAll(String queueName) throws BrokerException;
+    public abstract Collection<Message> readAll(String queueName) throws BrokerException;
 }

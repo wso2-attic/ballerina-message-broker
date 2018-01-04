@@ -68,6 +68,12 @@ abstract class BaseDao {
         close(connection);
     }
 
+    public void close(ResultSet... resultSets) {
+        for (ResultSet resultSet: resultSets) {
+            close(resultSet);
+        }
+    }
+
     public void close(Statement statement) {
         if (statement != null) {
             try {

@@ -75,7 +75,6 @@ public class Main {
 
     private static DataSource getDataSource(BrokerConfiguration.DataSourceConfiguration dataSourceConfiguration) {
         HikariConfig config = new HikariConfig();
-        config.setDataSourceClassName(dataSourceConfiguration.getDatabaseDriver());
         config.setJdbcUrl(dataSourceConfiguration.getUrl());
         config.setUsername(dataSourceConfiguration.getUser());
         config.setPassword(dataSourceConfiguration.getPassword());

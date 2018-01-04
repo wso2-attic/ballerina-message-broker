@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.function.Consumer;
 import javax.sql.DataSource;
 
 /**
@@ -59,7 +58,7 @@ public class QueueDaoImpl extends QueueDao {
     }
 
     @Override
-    public void retrieveAll(Consumer<String> queueNameConsumer) throws BrokerException {
+    public void retrieveAll(QueueCollector queueNameConsumer) throws BrokerException {
         Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
@@ -69,7 +68,7 @@ public class QueueDaoImpl extends QueueDao {
             resultSet = statement.executeQuery(RDBMSConstants.SELECT_ALL_QUEUES);
             while (resultSet.next()) {
                 String name = resultSet.getString(1);
-                queueNameConsumer.accept(name);
+                queueNameConsumer.addQueue(name);
             }
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while retrieving all the queues", e);

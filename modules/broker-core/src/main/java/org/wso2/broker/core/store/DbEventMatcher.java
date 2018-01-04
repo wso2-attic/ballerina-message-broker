@@ -23,10 +23,12 @@ import com.lmax.disruptor.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * This class goes through the list of db operations and removes any operations that can be canceled out.
@@ -41,39 +43,30 @@ public class DbEventMatcher implements EventHandler<DbOperation> {
 
     private final int maxBatchSize;
 
-    private int currentBatchSize;
+    private final Queue<Long> eventQueue;
 
     public DbEventMatcher(int ringBufferSize) {
         insertMap = new HashMap<>();
         detachMap = new HashMap<>();
         this.maxBatchSize = ringBufferSize;
+        eventQueue = new ArrayDeque<>(ringBufferSize);
     }
 
     @Override
     public void onEvent(DbOperation event, long sequence, boolean endOfBatch) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{} event with message id {} for sequence {}", event.getType(), event.getMessage(), sequence);
+        }
+        eventQueue.add(event.getMessageId());
+
         switch (event.getType()) {
             case INSERT_MESSAGE:
                 insertMap.put(event.getMessage().getMetadata().getInternalId(), event);
                 break;
             case DELETE_MESSAGE:
                 long internalId = event.getMessageId();
-                DbOperation insertRequest;
-                List<DbOperation> detachRequestList;
-                if ((insertRequest = insertMap.remove(internalId)) != null) {
-                    if (insertRequest.acquireForPreProcess()) {
-                        insertRequest.clear();
-                        event.clear();
-                        insertRequest.completePreProcess();
-                    }
-                }
-                if ((detachRequestList = detachMap.remove(internalId)) != null) {
-                    for (DbOperation detachRequest: detachRequestList) {
-                        if (detachRequest.acquireForPersisting()) {
-                            detachRequest.clear();
-                            detachRequest.completePreProcess();
-                        }
-                    }
-                }
+                removeMatchingInsertEvent(event, sequence, internalId);
+                removeMatchingDetachEvents(internalId);
                 break;
             case DETACH_MSG_FROM_QUEUE:
                 detachMap.computeIfAbsent(event.getMessageId(), k -> new ArrayList<>()).add(event);
@@ -81,16 +74,56 @@ public class DbEventMatcher implements EventHandler<DbOperation> {
             case NO_OP:
                 break;
             default:
-                LOGGER.error("Unknown event type " + event.getType());
-        }
-        currentBatchSize++;
-        if (currentBatchSize == maxBatchSize) {
-            insertMap.clear();
-            detachMap.clear();
-            currentBatchSize = 0;
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.error("Unknown event type " + event.getType());
+                }
         }
 
-
+        removeOldestEntryFromIndex();
         event.completePreProcess();
+    }
+
+    private void removeMatchingDetachEvents(long internalId) {
+        List<DbOperation> detachRequestList;
+        if ((detachRequestList = detachMap.remove(internalId)) != null) {
+            for (DbOperation detachRequest : detachRequestList) {
+                if (detachRequest.acquireForPersisting()) {
+                    detachRequest.clear();
+                    detachRequest.completePreProcess();
+                }
+            }
+        }
+    }
+
+    private void removeMatchingInsertEvent(DbOperation event, long sequence, long internalId) {
+        DbOperation insertRequest;
+        if ((insertRequest = insertMap.remove(internalId)) != null) {
+            if (insertRequest.acquireForPreProcess()) {
+                insertRequest.clear();
+                event.clear();
+                insertRequest.completePreProcess();
+                LOGGER.debug("Matching insert event found and cleared "
+                        + "for message id {} for sequence {}", internalId, sequence);
+            }
+        }
+    }
+
+    /**
+     * Inserts are added first and then detach events. When removing, if we find a matching insert we don't
+     * remove the detach since it is set after the insert. We need to remove only one entry at a time.
+     */
+    private void removeOldestEntryFromIndex() {
+        if (eventQueue.size() == maxBatchSize) {
+            Long id = eventQueue.poll();
+
+            List<DbOperation> detachList;
+            if (insertMap.remove(id) == null &&
+                    ((detachList = detachMap.get(id)) != null) && !detachList.isEmpty()) {
+                detachList.remove(0); // Remove first element in list
+                if (detachList.isEmpty()) {
+                    detachMap.remove(id);
+                }
+            }
+        }
     }
 }

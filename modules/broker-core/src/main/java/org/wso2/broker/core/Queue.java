@@ -27,7 +27,7 @@ public abstract class Queue {
     /**
      * Unbounded queue.
      */
-    static final int UNBOUNDED = -1;
+    static final int UNBOUNDED = Integer.MAX_VALUE;
 
     private final String name;
 

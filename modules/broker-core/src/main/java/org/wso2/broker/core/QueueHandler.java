@@ -38,7 +38,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public final class QueueHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(QueueHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueueHandler.class);
 
     private Queue queue;
 
@@ -61,7 +61,7 @@ public final class QueueHandler {
     }
 
     public static QueueHandler createDurableQueue(String queueName, boolean autoDelete,
-                                                  SharedMessageStore sharedMessageStore) {
+                                                  SharedMessageStore sharedMessageStore) throws BrokerException {
         Queue queue = new DbBackedQueueImpl(queueName, autoDelete, sharedMessageStore);
         return new QueueHandler(queue);
     }
@@ -181,7 +181,7 @@ public final class QueueHandler {
             try {
                 consumer.close();
             } catch (BrokerException e) {
-                log.error("Error occurred while closing the consumer [ " + consumer + " ] " +
+                LOGGER.error("Error occurred while closing the consumer [ " + consumer + " ] " +
                         "for queue [ " + queue.toString() + " ]", e);
             } finally {
                 iterator.remove();
@@ -245,10 +245,13 @@ public final class QueueHandler {
 
         private final SharedMessageStore sharedMessageStore;
 
-        DbBackedQueueImpl(String queueName, boolean autoDelete, SharedMessageStore sharedMessageStore) {
+        DbBackedQueueImpl(String queueName, boolean autoDelete,
+                          SharedMessageStore sharedMessageStore) throws BrokerException {
             super(queueName, true, autoDelete);
             this.sharedMessageStore = sharedMessageStore;
             this.memQueue = new LinkedBlockingQueue<>();
+            Collection<Message> messages = sharedMessageStore.readStoredMessages(queueName);
+            memQueue.addAll(messages);
         }
 
         @Override
@@ -263,7 +266,9 @@ public final class QueueHandler {
 
         @Override
         public boolean enqueue(Message message) throws BrokerException {
-            sharedMessageStore.attach(getName(), message.getMetadata().getInternalId());
+            if (message.getMetadata().getByteProperty(Metadata.DELIVERY_MODE) == Metadata.PERSISTENT_MESSAGE) {
+                sharedMessageStore.attach(getName(), message.getMetadata().getInternalId());
+            }
             return memQueue.offer(message);
         }
 

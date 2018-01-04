@@ -34,7 +34,6 @@ import org.wso2.broker.core.task.TaskExecutorService;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.sql.DataSource;
@@ -69,7 +68,7 @@ final class MessagingEngine {
     /**
      * In memory message id.
      */
-    private final AtomicLong messageIdGenerator;
+    private final MessageIdGenerator messageIdGenerator;
 
     MessagingEngine(DataSource dataSource) throws BrokerException {
         DaoFactory daoFactory = new DaoFactory(dataSource);
@@ -85,7 +84,7 @@ final class MessagingEngine {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("MessageDeliveryTaskThreadPool-%d").build();
         deliveryTaskService = new TaskExecutorService<>(WORKER_COUNT, IDLE_TASK_DELAY_MILLIS, threadFactory);
-        messageIdGenerator = new AtomicLong(0);
+        messageIdGenerator = new MessageIdGenerator();
     }
 
     void bind(String queueName, String exchangeName, String routingKey, FieldTable arguments) throws BrokerException {
@@ -168,6 +167,7 @@ final class MessagingEngine {
                                 uniqueQueues.add(binding.getQueue().getName());
                             }
                         }
+                        // Unique queues can be empty due unmatching selectors.
                         if (!uniqueQueues.isEmpty()) {
                             boolean published = publishToQueues(message, uniqueQueues);
                             if (!published) {
@@ -289,7 +289,7 @@ final class MessagingEngine {
     }
 
     long getNextMessageId() {
-        return messageIdGenerator.incrementAndGet();
+        return messageIdGenerator.getNextId();
     }
 
     public void requeue(String queueName, Message message) throws BrokerException {

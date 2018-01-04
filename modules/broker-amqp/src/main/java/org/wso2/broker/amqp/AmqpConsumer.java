@@ -111,4 +111,13 @@ public class AmqpConsumer implements Consumer {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return "AmqpConsumer{" +
+                "queueName='" + queueName + '\'' +
+                ", consumerTag=" + consumerTag +
+                ", isExclusive=" + isExclusive +
+                '}';
+    }
 }

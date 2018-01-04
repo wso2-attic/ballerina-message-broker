@@ -78,11 +78,10 @@ final class BindingsRegistry {
     }
 
     public void retrieveAllBindingsForExchange(QueueRegistry queueRegistry) throws BrokerException {
-
-        bindingDao.retrieveBindingsForExchange(exchange.getName(), (queueName, bindingKey, messageFilter) -> {
+        bindingDao.retrieveBindingsForExchange(exchange.getName(), (queueName, bindingKey, filterTable) -> {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
 
-            Binding binding = new Binding(queueHandler.getQueue(), bindingKey, FieldTable.EMPTY_TABLE);
+            Binding binding = new Binding(queueHandler.getQueue(), bindingKey, filterTable);
             BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
             bindingSet.add(binding);
         });

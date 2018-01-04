@@ -19,6 +19,9 @@
 
 package org.wso2.broker.core.store.dao.impl;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.Binding;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.store.dao.BindingDao;
@@ -48,8 +51,12 @@ public class BindingDaoImpl extends BindingDao {
             statement.setString(1, exchangeName);
             statement.setString(2, binding.getQueue().getName());
             statement.setString(3, binding.getRoutingKey());
-            // TODO: add support for writing field tables
-            statement.setString(4, Binding.JMS_SELECTOR_ARGUMENT.toString());
+            FieldTable arguments = binding.getArguments();
+            byte[] bytes = new byte[(int) arguments.getSize()];
+            ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);
+            byteBuf.resetWriterIndex();
+            arguments.write(byteBuf);
+            statement.setBytes(4, bytes);
 
             statement.executeUpdate();
             connection.commit();
@@ -94,11 +101,12 @@ public class BindingDaoImpl extends BindingDao {
             while (resultSet.next()) {
                 String queueName = resultSet.getString(1);
                 String routingKey = resultSet.getString(2);
-                String messageFilter = resultSet.getString(3);
-                bindingCollector.addBinding(queueName, routingKey, messageFilter);
+                byte[] arguments = resultSet.getBytes(3);
+                FieldTable fieldTable = FieldTable.parse(Unpooled.wrappedBuffer(arguments));
+                bindingCollector.addBinding(queueName, routingKey, fieldTable);
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new BrokerException("Error occurred while retrieving bindings", e);
         } finally {
             close(connection, statement, resultSet);

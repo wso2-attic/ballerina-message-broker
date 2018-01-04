@@ -43,6 +43,7 @@ public abstract class ExchangeDao extends BaseDao {
      * Interface used as a callback when retrieving exchanges from the database. Callback is invoked per each exchange
      * retrieved from the database.
      */
+    @FunctionalInterface
     public interface ExchangeCollector {
 
         void addExchange(String name, String typeString) throws BrokerException;

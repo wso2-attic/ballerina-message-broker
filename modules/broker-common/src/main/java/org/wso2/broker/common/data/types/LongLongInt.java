@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -22,32 +22,41 @@ package org.wso2.broker.common.data.types;
 import io.netty.buffer.ByteBuf;
 
 /**
- * AMQP long-int.
+ * AMQP long-long-int
  */
-public class LongInt implements EncodableData {
-    private final int value;
+public class LongLongInt implements EncodableData {
 
-    private LongInt(int value) {
+    private final long value;
+
+    private LongLongInt(long value) {
         this.value = value;
     }
 
     @Override
     public long getSize() {
-        return 4L;
+        return 8L;
     }
 
     @Override
     public void write(ByteBuf buf) {
-        buf.writeInt(value);
+        buf.writeLong(value);
     }
 
-    public int getInt() {
+    public static LongLongInt parse(long value) {
+        return new LongLongInt(value);
+    }
+
+    public static LongLongInt parse(ByteBuf buf) {
+        return new LongLongInt(buf.readLong());
+    }
+
+    public long getLong() {
         return value;
     }
 
     @Override
     public int hashCode() {
-        return value;
+        return (int) (value ^ (value >>> 32));
     }
 
     @Override
@@ -55,14 +64,6 @@ public class LongInt implements EncodableData {
         if (this == obj) {
             return true;
         }
-        return (obj instanceof LongInt) && (value == ((LongInt) obj).value);
-    }
-
-    public static LongInt parse(ByteBuf buf) {
-        return new LongInt(buf.readInt());
-    }
-
-    public static LongInt parse(int value) {
-        return new LongInt(value);
+        return (obj instanceof LongLongInt) && (value == ((LongLongInt) obj).value);
     }
 }

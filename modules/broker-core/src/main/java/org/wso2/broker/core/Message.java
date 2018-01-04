@@ -53,7 +53,6 @@ public class Message {
     }
 
     public void release() {
-        metadata.release();
         for (ContentChunk contentChunk : contentChunks) {
             contentChunk.release();
         }

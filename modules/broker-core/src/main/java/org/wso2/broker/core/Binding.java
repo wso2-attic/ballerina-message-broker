@@ -73,6 +73,10 @@ public final class Binding {
         return arguments.getValue(propertyName);
     }
 
+    public FieldTable getArguments() {
+        return arguments;
+    }
+
     BooleanExpression getFilterExpression() {
         return filterExpression;
     }

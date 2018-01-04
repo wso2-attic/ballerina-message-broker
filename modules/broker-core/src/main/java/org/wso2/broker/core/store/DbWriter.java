@@ -64,6 +64,10 @@ public class DbWriter implements EventHandler<DbOperation> {
             LOGGER.debug("Waiting to acquire event to persist. Sequence {}", sequence);
         }
 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{} event added for id {} for sequence {}", event.getType(), event.getMessageId(), sequence);
+        }
+
         switch (event.getType()) {
             case INSERT_MESSAGE:
                 insertMap.put(event.getMessage().getMetadata().getInternalId(), event.getMessage());
@@ -77,7 +81,9 @@ public class DbWriter implements EventHandler<DbOperation> {
             case NO_OP:
                 break;
             default:
-                LOGGER.error("Unknown event type " + event.getType());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.error("Unknown event type " + event.getType());
+                }
         }
 
         if (isBatchReady(endOfBatch, insertMap.values())) {
@@ -94,7 +100,6 @@ public class DbWriter implements EventHandler<DbOperation> {
             messageDao.detachFromQueue(detachMap.values());
             detachMap.clear();
         }
-
     }
 
     private boolean isBatchReady(boolean endOfBatch, Collection collection) {

@@ -33,6 +33,7 @@ import org.wso2.broker.core.store.DbOperation;
 import org.wso2.broker.core.store.DbWriter;
 import org.wso2.broker.core.store.LogExceptionHandler;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
@@ -57,6 +58,8 @@ public class SharedMessageStore {
     private static final EventTranslatorOneArg<DbOperation, Long> DELETE_MESSAGE =
             (event, sequence, messageId) -> event.deleteMessage(messageId);
 
+    private final MessageDao messageDao;
+
     @SuppressWarnings("unchecked")
     public SharedMessageStore(MessageDao messageDao, int bufferSize, int maxDbBatchSize) {
 
@@ -69,10 +72,11 @@ public class SharedMessageStore {
 
         disruptor.setDefaultExceptionHandler(new LogExceptionHandler());
 
-        disruptor.handleEventsWith(new DbEventMatcher(3000))
+        disruptor.handleEventsWith(new DbEventMatcher(bufferSize))
                 .then(new DbWriter(messageDao, maxDbBatchSize))
                 .then((EventHandler<DbOperation>) (event, sequence, endOfBatch) -> event.clear());
         disruptor.start();
+        this.messageDao = messageDao;
     }
 
     public void add(Message message) {
@@ -104,6 +108,7 @@ public class SharedMessageStore {
     public void flush(long internalMessageId) {
         Message message = pendingMessages.remove(internalMessageId);
         if (message != null) {
+
             if (message.getMetadata().hasAttachedQueues()) {
                 disruptor.publishEvent(INSERT_MESSAGE, message);
             } else {
@@ -112,4 +117,7 @@ public class SharedMessageStore {
         }
     }
 
+    public Collection<Message> readStoredMessages(String queueName) throws BrokerException {
+        return messageDao.readAll(queueName);
+    }
 }

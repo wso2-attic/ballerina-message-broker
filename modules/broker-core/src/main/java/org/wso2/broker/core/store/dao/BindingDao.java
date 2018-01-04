@@ -19,6 +19,7 @@
 
 package org.wso2.broker.core.store.dao;
 
+import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.Binding;
 import org.wso2.broker.core.BrokerException;
 
@@ -41,11 +42,12 @@ public abstract class BindingDao extends BaseDao {
             String exchangeName, BindingCollector bindingCollector) throws BrokerException;
 
     /**
-     * Interface used as a callback to retrieve bindings from the database. {@link #addBinding(String, String, String)}
-     * is invoked per each binding retrieved from the database.
+     * Interface used as a callback to retrieve bindings from the database.
+     * {@link #addBinding(String, String, FieldTable)} is invoked per each binding retrieved from the database.
      */
+    @FunctionalInterface
     public interface BindingCollector {
 
-        void addBinding(String queueName, String routingKey, String messageFilter) throws BrokerException;
+        void addBinding(String queueName, String routingKey, FieldTable arguments) throws BrokerException;
     }
 }

@@ -3,7 +3,6 @@ package org.wso2.broker.core.store.dao;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Queue;
 
-import java.util.function.Consumer;
 import javax.sql.DataSource;
 
 /**
@@ -29,5 +28,14 @@ public abstract class QueueDao extends BaseDao {
      */
     public abstract void delete(Queue queue) throws BrokerException;
 
-    public abstract void retrieveAll(Consumer<String> queueNameCollector) throws BrokerException;
+    public abstract void retrieveAll(QueueCollector queueNameCollector) throws BrokerException;
+
+    /**
+     * Queue name collector interface to retrieve all the queues
+     */
+    @FunctionalInterface
+    public interface QueueCollector {
+
+        void addQueue(String name) throws BrokerException;
+    }
 }

@@ -21,14 +21,13 @@ package org.wso2.broker.amqp.codec;
 
 import io.netty.buffer.ByteBuf;
 import org.wso2.broker.amqp.AmqpException;
+import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
-
-import java.util.function.BiFunction;
 
 /**
  * Handles incoming AMQP message frames and creates {@link Message}.
@@ -56,15 +55,15 @@ public class InMemoryMessageAggregator {
 
     /**
      * Add the header frame that gives the relevant metadata for the given message.
-     *
-     * @param rawMetadata unprocessed raw metadata {@link ByteBuf}
+     *  @param headers protocol specific headers
+     * @param properties
      * @param payloadSize total message content length in bytes
      */
-    public void headerFrameReceived(ByteBuf rawMetadata, long payloadSize,
-                                    BiFunction<ByteBuf, Metadata, Boolean> headerParser) {
+    public void headerFrameReceived(FieldTable headers, FieldTable properties, long payloadSize) {
         long messageId = broker.getNextMessageId();
         Metadata metadata = new Metadata(messageId, routingKey, exchangeName, payloadSize);
-        metadata.setRawMetadata(rawMetadata, headerParser);
+        metadata.setProperties(properties);
+        metadata.setHeaders(headers);
         message = new Message(metadata);
     }
 

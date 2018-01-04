@@ -72,7 +72,7 @@ public abstract class Exchange {
     protected Exchange(String name, Type type, BindingDao bindingDao) {
         this.name = name;
         this.type = type;
-        hashCode = (name + type.toString()).hashCode();
+        hashCode = name.hashCode() + type.hashCode();
         this.bindingDao = bindingDao;
         this.bindingsRegistry = new BindingsRegistry(this, bindingDao);
     }
