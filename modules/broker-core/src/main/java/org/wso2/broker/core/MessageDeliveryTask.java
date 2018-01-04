@@ -54,27 +54,32 @@ final class MessageDeliveryTask extends Task {
             return TaskHint.IDLE;
         }
 
-        Message message = queueHandler.dequeue();
         int deliveredCount = 0;
         Consumer previousConsumer = null;
-        while (message != null) {
+        while (true) {
             Consumer consumer = consumerIterator.next();
 
             if (!consumer.isReady()) {
                 if (consumer.equals(previousConsumer)) {
-                    break;
+                    return TaskHint.IDLE;
                 } else {
                     continue;
                 }
             } else {
                 // TODO: handle send errors
-                consumer.send(message);
-                deliveredCount++;
-                // TODO: make the value configurable
-                if (deliveredCount == 1000) {
+                Message message = queueHandler.dequeue();
+
+                if (message != null) {
+                    consumer.send(message);
+                    deliveredCount++;
+                    // TODO: make the value configurable
+                    if (deliveredCount == 1000) {
+                        break;
+                    }
+                } else {
+                    // We need to break the while loop if there are no messages in the queue
                     break;
                 }
-                message = queueHandler.dequeue();
             }
 
             previousConsumer = consumer;
