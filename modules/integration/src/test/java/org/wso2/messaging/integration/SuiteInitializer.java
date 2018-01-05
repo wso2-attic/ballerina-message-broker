@@ -31,12 +31,18 @@ import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule;
+import org.wso2.broker.core.security.authentication.user.User;
+import org.wso2.broker.core.security.authentication.user.UserStoreManager;
+import org.wso2.broker.core.security.authentication.user.UsersFile;
 import org.wso2.broker.rest.BrokerRestServer;
 import org.wso2.broker.rest.config.RestServerConfiguration;
 import org.wso2.messaging.integration.util.DbUtils;
 import org.wso2.messaging.integration.util.TestConstants;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 
@@ -52,15 +58,21 @@ public class SuiteInitializer {
 
     private BrokerRestServer restServer;
 
-    @Parameters({"broker-port", "broker-ssl-port", "broker-hostname", "broker-rest-port"})
+    @Parameters({ "broker-port", "broker-ssl-port", "broker-hostname", "admin-username", "admin-password" ,
+                  "broker-rest-port"})
     @BeforeSuite
-    public void beforeSuite(String port, String sslPort, String hostname, String restPort, ITestContext context)
+    public void beforeSuite(String port, String sslPort, String hostname, String adminUsername, String adminPassword,
+            String restPort, ITestContext context)
             throws Exception {
         LOGGER.info("Starting broker on " + port + " for suite " + context.getSuite().getName());
         StartupContext startupContext = new StartupContext();
         TestConfigProvider configProvider = new TestConfigProvider();
 
         BrokerConfiguration brokerConfiguration = new BrokerConfiguration();
+        BrokerConfiguration.AuthenticationConfiguration authenticationConfiguration = new BrokerConfiguration
+                .AuthenticationConfiguration();
+        authenticationConfiguration.setLoginModule(BrokerLoginModule.class.getCanonicalName());
+        brokerConfiguration.setAuthenticator(authenticationConfiguration);
         configProvider.registerConfigurationObject(BrokerConfiguration.NAMESPACE, brokerConfiguration);
 
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
@@ -89,6 +101,17 @@ public class SuiteInitializer {
         server = new Server(startupContext);
         server.start();
         restServer.start();
+
+        //Add test user
+        UsersFile usersFile = new UsersFile();
+        User testUser = new User();
+        testUser.setUsername(adminUsername);
+        testUser.setPassword(adminPassword);
+        List<User> userList = new LinkedList<>();
+        userList.add(testUser);
+        usersFile.setUsers(userList);
+        UserStoreManager.addUser(usersFile.getUsers().get(0));
+
     }
 
     @AfterSuite

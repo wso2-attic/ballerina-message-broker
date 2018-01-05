@@ -19,6 +19,9 @@
 
 package org.wso2.broker.core.configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Represents configuration for broker.
  */
@@ -37,8 +40,10 @@ public class BrokerConfiguration {
      * system property to specify the path of the broker configuration file.
      */
     public static final String SYSTEM_PARAM_BROKER_CONFIG_FILE = "broker.config";
-    
+
     private DataSourceConfiguration dataSource;
+
+    private AuthenticationConfiguration authenticator;
     
     public DataSourceConfiguration getDataSource() {
         return dataSource;
@@ -46,6 +51,14 @@ public class BrokerConfiguration {
 
     public void setDataSource(DataSourceConfiguration dataSource) {
         this.dataSource = dataSource;
+    }
+
+    public AuthenticationConfiguration getAuthenticator() {
+        return authenticator;
+    }
+
+    public void setAuthenticator(AuthenticationConfiguration authenticator) {
+        this.authenticator = authenticator;
     }
 
     /**
@@ -99,6 +112,37 @@ public class BrokerConfiguration {
                     + ", password=" + password + "]";
         }
 
+    }
+
+    /**
+     * Represents a authentication configuration for broker ( e.g. database)
+     */
+    public static class AuthenticationConfiguration {
+        /**
+         * Jaas login module class name
+         */
+        private String loginModule;
+
+        /**
+         * Jaas login module options
+         */
+        private Map<String, String> options = new HashMap<>();
+
+        public String getLoginModule() {
+            return loginModule;
+        }
+
+        public void setLoginModule(String loginModule) {
+            this.loginModule = loginModule;
+        }
+
+        public Map<String, String> getOptions() {
+            return options;
+        }
+
+        public void setOptions(Map<String, String> options) {
+            this.options = options;
+        }
     }
 
 }

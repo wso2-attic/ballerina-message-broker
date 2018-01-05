@@ -35,6 +35,7 @@ import org.wso2.broker.core.Broker;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.security.sasl.SaslServer;
 
 /**
  * Netty handler for handling an AMQP connection.
@@ -45,6 +46,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
     private final AmqpServerConfiguration configuration;
     private final Broker broker;
+    private SaslServer saslServer = null;
 
     public AmqpConnectionHandler(AmqpServerConfiguration configuration, Broker broker) {
         this.configuration = configuration;
@@ -96,7 +98,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         AmqpChannel channel = channels.get(channelId);
         if (channel != null) {
             throw new ConnectionException(ConnectionException.CHANNEL_ERROR,
-                                          "Channel ID " + channelId + " Already exists");
+                    "Channel ID " + channelId + " Already exists");
         }
         channels.put(channelId, new AmqpChannel(configuration, broker, channelId));
     }
@@ -120,4 +122,39 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
             channel.close();
         }
     }
+
+    /**
+     * Returns the {@link Broker} for the amq connection
+     *
+     * @return Broker
+     */
+    public Broker getBroker() {
+        return broker;
+    }
+
+    /**
+     * Returns the @{@link AmqpServerConfiguration} for the amq connection
+     *
+     * @return Configuration
+     */
+    public AmqpServerConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    /**
+     * Set {@link SaslServer} to handler
+     */
+    public void setSaslServer(SaslServer saslServer) {
+        this.saslServer = saslServer;
+    }
+
+    /**
+     * Returns the {@link SaslServer} for authenticate client connection
+     *
+     * @return SaslServer
+     */
+    public SaslServer getSaslServer() {
+        return saslServer;
+    }
+
 }

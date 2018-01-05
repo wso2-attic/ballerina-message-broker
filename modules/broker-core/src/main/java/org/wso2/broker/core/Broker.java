@@ -21,9 +21,12 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.rest.BrokerAdminService;
+import org.wso2.broker.core.security.authentication.AuthenticationManager;
 import org.wso2.broker.rest.BrokerServiceRunner;
 
 import javax.sql.DataSource;
@@ -37,12 +40,27 @@ public final class Broker {
 
     private final MessagingEngine messagingEngine;
 
+    private final AuthenticationManager authenticationManager;
+
     public Broker(StartupContext startupContext) throws Exception {
         this.messagingEngine = new MessagingEngine(startupContext.getService(DataSource.class));
 
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new BrokerAdminService());
         startupContext.registerService(Broker.class, this);
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        BrokerConfiguration brokerConfiguration = configProvider
+                .getConfigurationObject(BrokerConfiguration.NAMESPACE, BrokerConfiguration.class);
+        this.authenticationManager = new AuthenticationManager(brokerConfiguration);
+    }
+
+    /**
+     * Provides {@link AuthenticationManager} for broker
+     *
+     * @return Broker authentication manager
+     */
+    public AuthenticationManager getAuthenticationManager() {
+        return authenticationManager;
     }
 
     public void publish(Message message) throws BrokerException {

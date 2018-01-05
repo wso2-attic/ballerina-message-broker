@@ -34,6 +34,14 @@
         </fileSet>
         <fileSet>
             <directory>src/main/resources/</directory>
+            <outputDirectory>conf/security</outputDirectory>
+            <includes>
+                <include>users.yaml</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources/</directory>
             <outputDirectory>bin</outputDirectory>
             <includes>
                 <include>broker.sh</include>

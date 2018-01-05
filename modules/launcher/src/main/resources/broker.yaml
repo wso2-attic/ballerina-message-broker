@@ -20,6 +20,9 @@ broker:
   user: root
   password: root
 
+ authenticator:
+  loginModule: org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule
+
 transport.amqp:
  channelFlow:
   lowLimit: 100
