@@ -27,9 +27,16 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Parameters;
 import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.Server;
+import org.wso2.broker.common.BrokerConfigProvider;
+import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.broker.rest.BrokerRestServer;
+import org.wso2.broker.rest.config.RestServerConfiguration;
 import org.wso2.messaging.integration.util.TestConstants;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SuiteInitializer {
     /**
@@ -39,16 +46,22 @@ public class SuiteInitializer {
 
     private Broker broker;
     private Server server;
+    private BrokerRestServer restServer;
 
-    @Parameters({"broker-port", "broker-ssl-port", "broker-hostname"})
+    @Parameters({"broker-port", "broker-ssl-port", "broker-hostname", "broker-rest-port"})
     @BeforeSuite
-    public void beforeSuite(String port, String sslPort, String hostname, ITestContext context) throws Exception {
+    public void beforeSuite(String port, String sslPort, String hostname, String restPort, ITestContext context)
+            throws Exception {
         LOGGER.info("Starting broker on " + port + " for suite " + context.getSuite().getName());
-        BrokerConfiguration configuration = new BrokerConfiguration();
+        StartupContext startupContext = new StartupContext();
+        TestConfigProvider configProvider = new TestConfigProvider();
+
+        BrokerConfiguration brokerConfiguration = new BrokerConfiguration();
+        configProvider.registerConfigurationObject(BrokerConfiguration.NAMESPACE, brokerConfiguration);
+
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
         serverConfiguration.getPlain().setPort(port);
         serverConfiguration.getPlain().setHostName(hostname);
-
         serverConfiguration.getSsl().setEnabled(true);
         serverConfiguration.getSsl().setHostName(hostname);
         serverConfiguration.getSsl().setPort(sslPort);
@@ -56,17 +69,41 @@ public class SuiteInitializer {
         serverConfiguration.getSsl().getKeyStore().setPassword(TestConstants.KEYSTORE_PASSWORD);
         serverConfiguration.getSsl().getTrustStore().setLocation(TestConstants.TRUST_STORE_LOCATION);
         serverConfiguration.getSsl().getTrustStore().setPassword(TestConstants.TRUST_STORE_PASSWORD);
+        configProvider.registerConfigurationObject(AmqpServerConfiguration.NAMESPACE, serverConfiguration);
 
-        broker = new Broker(configuration);
+        RestServerConfiguration restConfig = new RestServerConfiguration();
+        restConfig.getPlain().setPort(restPort);
+        configProvider.registerConfigurationObject(restConfig.NAMESPACE, restConfig);
+
+        startupContext.registerService(BrokerConfigProvider.class, configProvider);
+
+        restServer = new BrokerRestServer(startupContext);
+        broker = new Broker(startupContext);
         broker.startMessageDelivery();
-        server = new Server(broker, serverConfiguration);
+        server = new Server(startupContext);
         server.start();
+        restServer.start();
     }
 
     @AfterSuite
     public void afterSuite(ITestContext context) throws Exception {
+        restServer.stop();
         server.stop();
         broker.stopMessageDelivery();
         LOGGER.info("Stopped broker for suite " + context.getSuite().getName());
+    }
+
+    private static class TestConfigProvider implements BrokerConfigProvider {
+
+        Map<String, Object> configMap = new HashMap<>();
+
+        @Override
+        public <T> T getConfigurationObject(String namespace, Class<T> configurationClass) throws Exception {
+            return configurationClass.cast(configMap.get(namespace));
+        }
+
+        private void registerConfigurationObject(String namespace, Object configObject) {
+            configMap.put(namespace, configObject);
+        }
     }
 }

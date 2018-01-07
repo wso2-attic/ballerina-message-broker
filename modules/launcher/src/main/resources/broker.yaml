@@ -46,3 +46,8 @@ transport.amqp:
 
 haConfig:
  enabled: false
+
+admin.service:
+ plain:
+  hostName: localhost
+  port: 9000

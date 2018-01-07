@@ -25,6 +25,10 @@ package org.wso2.broker.core.configuration;
 public class BrokerConfiguration {
 
     /**
+     * Namespace used in config file
+     */
+    public static final String NAMESPACE = "broker";
+    /**
      * Name of the configuration file.
      */
     public static final String BROKER_FILE_NAME = "broker.yaml";

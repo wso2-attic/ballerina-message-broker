@@ -80,5 +80,9 @@
             <groupId>org.wso2.messaging</groupId>
             <artifactId>integration</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-rest-runner</artifactId>
+        </dependency>
     </dependencies>
 </project>

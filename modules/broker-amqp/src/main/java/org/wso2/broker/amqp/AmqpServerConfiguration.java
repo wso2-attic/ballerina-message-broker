@@ -23,6 +23,10 @@ package org.wso2.broker.amqp;
  * Java bean class for AMQP server related configurations.
  */
 public class AmqpServerConfiguration {
+    /**
+     * Namespace used in config file
+     */
+    public static final String NAMESPACE = "transport.amqp";
 
     private NonSecureServerDetails plain = new NonSecureServerDetails();
 

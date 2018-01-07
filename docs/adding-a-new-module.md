@@ -1,40 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-  ~
-  ~ WSO2 Inc. licenses this file to you under the Apache License,
-  ~ Version 2.0 (the "License"); you may not use this file except
-  ~ in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~    http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing,
-  ~ software distributed under the License is distributed on an
-  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  ~ KIND, either express or implied.  See the License for the
-  ~ specific language governing permissions and limitations
-  ~ under the License.
-  ~
-  -->
+# Adding a new module to repo
 
+Following is a checklist to follow when adding a new module to the repo.
+
+- [ ] Create the module directory under `modules/`. If it make sense prefix the module name with `broker-` similar to
+ `broker-common` and `broker-amqp`.
+- [ ] Add the pom.xml file in `module/{module-name}`. Sample pom will look something similar to following.
+```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>message-broker</artifactId>
         <groupId>org.wso2.messaging</groupId>
-        <version>1.0.50-SNAPSHOT</version>
+        <version><!-- The most recent snapshot version. E.g. 1.0.47-SNAPSHOT --></version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>broker-common</artifactId>
-    <name>Broker - Common</name>
+    <artifactId><!-- module artifact id. E.g. broker-common --></artifactId>
+    <name><!-- module name. E.g. Broker - Common --></name>
 
     <dependencies>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-buffer</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -75,3 +59,20 @@
         </plugins>
     </build>
 </project>
+```
+- [ ] Add the new module in the parent pom's module list in correct location depending on the dependent modules.
+```xml
+    <modules>
+        <module>modules/broker-common</module>
+        <module><!-- modules/new-module-name --></module>
+        <module>modules/broker-core</module>
+        <module>modules/broker-amqp</module>
+        <module>modules/broker-coordination</module>
+        <module>modules/launcher</module>
+        <module>modules/integration</module>
+        <module>modules/coverage-report</module>
+    </modules>
+```
+- [ ] Add the new module as a dependency in parent pom.
+- [ ] Add the new module as a dependency in `modules/coverage-report/pom.xml`.
+- [ ] Add the new module to package dependency list in `modules/launcher/src/main/assembly/assembly.xml'
