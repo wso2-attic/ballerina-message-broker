@@ -1,4 +1,4 @@
 # Developer Documentation index
 
-- [Broker Highlevel Architecture](architecture.md)
-- [Adding a new module to repo](adding-a-new-module.md)
+- [High-level Architecture of the Broker](architecture.md)
+- [Adding a new module](adding-a-new-module.md)
