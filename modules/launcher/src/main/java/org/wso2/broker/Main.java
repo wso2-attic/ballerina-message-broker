@@ -54,8 +54,12 @@ public class Main {
 
             Server amqpServer = new Server(startupContext);
 
+            amqpServer.start();
             restServer.start();
-            amqpServer.run();
+            amqpServer.awaitServerClose();
+
+            restServer.stop();
+            broker.stopMessageDelivery();
         } catch (Throwable e) {
             log.error("Error while starting broker", e);
             throw e;

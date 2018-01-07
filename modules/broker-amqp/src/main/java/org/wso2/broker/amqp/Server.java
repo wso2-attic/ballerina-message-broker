@@ -85,33 +85,6 @@ public class Server {
         ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS);
     }
 
-    /**
-     * Start the AMQP server.
-     *
-     * @throws InterruptedException throws Exception when binding to port
-     */
-    public void run()
-            throws InterruptedException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException,
-            KeyStoreException, KeyManagementException, IOException {
-        try {
-            ChannelFuture plainSocketFuture = bindToPlainSocket();
-
-            ChannelFuture sslSocketFuture = null;
-            if (configuration.getSsl().isEnabled()) {
-                sslSocketFuture = bindToSslSocket();
-            }
-
-            // Wait until the server socket is closed.
-            plainSocketFuture.channel().closeFuture().sync();
-
-            if (sslSocketFuture != null) {
-                sslSocketFuture.channel().closeFuture().sync();
-            }
-        } finally {
-            shutdownExecutors();
-        }
-    }
-
     private void shutdownExecutors() {
         workerGroup.shutdownGracefully();
         bossGroup.shutdownGracefully();
@@ -163,6 +136,18 @@ public class Server {
         if (configuration.getSsl().isEnabled()) {
             ChannelFuture sslSocketFuture = bindToSslSocket();
             sslServerChannel = sslSocketFuture.channel();
+        }
+    }
+
+    public void awaitServerClose() throws InterruptedException {
+        try {
+            plainServerChannel.closeFuture().sync();
+
+            if (sslServerChannel != null) {
+                sslServerChannel.closeFuture().sync();
+            }
+        } finally {
+            shutdownExecutors();
         }
     }
 
