@@ -38,13 +38,4 @@
             <package name="org.wso2.messaging.integration"/>
         </packages>
     </test>
-
-    <!--
-    <test name="class-tests" verbose="2">
-        <classes>
-            <class name="org.wso2.messaging.integration.QueueConsumerTest"/>
-        </classes>
-    </test>
-    -->
-
 </suite>

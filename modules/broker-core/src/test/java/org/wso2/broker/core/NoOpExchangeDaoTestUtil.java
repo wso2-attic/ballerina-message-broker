@@ -19,16 +19,29 @@
 
 package org.wso2.broker.core;
 
-/**
- * Represents an exception of the broker.
- */
-public class BrokerException extends Exception {
+import org.wso2.broker.core.store.dao.ExchangeDao;
 
-    public BrokerException(String message) {
-        super(message);
+/**
+ *
+ */
+public class NoOpExchangeDaoTestUtil extends ExchangeDao {
+
+    public NoOpExchangeDaoTestUtil() {
+        super(null);
     }
 
-    public BrokerException(String message, Throwable throwable) {
-        super(message, throwable);
+    @Override
+    public void persist(Exchange exchange) {
+
+    }
+
+    @Override
+    public void delete(Exchange exchange) {
+
+    }
+
+    @Override
+    public void retrieveAll(ExchangeCollector exchangeCollector) {
+
     }
 }

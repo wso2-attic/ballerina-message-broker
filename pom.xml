@@ -57,32 +57,32 @@
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-core</artifactId>
-                <version>${broker.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-amqp</artifactId>
-                <version>${broker.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-common</artifactId>
-                <version>${broker.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-coordination</artifactId>
-                <version>${broker.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>integration</artifactId>
-                <version>${broker.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-rest-runner</artifactId>
-                <version>${broker.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
@@ -194,6 +194,11 @@
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derby</artifactId>
                 <version>${derby.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibatis</groupId>
+                <artifactId>ibatis2-common</artifactId>
+                <version>${com.ibatis.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -241,7 +246,6 @@
     </build>
 
     <properties>
-        <broker.version>1.0.52-SNAPSHOT</broker.version>
         <netty.version>4.1.17.Final</netty.version>
         <slf4j.version>1.7.25</slf4j.version>
         <testng.version>6.11</testng.version>
@@ -263,7 +267,8 @@
         <carbon.config.version>2.1.5</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
         <hikari.version>2.7.4</hikari.version>
-        <derby.version>10.13.1.1</derby.version>
+        <derby.version>10.14.1.0</derby.version>
         <msf4j.version>2.5.2</msf4j.version>
+        <com.ibatis.version>2.1.7.597</com.ibatis.version>
     </properties>
 </project>

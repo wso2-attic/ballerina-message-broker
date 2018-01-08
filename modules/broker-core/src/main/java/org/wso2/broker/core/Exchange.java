@@ -20,13 +20,18 @@
 package org.wso2.broker.core;
 
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.store.dao.BindingDao;
+import org.wso2.broker.core.store.dao.NoOpBindingDao;
 
 /**
  * Represents an Exchange for the broker.
  */
-interface Exchange {
+public abstract class Exchange {
 
-    enum Type {
+    /**
+     * Supported exchange types by the broker
+     */
+    public enum Type {
         DIRECT("direct"),
         TOPIC("topic");
 
@@ -34,6 +39,11 @@ interface Exchange {
 
         Type(String name) {
             typeName = name;
+        }
+
+        @Override
+        public String toString() {
+            return typeName;
         }
 
         public static Type from(String typeString) {
@@ -49,20 +59,83 @@ interface Exchange {
 
     }
 
-    String getName();
+    private final int hashCode;
 
-    Type getType();
+    private final String name;
 
-    void bind(Queue queue, String routingKey, FieldTable arguments) throws BrokerException;
+    private final Type type;
 
-    void unbind(Queue queue, String routingKey);
+    private final BindingDao bindingDao;
 
-    BindingSet getBindingsForRoute(String routingKey);
+    private final BindingsRegistry bindingsRegistry;
+
+    protected Exchange(String name, Type type, BindingDao bindingDao) {
+        this.name = name;
+        this.type = type;
+        hashCode = (name + type.toString()).hashCode();
+        this.bindingDao = bindingDao;
+        this.bindingsRegistry = new BindingsRegistry(this, bindingDao);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public BindingDao getBindingDao() {
+        return bindingDao;
+    }
+
+    void bind(Queue queue, String routingKey, FieldTable arguments) throws BrokerException {
+        bindingsRegistry.bind(queue, routingKey, arguments);
+    }
+
+    void unbind(Queue queue, String routingKey) throws BrokerException {
+        bindingsRegistry.unbind(queue, routingKey);
+    }
+
+    BindingSet getBindingsForRoute(String routingKey) {
+        return bindingsRegistry.getBindingsForRoute(routingKey);
+    }
+
+    BindingsRegistry getBindingsRegistry() {
+        return bindingsRegistry;
+    }
 
     /**
      * Whether there are any bindings for the exchange.
      * TODO This is only used in tests. Should we have such methods?
      */
-    boolean isUnused();
+    boolean isUnused() {
+        return bindingsRegistry.isEmpty();
+    }
 
+    public boolean isDurable() {
+        return !(bindingDao instanceof NoOpBindingDao);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if ((obj instanceof Exchange) &&
+                getName().equals(((Exchange) obj).getName()) && getType() == ((Exchange) obj).getType()) {
+            return true;
+        }
+        return false;
+    }
+
+    void retrieveBindingsFromDb(QueueRegistry queueRegistry) throws BrokerException {
+        bindingsRegistry.retrieveAllBindingsForExchange(queueRegistry);
+    }
+
+    @Override
+    public int hashCode() {
+        return hashCode;
+    }
 }

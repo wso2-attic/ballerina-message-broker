@@ -23,7 +23,6 @@ import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.store.dao.MessageDao;
-import org.wso2.broker.core.store.dao.QueueDao;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -37,19 +36,22 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Represents the queue of the broker. Contains a bounded queue to store messages. Subscriptions for the queue
  * are maintained as an in-memory set.
  */
-final class QueueHandler {
+public final class QueueHandler {
 
     private static final Logger log = LoggerFactory.getLogger(QueueHandler.class);
 
     private Queue queue;
-      
+
     private final CyclicConsumerIterator consumerIterator;
+
+    private final Queue redeliveryQueue;
 
     private final Set<Consumer> consumers;
 
     private QueueHandler(Queue queue) {
-       
+
         this.queue = queue;
+        this.redeliveryQueue = new MemQueueImpl(queue.getName(), 1000, false);
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
     }
@@ -59,10 +61,9 @@ final class QueueHandler {
         return new QueueHandler(queue);
     }
 
-    public static QueueHandler createDurableQueue(String queueName, MessageDao messageDao,
-                                                  QueueDao queueDao, boolean autoDelete) {
-        Queue queue = new DbBackedQueueImpl(queueName, messageDao, autoDelete);
-        queueDao.persist(queue);
+    public static QueueHandler createDurableQueue(String queueName, boolean autoDelete,
+                                                  MessageDao messageDao) {
+        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, messageDao);
         return new QueueHandler(queue);
     }
 
@@ -106,7 +107,7 @@ final class QueueHandler {
      * @param message {@link Message}
      * @return True if successfully enqueued, false otherwise
      */
-    boolean enqueue(Message message) {
+    boolean enqueue(Message message) throws BrokerException {
         return queue.enqueue(message);
     }
 
@@ -116,8 +117,11 @@ final class QueueHandler {
      * @return Message
      */
     Message dequeue() {
-       
-        Message message = queue.dequeue();
+        Message message = redeliveryQueue.dequeue();
+        if (message == null) {
+            message = queue.dequeue();
+        }
+
         return message;
     }
 
@@ -125,8 +129,9 @@ final class QueueHandler {
         // TODO handle nacks
     }
 
-    public void requeue(Message message) {
-        queue.enqueue(message);
+    public void requeue(Message message) throws BrokerException {
+        message.setRedeliver();
+        redeliveryQueue.enqueue(message);
     }
 
     /**
@@ -222,7 +227,7 @@ final class QueueHandler {
 
     /**
      * Database backed queue implementation.
-     * // TODO: need to write the db related logic
+     * // TODO: Write the db related logic
      */
     private static class DbBackedQueueImpl extends Queue {
 
@@ -230,7 +235,7 @@ final class QueueHandler {
 
         private final MessageDao messageDao;
 
-        DbBackedQueueImpl(String queueName, MessageDao messageDao, boolean autoDelete) {
+        DbBackedQueueImpl(String queueName, boolean autoDelete, MessageDao messageDao) {
             super(queueName, true, autoDelete);
             this.messageDao = messageDao;
             this.memQueue = new LinkedBlockingQueue<>();
@@ -247,7 +252,7 @@ final class QueueHandler {
         }
 
         @Override
-        public boolean enqueue(Message message) {
+        public boolean enqueue(Message message) throws BrokerException {
             messageDao.persist(message);
             return memQueue.offer(message);
         }

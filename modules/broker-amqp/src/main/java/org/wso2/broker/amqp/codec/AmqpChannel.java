@@ -148,7 +148,7 @@ public class AmqpChannel {
         return messageAggregator;
     }
 
-    public void acknowledge(long deliveryTag, boolean multiple) {
+    public void acknowledge(long deliveryTag, boolean multiple) throws BrokerException {
         //TODO handle multiple
         AckData ackData = unackedMessageMap.remove(deliveryTag);
         if (ackData != null) {
@@ -178,7 +178,7 @@ public class AmqpChannel {
         unackedMessageMap.put(deliveryTag, ackData);
     }
 
-    public void reject(long deliveryTag, boolean requeue) {
+    public void reject(long deliveryTag, boolean requeue) throws BrokerException {
         AckData ackData = unackedMessageMap.remove(deliveryTag);
         if (ackData != null) {
             Message message = ackData.getMessage();
@@ -203,7 +203,7 @@ public class AmqpChannel {
         return unackedMessageMap.clear();
     }
 
-    public void rejectAll() {
+    public void rejectAll() throws BrokerException {
         Collection<AckData> entries = unackedMessageMap.clear();
         for (AckData ackData : entries) {
             Message message = ackData.getMessage();

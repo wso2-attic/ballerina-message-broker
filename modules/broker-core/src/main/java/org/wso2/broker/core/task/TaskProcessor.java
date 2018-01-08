@@ -72,7 +72,7 @@ final class TaskProcessor implements Callable<Boolean> {
     }
 
     @Override
-    public Boolean call() throws Exception {
+    public Boolean call() {
 
         if (isActive.compareAndSet(false, true)) {
             if (log.isDebugEnabled()) {

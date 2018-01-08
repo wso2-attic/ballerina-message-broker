@@ -30,7 +30,9 @@ import java.util.Map;
  * field-table = long-uint *field-value-pair.
  */
 public class FieldTable implements EncodableData {
+
     public static final FieldTable EMPTY_TABLE = new FieldTable(new HashMap<>());
+
     private final Map<ShortString, FieldValue> properties;
 
     /**

@@ -15,9 +15,8 @@
 # under the License.
 
 broker:
- datasource:
-  url: jdbc:mysql://localhost/broker
-  databaseDriver: com.mysql.jdbc.Driver
+ dataSource:
+  url: jdbc:derby:../database
   user: root
   password: root
 

@@ -19,16 +19,31 @@
 
 package org.wso2.broker.core;
 
+import org.wso2.broker.core.configuration.BrokerConfiguration;
+
+import javax.sql.DataSource;
+
 /**
- * Represents an exception of the broker.
+ * Broker configuration parameters and values
  */
-public class BrokerException extends Exception {
+public class BrokerOptions {
 
-    public BrokerException(String message) {
-        super(message);
+    private final BrokerConfiguration brokerConfiguration;
+
+    private final DataSource dataSource;
+
+    public BrokerOptions(BrokerConfiguration brokerConfiguration, DataSource dataSource) {
+        this.brokerConfiguration = brokerConfiguration;
+        this.dataSource = dataSource;
     }
 
-    public BrokerException(String message, Throwable throwable) {
-        super(message, throwable);
+    public BrokerConfiguration getBrokerConfiguration() {
+        return brokerConfiguration;
     }
+
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+
 }

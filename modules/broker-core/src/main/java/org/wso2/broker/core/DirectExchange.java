@@ -19,46 +19,14 @@
 
 package org.wso2.broker.core;
 
-import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.store.dao.BindingDao;
 
 /**
  * AMQP direct exchange implementation.
  */
-final class DirectExchange implements Exchange {
+final class DirectExchange extends Exchange {
 
-    private final String name;
-
-    private final BindingsRegistry bindingsRegistry;
-
-    DirectExchange(String name) {
-        this.name = name;
-        this.bindingsRegistry = new BindingsRegistry();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Exchange.Type getType() {
-        return Type.DIRECT;
-    }
-
-    public void bind(Queue queue, String routingKey, FieldTable arguments) throws BrokerException {
-        bindingsRegistry.bind(queue, routingKey, arguments);
-    }
-
-    public void unbind(Queue queue, String routingKey) {
-        bindingsRegistry.unbind(queue, routingKey);
-    }
-
-    public BindingSet getBindingsForRoute(String routingKey) {
-        return bindingsRegistry.getBindingsForRoute(routingKey);
-    }
-
-    /**
-     * Whether there are any bindings for the exchange.
-     */
-    public boolean isUnused() {
-        return bindingsRegistry.isEmpty();
+    DirectExchange(String name, BindingDao bindingDao) {
+        super(name, Type.DIRECT, bindingDao);
     }
 }

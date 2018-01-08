@@ -41,15 +41,15 @@ public abstract class Queue {
         this.autoDelete = autoDelete;
     }
 
-    String getName() {
+    public String getName() {
         return name;
     }
 
-    boolean isDurable() {
+    public boolean isDurable() {
         return durable;
     }
 
-    boolean isAutoDelete() {
+    public boolean isAutoDelete() {
         return autoDelete;
     }
 
@@ -80,12 +80,12 @@ public abstract class Queue {
         return name.hashCode();
     }
 
-    abstract int capacity();
+    public abstract int capacity();
 
-    abstract int size();
+    public abstract int size();
 
-    abstract boolean enqueue(Message message);
+    public abstract boolean enqueue(Message message) throws BrokerException;
 
-    abstract Message dequeue();
+    public abstract Message dequeue();
 
 }

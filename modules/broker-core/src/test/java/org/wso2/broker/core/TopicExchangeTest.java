@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.store.dao.NoOpBindingDao;
 
 import java.util.Collection;
 
@@ -39,7 +40,7 @@ public class TopicExchangeTest {
 
     @BeforeMethod
     public void beforeTestSetup() {
-        topicExchange = new TopicExchange(EXCHANGE_NAME);
+        topicExchange = new TopicExchange(EXCHANGE_NAME, new NoOpBindingDao());
     }
 
     @Test

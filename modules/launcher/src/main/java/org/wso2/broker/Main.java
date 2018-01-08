@@ -19,6 +19,8 @@
 
 package org.wso2.broker;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.Server;
@@ -33,20 +35,25 @@ import org.wso2.carbon.config.provider.ConfigProvider;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import javax.sql.DataSource;
 
 /**
  * Starting point of the broker.
  */
 public class Main {
 
-    private static final Logger log = LoggerFactory.getLogger(Main.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
         try {
             StartupContext startupContext = new StartupContext();
 
             initConfigProvider(startupContext);
-
+            BrokerConfigProvider service = startupContext.getService(BrokerConfigProvider.class);
+            BrokerConfiguration brokerConfiguration =
+                    service.getConfigurationObject(BrokerConfiguration.NAMESPACE, BrokerConfiguration.class);
+            DataSource dataSource = getDataSource(brokerConfiguration.getDataSource());
+            startupContext.registerService(DataSource.class, dataSource);
             BrokerRestServer restServer = new BrokerRestServer(startupContext);
 
             Broker broker = new Broker(startupContext);
@@ -61,9 +68,20 @@ public class Main {
             restServer.stop();
             broker.stopMessageDelivery();
         } catch (Throwable e) {
-            log.error("Error while starting broker", e);
+            LOGGER.error("Error while starting broker", e);
             throw e;
         }
+    }
+
+    private static DataSource getDataSource(BrokerConfiguration.DataSourceConfiguration dataSourceConfiguration) {
+        HikariConfig config = new HikariConfig();
+        config.setDataSourceClassName(dataSourceConfiguration.getDatabaseDriver());
+        config.setJdbcUrl(dataSourceConfiguration.getUrl());
+        config.setUsername(dataSourceConfiguration.getUser());
+        config.setPassword(dataSourceConfiguration.getPassword());
+        config.setAutoCommit(false);
+
+        return new HikariDataSource(config);
     }
 
     /**

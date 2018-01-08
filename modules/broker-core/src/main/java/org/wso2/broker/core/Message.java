@@ -78,4 +78,9 @@ public class Message {
     public boolean isRedelivered() {
         return redelivered;
     }
+
+    @Override
+    public String toString() {
+        return metadata.toString();
+    }
 }

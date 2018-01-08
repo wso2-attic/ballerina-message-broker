@@ -21,12 +21,12 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.common.data.types.FieldTable;
-import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.rest.BrokerAdminService;
 import org.wso2.broker.rest.BrokerServiceRunner;
+
+import javax.sql.DataSource;
 
 /**
  * Broker API class.
@@ -38,11 +38,7 @@ public final class Broker {
     private final MessagingEngine messagingEngine;
 
     public Broker(StartupContext startupContext) throws Exception {
-        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
-                                                                                  BrokerConfiguration.class);
-
-        this.messagingEngine = new MessagingEngine(configuration);
+        this.messagingEngine = new MessagingEngine(startupContext.getService(DataSource.class));
 
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new BrokerAdminService());
@@ -58,7 +54,7 @@ public final class Broker {
      * @param queueName   name of the queue the relevant messages belongs to
      * @param messageId delivery tag of the message sent by the broker
      */
-    public void acknowledge(String queueName, long messageId) {
+    public void acknowledge(String queueName, long messageId) throws BrokerException {
         messagingEngine.acknowledge(queueName, messageId);
     }
 
@@ -117,7 +113,7 @@ public final class Broker {
         return messagingEngine.getNextMessageId();
     }
 
-    public void requeue(String queueName, Message message) {
+    public void requeue(String queueName, Message message) throws BrokerException {
         messagingEngine.requeue(queueName, message);
     }
 }

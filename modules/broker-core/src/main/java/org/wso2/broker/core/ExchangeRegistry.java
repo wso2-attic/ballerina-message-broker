@@ -19,6 +19,10 @@
 
 package org.wso2.broker.core;
 
+import org.wso2.broker.core.store.dao.BindingDao;
+import org.wso2.broker.core.store.dao.ExchangeDao;
+import org.wso2.broker.core.store.dao.NoOpBindingDao;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,15 +37,25 @@ final class ExchangeRegistry {
 
     private static final String DEFAULT = "<<default>>";
 
-    public static final Exchange DEFAULT_EXCHANGE = new DirectExchange(DEFAULT);
+    private static final BindingDao NO_OP_BINDING_DAO = new NoOpBindingDao();
+
+    private final Exchange defaultExchange;
 
     private final Map<String, Exchange> exchangeMap;
 
-    ExchangeRegistry() {
+    private final ExchangeDao exchangeDao;
+
+    private final BindingDao bindingDao;
+
+    ExchangeRegistry(ExchangeDao exchangeDao, BindingDao bindingDao) {
         exchangeMap = new ConcurrentHashMap<>(3);
-        exchangeMap.put(DIRECT, new DirectExchange(DIRECT));
-        exchangeMap.put(TOPIC, new TopicExchange(TOPIC));
-        exchangeMap.put(DEFAULT, DEFAULT_EXCHANGE);
+        defaultExchange = new DirectExchange(DEFAULT, bindingDao);
+        exchangeMap.put(DIRECT, new DirectExchange(DIRECT, bindingDao));
+        exchangeMap.put(TOPIC, new TopicExchange(TOPIC, bindingDao));
+        exchangeMap.put(DEFAULT, defaultExchange);
+        this.exchangeDao = exchangeDao;
+        this.bindingDao = bindingDao;
+
     }
 
     Exchange getExchange(String exchangeName) {
@@ -51,7 +65,7 @@ final class ExchangeRegistry {
     void deleteExchange(String exchangeName, Exchange.Type type, boolean ifUnused) throws BrokerException {
         // TODO: Go through the logic with exchange type in mind
         Exchange exchange = exchangeMap.get(exchangeName);
-        if (exchange != null && type == exchange.getType() && !isBuiltInExchange(exchange)) {
+        if (exchange != null && !isBuiltInExchange(exchange)) {
             exchangeMap.remove(exchangeName);
         } else {
             throw new BrokerException("Cannot delete exchange.");
@@ -64,9 +78,6 @@ final class ExchangeRegistry {
     }
 
     /**
-     * TODO : behavior around durable is not implemented
-     * TODO : Need to make this method synchronized since this can be called concurrently.
-     *
      * @param exchangeName name of the exchange
      * @param type         type of the exchange
      * @param passive      if true do not create exchange
@@ -74,7 +85,7 @@ final class ExchangeRegistry {
      * @throws BrokerException throws on exchange creation failure
      */
     void declareExchange(String exchangeName, Exchange.Type type,
-            boolean passive, boolean durable) throws BrokerException {
+                         boolean passive, boolean durable) throws BrokerException {
         if (exchangeName.isEmpty()) {
             throw new BrokerException("Exchange name cannot be empty.");
         }
@@ -85,34 +96,61 @@ final class ExchangeRegistry {
                     "Exchange [ " + exchangeName
                             + " ] doesn't exists. Passive parameter is set, hence not creating the exchange.");
         } else if (exchange == null) {
-            exchange = ExchangeFactory.newInstance(exchangeName, type);
+            BindingDao dao = durable ? bindingDao : NO_OP_BINDING_DAO;
+            exchange = ExchangeFactory.newInstance(exchangeName, type, dao);
             exchangeMap.put(exchange.getName(), exchange);
-        } else if (!passive && exchange.getType() != type) { // TODO add durable check
+            if (durable) {
+                exchangeDao.persist(exchange);
+            }
+        } else if (!passive) {
             throw new BrokerException("Exchange [ " + exchangeName + " ] already exists.");
         } else if (exchange.getType() != type) {
             throw new BrokerException("Exchange type [ " + type + " ] does not match the existing one [ "
-                                              + exchange.getType() + " ].");
+                    + exchange.getType() + " ].");
+        }
+    }
+
+    private void retrieveAllExchangesFromDao() throws BrokerException {
+        exchangeDao.retrieveAll(
+                (name, typeString) -> {
+                    Exchange exchange = ExchangeFactory.newInstance(name,
+                            Exchange.Type.from(typeString), bindingDao);
+                    exchangeMap.putIfAbsent(name, exchange);
+                });
+    }
+
+    public Exchange getDefaultExchange() {
+        return defaultExchange;
+    }
+
+    public void retrieveFromStore(QueueRegistry queueRegistry) throws BrokerException {
+        retrieveAllExchangesFromDao();
+        for (Exchange exchange: exchangeMap.values()) {
+            exchange.retrieveBindingsFromDb(queueRegistry);
         }
     }
 
     /**
-     * Internal class to create the relevant exchange for the requested exchange type.
+     * Factory class to create the relevant exchange for the requested exchange type.
      */
-    private static class ExchangeFactory {
+    public static class ExchangeFactory {
 
-        static Exchange newInstance(String exchangeName, Exchange.Type type) throws BrokerException {
+        private ExchangeFactory() {
+        }
+
+        public static Exchange newInstance(String exchangeName, Exchange.Type type,
+                                           BindingDao bindingDao) throws BrokerException {
             Exchange exchange;
             switch (type) {
                 case DIRECT:
-                    exchange = new DirectExchange(exchangeName);
+                    exchange = new DirectExchange(exchangeName, bindingDao);
                     break;
                 case TOPIC:
-                    exchange = new TopicExchange(exchangeName);
+                    exchange = new TopicExchange(exchangeName, bindingDao);
                     break;
                 default:
                     throw new BrokerException("Unknown exchange type [ " + type + " ].");
             }
-
             return exchange;
         }
     }

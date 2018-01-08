@@ -22,6 +22,7 @@ package org.wso2.broker.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.store.dao.BindingDao;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -35,42 +36,25 @@ import java.util.regex.Pattern;
 /**
  * AMQP topic exchange implementation.
  */
-final class TopicExchange implements Exchange {
+final class TopicExchange extends Exchange {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TopicExchange.class);
-
-    private final String exchangeName;
-
-    private final BindingsRegistry bindingsRegistry;
 
     private final FastTopicMatcher fastTopicMatcher;
 
     private final ReadWriteLock lock;
 
-    TopicExchange(String exchangeName) {
-        this.exchangeName = exchangeName;
-        this.bindingsRegistry = new BindingsRegistry();
+    TopicExchange(String exchangeName, BindingDao bindingDao) {
+        super(exchangeName, Type.TOPIC, bindingDao);
         fastTopicMatcher = new FastTopicMatcher();
         lock = new ReentrantReadWriteLock();
-    }
-
-    @Override
-    public String getName() {
-        return exchangeName;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.TOPIC;
     }
 
     @Override
     public void bind(Queue queue, String routingPattern, FieldTable arguments) throws BrokerException {
         lock.writeLock().lock();
         try {
-            // TODO even though we put a binding with routing pattern we never query using that.
-            // Therefore we can get rid of this bind call
-            bindingsRegistry.bind(queue, routingPattern, arguments);
+            getBindingsRegistry().bind(queue, routingPattern, arguments);
             fastTopicMatcher.add(routingPattern);
         } finally {
             lock.writeLock().unlock();
@@ -78,10 +62,10 @@ final class TopicExchange implements Exchange {
     }
 
     @Override
-    public void unbind(Queue queue, String routingPattern) {
+    public void unbind(Queue queue, String routingPattern) throws BrokerException {
         lock.writeLock().lock();
         try {
-            bindingsRegistry.unbind(queue, routingPattern);
+            getBindingsRegistry().unbind(queue, routingPattern);
             fastTopicMatcher.remove(routingPattern);
         } finally {
             lock.writeLock().unlock();
@@ -100,11 +84,6 @@ final class TopicExchange implements Exchange {
         } finally {
             lock.readLock().unlock();
         }
-    }
-
-    @Override
-    public boolean isUnused() {
-        return bindingsRegistry.isEmpty();
     }
 
     /**
@@ -355,7 +334,7 @@ final class TopicExchange implements Exchange {
             BindingSet matchedBindingSet = new BindingSet();
             while (nextSetBit > -1) {
                 String subscribedPattern = subscribedTopicList.get(nextSetBit);
-                BindingSet bindingSet = bindingsRegistry.getBindingsForRoute(subscribedPattern);
+                BindingSet bindingSet = getBindingsRegistry().getBindingsForRoute(subscribedPattern);
                 matchedBindingSet.add(bindingSet);
                 nextSetBit = matchedBitSet.nextSetBit(nextSetBit + 1);
             }

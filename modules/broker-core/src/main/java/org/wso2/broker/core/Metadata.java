@@ -291,4 +291,21 @@ public class Metadata {
             rawMetadata.release();
         }
     }
+
+    @Override
+    public String toString() {
+        return "Metadata{" +
+                "internalId=" + internalId +
+                ", routingKey='" + routingKey + '\'' +
+                ", exchangeName='" + exchangeName + '\'' +
+                ", contentLength=" + contentLength +
+                ", deliveryMode=" + deliveryMode +
+                ", priority=" + priority +
+                ", correlationId=" + correlationId +
+                ", expiration=" + expiration +
+                ", messageId=" + messageId +
+                ", contentType=" + contentType +
+                ", contentEncoding=" + contentEncoding +
+                '}';
+    }
 }
