@@ -55,6 +55,7 @@
     <dependencySets>
         <dependencySet>
             <includes>
+                <include>org.wso2.messaging:broker-rest-runner:jar</include>
                 <include>org.wso2.messaging:broker-amqp:jar</include>
                 <include>org.wso2.messaging:broker-core:jar</include>
                 <include>org.wso2.messaging:broker-common:jar</include>

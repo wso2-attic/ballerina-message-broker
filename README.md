@@ -44,7 +44,7 @@ Please follow the steps below to build message broker from source code.
 
 ## Documentation
 
-Please refer to the document on [message broker architecture](docs/architecture.md) for more information on the internal design.
+Please refer the [developer documentation](docs/developer-doc-index.md) for more information on the internal design.
 
 ## Licence
 

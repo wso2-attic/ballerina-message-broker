@@ -70,6 +70,10 @@
             <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-rest-runner</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

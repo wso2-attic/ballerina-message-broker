@@ -37,6 +37,8 @@ import org.wso2.broker.amqp.codec.handlers.AmqpDecoder;
 import org.wso2.broker.amqp.codec.handlers.AmqpEncoder;
 import org.wso2.broker.amqp.codec.handlers.AmqpMessageWriter;
 import org.wso2.broker.amqp.codec.handlers.BlockingTaskHandler;
+import org.wso2.broker.common.BrokerConfigProvider;
+import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.core.Broker;
 
 import java.io.IOException;
@@ -68,39 +70,19 @@ public class Server {
     private Channel plainServerChannel;
     private Channel sslServerChannel;
 
-    public Server(Broker broker, AmqpServerConfiguration configuration) {
-        this.configuration = configuration;
-        this.broker = broker;
+    public Server(StartupContext context) throws Exception {
+        BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
+        this.configuration = configProvider
+                .getConfigurationObject(AmqpServerConfiguration.NAMESPACE, AmqpServerConfiguration.class);
+        this.broker = context.getService(Broker.class);
+
+        if (broker == null) {
+            throw new RuntimeException("Could not find the broker class to initialize AMQP server");
+        }
+
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
         ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS);
-    }
-
-    /**
-     * Start the AMQP server.
-     *
-     * @throws InterruptedException throws Exception when binding to port
-     */
-    public void run()
-            throws InterruptedException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException,
-            KeyStoreException, KeyManagementException, IOException {
-        try {
-            ChannelFuture plainSocketFuture = bindToPlainSocket();
-
-            ChannelFuture sslSocketFuture = null;
-            if (configuration.getSsl().isEnabled()) {
-                sslSocketFuture = bindToSslSocket();
-            }
-
-            // Wait until the server socket is closed.
-            plainSocketFuture.channel().closeFuture().sync();
-
-            if (sslSocketFuture != null) {
-                sslSocketFuture.channel().closeFuture().sync();
-            }
-        } finally {
-            shutdownExecutors();
-        }
     }
 
     private void shutdownExecutors() {
@@ -154,6 +136,18 @@ public class Server {
         if (configuration.getSsl().isEnabled()) {
             ChannelFuture sslSocketFuture = bindToSslSocket();
             sslServerChannel = sslSocketFuture.channel();
+        }
+    }
+
+    public void awaitServerClose() throws InterruptedException {
+        try {
+            plainServerChannel.closeFuture().sync();
+
+            if (sslServerChannel != null) {
+                sslServerChannel.closeFuture().sync();
+            }
+        } finally {
+            shutdownExecutors();
         }
     }
 

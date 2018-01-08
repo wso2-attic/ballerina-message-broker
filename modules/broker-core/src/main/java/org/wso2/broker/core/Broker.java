@@ -21,23 +21,32 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.BrokerConfigProvider;
+import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.broker.core.rest.BrokerAdminService;
+import org.wso2.broker.rest.BrokerServiceRunner;
 
 /**
  * Broker API class.
  */
 public final class Broker {
 
-    private static final Logger log = LoggerFactory.getLogger(Broker.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Broker.class);
 
     private final MessagingEngine messagingEngine;
 
-    private final BrokerConfiguration brokerConfiguration;
-    
-    public Broker(BrokerConfiguration configuration) {
+    public Broker(StartupContext startupContext) throws Exception {
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
+                                                                                  BrokerConfiguration.class);
+
         this.messagingEngine = new MessagingEngine(configuration);
-        this.brokerConfiguration = configuration;
+
+        BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
+        serviceRunner.deploy(new BrokerAdminService());
+        startupContext.registerService(Broker.class, this);
     }
 
     public void publish(Message message) throws BrokerException {
@@ -95,12 +104,12 @@ public final class Broker {
     }
 
     public void startMessageDelivery() {
-        log.info("Starting message delivery threads.");
+        LOGGER.info("Starting message delivery threads.");
         messagingEngine.startMessageDelivery();
     }
 
     public void stopMessageDelivery() {
-        log.info("Stopping message delivery threads.");
+        LOGGER.info("Stopping message delivery threads.");
         messagingEngine.stopMessageDelivery();
     }
 
