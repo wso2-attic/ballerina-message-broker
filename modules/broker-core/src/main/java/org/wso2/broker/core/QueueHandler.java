@@ -50,6 +50,7 @@ public final class QueueHandler {
 
     private QueueHandler(Queue queue) {
         this.queue = queue;
+        // TODO: take message count from queue configuration
         this.redeliveryQueue = new MemQueueImpl(queue.getName(), 1000, false);
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
@@ -237,7 +238,6 @@ public final class QueueHandler {
 
     /**
      * Database backed queue implementation.
-     * // TODO: Write the db related logic
      */
     private static class DbBackedQueueImpl extends Queue {
 

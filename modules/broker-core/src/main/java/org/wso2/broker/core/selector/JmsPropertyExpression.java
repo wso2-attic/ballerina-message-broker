@@ -34,9 +34,9 @@ import java.util.Map;
 /**
  * JMS message properties and headers related expression.
  */
-public class JMSPropertyExpression implements Expression<Metadata> {
+public class JmsPropertyExpression implements Expression<Metadata> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JMSPropertyExpression.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JmsPropertyExpression.class);
 
     private static final Map<String, Expression<Metadata>> JMS_PROPERTY_EXPRESSIONS = new HashMap<>();
 
@@ -44,7 +44,7 @@ public class JMSPropertyExpression implements Expression<Metadata> {
 
     private final Expression<Metadata> jmsPropertyExpression;
 
-    public JMSPropertyExpression(String name) {
+    public JmsPropertyExpression(String name) {
         this.name = name;
         this.jmsPropertyExpression = JMS_PROPERTY_EXPRESSIONS.get(name);
     }

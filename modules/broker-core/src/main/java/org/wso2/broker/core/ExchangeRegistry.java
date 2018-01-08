@@ -39,8 +39,6 @@ final class ExchangeRegistry {
 
     private static final BindingDao NO_OP_BINDING_DAO = new NoOpBindingDao();
 
-    private final Exchange defaultExchange;
-
     private final Map<String, Exchange> exchangeMap;
 
     private final ExchangeDao exchangeDao;
@@ -49,10 +47,9 @@ final class ExchangeRegistry {
 
     ExchangeRegistry(ExchangeDao exchangeDao, BindingDao bindingDao) {
         exchangeMap = new ConcurrentHashMap<>(3);
-        defaultExchange = new DirectExchange(DEFAULT, bindingDao);
         exchangeMap.put(DIRECT, new DirectExchange(DIRECT, bindingDao));
         exchangeMap.put(TOPIC, new TopicExchange(TOPIC, bindingDao));
-        exchangeMap.put(DEFAULT, defaultExchange);
+        exchangeMap.put(DEFAULT, new DirectExchange(DEFAULT, bindingDao));
         this.exchangeDao = exchangeDao;
         this.bindingDao = bindingDao;
 
@@ -123,7 +120,7 @@ final class ExchangeRegistry {
     }
 
     public Exchange getDefaultExchange() {
-        return defaultExchange;
+        return exchangeMap.get(DEFAULT);
     }
 
     public void retrieveFromStore(QueueRegistry queueRegistry) throws BrokerException {

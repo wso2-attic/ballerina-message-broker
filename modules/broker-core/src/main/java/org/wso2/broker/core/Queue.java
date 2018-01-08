@@ -68,11 +68,11 @@ public abstract class Queue {
 
     @Override
     public String toString() {
-        return "Queue{" +
-                "name='" + name + '\'' +
-                ", durable=" + durable +
-                ", autoDelete=" + autoDelete +
-                '}';
+        return "Queue{"
+                + "name='" + name + '\''
+                + ", durable=" + durable
+                + ", autoDelete=" + autoDelete
+                + '}';
     }
 
     @Override

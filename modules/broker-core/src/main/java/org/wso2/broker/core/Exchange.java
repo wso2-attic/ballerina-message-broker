@@ -85,10 +85,6 @@ public abstract class Exchange {
         return type;
     }
 
-    public BindingDao getBindingDao() {
-        return bindingDao;
-    }
-
     void bind(Queue queue, String routingKey, FieldTable arguments) throws BrokerException {
         bindingsRegistry.bind(queue, routingKey, arguments);
     }

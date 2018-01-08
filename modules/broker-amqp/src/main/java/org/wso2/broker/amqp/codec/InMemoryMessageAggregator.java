@@ -55,8 +55,9 @@ public class InMemoryMessageAggregator {
 
     /**
      * Add the header frame that gives the relevant metadata for the given message.
-     *  @param headers protocol specific headers
-     * @param properties
+     *
+     * @param headers protocol specific headers
+     * @param properties properties of the message
      * @param payloadSize total message content length in bytes
      */
     public void headerFrameReceived(FieldTable headers, FieldTable properties, long payloadSize) {

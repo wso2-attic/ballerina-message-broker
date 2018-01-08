@@ -97,7 +97,7 @@ public class SharedMessageStore {
     }
 
     public void detach(String queueName, Message message) {
-        message.getMetadata().removeOwnedQueue(queueName);
+        message.getMetadata().removeAttachedQueue(queueName);
         if (!message.getMetadata().hasAttachedQueues()) {
             delete(message.getMetadata().getInternalId());
         } else {

@@ -135,7 +135,7 @@ public class Metadata {
                 + "'}";
     }
 
-    public void removeOwnedQueue(String queueName) {
+    public void removeAttachedQueue(String queueName) {
         queueSet.remove(queueName);
     }
 

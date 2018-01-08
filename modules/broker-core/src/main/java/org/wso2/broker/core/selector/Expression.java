@@ -23,6 +23,7 @@ package org.wso2.broker.core.selector;
  * Represents an expression.
  * @param <T> this can be any object.
  */
+@FunctionalInterface
 public interface Expression<T> {
 
     Object evaluate(T object);

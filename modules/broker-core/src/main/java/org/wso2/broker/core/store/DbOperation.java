@@ -51,9 +51,13 @@ public class DbOperation {
      */
     private static final int AVAILABLE = 0;
 
-    private static final int PRE_PROCESSING = 1;
+    /**
+     * {@link DbOperation} can be taken from AVAILABLE state or already PROCESSED state to PROCESSING state
+     * Once in processing state no other event handler
+     */
+    private static final int PROCESSING = 1;
 
-    private static final int PRE_PROCESSED = 2;
+    private static final int PROCESSED = 2;
     /**
      * Event is processed by either {@link DbEventMatcher} or {@link DbWriter}.
      */
@@ -78,16 +82,16 @@ public class DbOperation {
         this.messageId = message.getMetadata().getInternalId();
     }
 
-    public boolean acquireForPreProcess() {
-        return state.compareAndSet(PRE_PROCESSED, PRE_PROCESSING);
+    public boolean acquireToProcess() {
+        return state.compareAndSet(PROCESSED, PROCESSING);
     }
 
-    public void completePreProcess() {
-        state.set(PRE_PROCESSED);
+    public void completeProcessing() {
+        state.set(PROCESSED);
     }
 
     public boolean acquireForPersisting() {
-        return state.compareAndSet(PRE_PROCESSED, PERSIST);
+        return state.compareAndSet(PROCESSED, PERSIST);
     }
 
     public void deleteMessage(long messageId) {

@@ -95,7 +95,6 @@ public class BasicCancel extends MethodFrame {
         return (buf, channel, size) -> {
             ShortString consumerTag = ShortString.parse(buf);
             boolean noWait = buf.readBoolean();
-            ;
             return new BasicCancel(channel, consumerTag, noWait);
         };
     }

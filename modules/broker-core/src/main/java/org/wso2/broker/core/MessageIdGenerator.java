@@ -46,7 +46,7 @@ public class MessageIdGenerator {
         previousTimestamp = ts;
         long id = (ts - REFERENCE_START) * 256L * 1024L + instanceId * 1024L + offset;
         if (previousId == id) {
-            throw new RuntimeException("duplicate ids detected. This should never happen");
+            throw new RuntimeException("Duplicate ids detected. This should never happen");
         }
         previousId = id;
         return id;

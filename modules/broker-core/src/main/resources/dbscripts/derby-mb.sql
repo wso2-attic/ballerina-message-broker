@@ -16,7 +16,7 @@
  * under the License.
  */
 
--- WSO2 Message Broker MySQL Database schema --
+-- WSO2 Message Broker Derby Database schema --
 
 -- Start of Message Store Tables --
 

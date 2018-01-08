@@ -51,8 +51,8 @@ final class QueueRegistry {
         QueueHandler queueHandler = queueHandlerMap.get(queueName);
 
         if (passive && queueHandler == null) {
-            throw new BrokerException("QueueHandler [ " + queueName + " ] doesn't exists. Passive parameter " +
-                    "is set, hence not creating the queue.");
+            throw new BrokerException("QueueHandler [ " + queueName + " ] doesn't exists. Passive parameter "
+                    + "is set, hence not creating the queue.");
         }
 
         if (queueHandler == null) {
@@ -79,11 +79,11 @@ final class QueueRegistry {
         }
 
         if (ifUnused && !queueHandler.isUnused()) {
-            throw new BrokerException("Cannot delete queue. Queue [ " + queueName +
-                    " ] has active consumers and the ifUnused parameter is set.");
+            throw new BrokerException("Cannot delete queue. Queue [ " + queueName
+                    + " ] has active consumers and the ifUnused parameter is set.");
         } else if (ifEmpty && !queueHandler.isEmpty()) {
-            throw new BrokerException("Cannot delete queue. Queue [ " + queueName +
-                    " ] is not empty and the ifEmpty parameter is set.");
+            throw new BrokerException("Cannot delete queue. Queue [ " + queueName
+                    + " ] is not empty and the ifEmpty parameter is set.");
         } else {
             queueHandlerMap.remove(queueName);
             queueHandler.closeAllConsumers();

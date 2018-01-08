@@ -83,9 +83,9 @@ public final class Binding {
 
     @Override
     public String toString() {
-        return "Binding{" +
-                "queue=" + queue +
-                ", routingKey='" + routingKey + '\'' +
-                '}';
+        return "Binding{"
+                + "queue=" + queue
+                + ", routingKey='" + routingKey + '\''
+                + '}';
     }
 }

@@ -77,6 +77,7 @@ final class MessagingEngine {
         BindingDao bindingDao = daoFactory.createBindingDao();
         MessageDao messageDao = daoFactory.createMessageDao();
         exchangeRegistry = new ExchangeRegistry(exchangeDao, bindingDao);
+        // TODO: get the buffer sizes from configs
         sharedMessageStore = new SharedMessageStore(messageDao, 32768, 1024);
         queueRegistry = new QueueRegistry(queueDao, sharedMessageStore);
         exchangeRegistry.retrieveFromStore(queueRegistry);
@@ -167,13 +168,10 @@ final class MessagingEngine {
                                 uniqueQueues.add(binding.getQueue().getName());
                             }
                         }
-                        // Unique queues can be empty due unmatching selectors.
-                        if (!uniqueQueues.isEmpty()) {
-                            boolean published = publishToQueues(message, uniqueQueues);
-                            if (!published) {
-                                LOGGER.info("Dropping message since message didn't have any routes for routing key "
-                                        + metadata.getRoutingKey());
-                            }
+                        // Unique queues can be empty due un-matching selectors.
+                        if (publishToQueues(message, uniqueQueues)) {
+                            LOGGER.info("Dropping message since message didn't have any routes for routing key "
+                                    + metadata.getRoutingKey());
                         }
                     } finally {
                         sharedMessageStore.flush(metadata.getInternalId());

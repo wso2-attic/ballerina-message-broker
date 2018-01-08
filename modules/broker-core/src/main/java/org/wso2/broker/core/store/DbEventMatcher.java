@@ -69,7 +69,8 @@ public class DbEventMatcher implements EventHandler<DbOperation> {
                 removeMatchingDetachEvents(internalId);
                 break;
             case DETACH_MSG_FROM_QUEUE:
-                detachMap.computeIfAbsent(event.getMessageId(), k -> new ArrayList<>()).add(event);
+                detachMap.computeIfAbsent(event.getMessageId(), k -> new ArrayList<>())
+                         .add(event);
                 break;
             case NO_OP:
                 break;
@@ -80,28 +81,43 @@ public class DbEventMatcher implements EventHandler<DbOperation> {
         }
 
         removeOldestEntryFromIndex();
-        event.completePreProcess();
+        event.completeProcessing();
     }
 
+    /**
+     * This method is invoked when a delete event is processed. If there are corresponding detach events found we can
+     * safely ignore those events since current delete operation will remove the message from attached queues.
+     *
+     * @param internalId Internal message id of the event.
+     */
     private void removeMatchingDetachEvents(long internalId) {
         List<DbOperation> detachRequestList;
         if ((detachRequestList = detachMap.remove(internalId)) != null) {
             for (DbOperation detachRequest : detachRequestList) {
                 if (detachRequest.acquireForPersisting()) {
                     detachRequest.clear();
-                    detachRequest.completePreProcess();
+                    detachRequest.completeProcessing();
                 }
             }
         }
     }
 
+    /**
+     * This method is invoked when a delete event is processed. If the corresponding insert is not written to the
+     * database as well we cancel out both insert and delete events.
+     *
+     * @param event Current {@link DbOperation} event
+     * @param sequence Disruptor sequence number
+     * @param internalId Internal message id of the event
+     */
     private void removeMatchingInsertEvent(DbOperation event, long sequence, long internalId) {
         DbOperation insertRequest;
         if ((insertRequest = insertMap.remove(internalId)) != null) {
-            if (insertRequest.acquireForPreProcess()) {
+            if (insertRequest.acquireToProcess()) {
                 insertRequest.clear();
+
                 event.clear();
-                insertRequest.completePreProcess();
+                insertRequest.completeProcessing();
                 LOGGER.debug("Matching insert event found and cleared "
                         + "for message id {} for sequence {}", internalId, sequence);
             }

@@ -89,7 +89,7 @@ public class BindingDaoImpl extends BindingDao {
 
     @Override
     public void retrieveBindingsForExchange(String exchangeName,
-                                                           BindingCollector bindingCollector) throws BrokerException {
+                                            BindingCollector bindingCollector) throws BrokerException {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
