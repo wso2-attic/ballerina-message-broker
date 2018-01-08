@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.data.types.FieldValue;
 import org.wso2.broker.common.data.types.LongInt;
+import org.wso2.broker.common.data.types.LongLongInt;
+import org.wso2.broker.common.data.types.ShortShortInt;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Metadata;
 
@@ -32,9 +34,9 @@ import java.util.Map;
 /**
  * JMS message properties and headers related expression.
  */
-public class JMSPropertyExpression implements Expression<Metadata> {
+public class JmsPropertyExpression implements Expression<Metadata> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JMSPropertyExpression.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JmsPropertyExpression.class);
 
     private static final Map<String, Expression<Metadata>> JMS_PROPERTY_EXPRESSIONS = new HashMap<>();
 
@@ -42,15 +44,35 @@ public class JMSPropertyExpression implements Expression<Metadata> {
 
     private final Expression<Metadata> jmsPropertyExpression;
 
-    public JMSPropertyExpression(String name) {
+    public JmsPropertyExpression(String name) {
         this.name = name;
         this.jmsPropertyExpression = JMS_PROPERTY_EXPRESSIONS.get(name);
     }
 
+    static Object getValue(FieldValue value) {
+        if (value != null) {
+            switch (value.getType()) {
+                case SHORT_SHORT_INT:
+                    return ((ShortShortInt) value.getValue()).getByte();
+                case SHORT_STRING:
+                case LONG_STRING:
+                    return value.getValue().toString();
+                case LONG_INT:
+                    return ((LongInt) value.getValue()).getInt();
+                case LONG_LONG_INT:
+                    return ((LongLongInt) value.getValue()).getLong();
+                default:
+                    return null;
+            }
+        }
+        return null;
+    }
+
     static {
         JMS_PROPERTY_EXPRESSIONS.put("JMSDestination", metadata -> null);
-        JMS_PROPERTY_EXPRESSIONS.put("JMSCorrelationID", metadata -> metadata.getCorrelationId().toString());
-        JMS_PROPERTY_EXPRESSIONS.put("JMSMessageID", metadata -> metadata.getMessageId().toString());
+        JMS_PROPERTY_EXPRESSIONS.put("JMSCorrelationID",
+                metadata -> getValue(metadata.getProperty(Metadata.CORRELATION_ID)));
+        JMS_PROPERTY_EXPRESSIONS.put("JMSMessageID", metadata -> getValue(metadata.getProperty(Metadata.MESSAGE_ID)));
     }
 
     @Override

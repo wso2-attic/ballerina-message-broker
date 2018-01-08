@@ -19,13 +19,12 @@
 
 package org.wso2.broker.core;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.broker.core.store.dao.NoOpBindingDao;
 
 /**
  * Tests the functionality for {@link #exchangeRegistry}.
@@ -34,13 +33,11 @@ public class ExchangeRegistryTest {
 
     private static final String NON_EXISTING_EXCHANGE = "non-existing-exchange";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExchangeRegistryTest.class);
-
-    private ExchangeRegistry exchangeRegistry = new ExchangeRegistry();
+    private ExchangeRegistry exchangeRegistry;
 
     @BeforeMethod
     public void beforeTestSetup() {
-        exchangeRegistry = new ExchangeRegistry();
+        exchangeRegistry = new ExchangeRegistry(new NoOpExchangeDaoTestUtil(), new NoOpBindingDao());
     }
 
     @Test(dataProvider = "exchangeNames", description = "test frequently used exchanges types are defined")
@@ -96,7 +93,7 @@ public class ExchangeRegistryTest {
         // This should not throw an exception.
         exchangeRegistry.declareExchange(NON_EXISTING_EXCHANGE, Exchange.Type.DIRECT, false, false);
         
-        exchangeRegistry.deleteExchange(NON_EXISTING_EXCHANGE, Exchange.Type.DIRECT, true);
+        exchangeRegistry.deleteExchange(NON_EXISTING_EXCHANGE, true);
         
         Exchange deletedExchange = exchangeRegistry.getExchange(NON_EXISTING_EXCHANGE);
         
@@ -108,7 +105,7 @@ public class ExchangeRegistryTest {
                                                                             expectedExceptions = BrokerException.class)
     public void testDeleteBuiltInExchanges(String exchangeName) throws BrokerException {
 
-        exchangeRegistry.deleteExchange(NON_EXISTING_EXCHANGE, Exchange.Type.DIRECT, true);
+        exchangeRegistry.deleteExchange(exchangeName,  true);
         Assert.fail("built in exchange type - " + exchangeName + " shouldn't be allowed to delete");
 
     }
@@ -122,5 +119,6 @@ public class ExchangeRegistryTest {
     public Object[][] exchanges() {
         return new Object[][] { { "amq.direct" }, { "<<default>>" } };
     }
+
 
 }

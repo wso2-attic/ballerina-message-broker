@@ -23,18 +23,20 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.data.types.FieldTable;
-import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.broker.core.store.dao.BindingDao;
 import org.wso2.broker.core.store.dao.DaoFactory;
+import org.wso2.broker.core.store.dao.ExchangeDao;
 import org.wso2.broker.core.store.dao.MessageDao;
 import org.wso2.broker.core.store.dao.QueueDao;
+import org.wso2.broker.core.store.dao.SharedMessageStore;
 import org.wso2.broker.core.task.TaskExecutorService;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import javax.sql.DataSource;
 
 /**
  * Broker's messaging core which handles message publishing, create and delete queue operations.
@@ -53,41 +55,44 @@ final class MessagingEngine {
      */
     private static final int WORKER_COUNT = 5;
 
-    private final Map<String, QueueHandler> queueRegistry;
+    private final QueueRegistry queueRegistry;
 
     private final TaskExecutorService<MessageDeliveryTask> deliveryTaskService;
 
     private final ExchangeRegistry exchangeRegistry;
 
-    private final MessageDao messageDao;
-    
-    private final QueueDao queueDao;
-
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private final SharedMessageStore sharedMessageStore;
 
     /**
      * In memory message id.
      */
-    private final AtomicLong messageIdGenerator;
+    private final MessageIdGenerator messageIdGenerator;
 
-    MessagingEngine(BrokerConfiguration brokerConfiguration) {
-        queueRegistry = new HashMap<>();
-        exchangeRegistry = new ExchangeRegistry();
-        DaoFactory daoFactory = new DaoFactory(brokerConfiguration.getDatasource());
-        messageDao = daoFactory.createMesageDao();
-        queueDao = daoFactory.createQueueDao();
-        
+    MessagingEngine(DataSource dataSource) throws BrokerException {
+        DaoFactory daoFactory = new DaoFactory(dataSource);
+        QueueDao queueDao = daoFactory.createQueueDao();
+        ExchangeDao exchangeDao = daoFactory.createExchangeDao();
+        BindingDao bindingDao = daoFactory.createBindingDao();
+        MessageDao messageDao = daoFactory.createMessageDao();
+        exchangeRegistry = new ExchangeRegistry(exchangeDao, bindingDao);
+        // TODO: get the buffer sizes from configs
+        sharedMessageStore = new SharedMessageStore(messageDao, 32768, 1024);
+        queueRegistry = new QueueRegistry(queueDao, sharedMessageStore);
+        exchangeRegistry.retrieveFromStore(queueRegistry);
+
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("MessageDeliveryTaskThreadPool-%d").build();
         deliveryTaskService = new TaskExecutorService<>(WORKER_COUNT, IDLE_TASK_DELAY_MILLIS, threadFactory);
-        messageIdGenerator = new AtomicLong(0);
+        messageIdGenerator = new MessageIdGenerator();
     }
 
     void bind(String queueName, String exchangeName, String routingKey, FieldTable arguments) throws BrokerException {
         lock.writeLock().lock();
         try {
             Exchange exchange = exchangeRegistry.getExchange(exchangeName);
-            QueueHandler queueHandler = queueRegistry.get(queueName);
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
             if (exchange == null) {
                 throw new BrokerException("Unknown exchange name: " + exchangeName);
             }
@@ -108,7 +113,7 @@ final class MessagingEngine {
         lock.writeLock().lock();
         try {
             Exchange exchange = exchangeRegistry.getExchange(exchangeName);
-            QueueHandler queueHandler = queueRegistry.get(queueName);
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
 
             if (exchange == null) {
                 throw new BrokerException("Unknown exchange name: " + exchangeName);
@@ -127,28 +132,11 @@ final class MessagingEngine {
     void createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete) throws BrokerException {
         lock.writeLock().lock();
         try {
-            QueueHandler queueHandler = queueRegistry.get(queueName);
-
-            if (passive && queueHandler == null) {
-                throw new BrokerException("QueueHandler [ " + queueName + " ] doesn't exists. Passive parameter " +
-                        "is set, hence not creating the queue.");
-            }
-
-            if (queueHandler == null) {
-                if (durable) {
-                    queueHandler = QueueHandler.createDurableQueue(queueName, messageDao, queueDao, autoDelete);
-                } else {
-                    queueHandler = QueueHandler.createNonDurableQueue(queueName, 1000, autoDelete);
-                }
-                queueRegistry.put(queueName, queueHandler);
-                // we need to bind every queue to the default exchange
-                ExchangeRegistry.DEFAULT_EXCHANGE.bind(queueHandler.getQueue(), queueName, FieldTable.EMPTY_TABLE);
-
-                deliveryTaskService.add(new MessageDeliveryTask(queueHandler));
-            } else if (!passive && (queueHandler.getQueue().isDurable() != durable
-                    || queueHandler.getQueue().isAutoDelete() != autoDelete)) {
-                throw new BrokerException(
-                        "Existing QueueHandler [ " + queueName + " ] does not match given parameters.");
+            boolean queueAdded = queueRegistry.addQueue(queueName, passive, durable, autoDelete);
+            if (queueAdded) {
+                QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+                // We need to bind every queue to the default exchange
+                exchangeRegistry.getDefaultExchange().bind(queueHandler.getQueue(), queueName, FieldTable.EMPTY_TABLE);
             }
         } finally {
             lock.writeLock().unlock();
@@ -168,22 +156,28 @@ final class MessagingEngine {
                     LOGGER.info("Dropping message since no queues found for routing key " + routingKey);
                     message.release();
                 } else {
-                    boolean published = false;
-                    for (Binding binding : bindingSet.getUnfilteredBindings()) {
-                        published |= pushToInMemoryQueue(message, binding);
-                    }
-
-                    for (Binding binding : bindingSet.getFilteredBindings()) {
-                        if (binding.getFilterExpression().evaluate(metadata)) {
-                            published |= pushToInMemoryQueue(message, binding);
+                    try {
+                        sharedMessageStore.add(message);
+                        Set<String> uniqueQueues = new HashSet<>();
+                        for (Binding binding : bindingSet.getUnfilteredBindings()) {
+                            uniqueQueues.add(binding.getQueue().getName());
                         }
+
+                        for (Binding binding : bindingSet.getFilteredBindings()) {
+                            if (binding.getFilterExpression().evaluate(metadata)) {
+                                uniqueQueues.add(binding.getQueue().getName());
+                            }
+                        }
+                        // Unique queues can be empty due un-matching selectors.
+                        if (publishToQueues(message, uniqueQueues)) {
+                            LOGGER.info("Dropping message since message didn't have any routes for routing key "
+                                    + metadata.getRoutingKey());
+                        }
+                    } finally {
+                        sharedMessageStore.flush(metadata.getInternalId());
+                        // Release the original message. Shallow copies are distributed
+                        message.release(); // TODO: avoid shallow copying when there is only one binding
                     }
-                    if (!published) {
-                        LOGGER.info("Dropping message since message didn't have any routes for routing key "
-                                + metadata.getRoutingKey());
-                    }
-                    // Release the original message. Shallow copies are distributed
-                    message.release(); // TODO: avoid shallow copying when there is only one binding
                 }
             } else {
                 throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
@@ -193,31 +187,29 @@ final class MessagingEngine {
         }
     }
 
-    private boolean pushToInMemoryQueue(Message message, Binding binding) {
-        Metadata metadata = message.getMetadata();
-        String queueName = binding.getQueue().getName();
-        QueueHandler queueHandler = queueRegistry.get(queueName);
-        metadata.addOwnedQueue(queueName);
-        Message copiedMessage = message.shallowCopy();
-        boolean success = queueHandler.enqueue(copiedMessage);
-        if (!success) {
-            copiedMessage.release();
+    private boolean publishToQueues(Message message, Set<String> uniqueQueues) throws BrokerException {
+        boolean published = false;
+        for (String queueName: uniqueQueues) {
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+            Message copiedMessage = message.shallowCopy();
+            boolean success = queueHandler.enqueue(copiedMessage);
+            if (!success) {
+                copiedMessage.release();
+            }
+            published |= success;
         }
-        return success;
+        return published;
     }
 
     /**
-     * 
      * @param queueName name of the queue
-     * @param messageId synonymous for message id
+     * @param message   synonymous for message id
      */
-    void acknowledge(String queueName, long messageId) {
+    void acknowledge(String queueName, Message message) throws BrokerException {
         lock.readLock().lock();
         try {
-            QueueHandler queueHandler = queueRegistry.get(queueName);
-            queueHandler.acknowledge(messageId);
-
-            messageDao.detachFromQueue(queueName, messageId);
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+            queueHandler.acknowledge(message);
         } finally {
             lock.readLock().unlock();
         }
@@ -226,23 +218,7 @@ final class MessagingEngine {
     void deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
         lock.writeLock().lock();
         try {
-            QueueHandler queueHandler = queueRegistry.get(queueName);
-            if (queueHandler == null) {
-                return;
-            }
-
-            if (ifUnused && !queueHandler.isUnused()) {
-                throw new BrokerException("Cannot delete queue. Queue [ " + queueName +
-                        " ] has active consumers and the ifUnused parameter is set.");
-            } else if (ifEmpty && !queueHandler.isEmpty()) {
-                throw new BrokerException("Cannot delete queue. Queue [ " + queueName +
-                        " ] is not empty and the ifEmpty parameter is set.");
-            } else {
-                deliveryTaskService.remove(queueName);
-                queueRegistry.remove(queueName);
-                queueHandler.closeAllConsumers();
-                queueDao.delete(queueHandler.getQueue());
-            }
+            queueRegistry.removeQueue(queueName, ifUnused, ifEmpty);
         } finally {
             lock.writeLock().unlock();
         }
@@ -251,9 +227,13 @@ final class MessagingEngine {
     void consume(Consumer consumer) throws BrokerException {
         lock.readLock().lock();
         try {
-            QueueHandler queueHandler = queueRegistry.get(consumer.getQueueName());
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(consumer.getQueueName());
             if (queueHandler != null) {
-                queueHandler.addConsumer(consumer);
+                synchronized (queueHandler) {
+                    if (queueHandler.addConsumer(consumer) && queueHandler.consumerCount() == 1) {
+                        deliveryTaskService.add(new MessageDeliveryTask(queueHandler));
+                    }
+                }
             } else {
                 throw new BrokerException("Cannot add consumer. Queue [ " + consumer.getQueueName() + " ] " +
                         "not found. Create the queue before attempting to consume.");
@@ -281,10 +261,10 @@ final class MessagingEngine {
         }
     }
 
-    void deleteExchange(String exchangeName, String type, boolean ifUnused) throws BrokerException {
+    void deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException {
         lock.writeLock().lock();
         try {
-            exchangeRegistry.deleteExchange(exchangeName, Exchange.Type.from(type), ifUnused);
+            exchangeRegistry.deleteExchange(exchangeName, ifUnused);
         } finally {
             lock.writeLock().unlock();
         }
@@ -293,9 +273,13 @@ final class MessagingEngine {
     void closeConsumer(Consumer consumer) {
         lock.readLock().lock();
         try {
-            QueueHandler queueHandler = queueRegistry.get(consumer.getQueueName());
-            if (queueHandler != null)  {
-                queueHandler.removeConsumer(consumer);
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(consumer.getQueueName());
+            if (queueHandler != null) {
+                synchronized (queueHandler) {
+                    if (queueHandler.removeConsumer(consumer) && queueHandler.consumerCount() == 0) {
+                        deliveryTaskService.remove(queueHandler.getQueue().getName());
+                    }
+                }
             }
         } finally {
             lock.readLock().unlock();
@@ -303,13 +287,13 @@ final class MessagingEngine {
     }
 
     long getNextMessageId() {
-        return messageIdGenerator.incrementAndGet();
+        return messageIdGenerator.getNextId();
     }
 
-    public void requeue(String queueName, Message message) {
+    public void requeue(String queueName, Message message) throws BrokerException {
         lock.readLock().lock();
         try {
-            QueueHandler queueHandler = queueRegistry.get(queueName);
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
             queueHandler.requeue(message);
         } finally {
             lock.readLock().unlock();

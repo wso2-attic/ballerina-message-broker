@@ -22,8 +22,7 @@ package org.wso2.broker.core;
 import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.core.store.dao.MessageDao;
-import org.wso2.broker.core.store.dao.QueueDao;
+import org.wso2.broker.core.store.dao.SharedMessageStore;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -37,19 +36,22 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Represents the queue of the broker. Contains a bounded queue to store messages. Subscriptions for the queue
  * are maintained as an in-memory set.
  */
-final class QueueHandler {
+public final class QueueHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(QueueHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueueHandler.class);
 
     private Queue queue;
-      
+
     private final CyclicConsumerIterator consumerIterator;
+
+    private final Queue redeliveryQueue;
 
     private final Set<Consumer> consumers;
 
     private QueueHandler(Queue queue) {
-       
         this.queue = queue;
+        // TODO: take message count from queue configuration
+        this.redeliveryQueue = new MemQueueImpl(queue.getName(), 1000, false);
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
     }
@@ -59,10 +61,9 @@ final class QueueHandler {
         return new QueueHandler(queue);
     }
 
-    public static QueueHandler createDurableQueue(String queueName, MessageDao messageDao,
-                                                  QueueDao queueDao, boolean autoDelete) {
-        Queue queue = new DbBackedQueueImpl(queueName, messageDao, autoDelete);
-        queueDao.persist(queue);
+    public static QueueHandler createDurableQueue(String queueName, boolean autoDelete,
+                                                  SharedMessageStore sharedMessageStore) throws BrokerException {
+        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, sharedMessageStore);
         return new QueueHandler(queue);
     }
 
@@ -82,20 +83,22 @@ final class QueueHandler {
     /**
      * Add a new consumer to the queue.
      *
-     * @param consumer {@link Consumer} implementation
+     * @param consumer {@link Consumer} implementation.
+     * @return true if {@link Consumer} was successfully added.
      */
-    void addConsumer(Consumer consumer) {
-        consumers.add(consumer);
+    boolean addConsumer(Consumer consumer) {
+        return consumers.add(consumer);
     }
 
     /**
      * Remove consumer from the queue.
      * NOTE: This method is synchronized with getting next subscriber for the queue to avoid concurrent issues
      *
-     * @param consumer {@link Consumer} to be removed
+     * @param consumer {@link Consumer} to be removed.
+     * @return True if the {@link Consumer} is removed.
      */
-    void removeConsumer(Consumer consumer) {
-        consumers.remove(consumer);
+    boolean removeConsumer(Consumer consumer) {
+        return consumers.remove(consumer);
     }
 
     /**
@@ -106,7 +109,7 @@ final class QueueHandler {
      * @param message {@link Message}
      * @return True if successfully enqueued, false otherwise
      */
-    boolean enqueue(Message message) {
+    boolean enqueue(Message message) throws BrokerException {
         return queue.enqueue(message);
     }
 
@@ -116,17 +119,21 @@ final class QueueHandler {
      * @return Message
      */
     Message dequeue() {
-       
-        Message message = queue.dequeue();
+        Message message = redeliveryQueue.dequeue();
+        if (message == null) {
+            message = queue.dequeue();
+        }
+
         return message;
     }
 
-    void acknowledge(long messageId) {
-        // TODO handle nacks
+    void acknowledge(Message message) throws BrokerException {
+        queue.detach(message);
     }
 
-    public void requeue(Message message) {
-        queue.enqueue(message);
+    public void requeue(Message message) throws BrokerException {
+        message.setRedeliver();
+        redeliveryQueue.enqueue(message);
     }
 
     /**
@@ -175,12 +182,16 @@ final class QueueHandler {
             try {
                 consumer.close();
             } catch (BrokerException e) {
-                log.error("Error occurred while closing the consumer [ " + consumer + " ] " +
+                LOGGER.error("Error occurred while closing the consumer [ " + consumer + " ] " +
                         "for queue [ " + queue.toString() + " ]", e);
             } finally {
                 iterator.remove();
             }
         }
+    }
+
+    public int consumerCount() {
+        return consumers.size();
     }
 
     /**
@@ -218,22 +229,29 @@ final class QueueHandler {
             return queue.poll();
         }
 
+        @Override
+        public void detach(Message message) {
+            // nothing to do
+        }
+
     }
 
     /**
      * Database backed queue implementation.
-     * // TODO: need to write the db related logic
      */
     private static class DbBackedQueueImpl extends Queue {
 
         private final java.util.Queue<Message> memQueue;
 
-        private final MessageDao messageDao;
+        private final SharedMessageStore sharedMessageStore;
 
-        DbBackedQueueImpl(String queueName, MessageDao messageDao, boolean autoDelete) {
+        DbBackedQueueImpl(String queueName, boolean autoDelete,
+                          SharedMessageStore sharedMessageStore) throws BrokerException {
             super(queueName, true, autoDelete);
-            this.messageDao = messageDao;
+            this.sharedMessageStore = sharedMessageStore;
             this.memQueue = new LinkedBlockingQueue<>();
+            Collection<Message> messages = sharedMessageStore.readStoredMessages(queueName);
+            memQueue.addAll(messages);
         }
 
         @Override
@@ -247,14 +265,21 @@ final class QueueHandler {
         }
 
         @Override
-        public boolean enqueue(Message message) {
-            messageDao.persist(message);
+        public boolean enqueue(Message message) throws BrokerException {
+            if (message.getMetadata().getByteProperty(Metadata.DELIVERY_MODE) == Metadata.PERSISTENT_MESSAGE) {
+                sharedMessageStore.attach(getName(), message.getMetadata().getInternalId());
+            }
             return memQueue.offer(message);
         }
 
         @Override
         public Message dequeue() {
             return memQueue.poll();
+        }
+
+        @Override
+        public void detach(Message message) throws BrokerException {
+            sharedMessageStore.detach(getName(), message);
         }
     }
 }

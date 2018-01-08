@@ -53,7 +53,6 @@ public class Message {
     }
 
     public void release() {
-        metadata.release();
         for (ContentChunk contentChunk : contentChunks) {
             contentChunk.release();
         }
@@ -77,5 +76,10 @@ public class Message {
      */
     public boolean isRedelivered() {
         return redelivered;
+    }
+
+    @Override
+    public String toString() {
+        return metadata.toString();
     }
 }

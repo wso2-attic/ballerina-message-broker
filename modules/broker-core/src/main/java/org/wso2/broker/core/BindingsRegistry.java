@@ -20,9 +20,10 @@
 package org.wso2.broker.core;
 
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.store.dao.BindingDao;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manages the bindings for a given {@link Exchange}.
@@ -33,17 +34,30 @@ final class BindingsRegistry {
 
     private final Map<String, BindingSet> routingKeyToBindingMap;
 
-    BindingsRegistry() {
-        this.routingKeyToBindingMap = new ConcurrentHashMap<>();
+    private final Exchange exchange;
+
+    private final BindingDao bindingDao;
+
+    public BindingsRegistry(Exchange exchange, BindingDao bindingDao) {
+        this.routingKeyToBindingMap = new HashMap<>();
+        this.exchange = exchange;
+        this.bindingDao = bindingDao;
     }
 
     void bind(Queue queue, String bindingKey, FieldTable arguments) throws BrokerException {
         BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
-        bindingSet.add(new Binding(queue, bindingKey, arguments));
+        Binding binding = new Binding(queue, bindingKey, arguments);
+        boolean success = bindingSet.add(binding);
+        if (success && queue.isDurable()) {
+            bindingDao.persist(exchange.getName(), binding);
+        }
     }
 
-    void unbind(Queue queue, String routingKey) {
+    void unbind(Queue queue, String routingKey) throws BrokerException {
         BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
+        if (queue.isDurable()) {
+            bindingDao.delete(queue.getName(), routingKey, exchange.getName());
+        }
         bindingSet.remove(queue);
 
         if (bindingSet.isEmpty()) {
@@ -63,4 +77,13 @@ final class BindingsRegistry {
         return routingKeyToBindingMap.isEmpty();
     }
 
+    public void retrieveAllBindingsForExchange(QueueRegistry queueRegistry) throws BrokerException {
+        bindingDao.retrieveBindingsForExchange(exchange.getName(), (queueName, bindingKey, filterTable) -> {
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+
+            Binding binding = new Binding(queueHandler.getQueue(), bindingKey, filterTable);
+            BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
+            bindingSet.add(binding);
+        });
+    }
 }

@@ -21,6 +21,7 @@ package org.wso2.broker.common.data.types;
 
 import io.netty.buffer.ByteBuf;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +31,9 @@ import java.util.Map;
  * field-table = long-uint *field-value-pair.
  */
 public class FieldTable implements EncodableData {
-    public static final FieldTable EMPTY_TABLE = new FieldTable(new HashMap<>());
+
+    public static final FieldTable EMPTY_TABLE = new FieldTable(Collections.unmodifiableMap(new HashMap<>()));
+
     private final Map<ShortString, FieldValue> properties;
 
     /**
@@ -83,6 +86,10 @@ public class FieldTable implements EncodableData {
             fieldEntry.getKey().write(buf);
             fieldEntry.getValue().write(buf);
         }
+    }
+
+    public void add(ShortString propertyName, FieldValue value) {
+        properties.put(propertyName, value);
     }
 
     @Override

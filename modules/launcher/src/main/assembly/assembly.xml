@@ -49,6 +49,11 @@
             </includes>
             <fileMode>644</fileMode>
         </fileSet>
+        <fileSet>
+            <directory>target/database/</directory>
+            <outputDirectory>database</outputDirectory>
+            <fileMode>644</fileMode>
+        </fileSet>
     </fileSets>
 
     <!-- package dependencies -->

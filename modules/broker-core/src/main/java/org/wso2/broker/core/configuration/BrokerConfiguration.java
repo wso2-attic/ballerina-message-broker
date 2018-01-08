@@ -38,20 +38,20 @@ public class BrokerConfiguration {
      */
     public static final String SYSTEM_PARAM_BROKER_CONFIG_FILE = "broker.config";
     
-    DatasourceConfiguration datasource;
+    private DataSourceConfiguration dataSource;
     
-    public DatasourceConfiguration getDatasource() {
-        return datasource;
+    public DataSourceConfiguration getDataSource() {
+        return dataSource;
     }
 
-    public void setDatasource(DatasourceConfiguration datasource) {
-        this.datasource = datasource;
+    public void setDataSource(DataSourceConfiguration dataSource) {
+        this.dataSource = dataSource;
     }
 
     /**
-     * Represents a datasource configuration for broker ( e.g. database)
+     * Represents a dataSource configuration for broker ( e.g. database)
      */
-    public static class DatasourceConfiguration {
+    public static class DataSourceConfiguration {
 
         private String url;
 
@@ -95,7 +95,7 @@ public class BrokerConfiguration {
 
         @Override
         public String toString() {
-            return "DatasourceConfigurations [url=" + url + ", databaseDriver=" + databaseDriver + ", user=" + user
+            return "DataSourceConfigurations [url=" + url + ", databaseDriver=" + databaseDriver + ", user=" + user
                     + ", password=" + password + "]";
         }
 

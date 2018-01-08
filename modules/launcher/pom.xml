@@ -74,6 +74,10 @@
             <groupId>org.wso2.messaging</groupId>
             <artifactId>broker-rest-runner</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -90,6 +94,43 @@
                         <phase>package</phase>
                         <goals>
                             <goal>really-executable-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <target>
+                                <!-- Drop database if it exists -->
+                                <delete dir="${db.directory}" quiet="true" />
+                                <!-- Create database schema -->
+                                <sql userid="root" password="root" url="${db.url};create=true"
+                                     driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
+                                    <classpath refid="maven.compile.classpath" />
+                                    <!-- Override default location (inside the database directory) -->
+                                    <connectionProperty name="derby.storage.tempDirectory"
+                                                        value="${java.io.tmpdir}" />
+                                    <!-- Do not create derby.log -->
+                                    <connectionProperty name="derby.stream.error.file"
+                                                        value="${java.io.tmpdir}/derby.log" />
+                                    <!-- Create database schema -->
+                                    <transaction src="${sql.directory}/derby-mb.sql" />
+                                </sql>
+                                <!-- Shutdown database -->
+                                <sql classpath="maven.compile.classpath" userid="" password=""
+                                     url="${db.url};shutdown=true" driver="${db.driver}" onerror="continue"
+                                     failonconnectionerror="false">
+                                    none
+                                </sql>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -150,4 +191,11 @@
             </plugin>
         </plugins>
     </build>
+    <properties>
+        <db.driver>org.apache.derby.jdbc.EmbeddedDriver</db.driver>
+        <db.delimiter>;</db.delimiter>
+        <db.directory>${project.build.directory}/database/</db.directory>
+        <db.url>jdbc:derby:${db.directory}</db.url>
+        <sql.directory>../broker-core/src/main/resources/dbscripts</sql.directory>
+    </properties>
 </project>

@@ -21,25 +21,22 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.InMemoryMessageAggregator;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.common.data.types.EncodableData;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.common.data.types.FieldValue;
+import org.wso2.broker.common.data.types.LongInt;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Metadata;
+
+import java.util.HashMap;
 
 /**
  * AMQP header frame
  */
 public class HeaderFrame extends GeneralFrame {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(HeaderFrame.class);
-
-    private static final short BYTE_DEFAULT = -1;
-    private static final long LONG_DEFAULT = -1L;
 
     private static final int CONTENT_TYPE_MASK = 1 << 15;
     private static final int ENCODING_MASK = 1 << 14;
@@ -56,84 +53,63 @@ public class HeaderFrame extends GeneralFrame {
     private static final int APPLICATION_ID_MASK = 1 << 3;
     private static final int LAST_BIT_MASK = 1;
 
+    private static final ShortString REPLY_TO = ShortString.parseString("replyTo");
+    private static final ShortString TIMESTAMP = ShortString.parseString("timestamp");
+    private static final ShortString TYPE = ShortString.parseString("type");
+    private static final ShortString USER_ID = ShortString.parseString("userId");
+    private static final ShortString APPLICATION_ID = ShortString.parseString("applicationId");
+    private static final ShortString PROPERTY_FLAGS = ShortString.parseString("propertyFlags");
+
     private final long bodySize;
     private final int classId;
 
-    /*
-     * Header properties
-     */
-
-    private ShortString contentType;
-    private ShortString contentEncoding;
+    // Header properties
     private FieldTable headers;
-    private short deliveryMode = BYTE_DEFAULT;
-    private short priority = BYTE_DEFAULT;
-    private ShortString correlationId;
-    private ShortString replyTo;
-    private ShortString expiration;
-    private ShortString messageId;
-    private long timestamp = LONG_DEFAULT;
-    private ShortString type;
-    private ShortString userId;
-    private ShortString appId;
-    private int propertyFlags = 0;
-    private ByteBuf rawMetadata;
+    private FieldTable properties;
 
     public HeaderFrame(int channel, int classId, long bodySize) {
         super((byte) 2, channel);
         this.classId = classId;
         this.bodySize = bodySize;
-        this.rawMetadata = null;
+        properties = new FieldTable(new HashMap<>());
     }
 
     @Override
     public long getPayloadSize() {
-        if (rawMetadata != null) {
-            return rawMetadata.capacity();
-        } else {
-            long propertyListSize = 0;
+        long propertyListSize = 0;
 
-            propertyListSize += getPropertySize(contentType);
-            propertyListSize += getPropertySize(contentEncoding);
-            propertyListSize += getPropertySize(headers);
-            propertyListSize += getPropertySize(deliveryMode);
-            propertyListSize += getPropertySize(priority);
-            propertyListSize += getPropertySize(correlationId);
-            propertyListSize += getPropertySize(replyTo);
-            propertyListSize += getPropertySize(expiration);
-            propertyListSize += getPropertySize(messageId);
-            propertyListSize += getPropertySize(timestamp);
-            propertyListSize += getPropertySize(type);
-            propertyListSize += getPropertySize(userId);
-            propertyListSize += getPropertySize(appId);
+        propertyListSize += getPropertySize(properties.getValue(Metadata.CONTENT_TYPE));
+        propertyListSize += getPropertySize(properties.getValue(Metadata.CONTENT_ENCODING));
+        propertyListSize += getPropertySize(headers);
+        propertyListSize += getPropertySize(properties.getValue(Metadata.DELIVERY_MODE));
+        propertyListSize += getPropertySize(properties.getValue(Metadata.PRIORITY));
+        propertyListSize += getPropertySize(properties.getValue(Metadata.CORRELATION_ID));
+        propertyListSize += getPropertySize(properties.getValue(REPLY_TO));
+        propertyListSize += getPropertySize(properties.getValue(Metadata.EXPIRATION));
+        propertyListSize += getPropertySize(properties.getValue(Metadata.MESSAGE_ID));
+        propertyListSize += getPropertySize(properties.getValue(TIMESTAMP));
+        propertyListSize += getPropertySize(properties.getValue(TYPE));
+        propertyListSize += getPropertySize(properties.getValue(USER_ID));
+        propertyListSize += getPropertySize(properties.getValue(APPLICATION_ID));
 
-            return 2L     // classID
-                    + 2L // weight
-                    + 8L // body size
-                    + 2L // property flag
-                    + propertyListSize;
-        }
+        return 2L     // classID
+                + 2L // weight
+                + 8L // body size
+                + 2L // property flag
+                + propertyListSize;
     }
 
-    private long getPropertySize(long property) {
-        if (property != LONG_DEFAULT) {
-            return 8L;
+    private long getPropertySize(FieldValue fieldValue) {
+        if (fieldValue != null) {
+            return fieldValue.getValueSize();
         } else {
             return 0L;
         }
     }
 
-    private long getPropertySize(short property) {
-        if (property != BYTE_DEFAULT) {
-            return 1L;
-        } else {
-            return 0L;
-        }
-    }
-
-    private long getPropertySize(EncodableData property) {
-        if (property != null) {
-            return property.getSize();
+    private long getPropertySize(FieldTable fieldTable) {
+        if (fieldTable != null) {
+            return fieldTable.getSize();
         } else {
             return 0L;
         }
@@ -141,70 +117,108 @@ public class HeaderFrame extends GeneralFrame {
 
     @Override
     public void writePayload(ByteBuf buf) {
-        if (rawMetadata == null) {
-            buf.writeShort(classId);
-            buf.writeShort(0); // Write 0 for weight
-            buf.writeLong(bodySize);
-            buf.writeShort(propertyFlags);
-            writeProperty(buf, contentType);
-            writeProperty(buf, contentEncoding);
-            writeProperty(buf, headers);
-            writeProperty(buf, deliveryMode);
-            writeProperty(buf, priority);
-            writeProperty(buf, correlationId);
-            writeProperty(buf, replyTo);
-            writeProperty(buf, expiration);
-            writeProperty(buf, messageId);
-            writeProperty(buf, timestamp);
-            writeProperty(buf, type);
-            writeProperty(buf, userId);
-            writeProperty(buf, appId);
+        buf.writeShort(classId);
+        buf.writeShort(0); // Write 0 for weight
+        buf.writeLong(bodySize);
+
+        int propertyFlags = getPropertyFlagsValue(properties.getValue(PROPERTY_FLAGS));
+
+        buf.writeShort(propertyFlags);
+        writeProperty(buf, properties.getValue(Metadata.CONTENT_TYPE));
+        writeProperty(buf, properties.getValue(Metadata.CONTENT_ENCODING));
+        writeFieldTable(buf, headers);
+        writeProperty(buf, properties.getValue(Metadata.DELIVERY_MODE));
+        writeProperty(buf, properties.getValue(Metadata.PRIORITY));
+        writeProperty(buf, properties.getValue(Metadata.CORRELATION_ID));
+        writeProperty(buf, properties.getValue(REPLY_TO));
+        writeProperty(buf, properties.getValue(Metadata.EXPIRATION));
+        writeProperty(buf, properties.getValue(Metadata.MESSAGE_ID));
+        writeProperty(buf, properties.getValue(TIMESTAMP));
+        writeProperty(buf, properties.getValue(TYPE));
+        writeProperty(buf, properties.getValue(USER_ID));
+        writeProperty(buf, properties.getValue(APPLICATION_ID));
+    }
+
+    private int getPropertyFlagsValue(FieldValue value) {
+        if (value == null) {
+            return updatePropertyFlags();
         } else {
-            try {
-                buf.writeBytes(rawMetadata);
-            } finally {
-                rawMetadata.release();
-            }
+            return ((LongInt) value.getValue()).getInt();
         }
+    }
+
+    private int updatePropertyFlags() {
+
+        int flags = 0;
+        if (properties.getValue(Metadata.CONTENT_TYPE) != null) {
+            flags |= CONTENT_TYPE_MASK;
+        }
+        if (properties.getValue(Metadata.CONTENT_ENCODING) != null) {
+            flags |= ENCODING_MASK;
+        }
+        if (headers != null) {
+            flags |= HEADERS_MASK;
+        }
+        if (properties.getValue(Metadata.DELIVERY_MODE) != null) {
+            flags |= DELIVERY_MODE_MASK;
+        }
+        if (properties.getValue(Metadata.PRIORITY) != null) {
+            flags |= PRIORITY_MASK;
+        }
+        if (properties.getValue(Metadata.CORRELATION_ID) != null) {
+            flags |= CORRELATION_ID_MASK;
+        }
+        if (properties.getValue(REPLY_TO) != null) {
+            flags |= REPLY_TO_MASK;
+        }
+        if (properties.getValue(Metadata.EXPIRATION) != null) {
+            flags |= EXPIRATION_MASK;
+        }
+        if (properties.getValue(Metadata.MESSAGE_ID) != null) {
+            flags |= MESSAGE_ID_MASK;
+        }
+        if (properties.getValue(TIMESTAMP) != null) {
+            flags |= TIMESTAMP_MASK;
+        }
+        if (properties.getValue(TYPE) != null) {
+            flags |= TYPE_MASK;
+        }
+        if (properties.getValue(USER_ID) != null) {
+            flags |= USER_ID_MASK;
+        }
+        if (properties.getValue(APPLICATION_ID) != null) {
+            flags |= APPLICATION_ID_MASK;
+        }
+        return flags;
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
+
         InMemoryMessageAggregator inMemoryMessageAggregator = channel.getMessageAggregator();
-        inMemoryMessageAggregator.headerFrameReceived(rawMetadata, bodySize, (byteBuf, metadata) -> {
-            try {
-                parse(byteBuf, metadata);
-                return true;
-            } catch (Exception e) {
-                LOGGER.error("Error occurred while parsing metadata headers", e);
-            }
-            return false;
-        });
+        inMemoryMessageAggregator.headerFrameReceived(headers, properties, bodySize);
     }
 
-    private void writeProperty(ByteBuf buf, long property) {
-        if (property != LONG_DEFAULT) {
-            buf.writeLong(property);
+    private void writeProperty(ByteBuf buf, FieldValue fieldValue) {
+        EncodableData data;
+        if (fieldValue != null && (data = fieldValue.getValue()) != null) {
+            data.write(buf);
         }
     }
 
-    private void writeProperty(ByteBuf buf, EncodableData property) {
-        if (property != null) {
-            property.write(buf);
+    private void writeFieldTable(ByteBuf buf, FieldTable fieldTable) {
+        if (fieldTable != null) {
+            fieldTable.write(buf);
         }
     }
 
-    private void writeProperty(ByteBuf buf, int property) {
-        if (property != BYTE_DEFAULT) {
-            buf.writeByte(property);
-        }
-    }
-
-    public Metadata parse(ByteBuf buf, Metadata metadata) throws Exception {
-        buf.markReaderIndex();
-        // skip class id (2), weight (2) and body size (8) bytes
-        buf.skipBytes(12);
+    public static HeaderFrame parse(ByteBuf buf, int channel) throws Exception {
+        int classId = buf.readUnsignedShort();
+        // ignore weight
+        buf.skipBytes(2);
+        long bodySize = buf.readLong();
+        HeaderFrame headerFrame = new HeaderFrame(channel, classId, bodySize);
 
         int propertyFlags = buf.readUnsignedShort();
 
@@ -217,128 +231,114 @@ public class HeaderFrame extends GeneralFrame {
 
         // read known properties
         if ((propertyFlags & CONTENT_TYPE_MASK) != 0) {
-            metadata.setContentType(ShortString.parse(buf));
+            headerFrame.setContentType(ShortString.parse(buf));
         }
-        if ((propertyFlags & ENCODING_MASK) != 0) {
-            metadata.setContentEncoding(ShortString.parse(buf));
-        }
-        if ((propertyFlags & HEADERS_MASK) != 0) {
-            metadata.setHeaders(FieldTable.parse(buf));
-        }
-        if ((propertyFlags & DELIVERY_MODE_MASK) != 0) {
-            metadata.setDeliveryMode(buf.readUnsignedByte());
-        }
-        if ((propertyFlags & PRIORITY_MASK) != 0) {
-            metadata.setPriority(buf.readUnsignedByte());
-        }
-        if ((propertyFlags & CORRELATION_ID_MASK) != 0) {
-            metadata.setCorrelationId(ShortString.parse(buf));
-        }
-        if ((propertyFlags & REPLY_TO_MASK) != 0) {
-            metadata.setReplyTo(ShortString.parse(buf));
-        }
-        if ((propertyFlags & EXPIRATION_MASK) != 0) {
-            metadata.setExpiration(ShortString.parse(buf));
-        }
-        if ((propertyFlags & MESSAGE_ID_MASK) != 0) {
-            metadata.setMessageId(ShortString.parse(buf));
-        }
-        if ((propertyFlags & TIMESTAMP_MASK) != 0) {
-            metadata.setTimestamp(buf.readLong());
-        }
-        if ((propertyFlags & TYPE_MASK) != 0) {
-            metadata.setType(ShortString.parse(buf));
-        }
-        if ((propertyFlags & USER_ID_MASK) != 0) {
-            metadata.setUserId(ShortString.parse(buf));
-        }
-        if ((propertyFlags & APPLICATION_ID_MASK) != 0) {
-            metadata.setAppId(ShortString.parse(buf));
-        }
-        buf.resetReaderIndex();
-        return metadata;
-    }
 
-    public static HeaderFrame lazyParse(ByteBuf buf, int channelId, long payloadSize) {
-        buf.markReaderIndex();
-        int classId = buf.readUnsignedShort();
-        // ignore weight
-        buf.skipBytes(2);
-        long bodySize = buf.readLong();
-        HeaderFrame headerFrame = new HeaderFrame(channelId, classId, bodySize);
-        buf.resetReaderIndex();
-        ByteBuf metadata = buf.retainedSlice(buf.readerIndex(), (int) payloadSize);
-        buf.skipBytes((int) payloadSize);
-        headerFrame.setRawMetadata(metadata);
+        if ((propertyFlags & ENCODING_MASK) != 0) {
+            headerFrame.setContentEncoding(ShortString.parse(buf));
+        }
+
+        if ((propertyFlags & HEADERS_MASK) != 0) {
+            headerFrame.setHeaders(FieldTable.parse(buf));
+        }
+
+        if ((propertyFlags & DELIVERY_MODE_MASK) != 0) {
+            headerFrame.setDeliveryMode(buf.readUnsignedByte());
+        }
+
+        if ((propertyFlags & PRIORITY_MASK) != 0) {
+            headerFrame.setPriority(buf.readUnsignedByte());
+        }
+
+        if ((propertyFlags & CORRELATION_ID_MASK) != 0) {
+            headerFrame.setCorrelationId(ShortString.parse(buf));
+        }
+
+        if ((propertyFlags & REPLY_TO_MASK) != 0) {
+            headerFrame.setReplyTo(ShortString.parse(buf));
+        }
+
+        if ((propertyFlags & EXPIRATION_MASK) != 0) {
+            headerFrame.setExpiration(ShortString.parse(buf));
+        }
+
+        if ((propertyFlags & MESSAGE_ID_MASK) != 0) {
+            headerFrame.setMessageId(ShortString.parse(buf));
+        }
+
+        if ((propertyFlags & TIMESTAMP_MASK) != 0) {
+            headerFrame.setTimestamp(buf.readLong());
+        }
+
+        if ((propertyFlags & TYPE_MASK) != 0) {
+            headerFrame.setType(ShortString.parse(buf));
+        }
+
+        if ((propertyFlags & USER_ID_MASK) != 0) {
+            headerFrame.setUserId(ShortString.parse(buf));
+        }
+
+        if ((propertyFlags & APPLICATION_ID_MASK) != 0) {
+            headerFrame.setAppId(ShortString.parse(buf));
+        }
+
+        headerFrame.properties.add(PROPERTY_FLAGS, FieldValue.parseLongInt(propertyFlags));
         return headerFrame;
     }
 
     public void setContentType(ShortString contentType) {
-        propertyFlags |= CONTENT_TYPE_MASK;
-        this.contentType = contentType;
+        properties.add(Metadata.CONTENT_TYPE, FieldValue.parseShortString(contentType));
     }
 
     public void setContentEncoding(ShortString contentEncoding) {
-        propertyFlags |= ENCODING_MASK;
-        this.contentEncoding = contentEncoding;
+        properties.add(Metadata.CONTENT_ENCODING, FieldValue.parseShortString(contentEncoding));
     }
 
     public void setHeaders(FieldTable headers) {
-        propertyFlags |= HEADERS_MASK;
         this.headers = headers;
     }
 
     public void setDeliveryMode(short deliveryMode) {
-        propertyFlags |= DELIVERY_MODE_MASK;
-        this.deliveryMode = deliveryMode;
+        properties.add(Metadata.DELIVERY_MODE, FieldValue.parseShortShortInt((byte) deliveryMode));
     }
 
     public void setPriority(short priority) {
-        propertyFlags |= PRIORITY_MASK;
-        this.priority = priority;
+        properties.add(Metadata.PRIORITY, FieldValue.parseShortShortInt((byte) priority));
     }
 
     public void setCorrelationId(ShortString correlationId) {
-        propertyFlags |= CORRELATION_ID_MASK;
-        this.correlationId = correlationId;
+        properties.add(Metadata.CORRELATION_ID, FieldValue.parseShortString(correlationId));
     }
 
     public void setReplyTo(ShortString replyTo) {
-        propertyFlags |= REPLY_TO_MASK;
-        this.replyTo = replyTo;
+        properties.add(REPLY_TO, FieldValue.parseShortString(replyTo));
     }
 
     public void setExpiration(ShortString expiration) {
-        propertyFlags |= EXPIRATION_MASK;
-        this.expiration = expiration;
+        properties.add(Metadata.EXPIRATION, FieldValue.parseShortString(expiration));
     }
 
     public void setMessageId(ShortString messageId) {
-        propertyFlags |= MESSAGE_ID_MASK;
-        this.messageId = messageId;
+        properties.add(Metadata.MESSAGE_ID, FieldValue.parseShortString(messageId));
     }
 
     public void setTimestamp(long timestamp) {
-        propertyFlags |= TIMESTAMP_MASK;
-        this.timestamp = timestamp;
+        properties.add(TIMESTAMP, FieldValue.parseLongLongInt(timestamp));
     }
 
     public void setType(ShortString type) {
-        propertyFlags |= TYPE_MASK;
-        this.type = type;
+        properties.add(TYPE, FieldValue.parseShortString(type));
     }
 
     public void setUserId(ShortString userId) {
-        propertyFlags |= USER_ID_MASK;
-        this.userId = userId;
+        properties.add(USER_ID, FieldValue.parseShortString(userId));
     }
 
     public void setAppId(ShortString appId) {
-        propertyFlags |= APPLICATION_ID_MASK;
-        this.appId = appId;
+        properties.add(APPLICATION_ID, FieldValue.parseShortString(appId));
     }
 
-    public void setRawMetadata(ByteBuf rawMetadata) {
-        this.rawMetadata = rawMetadata;
+    public void setProperties(FieldTable properties) {
+        this.properties = properties;
     }
 }

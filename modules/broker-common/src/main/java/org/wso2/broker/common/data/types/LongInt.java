@@ -41,8 +41,8 @@ public class LongInt implements EncodableData {
         buf.writeInt(value);
     }
 
-    public static LongInt parse(ByteBuf buf) {
-        return new LongInt(buf.readInt());
+    public int getInt() {
+        return value;
     }
 
     @Override
@@ -58,11 +58,11 @@ public class LongInt implements EncodableData {
         return (obj instanceof LongInt) && (value == ((LongInt) obj).value);
     }
 
-    public static LongInt parse(int value) {
-        return new LongInt(value);
+    public static LongInt parse(ByteBuf buf) {
+        return new LongInt(buf.readInt());
     }
 
-    public int getInt() {
-        return value;
+    public static LongInt parse(int value) {
+        return new LongInt(value);
     }
 }

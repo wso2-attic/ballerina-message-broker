@@ -24,7 +24,10 @@ package org.wso2.broker.amqp.codec;
  * but not other channels in the same connection.
  */
 public class ChannelException extends Exception {
+
     public static final int NOT_ALLOWED = 530;
+
+    public static final int NOT_FOUND = 404;
 
     private final int replyCode;
 

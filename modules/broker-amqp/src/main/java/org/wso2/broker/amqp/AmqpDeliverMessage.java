@@ -64,7 +64,8 @@ public class AmqpDeliverMessage {
                     ShortString.parseString(metadata.getRoutingKey()));
 
             HeaderFrame headerFrame = new HeaderFrame(channel.getChannelId(), 60, metadata.getContentLength());
-            headerFrame.setRawMetadata(metadata.getRawMetadata());
+            headerFrame.setProperties(metadata.getProperties());
+            headerFrame.setHeaders(metadata.getHeaders());
             ctx.write(basicDeliverFrame);
             ctx.write(headerFrame);
             for (ContentChunk chunk : message.getContentChunks()) {

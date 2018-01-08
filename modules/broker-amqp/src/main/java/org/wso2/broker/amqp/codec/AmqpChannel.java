@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.AckData;
 import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.AmqpDeliverMessage;
-import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Broker;
@@ -135,12 +134,13 @@ public class AmqpChannel {
         }
     }
 
-    public void cancelConsumer(ShortString consumerTag) throws AmqpException {
-        AmqpConsumer amqpConsumer = consumerMap.get(consumerTag);
+    public void cancelConsumer(ShortString consumerTag) throws ChannelException {
+        AmqpConsumer amqpConsumer = consumerMap.remove(consumerTag);
         if (amqpConsumer != null) {
             broker.removeConsumer(amqpConsumer);
         } else {
-            throw new AmqpException("Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
+            throw new ChannelException(ChannelException.NOT_FOUND,
+                    "Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
         }
     }
 
@@ -148,12 +148,12 @@ public class AmqpChannel {
         return messageAggregator;
     }
 
-    public void acknowledge(long deliveryTag, boolean multiple) {
+    public void acknowledge(long deliveryTag, boolean multiple) throws BrokerException {
         //TODO handle multiple
         AckData ackData = unackedMessageMap.remove(deliveryTag);
         if (ackData != null) {
             ackData.getMessage().release();
-            broker.acknowledge(ackData.getQueueName(), ackData.getMessage().getMetadata().getInternalId());
+            broker.acknowledge(ackData.getQueueName(), ackData.getMessage());
         } else {
             LOGGER.warn("Could not find a matching ack data for acking the delivery tag " + deliveryTag);
         }
@@ -178,7 +178,7 @@ public class AmqpChannel {
         unackedMessageMap.put(deliveryTag, ackData);
     }
 
-    public void reject(long deliveryTag, boolean requeue) {
+    public void reject(long deliveryTag, boolean requeue) throws BrokerException {
         AckData ackData = unackedMessageMap.remove(deliveryTag);
         if (ackData != null) {
             Message message = ackData.getMessage();
@@ -203,7 +203,7 @@ public class AmqpChannel {
         return unackedMessageMap.clear();
     }
 
-    public void rejectAll() {
+    public void rejectAll() throws BrokerException {
         Collection<AckData> entries = unackedMessageMap.clear();
         for (AckData ackData : entries) {
             Message message = ackData.getMessage();

@@ -19,30 +19,37 @@
 
 package org.wso2.broker.core.store.dao;
 
-import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.broker.core.store.dao.impl.BindingDaoImpl;
+import org.wso2.broker.core.store.dao.impl.ExchangeDaoImpl;
 import org.wso2.broker.core.store.dao.impl.MessageDaoImpl;
 import org.wso2.broker.core.store.dao.impl.QueueDaoImpl;
 
+import javax.sql.DataSource;
 
 /**
  * Instantiates different DAO objects required to access persistent storage.
  */
 public class DaoFactory {
 
-    //private BrokerConfiguration.DatasourceConfiguration datasourceConfiguration;
-    
-    
-    public DaoFactory(BrokerConfiguration.DatasourceConfiguration datasourceConfiguration) {
-       // this.datasourceConfiguration = datasourceConfiguration;
+    private final DataSource dataSource;
 
+    public DaoFactory(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
-    
+
     public QueueDao createQueueDao() {
-        return new QueueDaoImpl();
+        return new QueueDaoImpl(dataSource);
     }
 
-    public MessageDao createMesageDao() {
-        return new MessageDaoImpl();
+    public MessageDao createMessageDao() {
+        return new MessageDaoImpl(dataSource);
     }
 
+    public ExchangeDao createExchangeDao() {
+        return new ExchangeDaoImpl(dataSource);
+    }
+
+    public BindingDao createBindingDao() {
+        return new BindingDaoImpl(dataSource);
+    }
 }

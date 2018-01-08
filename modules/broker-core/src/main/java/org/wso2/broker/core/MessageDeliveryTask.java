@@ -19,12 +19,16 @@
 
 package org.wso2.broker.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.task.Task;
 
 /**
  * Delivers messages to consumers for a given queueHandler.
  */
 final class MessageDeliveryTask extends Task {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageDeliveryTask.class);
 
     private final QueueHandler queueHandler;
 
@@ -70,6 +74,7 @@ final class MessageDeliveryTask extends Task {
                 Message message = queueHandler.dequeue();
 
                 if (message != null) {
+                    LOGGER.debug("Sending message {}", message);
                     consumer.send(message);
                     deliveredCount++;
                     // TODO: make the value configurable

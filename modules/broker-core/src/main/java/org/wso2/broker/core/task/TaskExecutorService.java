@@ -280,7 +280,6 @@ public final class TaskExecutorService<T extends Task> {
         @Override
         public void handleException(Throwable throwable, String id) {
             log.error("Error occurred while processing task. Task id " + id, throwable);
-            throw new RuntimeException(throwable);
         }
     }
 }

@@ -46,7 +46,7 @@ public class BindingSet {
         unfilteredQueueBindings = new ConcurrentHashMap<>();
     }
 
-    void add(Binding binding) {
+    boolean add(Binding binding) {
         FieldValue selectorValue = binding.getArgument(Binding.JMS_SELECTOR_ARGUMENT);
         Map<Queue, Binding> queueBindingMap;
         if (selectorValue != null && !selectorValue.getValue().toString().isEmpty()) {
@@ -54,7 +54,7 @@ public class BindingSet {
         } else {
             queueBindingMap = unfilteredQueueBindings;
         }
-        queueBindingMap.put(binding.getQueue(), binding);
+        return queueBindingMap.putIfAbsent(binding.getQueue(), binding) == null;
     }
 
     void add(BindingSet bindingSet) {
@@ -88,7 +88,7 @@ public class BindingSet {
             super();
         }
         @Override
-        void add(Binding binding) {
+        boolean add(Binding binding) {
             throw new UnsupportedOperationException("Cannot modify Unmodifiable binding set.");
         }
 

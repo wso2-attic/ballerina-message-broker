@@ -33,10 +33,12 @@ import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.rest.BrokerRestServer;
 import org.wso2.broker.rest.config.RestServerConfiguration;
+import org.wso2.messaging.integration.util.DbUtils;
 import org.wso2.messaging.integration.util.TestConstants;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.sql.DataSource;
 
 public class SuiteInitializer {
     /**
@@ -45,7 +47,9 @@ public class SuiteInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(SuiteInitializer.class);
 
     private Broker broker;
+
     private Server server;
+
     private BrokerRestServer restServer;
 
     @Parameters({"broker-port", "broker-ssl-port", "broker-hostname", "broker-rest-port"})
@@ -73,10 +77,12 @@ public class SuiteInitializer {
 
         RestServerConfiguration restConfig = new RestServerConfiguration();
         restConfig.getPlain().setPort(restPort);
-        configProvider.registerConfigurationObject(restConfig.NAMESPACE, restConfig);
+        configProvider.registerConfigurationObject(RestServerConfiguration.NAMESPACE, restConfig);
 
         startupContext.registerService(BrokerConfigProvider.class, configProvider);
 
+        DbUtils.setupDB();
+        startupContext.registerService(DataSource.class, DbUtils.getDataSource());
         restServer = new BrokerRestServer(startupContext);
         broker = new Broker(startupContext);
         broker.startMessageDelivery();

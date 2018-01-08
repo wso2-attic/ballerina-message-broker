@@ -87,6 +87,8 @@ public class QueueBind extends MethodFrame {
                 ctx.writeAndFlush(new QueueBindOk(getChannel()));
 
             } catch (BrokerException e) {
+                LOGGER.error("Error while binding to {} with queue {} with routing key {} "
+                        , exchange, queue, routingKey, e);
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
                                                    ChannelException.NOT_ALLOWED,
                                                    ShortString.parseString(e.getMessage()),

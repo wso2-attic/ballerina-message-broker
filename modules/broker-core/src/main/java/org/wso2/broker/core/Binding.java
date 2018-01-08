@@ -28,9 +28,9 @@ import org.wso2.broker.core.selector.generated.MessageFilter;
 /**
  * Represents an binding object which binds a {@link Queue} to a given {@link Exchange}
  */
-final class Binding {
+public final class Binding {
 
-    static final ShortString JMS_SELECTOR_ARGUMENT = ShortString.parseString("x-filter-jms-selector");
+    public static final ShortString JMS_SELECTOR_ARGUMENT = ShortString.parseString("x-filter-jms-selector");
 
     private final Queue queue;
 
@@ -61,19 +61,31 @@ final class Binding {
 
     }
 
-    Queue getQueue() {
+    public Queue getQueue() {
         return queue;
     }
 
-    String getRoutingKey() {
+    public String getRoutingKey() {
         return routingKey;
     }
 
-    FieldValue getArgument(ShortString propertyName) {
+    public FieldValue getArgument(ShortString propertyName) {
         return arguments.getValue(propertyName);
+    }
+
+    public FieldTable getArguments() {
+        return arguments;
     }
 
     BooleanExpression getFilterExpression() {
         return filterExpression;
+    }
+
+    @Override
+    public String toString() {
+        return "Binding{"
+                + "queue=" + queue
+                + ", routingKey='" + routingKey + '\''
+                + '}';
     }
 }

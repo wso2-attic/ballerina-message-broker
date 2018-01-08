@@ -60,7 +60,8 @@ public class FieldValue implements EncodableData {
         SHORT_UINT('u'),
         SHORT_STRING('s'),
         LONG_STRING('S'),
-        LONG_INT('I');
+        LONG_INT('I'),
+        LONG_LONG_INT('L');
 
         private final char type;
 
@@ -86,8 +87,12 @@ public class FieldValue implements EncodableData {
                     return SHORT_UINT;
                 case 'S':
                     return LONG_STRING;
+                case 's':
+                    return SHORT_STRING;
                 case 'I':
                     return LONG_INT;
+                case 'L':
+                    return LONG_LONG_INT;
                 default:
                     throw new Exception("Unknown data type. Char value: '" + value + "'");
             }
@@ -103,6 +108,14 @@ public class FieldValue implements EncodableData {
         return 1 + value.getSize();
     }
 
+    /**
+     * Retrieve size of the underlying {@link EncodableData}
+     * @return value size in bytes
+     */
+    public long getValueSize() {
+        return value.getSize();
+    }
+
     @Override
     public void write(ByteBuf buf) {
         buf.writeByte(type.getChar());
@@ -116,6 +129,12 @@ public class FieldValue implements EncodableData {
                 return new FieldValue(Type.LONG_STRING, LongString.parse(buf));
             case LONG_INT:
                 return new FieldValue(Type.LONG_INT, LongInt.parse(buf));
+            case LONG_LONG_INT:
+                return new FieldValue(Type.LONG_LONG_INT, LongLongInt.parse(buf));
+            case SHORT_STRING:
+                return new FieldValue(Type.SHORT_STRING, ShortString.parse(buf));
+            case SHORT_SHORT_INT:
+                return new FieldValue(Type.SHORT_SHORT_INT, ShortShortInt.parse(buf));
             default:
                 throw new Exception("Invalid AMQP Field value type");
         }
@@ -134,9 +153,36 @@ public class FieldValue implements EncodableData {
     }
 
     public static FieldValue parseLongString(String value) {
-        return new FieldValue(Type.LONG_STRING, LongString.parseString(value));
+        return parseLongString(LongString.parseString(value));
     }
 
+    public static FieldValue parseLongString(LongString value) {
+        return new FieldValue(Type.LONG_STRING, value);
+    }
+
+    public static FieldValue parseShortString(String value) {
+        return parseShortString(ShortString.parseString(value));
+    }
+
+    public static FieldValue parseShortString(ShortString value) {
+        return new FieldValue(Type.SHORT_STRING, value);
+    }
+
+    public static FieldValue parseShortShortInt(byte value) {
+        return parseShortShortInt(ShortShortInt.parseByte(value));
+    }
+
+    public static FieldValue parseShortShortInt(ShortShortInt value) {
+        return new FieldValue(Type.SHORT_SHORT_INT, value);
+    }
+
+    public static FieldValue parseLongLongInt(long value) {
+        return new FieldValue(Type.LONG_LONG_INT, LongLongInt.parse(value));
+    }
+
+    public static FieldValue parseLongLongInt(LongLongInt value) {
+        return new FieldValue(Type.LONG_LONG_INT, value);
+    }
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -151,5 +197,10 @@ public class FieldValue implements EncodableData {
         int hash = value.hashCode();
         hash += type.getChar();
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return type + " " + value.toString();
     }
 }

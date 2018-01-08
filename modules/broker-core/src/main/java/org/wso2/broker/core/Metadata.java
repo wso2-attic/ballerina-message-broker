@@ -19,26 +19,41 @@
 
 package org.wso2.broker.core;
 
-import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.FieldValue;
+import org.wso2.broker.common.data.types.ShortShortInt;
 import org.wso2.broker.common.data.types.ShortString;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Object representation of a message metadata.
  */
 public class Metadata {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
 
-    private static final short BYTE_DEFAULT = -1;
+    public static final ShortString DELIVERY_MODE = ShortString.parseString("deliveryMode");
 
-    private static final long LONG_DEFAULT = -1L;
+    public static final ShortString PRIORITY = ShortString.parseString("priority");
+
+    public static final ShortString EXPIRATION = ShortString.parseString("expiration");
+
+    public static final ShortString MESSAGE_ID = ShortString.parseString("messageId");
+
+    public static final ShortString CONTENT_TYPE = ShortString.parseString("contentType");
+
+    public static final ShortString CONTENT_ENCODING = ShortString.parseString("contentEncoding");
+
+    public static final ShortString CORRELATION_ID = ShortString.parseString("correlationId");
+
+    public static final int PERSISTENT_MESSAGE = 2;
+
+    public static final int NON_PERSISTENT_MESSAGE = 1;
 
     /**
      * Unique id of the message.
@@ -60,49 +75,20 @@ public class Metadata {
      */
     private final long contentLength;
 
-    private final List<String> queueList;
+    private final Set<String> queueSet;
+
+    private FieldTable properties;
 
     private FieldTable headers;
-
-    private short deliveryMode = BYTE_DEFAULT;
-
-    private short priority = BYTE_DEFAULT;
-
-    private ShortString correlationId;
-
-    private ShortString replyTo;
-
-    private ShortString expiration;
-
-    private ShortString messageId;
-
-    private long timestamp = LONG_DEFAULT;
-
-    private ShortString type;
-
-    private ShortString userId;
-
-    private ShortString appId;
-
-    private ByteBuf rawMetadata;
-
-    private ShortString contentType;
-
-    private ShortString contentEncoding;
-
-    private BiFunction<ByteBuf, Metadata, Boolean> headerParser;
-
-    private boolean headersPassed;
 
     public Metadata(long internalId, String routingKey, String exchangeName, long contentLength) {
         this.internalId = internalId;
         this.routingKey = routingKey;
         this.exchangeName = exchangeName;
         this.contentLength = contentLength;
-        this.queueList = new ArrayList<>();
-        this.headers = null;
-        headersPassed = false;
-        headerParser = null;
+        this.queueSet = new HashSet<>();
+        this.properties = FieldTable.EMPTY_TABLE;
+        this.headers = FieldTable.EMPTY_TABLE;
     }
 
     public long getInternalId() {
@@ -122,173 +108,67 @@ public class Metadata {
     }
 
     public void addOwnedQueue(String queueName) {
-        queueList.add(queueName);
+        queueSet.add(queueName);
     }
 
-    public List<String> getOwnedQueues() {
-        return queueList;
+    public boolean hasAttachedQueues() {
+        return !queueSet.isEmpty();
     }
 
-    public FieldValue getHeader(ShortString propertyName) {
-        parseHeaders();
-        return headers.getValue(propertyName);
+    public Metadata shallowCopy() {
+        Metadata metadata = new Metadata(internalId, routingKey, exchangeName, contentLength);
+        metadata.queueSet.addAll(queueSet);
+        metadata.properties = properties;
+        metadata.headers = headers;
+        return metadata;
     }
 
-    public ByteBuf getRawMetadata() {
-        return rawMetadata;
+    @Override
+    public String toString() {
+        return "Metadata{"
+                + "internalId=" + internalId
+                + ", routingKey='" + routingKey + '\''
+                + ", exchangeName='" + exchangeName + '\''
+                + ", contentLength=" + contentLength
+                + ", messageId= " + properties.getValue(MESSAGE_ID) + '\''
+                + ", deliveryMode=" + properties.getValue(DELIVERY_MODE) + '\''
+                + "'}";
     }
 
-    public void setRawMetadata(ByteBuf rawMetadata, BiFunction<ByteBuf, Metadata, Boolean> headerParser) {
-        this.rawMetadata = rawMetadata;
-        this.headerParser = headerParser;
+    public void removeAttachedQueue(String queueName) {
+        queueSet.remove(queueName);
     }
 
-    public short getDeliveryMode() {
-        parseHeaders();
-        return deliveryMode;
+    public Collection<String> getAttachedQueues() {
+        return queueSet;
     }
 
-    public short getPriority() {
-        parseHeaders();
-        return priority;
-    }
-
-    public ShortString getCorrelationId() {
-        parseHeaders();
-        return correlationId;
-    }
-
-    public ShortString getReplyTo() {
-        parseHeaders();
-        return replyTo;
-    }
-
-    public ShortString getExpiration() {
-        parseHeaders();
-        return expiration;
-    }
-
-    public ShortString getMessageId() {
-        parseHeaders();
-        return messageId;
-    }
-
-    public long getTimestamp() {
-        parseHeaders();
-        return timestamp;
-    }
-
-    public ShortString getType() {
-        parseHeaders();
-        return type;
-    }
-
-    public ShortString getUserId() {
-        parseHeaders();
-        return userId;
-    }
-
-    public ShortString getAppId() {
-        parseHeaders();
-        return appId;
-    }
-
-    public ShortString getContentType() {
-        parseHeaders();
-        return contentType;
-    }
-
-    public ShortString getContentEncoding() {
-        parseHeaders();
-        return contentEncoding;
-    }
-
-    public void setContentEncoding(ShortString contentEncoding) {
-        this.contentEncoding = contentEncoding;
-    }
-
-    public void setContentType(ShortString contentType) {
-        this.contentType = contentType;
+    public void setProperties(FieldTable properties) {
+        this.properties = properties;
     }
 
     public void setHeaders(FieldTable headers) {
         this.headers = headers;
     }
 
-    public void setDeliveryMode(short deliveryMode) {
-        this.deliveryMode = deliveryMode;
+    public FieldValue getProperty(ShortString propertyName) {
+        return this.properties.getValue(propertyName);
     }
 
-    public void setPriority(short priority) {
-        this.priority = priority;
+    public byte getByteProperty(ShortString propertyName) {
+        FieldValue fieldValue = properties.getValue(propertyName);
+        return ((ShortShortInt) fieldValue.getValue()).getByte();
     }
 
-    public void setCorrelationId(ShortString correlationId) {
-        this.correlationId = correlationId;
+    public FieldValue getHeader(ShortString headerName) {
+        return headers.getValue(headerName);
     }
 
-    public void setReplyTo(ShortString replyTo) {
-        this.replyTo = replyTo;
+    public FieldTable getProperties() {
+        return properties;
     }
 
-    public void setExpiration(ShortString expiration) {
-        this.expiration = expiration;
-    }
-
-    public void setMessageId(ShortString messageId) {
-        this.messageId = messageId;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public void setType(ShortString type) {
-        this.type = type;
-    }
-
-    public void setUserId(ShortString userId) {
-        this.userId = userId;
-    }
-
-    public void setAppId(ShortString appId) {
-        this.appId = appId;
-    }
-
-    private void parseHeaders() {
-        if (headerParser != null && !headersPassed) {
-            headersPassed = headerParser.apply(rawMetadata, this);
-        }
-    }
-
-    public Metadata shallowCopy() {
-        Metadata metadata = new Metadata(internalId, routingKey, exchangeName, contentLength);
-        if (rawMetadata != null) {
-            metadata.rawMetadata = rawMetadata.retainedSlice();
-            metadata.headerParser = headerParser;
-        }
-
-        metadata.queueList.addAll(queueList);
-        metadata.headers = headers;
-        metadata.deliveryMode = deliveryMode;
-        metadata.priority = priority;
-        metadata.correlationId = correlationId;
-        metadata.replyTo = replyTo;
-        metadata.expiration = expiration;
-        metadata.messageId = messageId;
-        metadata.timestamp = timestamp;
-        metadata.type = type;
-        metadata.userId = userId;
-        metadata.appId = appId;
-        metadata.contentType = contentType;
-        metadata.contentEncoding = contentEncoding;
-        metadata.headersPassed = headersPassed;
-        return metadata;
-    }
-
-    public void release() {
-        if (rawMetadata != null) {
-            rawMetadata.release();
-        }
+    public FieldTable getHeaders() {
+        return headers;
     }
 }
