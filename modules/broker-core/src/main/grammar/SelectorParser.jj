@@ -53,7 +53,7 @@ import org.wso2.broker.core.selector.BooleanExpression;
 import org.wso2.broker.core.selector.EqualityExpression;
 import org.wso2.broker.core.selector.ConstantExpression;
 import org.wso2.broker.core.selector.Expression;
-import org.wso2.broker.core.selector.JMSPropertyExpression;
+import org.wso2.broker.core.selector.JmsPropertyExpression;
 
 public class MessageFilter {
 
@@ -137,7 +137,7 @@ Expression identifier() :
     (
         t = <IDENTIFIER>
         {
-            expr = new JMSPropertyExpression(t.image);
+            expr = new JmsPropertyExpression(t.image);
         }
     )
     {
