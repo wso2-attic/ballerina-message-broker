@@ -22,7 +22,7 @@
     <parent>
         <artifactId>message-broker</artifactId>
         <groupId>org.wso2.messaging</groupId>
-        <version>1.0.52-SNAPSHOT</version>
+        <version>1.0.52</version>
         <relativePath>../..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -109,22 +109,17 @@
                                 <!-- Drop database if it exists -->
                                 <delete dir="${db.directory}" quiet="true" />
                                 <!-- Create database schema -->
-                                <sql userid="root" password="root" url="${db.url};create=true"
-                                     driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
+                                <sql userid="root" password="root" url="${db.url};create=true" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
                                     <classpath refid="maven.compile.classpath" />
                                     <!-- Override default location (inside the database directory) -->
-                                    <connectionProperty name="derby.storage.tempDirectory"
-                                                        value="${java.io.tmpdir}" />
+                                    <connectionProperty name="derby.storage.tempDirectory" value="${java.io.tmpdir}" />
                                     <!-- Do not create derby.log -->
-                                    <connectionProperty name="derby.stream.error.file"
-                                                        value="${java.io.tmpdir}/derby.log" />
+                                    <connectionProperty name="derby.stream.error.file" value="${java.io.tmpdir}/derby.log" />
                                     <!-- Create database schema -->
                                     <transaction src="${sql.directory}/derby-mb.sql" />
                                 </sql>
                                 <!-- Shutdown database -->
-                                <sql classpath="maven.compile.classpath" userid="" password=""
-                                     url="${db.url};shutdown=true" driver="${db.driver}" onerror="continue"
-                                     failonconnectionerror="false">
+                                <sql classpath="maven.compile.classpath" userid="" password="" url="${db.url};shutdown=true" driver="${db.driver}" onerror="continue" failonconnectionerror="false">
                                     none
                                 </sql>
                             </target>
