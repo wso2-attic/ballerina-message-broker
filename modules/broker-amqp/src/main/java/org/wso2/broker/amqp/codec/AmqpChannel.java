@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.AckData;
 import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.AmqpDeliverMessage;
-import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Broker;
@@ -135,12 +134,13 @@ public class AmqpChannel {
         }
     }
 
-    public void cancelConsumer(ShortString consumerTag) throws AmqpException {
+    public void cancelConsumer(ShortString consumerTag) throws ChannelException {
         AmqpConsumer amqpConsumer = consumerMap.remove(consumerTag);
         if (amqpConsumer != null) {
             broker.removeConsumer(amqpConsumer);
         } else {
-            throw new AmqpException("Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
+            throw new ChannelException(ChannelException.NOT_FOUND,
+                    "Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
         }
     }
 

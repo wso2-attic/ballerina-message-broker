@@ -21,9 +21,11 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.wso2.broker.amqp.AmqpException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.BlockingTask;
+import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.common.data.types.ShortString;
 
@@ -31,6 +33,12 @@ import org.wso2.broker.common.data.types.ShortString;
  * AMQP frame for basic.cancel.
  */
 public class BasicCancel extends MethodFrame {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicCancel.class);
+
+    private static final int CLASS_ID = 60;
+
+    private static final int METHOD_ID = 30;
 
     private final ShortString consumerTag;
 
@@ -61,8 +69,10 @@ public class BasicCancel extends MethodFrame {
             try {
                 channel.cancelConsumer(consumerTag);
                 ctx.writeAndFlush(new BasicCancelOk(getChannel(), consumerTag));
-            } catch (AmqpException e) {
-                // TODO handle exception: write the error back to client
+            } catch (ChannelException e) {
+                LOGGER.error("Error occurred while closing consumer.", e);
+                ctx.writeAndFlush(new ChannelClose(getChannel(), e.getReplyCode(),
+                        ShortString.parseString(e.getMessage()), CLASS_ID, METHOD_ID));
             }
         });
     }
@@ -84,7 +94,8 @@ public class BasicCancel extends MethodFrame {
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
             ShortString consumerTag = ShortString.parse(buf);
-            boolean noWait = buf.readBoolean();;
+            boolean noWait = buf.readBoolean();
+            ;
             return new BasicCancel(channel, consumerTag, noWait);
         };
     }
