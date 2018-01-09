@@ -28,9 +28,22 @@ public class AmqpServerConfiguration {
      */
     public static final String NAMESPACE = "transport.amqp";
 
+    private FlowDetails flow = new FlowDetails();
+
     private NonSecureServerDetails plain = new NonSecureServerDetails();
 
     private SslServerDetails ssl = new SslServerDetails();
+
+    /**
+     * Getter for flow
+     */
+    public FlowDetails getFlow() {
+        return flow;
+    }
+
+    public void setFlow(FlowDetails flow) {
+        this.flow = flow;
+    }
 
     /**
      * Getter for tcp.
@@ -52,6 +65,37 @@ public class AmqpServerConfiguration {
 
     public void setSsl(SslServerDetails ssl) {
         this.ssl = ssl;
+    }
+
+    /**
+     * Contains information related to AMQP flow controlling limits.
+     */
+    public static class FlowDetails {
+        private int lowLimit = 100;
+
+        private int highLimit = 1000;
+
+        /**
+         * Getter for lowLimit
+         */
+        public int getLowLimit() {
+            return lowLimit;
+        }
+
+        public void setLowLimit(int lowLimit) {
+            this.lowLimit = lowLimit;
+        }
+
+        /**
+         * Getter for highLimit
+         */
+        public int getHighLimit() {
+            return highLimit;
+        }
+
+        public void setHighLimit(int highLimit) {
+            this.highLimit = highLimit;
+        }
     }
 
     /**

@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.AckData;
 import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.AmqpDeliverMessage;
+import org.wso2.broker.amqp.AmqpServerConfiguration;
+import org.wso2.broker.amqp.codec.flow.ChannelFlowManager;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Broker;
@@ -56,6 +58,8 @@ public class AmqpChannel {
     private final Map<ShortString, AmqpConsumer> consumerMap;
 
     private final InMemoryMessageAggregator messageAggregator;
+
+    private final ChannelFlowManager flowManager;
 
     /**
      * This tag is unique per subscription to a queue. The server returns this in response
@@ -94,11 +98,14 @@ public class AmqpChannel {
      */
     private int prefetchCount;
 
-    public AmqpChannel(Broker broker, int channelId) {
+    public AmqpChannel(AmqpServerConfiguration configuration, Broker broker, int channelId) {
         this.broker = broker;
         this.channelId = channelId;
         this.consumerMap = new HashMap<>();
         this.messageAggregator = new InMemoryMessageAggregator(broker);
+        this.flowManager = new ChannelFlowManager(this,
+                                                  configuration.getFlow().getLowLimit(),
+                                                  configuration.getFlow().getHighLimit());
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
@@ -232,6 +239,13 @@ public class AmqpChannel {
      */
     public boolean isFlowEnabled() {
         return flow.get();
+    }
+
+    /**
+     * Getter for flowManager
+     */
+    public ChannelFlowManager getFlowManager() {
+        return flowManager;
     }
 
     public void hold(AmqpDeliverMessage deliverMessage) {

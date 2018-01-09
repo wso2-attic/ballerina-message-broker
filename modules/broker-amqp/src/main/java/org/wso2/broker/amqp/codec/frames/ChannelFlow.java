@@ -23,10 +23,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.amqp.AmqpDeliverMessage;
+import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
-
-import java.util.List;
+import org.wso2.broker.amqp.codec.handlers.AmqpMessageWriter;
 
 /**
  * AMQP frame for channel.flow
@@ -55,14 +54,12 @@ public class ChannelFlow extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        connectionHandler.getChannel(getChannel()).setFlow(active);
-        ctx.writeAndFlush(new ChannelFlowOk(getChannel(), active));
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+        channel.setFlow(active);
+        ctx.write(new ChannelFlowOk(getChannel(), active));
 
         if (active) {
-            List<AmqpDeliverMessage> pendingMessages = connectionHandler.getChannel(getChannel()).getPendingMessages();
-            for (AmqpDeliverMessage message : pendingMessages) {
-                ctx.channel().write(message);
-            }
+            AmqpMessageWriter.write(ctx.channel(), channel.getPendingMessages());
         }
         ctx.flush();
     }
