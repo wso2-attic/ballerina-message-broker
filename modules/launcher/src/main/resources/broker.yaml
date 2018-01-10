@@ -16,7 +16,7 @@
 
 broker:
  dataSource:
-  url: jdbc:derby:../database
+  url: jdbc:derby:database
   user: root
   password: root
 
