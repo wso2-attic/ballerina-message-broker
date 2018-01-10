@@ -36,7 +36,7 @@
             <directory>src/main/resources/</directory>
             <outputDirectory>bin</outputDirectory>
             <includes>
-                <include>broker</include>
+                <include>broker.sh</include>
                 <include>broker.bat</include>
             </includes>
             <fileMode>755</fileMode>
