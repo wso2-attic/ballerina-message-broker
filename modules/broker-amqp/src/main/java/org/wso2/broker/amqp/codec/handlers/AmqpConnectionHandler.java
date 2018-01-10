@@ -23,6 +23,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ConnectionException;
@@ -42,9 +43,11 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConnectionHandler.class);
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
+    private final AmqpServerConfiguration configuration;
     private final Broker broker;
 
-    public AmqpConnectionHandler(Broker broker) {
+    public AmqpConnectionHandler(AmqpServerConfiguration configuration, Broker broker) {
+        this.configuration = configuration;
         this.broker = broker;
     }
 
@@ -95,7 +98,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
             throw new ConnectionException(ConnectionException.CHANNEL_ERROR,
                                           "Channel ID " + channelId + " Already exists");
         }
-        channels.put(channelId, new AmqpChannel(broker, channelId));
+        channels.put(channelId, new AmqpChannel(configuration, broker, channelId));
     }
 
     /**

@@ -268,7 +268,6 @@
         <maven.checkstyleplugin.excludes>
             **org/wso2/broker/core/selector/generated/*
         </maven.checkstyleplugin.excludes>
-        <mavan.findbugsplugin.exclude.file>findbugs-exclude.xml</mavan.findbugsplugin.exclude.file>
         <carbon.config.version>2.1.5</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
         <hikari.version>2.7.4</hikari.version>

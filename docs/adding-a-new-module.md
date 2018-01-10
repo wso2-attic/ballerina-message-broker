@@ -1,4 +1,4 @@
-# Adding a new module to repo
+# Adding a new module
 
 Following is a checklist to follow when adding a new module to the repo.
 

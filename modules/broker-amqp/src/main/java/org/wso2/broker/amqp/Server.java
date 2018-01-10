@@ -175,7 +175,7 @@ public class Server {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(broker))
+                         .addLast(new AmqpConnectionHandler(configuration, broker))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
@@ -196,7 +196,7 @@ public class Server {
                          .addLast(sslHandlerFactory.create())
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(broker))
+                         .addLast(new AmqpConnectionHandler(configuration, broker))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }

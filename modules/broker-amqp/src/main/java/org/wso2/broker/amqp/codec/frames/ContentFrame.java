@@ -83,6 +83,8 @@ public class ContentFrame extends GeneralFrame {
             ctx.fireChannelRead((BlockingTask) () -> {
                 try {
                     messageAggregator.publish(message);
+                    // flow manager should always be executed through the event loop
+                    ctx.executor().submit(() -> channel.getFlowManager().notifyMessageRemoval(ctx));
                 } catch (BrokerException e) {
                     LOGGER.warn("Content receiving failed", e);
                 }

@@ -24,7 +24,6 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
-import org.wso2.broker.amqp.codec.InMemoryMessageAggregator;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.common.data.types.ShortString;
 
@@ -78,8 +77,9 @@ public class BasicPublish extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
-        InMemoryMessageAggregator inMemoryMessageAggregator = channel.getMessageAggregator();
-        inMemoryMessageAggregator.basicPublishReceived(routingKey, exchange);
+
+        channel.getFlowManager().notifyMessageAddition(ctx);
+        channel.getMessageAggregator().basicPublishReceived(routingKey, exchange);
     }
 
     /**

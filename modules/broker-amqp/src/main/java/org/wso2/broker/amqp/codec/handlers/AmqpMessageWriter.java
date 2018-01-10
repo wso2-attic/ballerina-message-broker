@@ -19,10 +19,13 @@
 
 package org.wso2.broker.amqp.codec.handlers;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import org.wso2.broker.amqp.AmqpDeliverMessage;
+
+import java.util.List;
 
 /**
  * Writes {@link AmqpDeliverMessage} to the outbound channel
@@ -38,4 +41,9 @@ public class AmqpMessageWriter extends ChannelOutboundHandlerAdapter {
         }
     }
 
+    public static void write(Channel channel, List<AmqpDeliverMessage> pendingMessages) {
+        for (AmqpDeliverMessage message : pendingMessages) {
+            channel.write(message);
+        }
+    }
 }
