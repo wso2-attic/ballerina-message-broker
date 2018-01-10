@@ -32,7 +32,7 @@ import org.wso2.broker.core.Message;
 /**
  * AMQP based message consumer.
  */
-public class AmqpConsumer implements Consumer {
+public class AmqpConsumer extends Consumer {
     /**
      * Class logger.
      */

@@ -25,10 +25,11 @@ import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
-import org.wso2.broker.core.rest.BrokerAdminService;
+import org.wso2.broker.core.rest.api.QueuesApi;
 import org.wso2.broker.core.security.authentication.AuthenticationManager;
 import org.wso2.broker.rest.BrokerServiceRunner;
 
+import java.util.Collection;
 import javax.sql.DataSource;
 
 /**
@@ -46,7 +47,7 @@ public final class Broker {
         this.messagingEngine = new MessagingEngine(startupContext.getService(DataSource.class));
 
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
-        serviceRunner.deploy(new BrokerAdminService());
+        serviceRunner.deploy(new QueuesApi(this));
         startupContext.registerService(Broker.class, this);
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerConfiguration brokerConfiguration = configProvider
@@ -99,13 +100,13 @@ public final class Broker {
         messagingEngine.deleteExchange(exchangeName, ifUnused);
     }
 
-    public void createQueue(String destination, boolean passive,
+    public boolean createQueue(String queueName, boolean passive,
                             boolean durable, boolean autoDelete) throws BrokerException {
-        messagingEngine.createQueue(destination, passive, durable, autoDelete);
+        return messagingEngine.createQueue(queueName, passive, durable, autoDelete);
     }
 
-    public void deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
-        messagingEngine.deleteQueue(queueName, ifUnused, ifEmpty);
+    public boolean deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
+        return messagingEngine.deleteQueue(queueName, ifUnused, ifEmpty);
     }
 
     public void bind(String queueName, String exchangeName,
@@ -133,6 +134,14 @@ public final class Broker {
 
     public void requeue(String queueName, Message message) throws BrokerException {
         messagingEngine.requeue(queueName, message);
+    }
+
+    public Collection<QueueHandler> getAllQueues() {
+        return messagingEngine.getAllQueues();
+    }
+
+    public QueueHandler getQueue(String queueName) {
+        return messagingEngine.getQueue(queueName);
     }
 
     public void moveToDlc(String queueName, Message message) throws BrokerException {

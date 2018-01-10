@@ -31,6 +31,7 @@ import org.wso2.broker.core.store.dao.QueueDao;
 import org.wso2.broker.core.store.dao.SharedMessageStore;
 import org.wso2.broker.core.task.TaskExecutorService;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
@@ -151,7 +152,7 @@ final class MessagingEngine {
         }
     }
 
-    void createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete) throws BrokerException {
+    boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete) throws BrokerException {
         lock.writeLock().lock();
         try {
             boolean queueAdded = queueRegistry.addQueue(queueName, passive, durable, autoDelete);
@@ -160,6 +161,7 @@ final class MessagingEngine {
                 // We need to bind every queue to the default exchange
                 exchangeRegistry.getDefaultExchange().bind(queueHandler.getQueue(), queueName, FieldTable.EMPTY_TABLE);
             }
+            return queueAdded;
         } finally {
             lock.writeLock().unlock();
         }
@@ -239,10 +241,10 @@ final class MessagingEngine {
         }
     }
 
-    void deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
+    boolean deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
         lock.writeLock().lock();
         try {
-            queueRegistry.removeQueue(queueName, ifUnused, ifEmpty);
+            return queueRegistry.removeQueue(queueName, ifUnused, ifEmpty);
         } finally {
             lock.writeLock().unlock();
         }
@@ -344,5 +346,13 @@ final class MessagingEngine {
         } finally {
             message.release();
         }
+    }
+
+    public Collection<QueueHandler> getAllQueues() {
+        return queueRegistry.getAllQueues();
+    }
+
+    public QueueHandler getQueue(String queueName) {
+        return queueRegistry.getQueueHandler(queueName);
     }
 }

@@ -19,14 +19,19 @@
 
 package org.wso2.broker.core.rest;
 
+import org.wso2.msf4j.Microservice;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 /**
  * Hello service resource class.
  */
-@Path("/broker")
-public class BrokerAdminService {
+@Path("/")
+public class BrokerAdminService implements Microservice {
+
+    public static final String API_BASE_PATH = "/broker/v1.0";
+
     @GET
     @Path("/status")
     public String status() {

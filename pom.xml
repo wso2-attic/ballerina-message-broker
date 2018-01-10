@@ -191,9 +191,26 @@
                 <version>${hikari.version}</version>
             </dependency>
             <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${jaxrs.api.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derby</artifactId>
                 <version>${derby.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <version>${json.jackson.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.ibatis</groupId>
@@ -229,6 +246,24 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${swagger.annotations.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${javax.validation-api.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.annotations.version}</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -262,11 +297,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.scm.id>wso2-scm-server</project.scm.id>
         <jacoco.plugin.version>0.7.9</jacoco.plugin.version>
-        <andes.version>3.2.37</andes.version>
+        <andes.version>3.2.40</andes.version>
         <geronimo-jms_1.1_spec.version>1.1.0.wso2v1</geronimo-jms_1.1_spec.version>
         <javacc.plugin.version>2.6</javacc.plugin.version>
         <maven.checkstyleplugin.excludes>
-            **org/wso2/broker/core/selector/generated/*
+            **org/wso2/broker/core/selector/generated/*,
+            **/gen/**/*
         </maven.checkstyleplugin.excludes>
         <carbon.config.version>2.1.5</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
@@ -275,5 +311,12 @@
         <msf4j.version>2.5.2</msf4j.version>
         <com.ibatis.version>2.1.7.597</com.ibatis.version>
         <lmax.disruptor.version>3.3.7</lmax.disruptor.version>
+        <swagger.annotations.version>1.5.3</swagger.annotations.version>
+        <jackson.annotations.version>2.9.3</jackson.annotations.version>
+        <javax.validation-api.version>1.1.0.Final</javax.validation-api.version>
+        <httpclient.version>4.5.4</httpclient.version>
+        <jaxrs.api.version>2.0</jaxrs.api.version>
+        <json.jackson.version>2.26</json.jackson.version>
+        <build.helper.maven.plugin.version>3.0.0</build.helper.maven.plugin.version>
     </properties>
 </project>

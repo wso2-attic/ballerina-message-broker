@@ -19,6 +19,9 @@
 
 package org.wso2.messaging.integration.util;
 
+import org.wso2.broker.core.rest.BrokerAdminService;
+
+import java.net.URISyntaxException;
 import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -41,6 +44,11 @@ public class ClientHelper {
                                                                  String brokerHost,
                                                                  String port) {
         return new InitialContextBuilder(username, password, brokerHost, port);
+    }
+
+
+    public static String getRestApiBasePath(String brokerHost, String port) throws URISyntaxException {
+        return "http://" + brokerHost + ":" + port + BrokerAdminService.API_BASE_PATH;
     }
 
     public static class InitialContextBuilder {

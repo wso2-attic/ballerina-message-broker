@@ -25,13 +25,16 @@ import org.wso2.msf4j.MicroservicesRunner;
  * {@link BrokerServiceRunner} is used to deploy exposed admin services
  */
 public class BrokerServiceRunner {
+
     private MicroservicesRunner runner;
 
     BrokerServiceRunner(MicroservicesRunner runner) {
+        runner.addExceptionMapper(new ResourceNotFoundMapper(), new BadRequestMapper());
         this.runner = runner;
     }
 
     public void deploy(Object... service) {
         runner.deploy(service);
     }
+
 }
