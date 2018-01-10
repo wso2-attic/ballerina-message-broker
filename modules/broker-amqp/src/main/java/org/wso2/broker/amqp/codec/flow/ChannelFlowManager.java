@@ -60,6 +60,8 @@ public class ChannelFlowManager {
     public void notifyMessageRemoval(ChannelHandlerContext ctx) {
         int unprocessedMessages = messagesOnFlight.decrementAndGet();
         if (unprocessedMessages < lowLimit && flowActive.compareAndSet(false, true)) {
+            // We should set the flow to true before fetching pending messages to stop AmqpMessageWriter adding
+            // messages to pending list
             channel.setFlow(true);
             ctx.write(new ChannelFlow(channel.getChannelId(), true));
             AmqpMessageWriter.write(ctx.channel(), channel.getPendingMessages());
