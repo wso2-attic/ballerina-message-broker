@@ -168,11 +168,7 @@ final class MessagingEngine {
                                 uniqueQueues.add(binding.getQueue().getName());
                             }
                         }
-                        // Unique queues can be empty due un-matching selectors.
-                        if (publishToQueues(message, uniqueQueues)) {
-                            LOGGER.info("Dropping message since message didn't have any routes for routing key "
-                                    + metadata.getRoutingKey());
-                        }
+                        publishToQueues(message, uniqueQueues);
                     } finally {
                         sharedMessageStore.flush(metadata.getInternalId());
                         // Release the original message. Shallow copies are distributed
@@ -187,18 +183,23 @@ final class MessagingEngine {
         }
     }
 
-    private boolean publishToQueues(Message message, Set<String> uniqueQueues) throws BrokerException {
-        boolean published = false;
-        for (String queueName: uniqueQueues) {
+    private void publishToQueues(Message message, Set<String> uniqueQueues) throws BrokerException {
+        // Unique queues can be empty due to un-matching selectors.
+        if (uniqueQueues.isEmpty()) {
+            LOGGER.info("Dropping message since message didn't have any routes to {}",
+                        message.getMetadata().getRoutingKey());
+            return;
+        }
+
+        for (String queueName : uniqueQueues) {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
             Message copiedMessage = message.shallowCopy();
             boolean success = queueHandler.enqueue(copiedMessage);
             if (!success) {
+                LOGGER.info("Failed to publish message {} to the queue {}", message, queueName);
                 copiedMessage.release();
             }
-            published |= success;
         }
-        return published;
     }
 
     /**
@@ -235,8 +236,8 @@ final class MessagingEngine {
                     }
                 }
             } else {
-                throw new BrokerException("Cannot add consumer. Queue [ " + consumer.getQueueName() + " ] " +
-                        "not found. Create the queue before attempting to consume.");
+                throw new BrokerException("Cannot add consumer. Queue [ " + consumer.getQueueName() + " ] "
+                                          + "not found. Create the queue before attempting to consume.");
             }
         } finally {
             lock.readLock().unlock();
