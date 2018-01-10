@@ -24,6 +24,7 @@ transport.amqp:
  channelFlow:
   lowLimit: 100
   highLimit: 1000
+
  plain:
   hostName: localhost
   port: 5672

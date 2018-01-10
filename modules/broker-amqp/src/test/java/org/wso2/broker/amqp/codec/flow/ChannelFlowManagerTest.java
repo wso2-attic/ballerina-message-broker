@@ -21,10 +21,12 @@ package org.wso2.broker.amqp.codec.flow;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.broker.amqp.codec.AmqpChannel;
+import org.wso2.broker.amqp.codec.frames.ChannelFlow;
 
 import java.util.stream.IntStream;
 
@@ -32,28 +34,31 @@ public class ChannelFlowManagerTest {
 
     private ChannelFlowManager channelFlowManager;
     private ChannelHandlerContext ctx;
-    private AmqpChannel channel;
+    private ArgumentCaptor<ChannelFlow> argumentCaptor;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        channel = Mockito.mock(AmqpChannel.class);
+        AmqpChannel channel = Mockito.mock(AmqpChannel.class);
         ctx = Mockito.mock(ChannelHandlerContext.class);
         Mockito.when(ctx.channel()).thenReturn(Mockito.mock(Channel.class));
         channelFlowManager = new ChannelFlowManager(channel, 2, 10);
+
+        argumentCaptor = ArgumentCaptor.forClass(ChannelFlow.class);
     }
 
     @Test
     public void testFlowNotDisabledWhenHighLevelNotExceeded() throws Exception {
         IntStream.rangeClosed(1, 10)
                 .forEach(i -> channelFlowManager.notifyMessageAddition(ctx));
-        Mockito.verify(channel, Mockito.never()).setFlow(false);
+
+        Mockito.verify(ctx, Mockito.never()).writeAndFlush(argumentCaptor.capture());
     }
 
     @Test
     public void testFlowDisabledWhenHighLevelExceeded() throws Exception {
         IntStream.rangeClosed(1, 11)
                  .forEach(i -> channelFlowManager.notifyMessageAddition(ctx));
-        Mockito.verify(channel, Mockito.times(1)).setFlow(false);
+        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(argumentCaptor.capture());
     }
 
     @Test
@@ -62,15 +67,17 @@ public class ChannelFlowManagerTest {
                  .forEach(i -> channelFlowManager.notifyMessageAddition(ctx));
         IntStream.rangeClosed(1, 4)
                  .forEach(i -> channelFlowManager.notifyMessageRemoval(ctx));
-        Mockito.verify(channel, Mockito.never()).setFlow(true);
+        // 1 time since flow should have been enabled
+        Mockito.verify(ctx, Mockito.times(1)).writeAndFlush(argumentCaptor.capture());
     }
 
-    @Test
+    @Test()
     public void testFlowNEnabledLowLevelIsMet() throws Exception {
         IntStream.rangeClosed(1, 11)
                  .forEach(i -> channelFlowManager.notifyMessageAddition(ctx));
         IntStream.rangeClosed(1, 10)
                  .forEach(i -> channelFlowManager.notifyMessageRemoval(ctx));
-        Mockito.verify(channel, Mockito.times(1)).setFlow(true);
+        // 2 times since flow is disabled and enables
+        Mockito.verify(ctx, Mockito.times(2)).writeAndFlush(argumentCaptor.capture());
     }
 }

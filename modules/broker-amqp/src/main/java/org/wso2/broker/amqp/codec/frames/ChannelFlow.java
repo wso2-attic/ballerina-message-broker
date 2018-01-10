@@ -23,9 +23,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.AmqpDeliverMessage;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
-import org.wso2.broker.amqp.codec.handlers.AmqpMessageWriter;
 
 /**
  * AMQP frame for channel.flow
@@ -59,7 +59,9 @@ public class ChannelFlow extends MethodFrame {
         ctx.write(new ChannelFlowOk(getChannel(), active));
 
         if (active) {
-            AmqpMessageWriter.write(ctx.channel(), channel.getPendingMessages());
+            for (AmqpDeliverMessage message : channel.getPendingMessages()) {
+                ctx.channel().write(message);
+            }
         }
         ctx.flush();
     }

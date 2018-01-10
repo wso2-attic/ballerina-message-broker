@@ -28,21 +28,21 @@ public class AmqpServerConfiguration {
      */
     public static final String NAMESPACE = "transport.amqp";
 
-    private FlowDetails flow = new FlowDetails();
+    private FlowDetails channelFlow = new FlowDetails();
 
     private NonSecureServerDetails plain = new NonSecureServerDetails();
 
     private SslServerDetails ssl = new SslServerDetails();
 
     /**
-     * Getter for flow
+     * Getter for channelFlow
      */
-    public FlowDetails getFlow() {
-        return flow;
+    public FlowDetails getChannelFlow() {
+        return channelFlow;
     }
 
-    public void setFlow(FlowDetails flow) {
-        this.flow = flow;
+    public void setChannelFlow(FlowDetails channelFlow) {
+        this.channelFlow = channelFlow;
     }
 
     /**
@@ -68,7 +68,7 @@ public class AmqpServerConfiguration {
     }
 
     /**
-     * Contains information related to AMQP flow controlling limits.
+     * Contains information related to AMQP channelFlow controlling limits.
      */
     public static class FlowDetails {
         private int lowLimit = 100;

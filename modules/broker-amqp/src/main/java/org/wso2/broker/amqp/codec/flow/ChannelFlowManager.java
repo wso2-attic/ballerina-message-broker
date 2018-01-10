@@ -24,10 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.frames.ChannelFlow;
-import org.wso2.broker.amqp.codec.handlers.AmqpMessageWriter;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ChannelFlowManager is responsible for managing flow rate of publishers. The flow should be disabled and enabled
@@ -38,8 +34,8 @@ public class ChannelFlowManager {
 
     private final int highLimit;
     private final int lowLimit;
-    private final AtomicInteger messagesOnFlight = new AtomicInteger(0);
-    private final AtomicBoolean flowActive = new AtomicBoolean(true);
+    private int messagesInFlight = 0;
+    private boolean inflowEnabled = true;
     private final AmqpChannel channel;
 
     public ChannelFlowManager(AmqpChannel channel, int lowLimit, int highLimit) {
@@ -49,24 +45,20 @@ public class ChannelFlowManager {
     }
 
     public void notifyMessageAddition(ChannelHandlerContext ctx) {
-        int unprocessedMessages = messagesOnFlight.incrementAndGet();
-        if (unprocessedMessages > highLimit && flowActive.compareAndSet(true, false)) {
+        messagesInFlight++;
+        if (messagesInFlight > highLimit && inflowEnabled) {
+            inflowEnabled = false;
             ctx.writeAndFlush(new ChannelFlow(channel.getChannelId(), false));
-            channel.setFlow(false);
-            LOGGER.info("Flow disabled for channel {}-{}", channel.getChannelId(), ctx.channel().remoteAddress());
+            LOGGER.info("Inflow disabled for channel {}-{}", channel.getChannelId(), ctx.channel().remoteAddress());
         }
     }
 
     public void notifyMessageRemoval(ChannelHandlerContext ctx) {
-        int unprocessedMessages = messagesOnFlight.decrementAndGet();
-        if (unprocessedMessages < lowLimit && flowActive.compareAndSet(false, true)) {
-            // We should set the flow to true before fetching pending messages to stop AmqpMessageWriter adding
-            // messages to pending list
-            channel.setFlow(true);
-            ctx.write(new ChannelFlow(channel.getChannelId(), true));
-            AmqpMessageWriter.write(ctx.channel(), channel.getPendingMessages());
-            ctx.flush();
-            LOGGER.info("Flow enabled for channel {}-{}", channel.getChannelId(), ctx.channel().remoteAddress());
+        messagesInFlight--;
+        if (messagesInFlight < lowLimit && !inflowEnabled) {
+            inflowEnabled = true;
+            ctx.writeAndFlush(new ChannelFlow(channel.getChannelId(), true));
+            LOGGER.info("Inflow enabled for channel {}-{}", channel.getChannelId(), ctx.channel().remoteAddress());
         }
     }
 }

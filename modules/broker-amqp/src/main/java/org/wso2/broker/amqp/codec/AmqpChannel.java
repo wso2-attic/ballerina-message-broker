@@ -104,8 +104,8 @@ public class AmqpChannel {
         this.consumerMap = new HashMap<>();
         this.messageAggregator = new InMemoryMessageAggregator(broker);
         this.flowManager = new ChannelFlowManager(this,
-                                                  configuration.getFlow().getLowLimit(),
-                                                  configuration.getFlow().getHighLimit());
+                                                  configuration.getChannelFlow().getLowLimit(),
+                                                  configuration.getChannelFlow().getHighLimit());
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
