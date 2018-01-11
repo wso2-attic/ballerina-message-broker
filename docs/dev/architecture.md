@@ -2,7 +2,7 @@
 
 ## Module breakdown
 
-![Module Relation](images/module-relation.png)
+![Module Relation](../images/module-relation.png)
 
 ### broker-common
 
@@ -26,7 +26,7 @@ Launcher is responsible for initializing and integrating different modules used 
 
 ## AMQP Architecture
 
-![AMQP Model](images/amqp-model.png)
+![AMQP Model](../images/amqp-model.png)
 
 ### Exchanges
 
@@ -48,7 +48,7 @@ time. But for a topic it is more common to have a single consumer for each queue
 
 ## Netty pipeline used in AMQP transport
 
-![Netty Pipeline for AMQP Transport](images/netty-pipeline-for-amqp-transport.png)
+![Netty Pipeline for AMQP Transport](../images/netty-pipeline-for-amqp-transport.png)
 
 ### AMQP Decoder
 

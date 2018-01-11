@@ -58,6 +58,14 @@
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
+            <directory>src/main/resources/dbscripts</directory>
+            <outputDirectory>dbscripts</outputDirectory>
+            <includes>
+                <include>*</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
             <directory>target/database/</directory>
             <outputDirectory>database</outputDirectory>
             <fileMode>644</fileMode>

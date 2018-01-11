@@ -35,7 +35,7 @@ public class DbUtils {
 
     private static final String DATABASE_URL = "jdbc:derby:memory:mbDB";
 
-    private static final String path = "../broker-core/src/main/resources/dbscripts/derby-mb.sql";
+    private static final String path = "../launcher/src/main/resources/dbscripts/derby-mb.sql";
 
     public static DataSource getDataSource() {
 
