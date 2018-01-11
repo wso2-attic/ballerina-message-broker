@@ -20,29 +20,36 @@ Please follow the steps below to build message broker from source code.
 ```
 .
 ├── bin
-│   ├── broker
+│   ├── broker.sh
 │   └── broker.bat
 ├── conf
 │   ├── broker.yaml
 │   └── log4j.properties
-└── lib
+├── lib
+├── database
+├── dbscripts
 ├── logs
 │   └── broker.log
 └── resources
     └── security
         ├── client-truststore.jks
         └── keystore.jks
+
 ```
 
-- **bin/broker** - executable used to run message broker
+- **bin/broker.sh** - executable used to run message broker
 - **bin/broker.bat** - windows executable used to run message broker
 - **conf/broker.yaml** - main configuration file
 - **conf/log4j.properties** - logging configuration file
 - **lib** - contains all the required jars
+- **database** - contains files related to the embedded Derby database
+- **dbscripts** - database schemas related to supported databases
 - **logs/broker.log** - main logging file
 - **resources/security** - contains both the keystore and the truststore used to create the SSL engine
 
 ## Documentation
+
+Please refer the [user documentation](docs/user-doc-index.md) for information on using the product.
 
 Please refer the [developer documentation](docs/developer-doc-index.md) for more information on the internal design.
 

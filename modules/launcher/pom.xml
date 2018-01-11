@@ -191,6 +191,6 @@
         <db.delimiter>;</db.delimiter>
         <db.directory>${project.build.directory}/database/</db.directory>
         <db.url>jdbc:derby:${db.directory}</db.url>
-        <sql.directory>../broker-core/src/main/resources/dbscripts</sql.directory>
+        <sql.directory>src/main/resources/dbscripts</sql.directory>
     </properties>
 </project>

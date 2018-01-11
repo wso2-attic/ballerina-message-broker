@@ -39,7 +39,7 @@ public class DbUtil {
 
     private static final String DRIVER_CLASS_NAME = "org.apache.derby.jdbc.EmbeddedDriver";
 
-    private static final String path = "src/main/resources/dbscripts/derby-mb.sql";
+    private static final String path = "../launcher/src/main/resources/dbscripts/derby-mb.sql";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DbUtil.class);
 
