@@ -24,4 +24,5 @@ package org.wso2.broker.amqp.codec;
  */
 public class AmqConstant {
     public static final int COMMAND_INVALID = 503;
+    public static final String AMQP_PROTOCOL_IDENTIFIER = "AMQP";
 }

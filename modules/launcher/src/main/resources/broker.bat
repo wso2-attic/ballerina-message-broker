@@ -70,7 +70,7 @@ set CMD=%*
 rem ---------- Add jars to classpath ----------------
 set MESSAGE_BROKER_CLASSPATH=.\lib;%MESSAGE_BROKER_CLASSPATH%
 
-set CMD_LINE_ARGS=-Xbootclasspath/a:%MESSAGE_BROKER_XBOOTCLASSPATH% -Xms256m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="%MESSAGE_BROKER_HOME%\heap-dump.hprof" -classpath %MESSAGE_BROKER_CLASSPATH% %JAVA_OPTS% -Dmessage.broker.home="%MESSAGE_BROKER_HOME%" -Djava.command="%JAVA_HOME%\bin\java" -Djava.opts="%JAVA_OPTS%" -Dlog4j.configuration="file:%MESSAGE_BROKER_HOME%\conf\log4j.properties" -Dbroker.config="%MESSAGE_BROKER_HOME%\conf\broker.yaml" -Dbroker.classpath=%MESSAGE_BROKER_CLASSPATH% -Dfile.encoding=UTF8
+set CMD_LINE_ARGS=-Xbootclasspath/a:%MESSAGE_BROKER_XBOOTCLASSPATH% -Xms256m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="%MESSAGE_BROKER_HOME%\heap-dump.hprof" -classpath %MESSAGE_BROKER_CLASSPATH% %JAVA_OPTS% -Dmessage.broker.home="%MESSAGE_BROKER_HOME%" -Djava.command="%JAVA_HOME%\bin\java" -Djava.opts="%JAVA_OPTS%" -Dlog4j.configuration="file:%MESSAGE_BROKER_HOME%\conf\log4j.properties" -Dbroker.config="%MESSAGE_BROKER_HOME%\conf\broker.yaml"  -Dbroker.users.config="%MESSAGE_BROKER_HOME%\conf\security\users.yaml" -Dbroker.classpath=%MESSAGE_BROKER_CLASSPATH% -Dfile.encoding=UTF8
 
 :runJava
 "%JAVA_HOME%\bin\java" %CMD_LINE_ARGS% org.wso2.broker.Main %CMD%

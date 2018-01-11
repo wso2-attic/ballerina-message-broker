@@ -69,6 +69,10 @@ public class LongString implements EncodableData {
         return new LongString(size, data);
     }
 
+    public static LongString parse(byte[] data) {
+        return new LongString(data.length, data);
+    }
+
     /**
      * Compares {@link LongString} underlying byte array content.
      *
@@ -96,5 +100,10 @@ public class LongString implements EncodableData {
     @Override
     public String toString() {
         return new String(content, StandardCharsets.UTF_8);
+    }
+
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public byte[] getBytes() {
+        return content;
     }
 }
