@@ -132,7 +132,6 @@ public final class QueueHandler {
     }
 
     public void requeue(Message message) throws BrokerException {
-        message.setRedeliver();
         redeliveryQueue.enqueue(message);
     }
 

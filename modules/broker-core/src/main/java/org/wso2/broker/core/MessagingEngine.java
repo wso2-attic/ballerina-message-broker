@@ -55,6 +55,11 @@ final class MessagingEngine {
      */
     private static final int WORKER_COUNT = 5;
 
+    /**
+     * Internal queue used to put unprocessable messages
+     */
+    public static final String DEFAULT_DEAD_LETTER_QUEUE = "amq.dlq";
+
     private final QueueRegistry queueRegistry;
 
     private final TaskExecutorService<MessageDeliveryTask> deliveryTaskService;
@@ -86,6 +91,16 @@ final class MessagingEngine {
                 .setNameFormat("MessageDeliveryTaskThreadPool-%d").build();
         deliveryTaskService = new TaskExecutorService<>(WORKER_COUNT, IDLE_TASK_DELAY_MILLIS, threadFactory);
         messageIdGenerator = new MessageIdGenerator();
+
+        initDefaultDeadLetterQueue();
+    }
+
+    private void initDefaultDeadLetterQueue() throws BrokerException {
+        createQueue(DEFAULT_DEAD_LETTER_QUEUE, false, true, false);
+        bind(DEFAULT_DEAD_LETTER_QUEUE,
+             ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE,
+             DEFAULT_DEAD_LETTER_QUEUE,
+             FieldTable.EMPTY_TABLE);
     }
 
     void bind(String queueName, String exchangeName, String routingKey, FieldTable arguments) throws BrokerException {
@@ -153,7 +168,8 @@ final class MessagingEngine {
                 BindingSet bindingSet = exchange.getBindingsForRoute(routingKey);
 
                 if (bindingSet.isEmpty()) {
-                    LOGGER.info("Dropping message since no queues found for routing key " + routingKey);
+                    LOGGER.info("Dropping message since no queues found for routing key " + routingKey + " in "
+                                        + exchange);
                     message.release();
                 } else {
                     try {
@@ -299,6 +315,17 @@ final class MessagingEngine {
         } finally {
             lock.readLock().unlock();
         }
+    }
 
+    public void moveToDlc(String queueName, Message message) throws BrokerException {
+        Message dlcMessage = message.duplicate(getNextMessageId(),
+                                               DEFAULT_DEAD_LETTER_QUEUE,
+                                               ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE);
+        dlcMessage.getMetadata().addHeader("x-origin-queue", queueName);
+        dlcMessage.getMetadata().addHeader("x-origin-exchange", message.getMetadata().getExchangeName());
+        dlcMessage.getMetadata().addHeader("x-origin-routing-key", message.getMetadata().getRoutingKey());
+        message.release();
+
+        publish(dlcMessage);
     }
 }

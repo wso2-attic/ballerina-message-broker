@@ -29,13 +29,15 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Registry object which contains all the registered exchanges of the broker.
  */
-final class ExchangeRegistry {
+public final class ExchangeRegistry {
 
     private static final String DIRECT = "amq.direct";
 
     private static final String TOPIC = "amq.topic";
 
     private static final String DEFAULT = "<<default>>";
+
+    public static final String DEFAULT_DEAD_LETTER_EXCHANGE = "amq.dlx";
 
     private static final BindingDao NO_OP_BINDING_DAO = new NoOpBindingDao();
 
@@ -50,6 +52,7 @@ final class ExchangeRegistry {
         exchangeMap.put(DIRECT, new DirectExchange(DIRECT, bindingDao));
         exchangeMap.put(TOPIC, new TopicExchange(TOPIC, bindingDao));
         exchangeMap.put(DEFAULT, new DirectExchange(DEFAULT, bindingDao));
+        exchangeMap.put(DEFAULT_DEAD_LETTER_EXCHANGE, new DirectExchange(DEFAULT_DEAD_LETTER_EXCHANGE, bindingDao));
         this.exchangeDao = exchangeDao;
         this.bindingDao = bindingDao;
 

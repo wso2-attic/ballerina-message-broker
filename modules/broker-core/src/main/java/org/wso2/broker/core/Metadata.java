@@ -116,11 +116,17 @@ public class Metadata {
     }
 
     public Metadata shallowCopy() {
-        Metadata metadata = new Metadata(internalId, routingKey, exchangeName, contentLength);
+        Metadata metadata = duplicate(internalId, routingKey, exchangeName);
         metadata.queueSet.addAll(queueSet);
+        return metadata;
+    }
+
+    public Metadata duplicate(long internalId, String routingKey, String exchangeName) {
+        Metadata metadata = new Metadata(internalId, routingKey, exchangeName, contentLength);
         metadata.properties = properties;
         metadata.headers = headers;
         return metadata;
+
     }
 
     @Override
@@ -170,5 +176,9 @@ public class Metadata {
 
     public FieldTable getHeaders() {
         return headers;
+    }
+
+    public void addHeader(String name, String value) {
+        headers.add(ShortString.parseString(name), FieldValue.parseLongString(value));
     }
 }

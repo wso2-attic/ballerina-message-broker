@@ -194,14 +194,15 @@ public class QueueConsumerTest {
 
         subscriberSession.recover();
 
+        // Message order flip after recovering
         message = consumer.receive(5000);
-        Assert.assertNotNull(message, "Requeued first Message was not received");
-        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was not set in first message");
+        Assert.assertNotNull(message, "Requeued second message was not received");
+        Assert.assertFalse(message.getJMSRedelivered(), "Redelivered flag was set in second message" + message);
         message.acknowledge();
 
         message = consumer.receive(5000);
-        Assert.assertNotNull(message, "Requeued second Message was not received");
-        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was not set in second");
+        Assert.assertNotNull(message, "Requeued first message was not received");
+        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was set in first message");
         message.acknowledge();
 
         connection.close();

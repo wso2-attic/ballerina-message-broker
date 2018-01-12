@@ -64,18 +64,17 @@ public class BasicRecover extends MethodFrame {
 
         if (isRequeue()) {
             ctx.fireChannelRead((BlockingTask) () -> {
-                channel.rejectAll();
+                channel.requeueAll();
                 ctx.writeAndFlush(new BasicRecoveryOk(getChannel()));
             });
         } else {
             ctx.fireChannelRead((BlockingTask) () -> {
-                Collection<AckData> unackedMessages = channel.recover();
                 Channel nettyChannel = ctx.channel();
                 nettyChannel.write(new BasicRecoveryOk(getChannel()));
+
+                Collection<AckData> unackedMessages = channel.recover();
                 for (AckData ackData : unackedMessages) {
                     Message message = ackData.getMessage();
-
-                    message.setRedeliver();
                     nettyChannel.write(new AmqpDeliverMessage(message,
                                                               ackData.getConsumerTag(),
                                                               channel,

@@ -21,8 +21,6 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
@@ -34,13 +32,12 @@ import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
  *      2. requeue (bit) - requeue message
  */
 public class BasicReject extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicReject.class);
 
     private final long deliveryTag;
     private final boolean requeue;
 
     public BasicReject(int channel, long deliveryTag, boolean requeue) {
-        super(channel, (short) 60, (short) 80);
+        super(channel, (short) 60, (short) 90);
         this.deliveryTag = deliveryTag;
         this.requeue = requeue;
     }

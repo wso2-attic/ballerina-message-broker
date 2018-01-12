@@ -134,4 +134,8 @@ public final class Broker {
     public void requeue(String queueName, Message message) throws BrokerException {
         messagingEngine.requeue(queueName, message);
     }
+
+    public void moveToDlc(String queueName, Message message) throws BrokerException {
+        messagingEngine.moveToDlc(queueName, message);
+    }
 }

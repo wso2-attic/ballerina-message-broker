@@ -61,6 +61,8 @@ public class AmqpChannel {
 
     private final ChannelFlowManager flowManager;
 
+    private final int maxRedeliveryCount;
+
     /**
      * This tag is unique per subscription to a queue. The server returns this in response
      * to a basic.consume request.
@@ -106,6 +108,7 @@ public class AmqpChannel {
         this.flowManager = new ChannelFlowManager(this,
                                                   configuration.getChannelFlow().getLowLimit(),
                                                   configuration.getChannelFlow().getHighLimit());
+        this.maxRedeliveryCount = Integer.parseInt(configuration.getMaxRedeliveryCount());
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
@@ -190,14 +193,22 @@ public class AmqpChannel {
         if (ackData != null) {
             Message message = ackData.getMessage();
             if (requeue) {
-                message.setRedeliver();
-                broker.requeue(ackData.getQueueName(), message);
+                setRedeliverAndRequeue(message, ackData.getQueueName());
             } else {
                 message.release();
                 LOGGER.debug("Dropping message for delivery tag {}", deliveryTag);
             }
         } else {
             LOGGER.warn("Could not find a matching ack data for rejecting the delivery tag " + deliveryTag);
+        }
+    }
+
+    private void setRedeliverAndRequeue(Message message, String queueName) throws BrokerException {
+        int redeliveryCount = message.setRedeliver();
+        if (redeliveryCount <= maxRedeliveryCount) {
+            broker.requeue(queueName, message);
+        } else {
+            broker.moveToDlc(queueName, message);
         }
     }
 
@@ -210,12 +221,10 @@ public class AmqpChannel {
         return unackedMessageMap.clear();
     }
 
-    public void rejectAll() throws BrokerException {
+    public void requeueAll() throws BrokerException {
         Collection<AckData> entries = unackedMessageMap.clear();
         for (AckData ackData : entries) {
-            Message message = ackData.getMessage();
-            message.setRedeliver();
-            broker.requeue(ackData.getQueueName(), message);
+            broker.requeue(ackData.getQueueName(), ackData.getMessage());
         }
     }
 
