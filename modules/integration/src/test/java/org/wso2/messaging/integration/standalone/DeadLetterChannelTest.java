@@ -17,7 +17,7 @@
  *
  */
 
-package org.wso2.messaging.integration;
+package org.wso2.messaging.integration.standalone;
 
 import org.testng.Assert;
 import org.testng.annotations.Parameters;

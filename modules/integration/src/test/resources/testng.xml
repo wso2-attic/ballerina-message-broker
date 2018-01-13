@@ -18,8 +18,9 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="ParentSuite">
+<suite name="ParentSuite" preserve-order="true">
     <suite-files>
         <suite-file path="broker-auto-start-suite.xml" />
+        <suite-file path="failover-broker-suite.xml" />
     </suite-files>
 </suite>
