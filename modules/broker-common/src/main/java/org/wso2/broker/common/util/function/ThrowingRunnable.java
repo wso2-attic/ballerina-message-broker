@@ -20,7 +20,7 @@
 package org.wso2.broker.common.util.function;
 
 /**
- * Functional interface to wrap a throwing action
+ * Functional interface to wrap a throwing action.
  *
  * @param <E> checked exception thrown by the method
  */

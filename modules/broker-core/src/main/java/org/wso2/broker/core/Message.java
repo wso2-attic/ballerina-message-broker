@@ -68,8 +68,8 @@ public class Message {
         return message;
     }
 
-    public Message duplicate(long internalId, String routingKey, String exchangeName) {
-        Message message = new Message(metadata.duplicate(internalId, routingKey, exchangeName));
+    public Message shallowCopyWith(long internalId, String routingKey, String exchangeName) {
+        Message message = new Message(metadata.shallowCopyWith(internalId, routingKey, exchangeName));
         shallowCopyContent(message);
         return message;
     }

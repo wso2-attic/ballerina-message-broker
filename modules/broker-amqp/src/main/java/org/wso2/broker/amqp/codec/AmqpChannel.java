@@ -205,6 +205,11 @@ public class AmqpChannel {
 
     private void setRedeliverAndRequeue(Message message, String queueName) throws BrokerException {
         int redeliveryCount = message.setRedeliver();
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Redelivery count is {} for message {}",
+                        redeliveryCount,
+                        message.getMetadata().getInternalId());
+        }
         if (redeliveryCount <= maxRedeliveryCount) {
             broker.requeue(queueName, message);
         } else {

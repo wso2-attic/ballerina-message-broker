@@ -116,12 +116,12 @@ public class Metadata {
     }
 
     public Metadata shallowCopy() {
-        Metadata metadata = duplicate(internalId, routingKey, exchangeName);
+        Metadata metadata = shallowCopyWith(internalId, routingKey, exchangeName);
         metadata.queueSet.addAll(queueSet);
         return metadata;
     }
 
-    public Metadata duplicate(long internalId, String routingKey, String exchangeName) {
+    public Metadata shallowCopyWith(long internalId, String routingKey, String exchangeName) {
         Metadata metadata = new Metadata(internalId, routingKey, exchangeName, contentLength);
         metadata.properties = properties;
         metadata.headers = headers;

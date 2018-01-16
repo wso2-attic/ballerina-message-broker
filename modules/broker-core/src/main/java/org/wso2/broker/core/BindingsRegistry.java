@@ -32,11 +32,6 @@ import java.util.Map;
  */
 public final class BindingsRegistry {
 
-    /**
-     * Default routing key used for dlc messages
-     */
-    public static final String DLC_ROUTING_KEY = "dlc-message";
-
     private final Map<String, BindingSet> routingKeyToBindingMap;
 
     private final Exchange exchange;

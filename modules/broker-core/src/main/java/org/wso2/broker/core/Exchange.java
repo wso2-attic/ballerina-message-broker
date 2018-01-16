@@ -137,9 +137,6 @@ public abstract class Exchange {
 
     @Override
     public String toString() {
-        return "Exchange{" +
-                "name='" + name + '\'' +
-                ", type=" + type +
-                '}';
+        return "Exchange{name='" + name + '\'' + ", type=" + type + '}';
     }
 }

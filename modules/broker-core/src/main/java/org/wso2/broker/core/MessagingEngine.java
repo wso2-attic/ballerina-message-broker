@@ -56,9 +56,16 @@ final class MessagingEngine {
     private static final int WORKER_COUNT = 5;
 
     /**
-     * Internal queue used to put unprocessable messages
+     * Internal queue used to put unprocessable messages.
      */
     public static final String DEFAULT_DEAD_LETTER_QUEUE = "amq.dlq";
+
+    /**
+     * Generated header names when putting a file to dead letter queue.
+     */
+    public static final String ORIGIN_QUEUE_HEADER = "x-origin-queue";
+    public static final String ORIGIN_EXCHANGE_HEADER = "x-origin-exchange";
+    public static final String ORIGIN_ROUTING_KEY_HEADER = "x-origin-routing-key";
 
     private final QueueRegistry queueRegistry;
 
@@ -242,6 +249,9 @@ final class MessagingEngine {
     }
 
     void consume(Consumer consumer) throws BrokerException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Consume request received for {}", consumer.getQueueName());
+        }
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(consumer.getQueueName());
@@ -318,14 +328,21 @@ final class MessagingEngine {
     }
 
     public void moveToDlc(String queueName, Message message) throws BrokerException {
-        Message dlcMessage = message.duplicate(getNextMessageId(),
-                                               DEFAULT_DEAD_LETTER_QUEUE,
-                                               ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE);
-        dlcMessage.getMetadata().addHeader("x-origin-queue", queueName);
-        dlcMessage.getMetadata().addHeader("x-origin-exchange", message.getMetadata().getExchangeName());
-        dlcMessage.getMetadata().addHeader("x-origin-routing-key", message.getMetadata().getRoutingKey());
-        message.release();
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Moving message to DLC: {}", message);
+        }
+        try {
+            Message dlcMessage = message.shallowCopyWith(getNextMessageId(),
+                                                         DEFAULT_DEAD_LETTER_QUEUE,
+                                                         ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE);
+            dlcMessage.getMetadata().addHeader(ORIGIN_QUEUE_HEADER, queueName);
+            dlcMessage.getMetadata().addHeader(ORIGIN_EXCHANGE_HEADER, message.getMetadata().getExchangeName());
+            dlcMessage.getMetadata().addHeader(ORIGIN_ROUTING_KEY_HEADER, message.getMetadata().getRoutingKey());
 
-        publish(dlcMessage);
+            publish(dlcMessage);
+            acknowledge(queueName, message);
+        } finally {
+            message.release();
+        }
     }
 }

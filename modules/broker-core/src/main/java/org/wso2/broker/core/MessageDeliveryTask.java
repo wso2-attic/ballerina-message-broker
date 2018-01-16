@@ -64,9 +64,16 @@ final class MessageDeliveryTask extends Task {
             Consumer consumer = consumerIterator.next();
 
             if (!consumer.isReady()) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Consumer {} is not ready for consuming messages from {}",
+                                 consumer,
+                                 queueHandler.getQueue().getName());
+                }
+
                 if (consumer.equals(previousConsumer)) {
                     return TaskHint.IDLE;
                 } else {
+                    previousConsumer = consumer;
                     continue;
                 }
             } else {

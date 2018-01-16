@@ -68,22 +68,26 @@ public class DeadLetterChannelTest {
         Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
         MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
 
-        for (int iteration = 0; iteration < 5; iteration++) {
+        for (int iteration = 0; iteration < 6; iteration++) {
             Message message = consumer.receive(5000);
             Assert.assertNotNull(message, "Message was not received");
             subscriberSession.recover();
         }
 
-        Message message = consumer.receive(1000);
-        Assert.assertNotNull(message, "Message was not received");
-
         Connection dlcConsumerConnection = connectionFactory.createConnection();
+        dlcConsumerConnection.start();
         Session dlcConsumerSession = dlcConsumerConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         MessageConsumer dlcConsumer = dlcConsumerSession.createConsumer((Destination) initialContextForQueue.lookup(
                 dlcQueueName));
 
-        dlcConsumer.receive(5000);
-        Assert.assertNotNull(message, "Dead lettered message was not received");
+        Message dlcMessage = dlcConsumer.receive(5000);
+        Assert.assertNotNull(dlcMessage, "Dead lettered message was not received" + dlcMessage);
+        String originQueue = dlcMessage.getStringProperty("x-origin-queue");
+        Assert.assertEquals(originQueue, queueName, "Origin queue name did not match" + dlcMessage);
+        String originExchange = dlcMessage.getStringProperty("x-origin-exchange");
+        Assert.assertEquals(originExchange, "amq.direct", "Origin exchange name did not match" + dlcMessage);
+        String originRoutingKey = dlcMessage.getStringProperty("x-origin-routing-key");
+        Assert.assertEquals(originRoutingKey, queueName, "Origin routing key did not match" + dlcMessage);
 
         dlcConsumerConnection.close();
         connection.close();
