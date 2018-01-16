@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ WSO2 Inc. licenses this file to you under the Apache License,
   ~ Version 2.0 (the "License"); you may not use this file except
@@ -29,7 +29,7 @@
 
     <artifactId>broker-common</artifactId>
     <name>Broker - Common</name>
-
+    <packaging>bundle</packaging>
     <dependencies>
         <dependency>
             <groupId>io.netty</groupId>
@@ -71,6 +71,26 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <version>1.4.0</version>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.artifactId}</Bundle-Name>
+                        <Private-Package>
+                        </Private-Package>
+                        <Import-Package>
+                            io.netty.buffer.*;version="${netty.import.package.range.version}",
+                        </Import-Package>
+                        <Export-Package>
+                            org.wso2.broker.common.*;version="${project.version}",
+                        </Export-Package>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>

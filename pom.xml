@@ -50,6 +50,7 @@
         <module>modules/launcher</module>
         <module>modules/integration</module>
         <module>modules/coverage-report</module>
+        <module>modules/features</module>
     </modules>
 
     <dependencyManagement>
@@ -219,7 +220,7 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>com.lmax</groupId>
+                <groupId>org.wso2.orbit.com.lmax</groupId>
                 <artifactId>disruptor</artifactId>
                 <version>${lmax.disruptor.version}</version>
             </dependency>
@@ -245,6 +246,11 @@
                         <artifactId>org.eclipse.osgi.services</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.swagger</groupId>
@@ -286,7 +292,9 @@
     </build>
 
     <properties>
+        <broker.package.import.range.version>[4.0.0,5.0.0)</broker.package.import.range.version>
         <netty.version>4.1.17.Final</netty.version>
+        <netty.import.package.range.version>(4,5]</netty.import.package.range.version>
         <slf4j.version>1.7.25</slf4j.version>
         <testng.version>6.11</testng.version>
         <mockito.version>2.12.0</mockito.version>
@@ -309,14 +317,21 @@
         <hikari.version>2.7.4</hikari.version>
         <derby.version>10.14.1.0</derby.version>
         <msf4j.version>2.5.2</msf4j.version>
+        <msf4j.package.import.version.range>[2.5.0, 2.6.0)</msf4j.package.import.version.range>
         <com.ibatis.version>2.1.7.597</com.ibatis.version>
-        <lmax.disruptor.version>3.3.7</lmax.disruptor.version>
+        <lmax.disruptor.version>3.3.7.wso2v1</lmax.disruptor.version>
+        <lmax.disruptor.package.import.version.range>[3.3.7,3.4.0)</lmax.disruptor.package.import.version.range>
         <swagger.annotations.version>1.5.3</swagger.annotations.version>
         <jackson.annotations.version>2.9.3</jackson.annotations.version>
         <javax.validation-api.version>1.1.0.Final</javax.validation-api.version>
         <httpclient.version>4.5.4</httpclient.version>
         <jaxrs.api.version>2.0</jaxrs.api.version>
+        <jaxrs.api.package.import.version.range>[2.0,3.0)</jaxrs.api.package.import.version.range>
         <json.jackson.version>2.26</json.jackson.version>
         <build.helper.maven.plugin.version>3.0.0</build.helper.maven.plugin.version>
+        <carbon.feature.plugin.version>3.1.3</carbon.feature.plugin.version>
+        <h2.version>1.4.192</h2.version>
+        <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
+        <guava.package.import.version.range>[20.0,30.0)</guava.package.import.version.range>
     </properties>
 </project>
