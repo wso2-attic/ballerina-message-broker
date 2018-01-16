@@ -26,58 +26,94 @@ public class AmqpServerConfiguration {
     /**
      * Namespace used in config file
      */
-    public static final String NAMESPACE = "transport.amqp";
+    public static final String NAMESPACE = "org.wso2.broker";
 
-    private String maxRedeliveryCount = "5";
-
-    private FlowDetails channelFlow = new FlowDetails();
-
-    private NonSecureServerDetails plain = new NonSecureServerDetails();
-
-    private SslServerDetails ssl = new SslServerDetails();
+    private TransportDetails transport = new TransportDetails();
 
     /**
-     * Getter for maxRedeliveryCount
+     * Getter for transport
      */
-    public String getMaxRedeliveryCount() {
-        return maxRedeliveryCount;
+    public TransportDetails getTransport() {
+        return transport;
     }
 
-    public void setMaxRedeliveryCount(String maxRedeliveryCount) {
-        this.maxRedeliveryCount = maxRedeliveryCount;
+    public void setTransport(TransportDetails transport) {
+        this.transport = transport;
     }
 
     /**
-     * Getter for channelFlow
+     * Transport related config class.
      */
-    public FlowDetails getChannelFlow() {
-        return channelFlow;
-    }
+    public static class TransportDetails {
+        private AmqpDetails amqp = new AmqpDetails();
 
-    public void setChannelFlow(FlowDetails channelFlow) {
-        this.channelFlow = channelFlow;
+        /**
+         * Getter for amqp
+         */
+        public AmqpDetails getAmqp() {
+            return amqp;
+        }
+
+        public void setAmqp(AmqpDetails amqp) {
+            this.amqp = amqp;
+        }
     }
 
     /**
-     * Getter for tcp.
+     * AMQP transport related config class.
      */
-    public NonSecureServerDetails getPlain() {
-        return plain;
-    }
+    public static class AmqpDetails {
+        private String maxRedeliveryCount = "5";
 
-    public void setPlain(NonSecureServerDetails tcp) {
-        this.plain = tcp;
-    }
+        private FlowDetails channelFlow = new FlowDetails();
 
-    /**
-     * Getter for ssl.
-     */
-    public SslServerDetails getSsl() {
-        return ssl;
-    }
+        private NonSecureServerDetails plain = new NonSecureServerDetails();
 
-    public void setSsl(SslServerDetails ssl) {
-        this.ssl = ssl;
+        private SslServerDetails ssl = new SslServerDetails();
+
+        /**
+         * Getter for maxRedeliveryCount
+         */
+        public String getMaxRedeliveryCount() {
+            return maxRedeliveryCount;
+        }
+
+        public void setMaxRedeliveryCount(String maxRedeliveryCount) {
+            this.maxRedeliveryCount = maxRedeliveryCount;
+        }
+
+        /**
+         * Getter for channelFlow
+         */
+        public FlowDetails getChannelFlow() {
+            return channelFlow;
+        }
+
+        public void setChannelFlow(FlowDetails channelFlow) {
+            this.channelFlow = channelFlow;
+        }
+
+        /**
+         * Getter for tcp.
+         */
+        public NonSecureServerDetails getPlain() {
+            return plain;
+        }
+
+        public void setPlain(NonSecureServerDetails tcp) {
+            this.plain = tcp;
+        }
+
+        /**
+         * Getter for ssl.
+         */
+        public SslServerDetails getSsl() {
+            return ssl;
+        }
+
+        public void setSsl(SslServerDetails ssl) {
+            this.ssl = ssl;
+        }
     }
 
     /**

@@ -26,19 +26,37 @@ public class RestServerConfiguration {
     /**
      * Namespace used in config file
      */
-    public static final String NAMESPACE = "admin.service";
+    public static final String NAMESPACE = "org.wso2.broker";
 
-    private NonSecureServerDetails plain = new NonSecureServerDetails();
+    private AdminServiceDetails adminService = new AdminServiceDetails();
 
     /**
-     * Getter for tcp.
+     * Getter for adminService
      */
-    public NonSecureServerDetails getPlain() {
-        return plain;
+    public AdminServiceDetails getAdminService() {
+        return adminService;
     }
 
-    public void setPlain(NonSecureServerDetails plain) {
-        this.plain = plain;
+    public void setAdminService(AdminServiceDetails adminService) {
+        this.adminService = adminService;
+    }
+
+    /**
+     * Config class for admin server
+     */
+    public static class AdminServiceDetails {
+        private NonSecureServerDetails plain = new NonSecureServerDetails();
+
+        /**
+         * Getter for tcp.
+         */
+        public NonSecureServerDetails getPlain() {
+            return plain;
+        }
+
+        public void setPlain(NonSecureServerDetails plain) {
+            this.plain = plain;
+        }
     }
 
     /**
