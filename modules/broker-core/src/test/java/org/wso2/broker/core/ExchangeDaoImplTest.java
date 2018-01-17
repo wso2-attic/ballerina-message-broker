@@ -31,8 +31,6 @@ import org.wso2.broker.core.store.dao.impl.ExchangeDaoImpl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import javax.sql.DataSource;
 
 public class ExchangeDaoImplTest {
@@ -51,11 +49,20 @@ public class ExchangeDaoImplTest {
     }
 
     @AfterMethod
-    public void cleanup() throws SQLException {
+    public void tearDown() throws Exception {
+        Object[][] exchanges = exchangeData();
         Connection connection = dataSource.getConnection();
-        Statement statement = connection.createStatement();
-        statement.execute("DELETE FROM MB_EXCHANGE");
+        PreparedStatement prepareStatement = connection.prepareStatement("DELETE FROM MB_EXCHANGE WHERE "
+                                                                                  + "EXCHANGE_NAME=?");
+        for (Object[] exchange : exchanges) {
+            String exchangeName = (String) exchange[0];
+            prepareStatement.setString(1, exchangeName);
+            prepareStatement.addBatch();
+        }
+
+        prepareStatement.executeBatch();
         connection.commit();
+        connection.close();
     }
 
     @Test(dataProvider = "exchangeData", description = "Test exchange persistence")
@@ -87,9 +94,9 @@ public class ExchangeDaoImplTest {
         connection.close();
     }
 
-    @Test(dataProvider = "exchangeData", description = "Test exchange persistence"
+    @Test(dataProvider = "exchangeData", description = "Test duplicate exchange persistence"
             , expectedExceptions = BrokerException.class)
-    public void testRetrieveAll(String name, String type) throws Exception {
+    public void testDuplicatePersistence(String name, String type) throws Exception {
         Exchange exchange = ExchangeRegistry.ExchangeFactory.newInstance(name, Exchange.Type.from(type), bindingDao);
         exchangeDao.persist(exchange);
         // Try to add an already existing exchange
@@ -103,5 +110,4 @@ public class ExchangeDaoImplTest {
                 { "testExchange", "direct" },
         };
     }
-
 }
