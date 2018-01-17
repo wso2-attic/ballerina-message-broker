@@ -50,7 +50,6 @@ public class AmqpDeliverMessage {
         if (!channel.isFlowEnabled()) {
             channel.hold(this);
         } else {
-
             long deliveryTag = channel.getNextDeliveryTag();
             channel.recordMessageDelivery(deliveryTag, new AckData(message.shallowCopy(), queueName, consumerTag));
 

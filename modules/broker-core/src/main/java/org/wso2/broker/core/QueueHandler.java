@@ -110,6 +110,9 @@ public final class QueueHandler {
      * @return True if successfully enqueued, false otherwise
      */
     boolean enqueue(Message message) throws BrokerException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Enqueuing message {} to queue {}", message, queue.getName());
+        }
         return queue.enqueue(message);
     }
 
@@ -132,7 +135,6 @@ public final class QueueHandler {
     }
 
     public void requeue(Message message) throws BrokerException {
-        message.setRedeliver();
         redeliveryQueue.enqueue(message);
     }
 

@@ -28,11 +28,24 @@ public class AmqpServerConfiguration {
      */
     public static final String NAMESPACE = "transport.amqp";
 
+    private String maxRedeliveryCount = "5";
+
     private FlowDetails channelFlow = new FlowDetails();
 
     private NonSecureServerDetails plain = new NonSecureServerDetails();
 
     private SslServerDetails ssl = new SslServerDetails();
+
+    /**
+     * Getter for maxRedeliveryCount
+     */
+    public String getMaxRedeliveryCount() {
+        return maxRedeliveryCount;
+    }
+
+    public void setMaxRedeliveryCount(String maxRedeliveryCount) {
+        this.maxRedeliveryCount = maxRedeliveryCount;
+    }
 
     /**
      * Getter for channelFlow

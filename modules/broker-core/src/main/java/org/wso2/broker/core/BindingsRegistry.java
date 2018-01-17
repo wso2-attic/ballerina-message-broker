@@ -30,7 +30,7 @@ import java.util.Map;
  * TODO why do we repeat routing key in two places (as key and as field in binding object)?
  * Feels like we need to refactor this class.
  */
-final class BindingsRegistry {
+public final class BindingsRegistry {
 
     private final Map<String, BindingSet> routingKeyToBindingMap;
 

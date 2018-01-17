@@ -55,6 +55,18 @@ final class MessagingEngine {
      */
     private static final int WORKER_COUNT = 5;
 
+    /**
+     * Internal queue used to put unprocessable messages.
+     */
+    public static final String DEFAULT_DEAD_LETTER_QUEUE = "amq.dlq";
+
+    /**
+     * Generated header names when putting a file to dead letter queue.
+     */
+    public static final String ORIGIN_QUEUE_HEADER = "x-origin-queue";
+    public static final String ORIGIN_EXCHANGE_HEADER = "x-origin-exchange";
+    public static final String ORIGIN_ROUTING_KEY_HEADER = "x-origin-routing-key";
+
     private final QueueRegistry queueRegistry;
 
     private final TaskExecutorService<MessageDeliveryTask> deliveryTaskService;
@@ -86,6 +98,16 @@ final class MessagingEngine {
                 .setNameFormat("MessageDeliveryTaskThreadPool-%d").build();
         deliveryTaskService = new TaskExecutorService<>(WORKER_COUNT, IDLE_TASK_DELAY_MILLIS, threadFactory);
         messageIdGenerator = new MessageIdGenerator();
+
+        initDefaultDeadLetterQueue();
+    }
+
+    private void initDefaultDeadLetterQueue() throws BrokerException {
+        createQueue(DEFAULT_DEAD_LETTER_QUEUE, false, true, false);
+        bind(DEFAULT_DEAD_LETTER_QUEUE,
+             ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE,
+             DEFAULT_DEAD_LETTER_QUEUE,
+             FieldTable.EMPTY_TABLE);
     }
 
     void bind(String queueName, String exchangeName, String routingKey, FieldTable arguments) throws BrokerException {
@@ -153,7 +175,8 @@ final class MessagingEngine {
                 BindingSet bindingSet = exchange.getBindingsForRoute(routingKey);
 
                 if (bindingSet.isEmpty()) {
-                    LOGGER.info("Dropping message since no queues found for routing key " + routingKey);
+                    LOGGER.info("Dropping message since no queues found for routing key " + routingKey + " in "
+                                        + exchange);
                     message.release();
                 } else {
                     try {
@@ -226,6 +249,9 @@ final class MessagingEngine {
     }
 
     void consume(Consumer consumer) throws BrokerException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Consume request received for {}", consumer.getQueueName());
+        }
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(consumer.getQueueName());
@@ -299,6 +325,24 @@ final class MessagingEngine {
         } finally {
             lock.readLock().unlock();
         }
+    }
 
+    public void moveToDlc(String queueName, Message message) throws BrokerException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Moving message to DLC: {}", message);
+        }
+        try {
+            Message dlcMessage = message.shallowCopyWith(getNextMessageId(),
+                                                         DEFAULT_DEAD_LETTER_QUEUE,
+                                                         ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE);
+            dlcMessage.getMetadata().addHeader(ORIGIN_QUEUE_HEADER, queueName);
+            dlcMessage.getMetadata().addHeader(ORIGIN_EXCHANGE_HEADER, message.getMetadata().getExchangeName());
+            dlcMessage.getMetadata().addHeader(ORIGIN_ROUTING_KEY_HEADER, message.getMetadata().getRoutingKey());
+
+            publish(dlcMessage);
+            acknowledge(queueName, message);
+        } finally {
+            message.release();
+        }
     }
 }

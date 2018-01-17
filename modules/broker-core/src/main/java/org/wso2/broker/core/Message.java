@@ -35,6 +35,8 @@ public class Message {
 
     private boolean redelivered = false;
 
+    private int redeliveryCount;
+
     public Message(Metadata metadata) {
         this.metadata = metadata;
         this.contentChunks = new ArrayList<>();
@@ -60,15 +62,35 @@ public class Message {
 
     public Message shallowCopy() {
         Message message = new Message(metadata.shallowCopy());
-        contentChunks.stream().map(ContentChunk::shallowCopy).forEach(message::addChunk);
+        message.redelivered = redelivered;
+        message.redeliveryCount = redeliveryCount;
+        shallowCopyContent(message);
         return message;
+    }
+
+    public Message shallowCopyWith(long internalId, String routingKey, String exchangeName) {
+        Message message = new Message(metadata.shallowCopyWith(internalId, routingKey, exchangeName));
+        shallowCopyContent(message);
+        return message;
+    }
+
+    private void shallowCopyContent(Message message) {
+        contentChunks.stream().map(ContentChunk::shallowCopy).forEach(message::addChunk);
     }
 
     /**
      * Set redelivery flag
      */
-    public void setRedeliver() {
+    public int setRedeliver() {
         redelivered = true;
+        return ++redeliveryCount;
+    }
+
+    /**
+     * Getter for redeliveryCount
+     */
+    public int getRedeliveryCount() {
+        return redeliveryCount;
     }
 
     /**

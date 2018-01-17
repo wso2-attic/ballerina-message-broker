@@ -24,6 +24,8 @@ broker:
   loginModule: org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule
 
 transport.amqp:
+ maxRedeliveryCount: 5
+
  channelFlow:
   lowLimit: 100
   highLimit: 1000

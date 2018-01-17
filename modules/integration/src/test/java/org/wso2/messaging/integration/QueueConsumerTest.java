@@ -32,6 +32,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 public class QueueConsumerTest {
@@ -180,8 +181,14 @@ public class QueueConsumerTest {
         Queue queue = producerSession.createQueue(queueName);
         MessageProducer producer = producerSession.createProducer(queue);
 
-        producer.send(producerSession.createTextMessage("First message for reject test"));
-        producer.send(producerSession.createTextMessage("Second message for reject test"));
+        TextMessage firstMessage = producerSession.createTextMessage("First message for reject test");
+        TextMessage secondMessage = producerSession.createTextMessage("Second message for reject test");
+        String correlationIdOne = "1";
+        String correlationIdTwo = "2";
+        firstMessage.setJMSCorrelationID(correlationIdOne);
+        secondMessage.setJMSCorrelationID(correlationIdTwo);
+        producer.send(firstMessage);
+        producer.send(secondMessage);
         producerSession.close();
 
         // Consume published messages
@@ -194,15 +201,19 @@ public class QueueConsumerTest {
 
         subscriberSession.recover();
 
-        message = consumer.receive(5000);
-        Assert.assertNotNull(message, "Requeued first Message was not received");
-        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was not set in first message");
-        message.acknowledge();
+        // Message order can change after recovering
+        for (int i = 0; i < 2; i++) {
+            message = consumer.receive(5000);
+            Assert.assertNotNull(message, "Requeued message was not received");
 
-        message = consumer.receive(5000);
-        Assert.assertNotNull(message, "Requeued second Message was not received");
-        Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was not set in second");
-        message.acknowledge();
+            if (correlationIdOne.equals(message.getJMSCorrelationID())) {
+                Assert.assertTrue(message.getJMSRedelivered(), "Redelivered flag was set in second message" + message);
+            } else {
+                Assert.assertFalse(message.getJMSRedelivered(), "Redelivered flag was set in first message");
+            }
+
+            message.acknowledge();
+        }
 
         connection.close();
     }

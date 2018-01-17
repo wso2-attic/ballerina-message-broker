@@ -134,4 +134,9 @@ public abstract class Exchange {
     public int hashCode() {
         return hashCode;
     }
+
+    @Override
+    public String toString() {
+        return "Exchange{name='" + name + '\'' + ", type=" + type + '}';
+    }
 }
