@@ -105,11 +105,10 @@ public class AmqpChannel {
         this.channelId = channelId;
         this.consumerMap = new HashMap<>();
         this.messageAggregator = new InMemoryMessageAggregator(broker);
-
-        int flowLowLimit = configuration.getTransport().getAmqp().getChannelFlow().getLowLimit();
-        int flowHighLimit = configuration.getTransport().getAmqp().getChannelFlow().getHighLimit();
-        this.flowManager = new ChannelFlowManager(this, flowLowLimit, flowHighLimit);
-        this.maxRedeliveryCount = Integer.parseInt(configuration.getTransport().getAmqp().getMaxRedeliveryCount());
+        this.flowManager = new ChannelFlowManager(this,
+                                                  configuration.getChannelFlow().getLowLimit(),
+                                                  configuration.getChannelFlow().getHighLimit());
+        this.maxRedeliveryCount = Integer.parseInt(configuration.getMaxRedeliveryCount());
     }
 
     public void declareExchange(String exchangeName, String exchangeType,

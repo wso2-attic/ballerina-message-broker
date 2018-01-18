@@ -49,22 +49,23 @@ public class SslHandlerFactory {
 
     public SslHandlerFactory(AmqpServerConfiguration configuration) throws KeyStoreException, IOException,
             CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException {
-        AmqpServerConfiguration.SslServerDetails sslConfig = configuration.getTransport().getAmqp().getSsl();
-        KeyStore keyStore = getKeyStore(sslConfig.getKeyStore().getType(),
-                                        sslConfig.getKeyStore().getLocation(),
-                                        sslConfig.getKeyStore().getPassword());
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(sslConfig.getKeyStore().getCertType());
-        keyManagerFactory.init(keyStore,
-                               sslConfig.getKeyStore().getPassword().toCharArray());
+        KeyStore keyStore = getKeyStore(configuration.getSsl().getKeyStore().getType(),
+                                        configuration.getSsl().getKeyStore().getLocation(),
+                                        configuration.getSsl().getKeyStore().getPassword());
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(configuration.getSsl()
+                                                                                         .getKeyStore()
+                                                                                         .getCertType());
+        keyManagerFactory.init(keyStore, configuration.getSsl().getKeyStore().getPassword().toCharArray());
 
-        KeyStore trustStore = getKeyStore(sslConfig.getTrustStore().getType(),
-                                          sslConfig.getTrustStore().getLocation(),
-                                          sslConfig.getTrustStore().getPassword());
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(sslConfig.getTrustStore()
-                                                                                           .getCertType());
+        KeyStore trustStore = getKeyStore(configuration.getSsl().getTrustStore().getType(),
+                                          configuration.getSsl().getTrustStore().getLocation(),
+                                          configuration.getSsl().getTrustStore().getPassword());
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(configuration.getSsl()
+                                                                               .getTrustStore()
+                                                                               .getCertType());
         trustManagerFactory.init(trustStore);
 
-        sslContext = SSLContext.getInstance(sslConfig.getProtocol());
+        sslContext = SSLContext.getInstance(configuration.getSsl().getProtocol());
         sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
     }
 

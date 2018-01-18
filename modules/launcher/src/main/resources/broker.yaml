@@ -14,48 +14,81 @@
 # specific language governing permissions and limitations
 # under the License.
 
-org.wso2.broker:
- hostName: localhost
-
+# Broker Configurations.
+wso2.broker:
+ # Datasource configurations used to communicate with the database.
  dataSource:
+  # Database URL.
   url: jdbc:derby:database
+  # Database username.
   user: root
+  # Database password.
   password: root
 
+ # Broker authentication related configurations.
  authenticator:
+  # JAAS login module used to authenticate users.
   loginModule: org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule
 
- transport:
-  amqp:
-   maxRedeliveryCount: 5
+# AMQP transport related configurations.
+wso2.broker.transport.amqp:
+ # Maximum number of redeliveries before publishing a message to the DLX (dead letter exchange).
+ maxRedeliveryCount: 5
 
-   channelFlow:
-    lowLimit: 100
-    highLimit: 1000
+ # Publisher flow control related configs.
+ channelFlow:
+  # The low limit used to enable channel flow when it is disabled. Value corresponds to the number of messages.
+  lowLimit: 100
+  # The high limit used to disable channel flow when it is enabled. Value corresponds to the number of messages.
+  highLimit: 1000
 
-   plain:
-    port: 5672
+ # Nonsecured transport configurations.
+ plain:
+  # Hostname configuration used in creating the server socket
+  hostName: localhost
+  # Port used for the nonsecured transport.
+  port: 5672
 
-   ssl:
-    port: 8672
-    enabled: true
-    protocol: TLS
+ # Secured transport configuration.
+ ssl:
+  # Indicate if secured transport is enabled. Accepted values are 'true' or 'false'.
+  enabled: true
+  # Hostname configuration used in creating server socket
+  hostName: localhost
+  # Port used to bind the secured transport.
+  port: 8672
+  # Secure protocol used to encrypt data.
+  protocol: TLS
 
-    keyStore:
-     type: JKS
-     location: resources/security/keystore.jks
-     password: wso2carbon
-     certType: SunX509
+  # Keystore configurations used in creating the secure transport.
+  keyStore:
+   # Type of the keystore file.
+   type: JKS
+   # Location of the keystore file. The path can be relative to broker home or absolute path.
+   location: resources/security/keystore.jks
+   # Keystore password.
+   password: wso2carbon
+   # Cert type used in the keystore file.
+   certType: SunX509
 
-    trustStore:
-     type: JKS
-     location: resources/security/client-truststore.jks
-     password: wso2carbon
-     certType: SunX509
+  # Truststore configurations used in creating the secure transport.
+  trustStore:
+   # Type of truststore file.
+   type: JKS
+   # Location of the keystore file. The path can be relative to broker home or absolute path.
+   location: resources/security/client-truststore.jks
+   # Truststore password.
+   password: wso2carbon
+   # Cert type used in the truststore file
+   certType: SunX509
 
- haConfig:
-  enabled: false
+wso2.broker.haConfig:
+ enabled: false
 
- adminService:
-  plain:
-   port: 9000
+# Admin service related configurations.
+wso2.broker.admin.service:
+ plain:
+  # Hostname configuration used in creating server socket
+  hostName: localhost
+  # Port used for the nonsecured admin service.
+  port: 9000
