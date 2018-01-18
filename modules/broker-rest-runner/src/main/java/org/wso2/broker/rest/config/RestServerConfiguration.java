@@ -26,36 +26,54 @@ public class RestServerConfiguration {
     /**
      * Namespace used in config file
      */
-    public static final String NAMESPACE = "admin.service";
+    public static final String NAMESPACE = "org.wso2.broker";
 
-    private NonSecureServerDetails plain = new NonSecureServerDetails();
+    private String hostName = "localhost";
 
-    /**
-     * Getter for tcp.
-     */
-    public NonSecureServerDetails getPlain() {
-        return plain;
+    private AdminServiceDetails adminService = new AdminServiceDetails();
+
+    public String getHostName() {
+        return hostName;
     }
 
-    public void setPlain(NonSecureServerDetails plain) {
-        this.plain = plain;
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
+
+    /**
+     * Getter for adminService
+     */
+    public AdminServiceDetails getAdminService() {
+        return adminService;
+    }
+
+    public void setAdminService(AdminServiceDetails adminService) {
+        this.adminService = adminService;
+    }
+
+    /**
+     * Config class for admin server
+     */
+    public static class AdminServiceDetails {
+        private NonSecureServerDetails plain = new NonSecureServerDetails();
+
+        /**
+         * Getter for tcp.
+         */
+        public NonSecureServerDetails getPlain() {
+            return plain;
+        }
+
+        public void setPlain(NonSecureServerDetails plain) {
+            this.plain = plain;
+        }
     }
 
     /**
      * Contains information required to setup the non secure server socket.
      */
     public static class NonSecureServerDetails {
-        private String hostName = "localhost";
-
         private String port = "9000";
-
-        public String getHostName() {
-            return hostName;
-        }
-
-        public void setHostName(String hostName) {
-            this.hostName = hostName;
-        }
 
         public String getPort() {
             return port;

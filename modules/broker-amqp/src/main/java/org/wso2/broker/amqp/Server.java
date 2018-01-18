@@ -92,8 +92,8 @@ public class Server {
     }
 
     private ChannelFuture bindToPlainSocket() throws InterruptedException {
-        String hostname = configuration.getPlain().getHostName();
-        int port = Integer.parseInt(configuration.getPlain().getPort());
+        String hostname = configuration.getHostName();
+        int port = Integer.parseInt(configuration.getTransport().getAmqp().getPlain().getPort());
 
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
@@ -111,8 +111,8 @@ public class Server {
     private ChannelFuture bindToSslSocket()
             throws InterruptedException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException,
             KeyStoreException, KeyManagementException, IOException {
-        String hostname = configuration.getSsl().getHostName();
-        int port = Integer.parseInt(configuration.getSsl().getPort());
+        String hostname = configuration.getHostName();
+        int port = Integer.parseInt(configuration.getTransport().getAmqp().getSsl().getPort());
 
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
@@ -123,7 +123,9 @@ public class Server {
 
         // Bind and start to accept incoming connections.
         ChannelFuture future = b.bind(hostname, port).sync();
-        LOGGER.info("Listening AMQP/" + configuration.getSsl().getProtocol() + " on " + hostname + ":" + port);
+        LOGGER.info(
+                "Listening AMQP/" + configuration.getTransport().getAmqp().getSsl().getProtocol()
+                        + " on " + hostname + ":" + port);
         return future;
     }
 
@@ -133,7 +135,7 @@ public class Server {
         ChannelFuture channelFuture = bindToPlainSocket();
         plainServerChannel = channelFuture.channel();
 
-        if (configuration.getSsl().isEnabled()) {
+        if (configuration.getTransport().getAmqp().getSsl().isEnabled()) {
             ChannelFuture sslSocketFuture = bindToSslSocket();
             sslServerChannel = sslSocketFuture.channel();
         }

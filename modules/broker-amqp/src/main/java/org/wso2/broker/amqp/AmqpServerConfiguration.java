@@ -26,58 +26,104 @@ public class AmqpServerConfiguration {
     /**
      * Namespace used in config file
      */
-    public static final String NAMESPACE = "transport.amqp";
+    public static final String NAMESPACE = "org.wso2.broker";
 
-    private String maxRedeliveryCount = "5";
+    private String hostName = "localhost";
 
-    private FlowDetails channelFlow = new FlowDetails();
+    private TransportDetails transport = new TransportDetails();
 
-    private NonSecureServerDetails plain = new NonSecureServerDetails();
-
-    private SslServerDetails ssl = new SslServerDetails();
-
-    /**
-     * Getter for maxRedeliveryCount
-     */
-    public String getMaxRedeliveryCount() {
-        return maxRedeliveryCount;
+    public String getHostName() {
+        return hostName;
     }
 
-    public void setMaxRedeliveryCount(String maxRedeliveryCount) {
-        this.maxRedeliveryCount = maxRedeliveryCount;
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 
     /**
-     * Getter for channelFlow
+     * Getter for transport
      */
-    public FlowDetails getChannelFlow() {
-        return channelFlow;
+    public TransportDetails getTransport() {
+        return transport;
     }
 
-    public void setChannelFlow(FlowDetails channelFlow) {
-        this.channelFlow = channelFlow;
+    public void setTransport(TransportDetails transport) {
+        this.transport = transport;
     }
 
     /**
-     * Getter for tcp.
+     * Transport related config class.
      */
-    public NonSecureServerDetails getPlain() {
-        return plain;
-    }
+    public static class TransportDetails {
+        private AmqpDetails amqp = new AmqpDetails();
 
-    public void setPlain(NonSecureServerDetails tcp) {
-        this.plain = tcp;
+        /**
+         * Getter for amqp
+         */
+        public AmqpDetails getAmqp() {
+            return amqp;
+        }
+
+        public void setAmqp(AmqpDetails amqp) {
+            this.amqp = amqp;
+        }
     }
 
     /**
-     * Getter for ssl.
+     * AMQP transport related config class.
      */
-    public SslServerDetails getSsl() {
-        return ssl;
-    }
+    public static class AmqpDetails {
+        private String maxRedeliveryCount = "5";
 
-    public void setSsl(SslServerDetails ssl) {
-        this.ssl = ssl;
+        private FlowDetails channelFlow = new FlowDetails();
+
+        private NonSecureServerDetails plain = new NonSecureServerDetails();
+
+        private SslServerDetails ssl = new SslServerDetails();
+
+        /**
+         * Getter for maxRedeliveryCount
+         */
+        public String getMaxRedeliveryCount() {
+            return maxRedeliveryCount;
+        }
+
+        public void setMaxRedeliveryCount(String maxRedeliveryCount) {
+            this.maxRedeliveryCount = maxRedeliveryCount;
+        }
+
+        /**
+         * Getter for channelFlow
+         */
+        public FlowDetails getChannelFlow() {
+            return channelFlow;
+        }
+
+        public void setChannelFlow(FlowDetails channelFlow) {
+            this.channelFlow = channelFlow;
+        }
+
+        /**
+         * Getter for tcp.
+         */
+        public NonSecureServerDetails getPlain() {
+            return plain;
+        }
+
+        public void setPlain(NonSecureServerDetails tcp) {
+            this.plain = tcp;
+        }
+
+        /**
+         * Getter for ssl.
+         */
+        public SslServerDetails getSsl() {
+            return ssl;
+        }
+
+        public void setSsl(SslServerDetails ssl) {
+            this.ssl = ssl;
+        }
     }
 
     /**
@@ -115,17 +161,8 @@ public class AmqpServerConfiguration {
      * Contains information required to setup the non secure server socket.
      */
     public static class NonSecureServerDetails {
-        private String hostName = "localhost";
 
         private String port = "5672";
-
-        public String getHostName() {
-            return hostName;
-        }
-
-        public void setHostName(String hostName) {
-            this.hostName = hostName;
-        }
 
         public String getPort() {
             return port;
@@ -145,21 +182,11 @@ public class AmqpServerConfiguration {
 
         private String protocol = "TLS";
 
-        private String hostName = "localhost";
-
         private String port = "8672";
 
         private KeyStoreDetails keyStore = new KeyStoreDetails();
 
         private TrustStoreDetails trustStore = new TrustStoreDetails();
-
-        public String getHostName() {
-            return hostName;
-        }
-
-        public void setHostName(String hostName) {
-            this.hostName = hostName;
-        }
 
         public String getPort() {
             return port;

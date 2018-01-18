@@ -44,7 +44,7 @@ public class BrokerRestServer {
         BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
         RestServerConfiguration configuration = configProvider.getConfigurationObject(RestServerConfiguration.NAMESPACE,
                                                                                       RestServerConfiguration.class);
-        port = Integer.parseInt(configuration.getPlain().getPort());
+        port = Integer.parseInt(configuration.getAdminService().getPlain().getPort());
         microservicesRunner = new MicroservicesRunner(port);
 
         context.registerService(BrokerServiceRunner.class, new BrokerServiceRunner(microservicesRunner));

@@ -73,23 +73,24 @@ public class SuiteInitializer {
                 .AuthenticationConfiguration();
         authenticationConfiguration.setLoginModule(BrokerLoginModule.class.getCanonicalName());
         brokerConfiguration.setAuthenticator(authenticationConfiguration);
-        configProvider.registerConfigurationObject(BrokerConfiguration.NAMESPACE, brokerConfiguration);
+        configProvider.registerConfigurationObject(BrokerConfiguration.class, brokerConfiguration);
 
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
-        serverConfiguration.getPlain().setPort(port);
-        serverConfiguration.getPlain().setHostName(hostname);
-        serverConfiguration.getSsl().setEnabled(true);
-        serverConfiguration.getSsl().setHostName(hostname);
-        serverConfiguration.getSsl().setPort(sslPort);
-        serverConfiguration.getSsl().getKeyStore().setLocation(TestConstants.KEYSTORE_LOCATION);
-        serverConfiguration.getSsl().getKeyStore().setPassword(TestConstants.KEYSTORE_PASSWORD);
-        serverConfiguration.getSsl().getTrustStore().setLocation(TestConstants.TRUST_STORE_LOCATION);
-        serverConfiguration.getSsl().getTrustStore().setPassword(TestConstants.TRUST_STORE_PASSWORD);
-        configProvider.registerConfigurationObject(AmqpServerConfiguration.NAMESPACE, serverConfiguration);
+        serverConfiguration.setHostName(hostname);
+        AmqpServerConfiguration.AmqpDetails amqpConfig = serverConfiguration.getTransport().getAmqp();
+        amqpConfig.getPlain().setPort(port);
+        amqpConfig.getSsl().setEnabled(true);
+        amqpConfig.getSsl().setPort(sslPort);
+        amqpConfig.getSsl().getKeyStore().setLocation(TestConstants.KEYSTORE_LOCATION);
+        amqpConfig.getSsl().getKeyStore().setPassword(TestConstants.KEYSTORE_PASSWORD);
+        amqpConfig.getSsl().getTrustStore().setLocation(TestConstants.TRUST_STORE_LOCATION);
+        amqpConfig.getSsl().getTrustStore().setPassword(TestConstants.TRUST_STORE_PASSWORD);
+        configProvider.registerConfigurationObject(AmqpServerConfiguration.class, serverConfiguration);
 
         RestServerConfiguration restConfig = new RestServerConfiguration();
-        restConfig.getPlain().setPort(restPort);
-        configProvider.registerConfigurationObject(RestServerConfiguration.NAMESPACE, restConfig);
+        restConfig.setHostName(hostname);
+        restConfig.getAdminService().getPlain().setPort(restPort);
+        configProvider.registerConfigurationObject(RestServerConfiguration.class, restConfig);
 
         startupContext.registerService(BrokerConfigProvider.class, configProvider);
 
@@ -128,11 +129,11 @@ public class SuiteInitializer {
 
         @Override
         public <T> T getConfigurationObject(String namespace, Class<T> configurationClass) throws Exception {
-            return configurationClass.cast(configMap.get(namespace));
+            return configurationClass.cast(configMap.get(configurationClass.getName()));
         }
 
-        private void registerConfigurationObject(String namespace, Object configObject) {
-            configMap.put(namespace, configObject);
+        private <T> void registerConfigurationObject(Class<T> configurationClass, Object configObject) {
+            configMap.put(configurationClass.getName(), configObject);
         }
     }
 }
