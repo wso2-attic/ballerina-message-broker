@@ -26,7 +26,7 @@ public class RestServerConfiguration {
     /**
      * Namespace used in config file
      */
-    public static final String NAMESPACE = "admin.service";
+    public static final String NAMESPACE = "wso2.broker.admin.service";
 
     private NonSecureServerDetails plain = new NonSecureServerDetails();
 

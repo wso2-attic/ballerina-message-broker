@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-broker:
+wso2.broker:
  dataSource:
   url: jdbc:derby:database
   user: root
@@ -23,7 +23,7 @@ broker:
  authenticator:
   loginModule: org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule
 
-transport.amqp:
+wso2.broker.transport.amqp:
  maxRedeliveryCount: 5
 
  channelFlow:
@@ -52,10 +52,10 @@ transport.amqp:
    password: wso2carbon
    certType: SunX509
 
-haConfig:
+wso2.broker.haConfig:
  enabled: false
 
-admin.service:
+wso2.broker.admin.service:
  plain:
   hostName: localhost
   port: 9000
