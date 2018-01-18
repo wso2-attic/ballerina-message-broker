@@ -15,8 +15,6 @@
 # under the License.
 
 org.wso2.broker:
- hostName: localhost
-
  dataSource:
   url: jdbc:derby:database
   user: root
@@ -34,12 +32,14 @@ org.wso2.broker:
     highLimit: 1000
 
    plain:
+    hostName: localhost
     port: 5672
 
    ssl:
-    port: 8672
     enabled: true
     protocol: TLS
+    hostName: localhost
+    port: 8672
 
     keyStore:
      type: JKS
@@ -58,4 +58,5 @@ org.wso2.broker:
 
  adminService:
   plain:
+   hostName: localhost
    port: 9000

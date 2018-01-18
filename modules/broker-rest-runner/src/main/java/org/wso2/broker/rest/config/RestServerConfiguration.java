@@ -28,17 +28,7 @@ public class RestServerConfiguration {
      */
     public static final String NAMESPACE = "org.wso2.broker";
 
-    private String hostName = "localhost";
-
     private AdminServiceDetails adminService = new AdminServiceDetails();
-
-    public String getHostName() {
-        return hostName;
-    }
-
-    public void setHostName(String hostName) {
-        this.hostName = hostName;
-    }
 
     /**
      * Getter for adminService
@@ -73,7 +63,17 @@ public class RestServerConfiguration {
      * Contains information required to setup the non secure server socket.
      */
     public static class NonSecureServerDetails {
+        private String hostName = "localhost";
+
         private String port = "9000";
+
+        public String getHostName() {
+            return hostName;
+        }
+
+        public void setHostName(String hostName) {
+            this.hostName = hostName;
+        }
 
         public String getPort() {
             return port;
