@@ -1,6 +1,3 @@
-[![Build Status](https://wso2.org/jenkins/buildStatus/icon?job=forked-dependencies/message-broker)](https://wso2.org/jenkins/job/forked-dependencies/job/message-broker/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
 # WSO2 Message Broker 4
 
 WSO2 Message Broker is a lightweight, easy-to-use, 100% open source message-brokering server. It uses AMQP 0-9-1 
@@ -49,9 +46,9 @@ Please follow the steps below to build message broker from source code.
 
 ## Documentation
 
-Please refer the [user documentation](docs/user-doc-index.md) for information on using the product.
+Please refer the [user documentation](https://github.com/wso2/message-broker/blob/master/docs/user-doc-index.md) for information on using the product.
 
-Please refer the [developer documentation](docs/developer-doc-index.md) for more information on the internal design.
+Please refer the [developer documentation](https://github.com/wso2/message-broker/blob/master/docs/developer-doc-index.md) for more information on the internal design.
 
 ## Licence
 

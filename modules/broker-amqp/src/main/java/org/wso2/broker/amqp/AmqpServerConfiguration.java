@@ -28,6 +28,8 @@ public class AmqpServerConfiguration {
      */
     public static final String NAMESPACE = "wso2.broker.transport.amqp";
 
+    private String hostName = "localhost";
+
     private String maxRedeliveryCount = "5";
 
     private FlowDetails channelFlow = new FlowDetails();
@@ -35,6 +37,17 @@ public class AmqpServerConfiguration {
     private NonSecureServerDetails plain = new NonSecureServerDetails();
 
     private SslServerDetails ssl = new SslServerDetails();
+
+    /**
+     * Getter for maxRedeliveryCount
+     */
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
 
     /**
      * Getter for maxRedeliveryCount
@@ -115,17 +128,7 @@ public class AmqpServerConfiguration {
      * Contains information required to setup the non secure server socket.
      */
     public static class NonSecureServerDetails {
-        private String hostName = "localhost";
-
         private String port = "5672";
-
-        public String getHostName() {
-            return hostName;
-        }
-
-        public void setHostName(String hostName) {
-            this.hostName = hostName;
-        }
 
         public String getPort() {
             return port;
@@ -145,21 +148,11 @@ public class AmqpServerConfiguration {
 
         private String protocol = "TLS";
 
-        private String hostName = "localhost";
-
         private String port = "8672";
 
         private KeyStoreDetails keyStore = new KeyStoreDetails();
 
         private TrustStoreDetails trustStore = new TrustStoreDetails();
-
-        public String getHostName() {
-            return hostName;
-        }
-
-        public void setHostName(String hostName) {
-            this.hostName = hostName;
-        }
 
         public String getPort() {
             return port;

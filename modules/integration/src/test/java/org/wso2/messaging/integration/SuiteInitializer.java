@@ -76,10 +76,9 @@ public class SuiteInitializer {
         configProvider.registerConfigurationObject(BrokerConfiguration.NAMESPACE, brokerConfiguration);
 
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
+        serverConfiguration.setHostName(hostname);
         serverConfiguration.getPlain().setPort(port);
-        serverConfiguration.getPlain().setHostName(hostname);
         serverConfiguration.getSsl().setEnabled(true);
-        serverConfiguration.getSsl().setHostName(hostname);
         serverConfiguration.getSsl().setPort(sslPort);
         serverConfiguration.getSsl().getKeyStore().setLocation(TestConstants.KEYSTORE_LOCATION);
         serverConfiguration.getSsl().getKeyStore().setPassword(TestConstants.KEYSTORE_PASSWORD);

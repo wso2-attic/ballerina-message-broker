@@ -25,6 +25,15 @@
     <fileSets>
         <fileSet>
             <directory>src/main/resources/</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>COPYRIGHT.txt</include>
+                <include>README.md</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources/</directory>
             <outputDirectory>conf</outputDirectory>
             <includes>
                 <include>log4j.properties</include>
