@@ -38,22 +38,25 @@ public class BrokerRestServer {
 
     private final MicroservicesRunner microservicesRunner;
 
+    private final int port;
+
     public BrokerRestServer(StartupContext context) throws Exception {
         BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
         RestServerConfiguration configuration = configProvider.getConfigurationObject(RestServerConfiguration.NAMESPACE,
                                                                                       RestServerConfiguration.class);
-        int port = Integer.parseInt(configuration.getPlain().getPort());
+        port = Integer.parseInt(configuration.getPlain().getPort());
         microservicesRunner = new MicroservicesRunner(port);
+
         context.registerService(BrokerServiceRunner.class, new BrokerServiceRunner(microservicesRunner));
     }
 
     public void start() {
         microservicesRunner.start();
-        LOGGER.info("Broker rest server started");
+        LOGGER.info("Broker admin service started on port {}", port);
     }
 
     public void stop() {
         microservicesRunner.stop();
-        LOGGER.info("Broker rest server stopped");
+        LOGGER.info("Broker admin service stopped.");
     }
 }

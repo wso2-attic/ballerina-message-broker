@@ -31,3 +31,4 @@ target
 .DS_Store
 
 /modules/broker-core/src/main/java/org/wso2/broker/core/selector/generated
+/modules/broker-core/.swagger-codegen/

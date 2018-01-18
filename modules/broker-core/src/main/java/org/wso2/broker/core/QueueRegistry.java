@@ -22,8 +22,10 @@ package org.wso2.broker.core;
 import org.wso2.broker.core.store.dao.QueueDao;
 import org.wso2.broker.core.store.dao.SharedMessageStore;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Registry object which contains all the queues of the broker
@@ -50,26 +52,31 @@ final class QueueRegistry {
     boolean addQueue(String queueName, boolean passive, boolean durable, boolean autoDelete) throws BrokerException {
         QueueHandler queueHandler = queueHandlerMap.get(queueName);
 
-        if (passive && queueHandler == null) {
-            throw new BrokerException("QueueHandler [ " + queueName + " ] doesn't exists. Passive parameter "
-                    + "is set, hence not creating the queue.");
-        }
-
-        if (queueHandler == null) {
-            if (durable) {
-                queueHandler = QueueHandler.createDurableQueue(queueName, autoDelete, sharedMessageStore);
-                queueDao.persist(queueHandler.getQueue());
+        if (passive) {
+            if (Objects.isNull(queueHandler)) {
+                throw new BrokerException("Queue [ " + queueName + " ] doesn't exists. Passive parameter "
+                                                  + "is set, hence not creating the queue.");
             } else {
-                queueHandler = QueueHandler.createNonDurableQueue(queueName, 1000, autoDelete);
+                return false;
             }
-            queueHandlerMap.put(queueName, queueHandler);
-            return true;
-        } else if (!passive && (queueHandler.getQueue().isDurable() != durable
-                || queueHandler.getQueue().isAutoDelete() != autoDelete)) {
-            throw new BrokerException(
-                    "Existing QueueHandler [ " + queueName + " ] does not match given parameters.");
+        } else {
+            if (Objects.isNull(queueHandler)) {
+                if (durable) {
+                    queueHandler = QueueHandler.createDurableQueue(queueName, autoDelete, sharedMessageStore);
+                    queueDao.persist(queueHandler.getQueue());
+                } else {
+                    queueHandler = QueueHandler.createNonDurableQueue(queueName, 1000, autoDelete);
+                }
+                queueHandlerMap.put(queueName, queueHandler);
+                return true;
+            } else if (queueHandler.getQueue().isDurable() != durable
+                       || queueHandler.getQueue().isAutoDelete() != autoDelete) {
+                throw new BrokerException(
+                        "Existing queue [ " + queueName + " ] does not match given parameters.");
+            } else {
+                return false;
+            }
         }
-        return false;
     }
 
     boolean removeQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
@@ -97,5 +104,9 @@ final class QueueRegistry {
                 QueueHandler handler = QueueHandler.createDurableQueue(name, false, sharedMessageStore);
                 queueHandlerMap.putIfAbsent(name, handler);
             });
+    }
+
+    public Collection<QueueHandler> getAllQueues() {
+        return queueHandlerMap.values();
     }
 }

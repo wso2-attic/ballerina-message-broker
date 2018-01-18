@@ -23,6 +23,8 @@ import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.store.dao.BindingDao;
 import org.wso2.broker.core.store.dao.NoOpBindingDao;
 
+import java.util.Objects;
+
 /**
  * Represents an Exchange for the broker.
  */
@@ -72,7 +74,7 @@ public abstract class Exchange {
     protected Exchange(String name, Type type, BindingDao bindingDao) {
         this.name = name;
         this.type = type;
-        hashCode = name.hashCode() + type.hashCode();
+        hashCode = Objects.hash(name, type);
         this.bindingDao = bindingDao;
         this.bindingsRegistry = new BindingsRegistry(this, bindingDao);
     }

@@ -24,11 +24,22 @@ package org.wso2.broker.core;
  */
 public class BrokerException extends Exception {
 
+    private int errorCode;
+
     public BrokerException(String message) {
         super(message);
     }
 
     public BrokerException(String message, Throwable throwable) {
         super(message, throwable);
+    }
+
+    public BrokerException(int errorCode, String message, Throwable throwable) {
+        super(message, throwable);
+        this.errorCode = errorCode;
+    }
+
+    public int getErrorCode() {
+        return errorCode;
     }
 }

@@ -48,12 +48,16 @@ public final class QueueHandler {
 
     private final Set<Consumer> consumers;
 
+    private final Queue unmodifiableQueueView;
+
     private QueueHandler(Queue queue) {
         this.queue = queue;
+        unmodifiableQueueView = new UnmodifiableQueueWrapper(queue);
         // TODO: take message count from queue configuration
         this.redeliveryQueue = new MemQueueImpl(queue.getName(), 1000, false);
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
+
     }
 
     public static QueueHandler createNonDurableQueue(String queueName, int capacity, boolean autoDelete) {
@@ -67,8 +71,8 @@ public final class QueueHandler {
         return new QueueHandler(queue);
     }
 
-    Queue getQueue() {
-        return queue;
+    public Queue getQueue() {
+        return unmodifiableQueueView;
     }
 
     /**
@@ -76,7 +80,7 @@ public final class QueueHandler {
      *
      * @return Set of unmodifiable subscription objects
      */
-    Collection<Consumer> getConsumers() {
+    public Collection<Consumer> getConsumers() {
         return Collections.unmodifiableCollection(consumers);
     }
 
@@ -163,7 +167,7 @@ public final class QueueHandler {
      *
      * @return Number of {@link Message} objects in the queue.
      */
-    int size() {
+    public int size() {
         return queue.size();
     }
 
@@ -280,8 +284,46 @@ public final class QueueHandler {
         }
 
         @Override
-        public void detach(Message message) throws BrokerException {
+        public void detach(Message message) {
             sharedMessageStore.detach(getName(), message);
+        }
+    }
+
+    /**
+     * Queue representation which is unmodifiable. Used to return a view of the underlying queue to the outside.
+     */
+    private static class UnmodifiableQueueWrapper extends Queue {
+
+        private final Queue queue;
+
+        UnmodifiableQueueWrapper(Queue queue) {
+            super(queue.getName(), queue.isDurable(), queue.isAutoDelete());
+            this.queue = queue;
+        }
+
+        @Override
+        public int capacity() {
+            return queue.capacity();
+        }
+
+        @Override
+        public int size() {
+            return queue.size();
+        }
+
+        @Override
+        public boolean enqueue(Message message) {
+            throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
+        }
+
+        @Override
+        public Message dequeue() {
+            throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
+        }
+
+        @Override
+        public void detach(Message message) {
+            throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
         }
     }
 }
