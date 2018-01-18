@@ -19,9 +19,15 @@
 package org.wso2.broker.coordination.rdbms;
 
 /**
- * Prepared statements, table names, column names and tasks for RDBMS coordination.
+ * Common properties, prepared statements, table names, column names and tasks for RDBMS coordination.
  */
 public class RdbmsCoordinationConstants {
+
+    public static final String HEARTBEAT_INTERVAL = "heartbeatInterval";
+
+    public static final String COORDINATOR_ENTRY_CREATION_WAIT_TIME = "coordinatorEntryCreationWaitTime";
+
+    public static final String NODE_IDENTIFIER = "nodeId";
 
     /*
     * ===================================== RDBMS related Tasks =========================================

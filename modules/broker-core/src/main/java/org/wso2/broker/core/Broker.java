@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.coordination.BasicHaListener;
+import org.wso2.broker.coordination.HaListener;
+import org.wso2.broker.coordination.HaStrategy;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.rest.api.QueuesApi;
 import org.wso2.broker.core.security.authentication.AuthenticationManager;
@@ -43,9 +46,15 @@ public final class Broker {
 
     private final AuthenticationManager authenticationManager;
 
+    /**
+     * The {@link HaStrategy} for which the HA listener is registered.
+     */
+    private HaStrategy haStrategy;
+
+    private BrokerHelper brokerHelper;
+
     public Broker(StartupContext startupContext) throws Exception {
         this.messagingEngine = new MessagingEngine(startupContext.getService(DataSource.class));
-
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new QueuesApi(this));
         startupContext.registerService(Broker.class, this);
@@ -53,6 +62,13 @@ public final class Broker {
         BrokerConfiguration brokerConfiguration = configProvider
                 .getConfigurationObject(BrokerConfiguration.NAMESPACE, BrokerConfiguration.class);
         this.authenticationManager = new AuthenticationManager(brokerConfiguration);
+        haStrategy = startupContext.getService(HaStrategy.class);
+        if (haStrategy == null) {
+            brokerHelper = new BrokerHelper();
+        } else {
+            LOGGER.info("Broker is in PASSIVE mode"); //starts up in passive mode
+            brokerHelper = new HaEnabledBrokerHelper();
+        }
     }
 
     /**
@@ -119,8 +135,7 @@ public final class Broker {
     }
 
     public void startMessageDelivery() {
-        LOGGER.info("Starting message delivery threads.");
-        messagingEngine.startMessageDelivery();
+        brokerHelper.startMessageDelivery();
     }
 
     public void stopMessageDelivery() {
@@ -147,4 +162,60 @@ public final class Broker {
     public void moveToDlc(String queueName, Message message) throws BrokerException {
         messagingEngine.moveToDlc(queueName, message);
     }
+
+    private class BrokerHelper {
+
+        public void startMessageDelivery() {
+            LOGGER.info("Starting message delivery threads.");
+            messagingEngine.startMessageDelivery();
+        }
+
+    }
+
+    private class HaEnabledBrokerHelper extends BrokerHelper implements HaListener {
+
+        private BasicHaListener basicHaListener;
+
+        HaEnabledBrokerHelper() {
+            basicHaListener = new BasicHaListener(this);
+            haStrategy.registerListener(basicHaListener, 1);
+        }
+
+        @Override
+        public synchronized void startMessageDelivery() {
+            basicHaListener.setStartCalled(); //to allow starting when the node becomes active when HA is enabled
+            if (!basicHaListener.isActive()) {
+                return;
+            }
+            super.startMessageDelivery();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void activate() {
+            startMessageDeliveryOnBecomingActive();
+            LOGGER.info("Broker mode changed from PASSIVE to ACTIVE");
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void deactivate() {
+            stopMessageDelivery();
+            LOGGER.info("Broker mode changed from ACTIVE to PASSIVE");
+        }
+
+        /**
+         * Method to start message delivery by the broker, only if startMessageDelivery()} has been called, prior to
+         * becoming the active node.
+         */
+        private synchronized void startMessageDeliveryOnBecomingActive() {
+            if (basicHaListener.isStartCalled()) {
+                startMessageDelivery();
+            }
+        }
+
+    }
+
 }

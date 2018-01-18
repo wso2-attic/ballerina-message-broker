@@ -17,7 +17,7 @@
  *
  */
 
-package org.wso2.messaging.integration;
+package org.wso2.messaging.integration.standalone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +38,11 @@ import org.wso2.broker.core.security.authentication.user.UsersFile;
 import org.wso2.broker.rest.BrokerRestServer;
 import org.wso2.broker.rest.config.RestServerConfiguration;
 import org.wso2.messaging.integration.util.DbUtils;
+import org.wso2.messaging.integration.util.TestConfigProvider;
 import org.wso2.messaging.integration.util.TestConstants;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import javax.sql.DataSource;
 
 public class SuiteInitializer {
@@ -121,17 +120,4 @@ public class SuiteInitializer {
         LOGGER.info("Stopped broker for suite " + context.getSuite().getName());
     }
 
-    private static class TestConfigProvider implements BrokerConfigProvider {
-
-        Map<String, Object> configMap = new HashMap<>();
-
-        @Override
-        public <T> T getConfigurationObject(String namespace, Class<T> configurationClass) throws Exception {
-            return configurationClass.cast(configMap.get(namespace));
-        }
-
-        private void registerConfigurationObject(String namespace, Object configObject) {
-            configMap.put(namespace, configObject);
-        }
-    }
 }

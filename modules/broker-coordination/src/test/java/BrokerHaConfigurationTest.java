@@ -21,11 +21,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.broker.coordination.BrokerHaConfiguration;
+import org.wso2.broker.coordination.rdbms.RdbmsCoordinationConstants;
 import org.wso2.carbon.config.ConfigProviderFactory;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class to test broker HA configuration.
@@ -34,45 +37,50 @@ public class BrokerHaConfigurationTest {
 
     private BrokerHaConfiguration brokerHaConfiguration = new BrokerHaConfiguration();
 
-    private BrokerHaConfiguration.HaConfiguration haConfiguration;
-
     @BeforeClass
     public void setUp() throws Exception {
         String brokerFilePath = new File(this.getClass().getResource("broker.yaml").getFile())
                 .getAbsolutePath();
         Path brokerYamlFile = Paths.get(brokerFilePath).toAbsolutePath();
-        haConfiguration = ConfigProviderFactory.getConfigProvider(brokerYamlFile, null)
-                .getConfigurationObject("haConfig", BrokerHaConfiguration.HaConfiguration.class);
+        brokerHaConfiguration = ConfigProviderFactory.getConfigProvider(brokerYamlFile, null)
+                .getConfigurationObject(BrokerHaConfiguration.NAMESPACE, BrokerHaConfiguration.class);
     }
 
     @Test(description = "Test configuration loading from yaml files")
     public void testHaConfigurationCreationFromYamlFile() {
-        Assert.assertTrue(haConfiguration.isEnabled(), "\"enabled\" value not set correctly.");
-        Assert.assertEquals(haConfiguration.getStrategy(), "org.wso2.broker.coordination.rdbms.RdbmsHaStrategy",
-                "HA strategy not set correctly");
+        Assert.assertTrue(brokerHaConfiguration.isEnabled(), "\"enabled\" value not set correctly.");
+        Assert.assertEquals(brokerHaConfiguration.getStrategy(),
+                            "org.wso2.broker.coordination.rdbms.RdbmsHaStrategy",
+                            "HA strategy not set correctly");
     }
 
 
     @Test(dataProvider = "haConfigs", description = "Test setters and getters of BrokerHaConfiguration")
-    public void testSetAndGetHaConfiguration(boolean enabled, String strategy) {
-        String haConfigString = "HA Configuration [enabled=" + enabled + ", strategy=" + strategy + "]";
-        haConfiguration.setEnabled(enabled);
-        haConfiguration.setStrategy(strategy);
-        brokerHaConfiguration.setHaConfig(haConfiguration);
-        Assert.assertEquals(haConfiguration.isEnabled(), enabled, "\"enabled\" value does not match the value set");
-        Assert.assertEquals(haConfiguration.getStrategy(), strategy,
+    public void testSetAndGetHaConfiguration(boolean enabled, String strategy, String nodeId, String hearbeatInterval,
+                                             String coordinatorEntryCreationWaitTime) {
+        Map<String, String> options = new HashMap<>();
+        options.put(RdbmsCoordinationConstants.NODE_IDENTIFIER, nodeId);
+        options.put(RdbmsCoordinationConstants.HEARTBEAT_INTERVAL, hearbeatInterval);
+        options.put(RdbmsCoordinationConstants.COORDINATOR_ENTRY_CREATION_WAIT_TIME, coordinatorEntryCreationWaitTime);
+        String haConfigString = "Failover [enabled=" + enabled + ", strategy=" + strategy + "]";
+        brokerHaConfiguration.setEnabled(enabled);
+        brokerHaConfiguration.setStrategy(strategy);
+        brokerHaConfiguration.setOptions(options);
+        Assert.assertEquals(brokerHaConfiguration.isEnabled(), enabled, "\"enabled\" value does not match the value"
+                + " set");
+        Assert.assertEquals(brokerHaConfiguration.getStrategy(), strategy,
                 "HA strategy value does not match the value set");
-        Assert.assertEquals(haConfiguration.toString(), haConfigString, "Incorrect toString() representation of "
-                + "HaConfiguration");
-        Assert.assertEquals(brokerHaConfiguration.getHaConfig(), haConfiguration, "HA configuration does not match "
-                + "the configuration set");
+        Assert.assertEquals(brokerHaConfiguration.getOptions(), options, "HA strategy options values do not match "
+                + "the value set");
+        Assert.assertEquals(brokerHaConfiguration.toString(), haConfigString, "Incorrect toString() representation "
+                + "of HaConfiguration " + brokerHaConfiguration.toString());
     }
 
     @DataProvider(name = "haConfigs")
     public Object[][] haConfigs() {
         return new Object[][] {
-                { true, "org.wso2.broker.coordination.HaStrategyOne" },
-                { false, "org.wso2.broker.coordination.HaStrategyTwo" }
+                { true, "org.wso2.broker.coordination.HaStrategyOne", "nodeIdOne", "5000", "7000" },
+                { false, "org.wso2.broker.coordination.HaStrategyTwo", "nodeIdTwo", "10000", "8000" }
         };
     }
 

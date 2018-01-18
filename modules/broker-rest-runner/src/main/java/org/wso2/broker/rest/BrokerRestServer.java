@@ -23,6 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
+import org.wso2.broker.coordination.BasicHaListener;
+import org.wso2.broker.coordination.HaListener;
+import org.wso2.broker.coordination.HaStrategy;
 import org.wso2.broker.rest.config.RestServerConfiguration;
 import org.wso2.msf4j.MicroservicesRunner;
 
@@ -40,23 +43,89 @@ public class BrokerRestServer {
 
     private final int port;
 
-    public BrokerRestServer(StartupContext context) throws Exception {
-        BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
+    /**
+     * The {@link HaStrategy} for which the HA listener is registered.
+     */
+    private HaStrategy haStrategy;
+
+    private BrokerRestRunnerHelper brokerRestRunnerHelper;
+
+    public BrokerRestServer(StartupContext startupContext) throws Exception {
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         RestServerConfiguration configuration = configProvider.getConfigurationObject(RestServerConfiguration.NAMESPACE,
                                                                                       RestServerConfiguration.class);
         port = Integer.parseInt(configuration.getPlain().getPort());
         microservicesRunner = new MicroservicesRunner(port);
-
-        context.registerService(BrokerServiceRunner.class, new BrokerServiceRunner(microservicesRunner));
+        startupContext.registerService(BrokerServiceRunner.class, new BrokerServiceRunner(microservicesRunner));
+        haStrategy = startupContext.getService(HaStrategy.class);
+        if (haStrategy == null) {
+            brokerRestRunnerHelper = new BrokerRestRunnerHelper();
+        } else {
+            LOGGER.info("Broker Rest Runner is in PASSIVE mode"); //starts up in passive mode
+            brokerRestRunnerHelper = new HaEnabledBrokerRestRunnerHelper();
+        }
     }
 
     public void start() {
-        microservicesRunner.start();
-        LOGGER.info("Broker admin service started on port {}", port);
+        brokerRestRunnerHelper.start();
     }
 
     public void stop() {
         microservicesRunner.stop();
         LOGGER.info("Broker admin service stopped.");
+    }
+
+    private class BrokerRestRunnerHelper {
+
+        public void start() {
+            microservicesRunner.start();
+            LOGGER.info("Broker admin service started on port {}", port);
+        }
+
+    }
+
+    private class HaEnabledBrokerRestRunnerHelper extends BrokerRestRunnerHelper implements HaListener {
+
+        private BasicHaListener basicHaListener;
+
+        HaEnabledBrokerRestRunnerHelper() {
+            basicHaListener = new BasicHaListener(this);
+            haStrategy.registerListener(basicHaListener, 3);
+        }
+
+        @Override
+        public synchronized void start() {
+            basicHaListener.setStartCalled(); //to allow starting when the node becomes active when HA is enabled
+            if (!basicHaListener.isActive()) {
+                return;
+            }
+            super.start();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void activate() {
+            startOnBecomingActive();
+            LOGGER.info("Broker Rest Server mode changed from PASSIVE to ACTIVE");
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void deactivate() {
+            stop();
+            LOGGER.info("Broker Rest Server mode changed from ACTIVE to PASSIVE");
+        }
+
+        /**
+         * Method to start the broker rest server, only if start has been called, prior to becoming the active node.
+         */
+        private synchronized void startOnBecomingActive() {
+            if (basicHaListener.isStartCalled()) {
+                start();
+            }
+        }
+
     }
 }

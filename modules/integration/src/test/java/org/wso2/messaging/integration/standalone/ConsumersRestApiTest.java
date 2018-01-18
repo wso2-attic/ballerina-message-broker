@@ -17,7 +17,7 @@
  *
  */
 
-package org.wso2.messaging.integration;
+package org.wso2.messaging.integration.standalone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpStatus;

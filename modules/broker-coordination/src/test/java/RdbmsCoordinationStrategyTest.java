@@ -26,7 +26,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.broker.coordination.CoordinationException;
 import org.wso2.broker.coordination.node.NodeDetail;
-import org.wso2.broker.coordination.rdbms.CoordinationConfiguration;
+import org.wso2.broker.coordination.rdbms.RdbmsCoordinationConstants;
 import org.wso2.broker.coordination.rdbms.RdbmsCoordinationDaoImpl;
 import org.wso2.broker.coordination.rdbms.RdbmsCoordinationStrategy;
 
@@ -34,7 +34,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
 
 /**
@@ -77,11 +79,10 @@ public class RdbmsCoordinationStrategyTest {
         statement.executeUpdate(CREATE_MB_NODE_HEARTBEAT_TABLE);
         connection.close();
 
-        CoordinationConfiguration.RdbmsCoordinationConfiguration rdbmsCoordinationConfiguration =
-                new CoordinationConfiguration.RdbmsCoordinationConfiguration();
-        rdbmsCoordinationConfiguration.setNodeId(nodeOneId);
-        rdbmsCoordinationConfiguration.setHeartbeatInterval(5000);
-        rdbmsCoordinationConfiguration.setCoordinatorEntryCreationWaitTime(3000);
+        Map<String, String> rdbmsCoordinationOptions = new HashMap<>();
+        rdbmsCoordinationOptions.put(RdbmsCoordinationConstants.NODE_IDENTIFIER, nodeOneId);
+        rdbmsCoordinationOptions.put(RdbmsCoordinationConstants.HEARTBEAT_INTERVAL, "5000");
+        rdbmsCoordinationOptions.put(RdbmsCoordinationConstants.COORDINATOR_ENTRY_CREATION_WAIT_TIME, "3000");
 
         HikariConfig hikariDatasourceConfig = new HikariConfig();
         hikariDatasourceConfig.setJdbcUrl(databaseUrl);
@@ -91,7 +92,7 @@ public class RdbmsCoordinationStrategyTest {
 
         RdbmsCoordinationDaoImpl rdbmsCoordinationDaoImpl = new RdbmsCoordinationDaoImpl(datasource);
         rdbmsCoordinationStrategy =
-                new RdbmsCoordinationStrategy(rdbmsCoordinationDaoImpl, rdbmsCoordinationConfiguration);
+                new RdbmsCoordinationStrategy(rdbmsCoordinationDaoImpl, rdbmsCoordinationOptions);
         rdbmsCoordinationStrategy.start();
     }
 

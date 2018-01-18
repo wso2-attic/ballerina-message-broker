@@ -28,6 +28,7 @@ import org.wso2.broker.coordination.node.NodeHeartbeatData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,7 +51,7 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy {
     /**
      * Time to wait before notifying others about coordinator change.
      */
-    private int coordinatorEntryCreationWaitTime;
+    private final int coordinatorEntryCreationWaitTime;
 
     /**
      * Possible node states.
@@ -109,22 +110,39 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy {
     private final ScheduledExecutorService scheduledExecutorService;
 
     /**
+     * Listeners expecting notification on coordinator change.
+     */
+    private List<RdbmsCoordinationListener> coordinationListeners = new ArrayList<>();
+
+    /**
      * Default constructor.
      *
      * @param rdbmsCoordinationDaoImpl       the RdbmsCoordinationDaoImpl to use for communication with the database
-     * @param rdbmsCoordinationConfiguration the configuration for RDBMS coordination
+     * @param rdbmsCoordinationOptions       the configuration for RDBMS coordination
      */
     public RdbmsCoordinationStrategy(RdbmsCoordinationDaoImpl rdbmsCoordinationDaoImpl,
-                                     CoordinationConfiguration.RdbmsCoordinationConfiguration
-                                             rdbmsCoordinationConfiguration) {
+                                     Map<String, String> rdbmsCoordinationOptions) {
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("RdbmsCoordinationStrategy-%d")
                 .build();
         threadExecutor = Executors.newSingleThreadExecutor(namedThreadFactory);
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-        heartBeatInterval = rdbmsCoordinationConfiguration.getHeartbeatInterval();
-        coordinatorEntryCreationWaitTime = rdbmsCoordinationConfiguration.getCoordinatorEntryCreationWaitTime();
-        //(heartBeatInterval / 2) + 1;
+        if (rdbmsCoordinationOptions.get(RdbmsCoordinationConstants.HEARTBEAT_INTERVAL) != null) {
+            heartBeatInterval = Integer.parseInt(
+                    rdbmsCoordinationOptions.get(RdbmsCoordinationConstants.HEARTBEAT_INTERVAL));
+        } else {
+            heartBeatInterval = 5000;
+        }
+        if (rdbmsCoordinationOptions.get(RdbmsCoordinationConstants.COORDINATOR_ENTRY_CREATION_WAIT_TIME) != null) {
+            coordinatorEntryCreationWaitTime = Integer.parseInt(
+                    rdbmsCoordinationOptions.get(RdbmsCoordinationConstants.COORDINATOR_ENTRY_CREATION_WAIT_TIME));
+        } else {
+            coordinatorEntryCreationWaitTime = 3000;
+        }
+        localNodeId = rdbmsCoordinationOptions.get(RdbmsCoordinationConstants.NODE_IDENTIFIER);
+        if (localNodeId == null) {
+            localNodeId = UUID.randomUUID().toString();
+        }
 
         // Maximum age of a heartbeat. After this much of time, the heartbeat is considered invalid and node is
         // considered to have left the cluster.
@@ -135,25 +153,25 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy {
                     coordinatorEntryCreationWaitTime);
         }
 
-        localNodeId = rdbmsCoordinationConfiguration.getNodeId();
-        if (CoordinationConfiguration.DEFAULT_NODE_ID.equals(localNodeId)) {
-            localNodeId = UUID.randomUUID().toString();
-        }
         coordinationDao = rdbmsCoordinationDaoImpl;
     }
 
     /**
      * Method to be invoked once the node becomes the coordinator node.
      */
-    public void becameCoordinatorNode() {
-        //TODO: Intro logic.
+    private void becameCoordinatorNode() {
+        for (RdbmsCoordinationListener rdbmsCoordinationListener : coordinationListeners) {
+            scheduledExecutorService.submit(rdbmsCoordinationListener::becameCoordinatorNode);
+        }
     }
 
     /**
-     * Method to be invoked once the node becomes a candidate node.
+     * Method to be invoked once the node loses coordinator state.
      */
-    public void becameCandidateNode() {
-        //TODO: Intro logic.
+    private void lostCoordinatorState() {
+        for (RdbmsCoordinationListener rdbmsCoordinationListener : coordinationListeners) {
+            scheduledExecutorService.submit(rdbmsCoordinationListener::lostCoordinatorState);
+        }
     }
 
     /*
@@ -165,7 +183,7 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy {
      */
     @Override
     public void start() {
-        currentNodeState = NodeState.ELECTION;
+        setCurrentNodeState(NodeState.ELECTION);
         coordinatorElectionTask = new CoordinatorElectionTask();
         threadExecutor.execute(coordinatorElectionTask);
 
@@ -260,6 +278,25 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy {
         return allNodeIds;
     }
 
+
+    /**
+     * Method to set listeners expecting notifications regarding changes in the coordinator.
+     *
+     * @param rdbmsCoordinationListener a listener to set
+     */
+    public void addCoordinationListener(RdbmsCoordinationListener rdbmsCoordinationListener) {
+        coordinationListeners.add(rdbmsCoordinationListener);
+    }
+
+    /**
+     * Method to remove a listener set expecting notifications regarding changes in the coordinator.
+     *
+     * @param rdbmsCoordinationListener the listener to remove
+     */
+    public void removeCoordinationListener(RdbmsCoordinationListener rdbmsCoordinationListener) {
+        coordinationListeners.remove(rdbmsCoordinationListener);
+    }
+
     /**
      * The main task used to run the coordination algorithm.
      */
@@ -288,20 +325,20 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy {
                     }
                     switch (currentNodeState) {
                         case CANDIDATE:
-                            currentNodeState = performStandByTask();
+                            setCurrentNodeState(performStandByTask());
                             break;
                         case COORDINATOR:
-                            currentNodeState = performCoordinatorTask();
+                            setCurrentNodeState(performCoordinatorTask());
                             break;
                         case ELECTION:
-                            currentNodeState = performElectionTask();
+                            setCurrentNodeState(performElectionTask());
                             break;
                     }
                 } catch (Throwable e) {
                     logger.error("Error detected while running coordination algorithm. Node became a "
-                            + NodeState.CANDIDATE + " node", e);
+                            + NodeState.ELECTION + " node", e);
                     cancelStateExpirationTask();
-                    currentNodeState = NodeState.CANDIDATE;
+                    setCurrentNodeState(NodeState.ELECTION);
                 }
             }
         }
@@ -448,17 +485,13 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy {
                     resetScheduleStateExpirationTask();
                     logger.info("Elected current node as the coordinator");
                     nextState = NodeState.COORDINATOR;
-                    //notify node about coordinator change
-                    becameCoordinatorNode();
                 } else {
                     logger.info("Election resulted in current node becoming a " + NodeState.CANDIDATE + " node");
                     nextState = NodeState.CANDIDATE;
-                    becameCandidateNode();
                 }
             } else {
                 logger.info("Election resulted in current node becoming a " + NodeState.CANDIDATE + " node");
                 nextState = NodeState.CANDIDATE;
-                becameCandidateNode();
             }
             return nextState;
         }
@@ -488,10 +521,28 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy {
             scheduledFuture = scheduledExecutorService.schedule(new Runnable() {
                 @Override
                 public void run() {
-                    currentNodeState = NodeState.ELECTION;
+                    setCurrentNodeState(NodeState.ELECTION);
                 }
             }, heartbeatMaxAge, TimeUnit.MILLISECONDS);
         }
+    }
+
+    /**
+     * Method to set the new node state and notify gaining/losing coordinator state if required.
+     *
+     * @param newNodeState the new state of the node
+     */
+    private void setCurrentNodeState(NodeState newNodeState) {
+        if (NodeState.COORDINATOR.equals(currentNodeState)) {
+            if (NodeState.ELECTION.equals(newNodeState)) {
+                lostCoordinatorState();
+            }
+        } else if (NodeState.ELECTION.equals(currentNodeState)) {
+            if (NodeState.COORDINATOR.equals(newNodeState)) {
+                becameCoordinatorNode();
+            }
+        }
+        currentNodeState = newNodeState;
     }
 
 }

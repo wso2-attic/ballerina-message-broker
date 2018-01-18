@@ -26,7 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.Server;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
+import org.wso2.broker.coordination.HaStrategy;
+import org.wso2.broker.coordination.HaStrategyFactory;
 import org.wso2.broker.core.Broker;
+import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.security.authentication.user.User;
 import org.wso2.broker.core.security.authentication.user.UserStoreManager;
@@ -49,7 +52,11 @@ public class Main {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
+    private static final Object LOCK = new Object();
+    private static volatile boolean shutdownHookTriggered = false;
+
     public static void main(String[] args) throws Exception {
+
         try {
             StartupContext startupContext = new StartupContext();
 
@@ -60,19 +67,37 @@ public class Main {
                     service.getConfigurationObject(BrokerConfiguration.NAMESPACE, BrokerConfiguration.class);
             DataSource dataSource = getDataSource(brokerConfiguration.getDataSource());
             startupContext.registerService(DataSource.class, dataSource);
+
+            HaStrategy haStrategy;
+            //Initializing an HaStrategy implementation only if HA is enabled
+            try {
+                haStrategy = HaStrategyFactory.getHaStrategy(startupContext);
+                if (haStrategy != null) {
+                    startupContext.registerService(HaStrategy.class, haStrategy);
+                }
+            } catch (Exception e) {
+                throw new BrokerException("Error initializing HA Strategy: ", e);
+            }
+
             BrokerRestServer restServer = new BrokerRestServer(startupContext);
-
             Broker broker = new Broker(startupContext);
-            broker.startMessageDelivery();
-
             Server amqpServer = new Server(startupContext);
+            registerShutdownHook(broker, amqpServer, restServer, haStrategy);
 
+            if (haStrategy != null) {
+                //Start the HA strategy after all listeners have been registered, and before the listeners are started
+                haStrategy.start();
+            }
+
+            broker.startMessageDelivery();
             amqpServer.start();
             restServer.start();
-            amqpServer.awaitServerClose();
 
-            restServer.stop();
-            broker.stopMessageDelivery();
+            synchronized (LOCK) {
+                while (!shutdownHookTriggered) {
+                    LOCK.wait();
+                }
+            }
         } catch (Throwable e) {
             LOGGER.error("Error while starting broker", e);
             throw e;
@@ -135,4 +160,29 @@ public class Main {
             }
         }
     }
+
+    /**
+     * Method to register a shutdown hook to ensure proper cleaning up.
+     */
+    private static void registerShutdownHook(Broker broker, Server server, BrokerRestServer brokerRestServer,
+                                             HaStrategy haStrategy) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            synchronized (LOCK) {
+                shutdownHookTriggered = true;
+                if (haStrategy != null) {
+                    haStrategy.stop();
+                }
+                brokerRestServer.stop();
+                try {
+                    server.stop();
+                    server.awaitServerClose();
+                } catch (InterruptedException e) {
+                    LOGGER.warn("Error stopping transport on shut down {}", e);
+                }
+                broker.stopMessageDelivery();
+                LOCK.notifyAll();
+            }
+        }));
+    }
+
 }
