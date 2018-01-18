@@ -79,7 +79,7 @@ public class ConnectionStartOk extends MethodFrame {
             try {
                 if (saslServerBuilder != null) {
                     saslServer = Sasl.createSaslServer(mechanism.toString(), AmqConstant.AMQP_PROTOCOL_IDENTIFIER,
-                            connectionHandler.getConfiguration().getTransport().getAmqp().getPlain().getHostName(),
+                            connectionHandler.getConfiguration().getHostName(),
                             saslServerBuilder.getProperties(), saslServerBuilder.getCallbackHandler());
                     connectionHandler.setSaslServer(saslServer);
                 } else {

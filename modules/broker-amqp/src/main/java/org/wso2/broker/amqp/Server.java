@@ -92,7 +92,7 @@ public class Server {
     }
 
     private ChannelFuture bindToPlainSocket() throws InterruptedException {
-        String hostname = configuration.getTransport().getAmqp().getPlain().getHostName();
+        String hostname = configuration.getHostName();
         int port = Integer.parseInt(configuration.getTransport().getAmqp().getPlain().getPort());
 
         ServerBootstrap b = new ServerBootstrap();
@@ -111,7 +111,7 @@ public class Server {
     private ChannelFuture bindToSslSocket()
             throws InterruptedException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException,
             KeyStoreException, KeyManagementException, IOException {
-        String hostname = configuration.getTransport().getAmqp().getSsl().getHostName();
+        String hostname = configuration.getHostName();
         int port = Integer.parseInt(configuration.getTransport().getAmqp().getSsl().getPort());
 
         ServerBootstrap b = new ServerBootstrap();

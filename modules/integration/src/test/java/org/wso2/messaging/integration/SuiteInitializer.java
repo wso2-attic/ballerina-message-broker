@@ -76,11 +76,10 @@ public class SuiteInitializer {
         configProvider.registerConfigurationObject(BrokerConfiguration.class, brokerConfiguration);
 
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
+        serverConfiguration.setHostName(hostname);
         AmqpServerConfiguration.AmqpDetails amqpConfig = serverConfiguration.getTransport().getAmqp();
         amqpConfig.getPlain().setPort(port);
-        amqpConfig.getPlain().setHostName(hostname);
         amqpConfig.getSsl().setEnabled(true);
-        amqpConfig.getSsl().setHostName(hostname);
         amqpConfig.getSsl().setPort(sslPort);
         amqpConfig.getSsl().getKeyStore().setLocation(TestConstants.KEYSTORE_LOCATION);
         amqpConfig.getSsl().getKeyStore().setPassword(TestConstants.KEYSTORE_PASSWORD);
@@ -89,6 +88,7 @@ public class SuiteInitializer {
         configProvider.registerConfigurationObject(AmqpServerConfiguration.class, serverConfiguration);
 
         RestServerConfiguration restConfig = new RestServerConfiguration();
+        restConfig.setHostName(hostname);
         restConfig.getAdminService().getPlain().setPort(restPort);
         configProvider.registerConfigurationObject(RestServerConfiguration.class, restConfig);
 
