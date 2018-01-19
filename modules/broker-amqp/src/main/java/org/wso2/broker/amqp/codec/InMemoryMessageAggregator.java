@@ -22,17 +22,30 @@ package org.wso2.broker.amqp.codec;
 import io.netty.buffer.ByteBuf;
 import org.wso2.broker.amqp.AmqpException;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.common.data.types.FieldValue;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
+import org.wso2.broker.core.util.MessageTracer;
+import org.wso2.broker.core.util.TraceField;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Handles incoming AMQP message frames and creates {@link Message}.
  */
 public class InMemoryMessageAggregator {
+
+    private static final String CORRELATION_ID_FIELD_NAME = "correlationId";
+
+    private static final String INCOMING_MESSAGE_MAPPED = "Incoming message to AMQP transport.";
+
+    private static final String PUBLISH_MESSAGE = "Publishing message from AMQP transport.";
 
     private Message message;
 
@@ -44,7 +57,7 @@ public class InMemoryMessageAggregator {
 
     private long receivedPayloadSize;
 
-    public InMemoryMessageAggregator(Broker broker) {
+    InMemoryMessageAggregator(Broker broker) {
         this.broker = broker;
     }
 
@@ -66,6 +79,19 @@ public class InMemoryMessageAggregator {
         metadata.setProperties(properties);
         metadata.setHeaders(headers);
         message = new Message(metadata);
+        trace(metadata);
+    }
+
+    private void trace(Metadata metadata) {
+        if (MessageTracer.isTraceEnabled()) {
+            List<TraceField> traceFields = new ArrayList<>();
+            FieldValue fieldValue = metadata.getProperty(Metadata.CORRELATION_ID);
+            if (Objects.nonNull(fieldValue)) {
+                TraceField field = new TraceField(CORRELATION_ID_FIELD_NAME, fieldValue.getValue());
+                traceFields.add(field);
+            }
+            MessageTracer.trace(metadata, INCOMING_MESSAGE_MAPPED, traceFields);
+        }
     }
 
     private void clear() {
@@ -76,6 +102,7 @@ public class InMemoryMessageAggregator {
     }
 
     public void publish(Message message) throws BrokerException {
+        MessageTracer.trace(message, PUBLISH_MESSAGE);
         broker.publish(message);
     }
 

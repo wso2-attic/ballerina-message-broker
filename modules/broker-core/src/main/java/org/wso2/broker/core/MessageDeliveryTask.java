@@ -22,6 +22,7 @@ package org.wso2.broker.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.task.Task;
+import org.wso2.broker.core.util.MessageTracer;
 
 /**
  * Delivers messages to consumers for a given queueHandler.
@@ -82,6 +83,7 @@ final class MessageDeliveryTask extends Task {
 
                 if (message != null) {
                     LOGGER.debug("Sending message {}", message);
+                    MessageTracer.trace(message, queueHandler, MessageTracer.DELIVER);
                     consumer.send(message);
                     deliveredCount++;
                     // TODO: make the value configurable

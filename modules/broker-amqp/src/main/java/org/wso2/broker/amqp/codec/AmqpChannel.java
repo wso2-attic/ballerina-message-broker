@@ -33,6 +33,8 @@ import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Consumer;
 import org.wso2.broker.core.Message;
+import org.wso2.broker.core.util.MessageTracer;
+import org.wso2.broker.core.util.TraceField;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -50,6 +53,20 @@ import java.util.concurrent.atomic.AtomicLong;
 public class AmqpChannel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpChannel.class);
+
+    private static final String ACKNOWLEDGE_RECEIVED = "Acknowledgement received from AMQP transport.";
+
+    private static final String UNKNOWN_ACKNOWLEDGEMENT = "Matching message for acknowledgment not found.";
+
+    private static final String REJECT_RECEIVED = "Message reject received from AMQP transport.";
+
+    private static final String UNKNOWN_REJECT = "Matching message for reject not found.";
+
+    public static final String DELIVERY_TAG_FIELD_NAME = "deliveryTag";
+
+    public static final String CHANNEL_ID_FIELD_NAME = "channelId";
+
+    private static final String REQUEUE_FLAG_FIELD_NAME = "requeueFlag";
 
     private final Broker broker;
 
@@ -95,6 +112,8 @@ public class AmqpChannel {
      */
     private List<AmqpDeliverMessage> deliveryPendingMessages = new ArrayList<>();
 
+    private final TraceField traceChannelIdField;
+
     /**
      * Max window size
      */
@@ -109,6 +128,7 @@ public class AmqpChannel {
                                                   configuration.getChannelFlow().getLowLimit(),
                                                   configuration.getChannelFlow().getHighLimit());
         this.maxRedeliveryCount = Integer.parseInt(configuration.getMaxRedeliveryCount());
+        traceChannelIdField = new TraceField(CHANNEL_ID_FIELD_NAME, channelId);
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
@@ -150,7 +170,7 @@ public class AmqpChannel {
             broker.removeConsumer(amqpConsumer);
         } else {
             throw new ChannelException(ChannelException.NOT_FOUND,
-                    "Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
+                                       "Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
         }
     }
 
@@ -161,6 +181,10 @@ public class AmqpChannel {
     public void acknowledge(long deliveryTag, boolean multiple) throws BrokerException {
         //TODO handle multiple
         AckData ackData = unackedMessageMap.remove(deliveryTag);
+        if (MessageTracer.isTraceEnabled()) {
+            String description = Objects.nonNull(ackData) ? ACKNOWLEDGE_RECEIVED : UNKNOWN_ACKNOWLEDGEMENT;
+            MessageTracer.trace(description, traceChannelIdField, new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag));
+        }
         if (ackData != null) {
             ackData.getMessage().release();
             broker.acknowledge(ackData.getQueueName(), ackData.getMessage());
@@ -190,6 +214,13 @@ public class AmqpChannel {
 
     public void reject(long deliveryTag, boolean requeue) throws BrokerException {
         AckData ackData = unackedMessageMap.remove(deliveryTag);
+        if (MessageTracer.isTraceEnabled()) {
+            String description = Objects.nonNull(ackData) ? REJECT_RECEIVED : UNKNOWN_REJECT;
+            MessageTracer.trace(description, traceChannelIdField,
+                                new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag),
+                                new TraceField(REQUEUE_FLAG_FIELD_NAME, requeue));
+        }
+
         if (ackData != null) {
             Message message = ackData.getMessage();
             if (requeue) {
@@ -207,8 +238,8 @@ public class AmqpChannel {
         int redeliveryCount = message.setRedeliver();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Redelivery count is {} for message {}",
-                        redeliveryCount,
-                        message.getMetadata().getInternalId());
+                         redeliveryCount,
+                         message.getMetadata().getInternalId());
         }
         if (redeliveryCount <= maxRedeliveryCount) {
             broker.requeue(queueName, message);
@@ -299,7 +330,6 @@ public class AmqpChannel {
             if (hasRoom.get() && unackedMessageMap.size() >= prefetchCount) {
                 hasRoom.set(false);
             }
-
         }
 
         Collection<AckData> clear() {
