@@ -216,6 +216,11 @@ public final class Broker {
          * {@inheritDoc}
          */
         public void activate() {
+            try {
+                messagingEngine.reloadOnBecomingActive();
+            } catch (BrokerException e) {
+                LOGGER.error("Error on loading data from the database on becoming active ", e);
+            }
             startMessageDeliveryOnBecomingActive();
             LOGGER.info("Broker mode changed from PASSIVE to ACTIVE");
         }

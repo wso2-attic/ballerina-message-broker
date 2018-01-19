@@ -120,4 +120,12 @@ public class SharedMessageStore {
     public Collection<Message> readStoredMessages(String queueName) throws BrokerException {
         return messageDao.readAll(queueName);
     }
+
+    /**
+     * Method to clear all pending messages.
+     */
+    public void clearPendingMessages() {
+        pendingMessages.clear();
+    }
+
 }

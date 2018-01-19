@@ -108,4 +108,14 @@ public final class QueueRegistry {
     public Collection<QueueHandler> getAllQueues() {
         return queueHandlerMap.values();
     }
+
+    /**
+     * Method to reload queues on becoming the active node.
+     *
+     * @throws BrokerException if an error occurs loading messages from the database
+     */
+    void reloadQueuesOnBecomingActive() throws BrokerException {
+        queueHandlerMap.clear();
+        retrieveQueuesFromDao();
+    }
 }

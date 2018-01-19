@@ -353,4 +353,16 @@ final class MessagingEngine {
     public QueueHandler getQueue(String queueName) {
         return queueRegistry.getQueueHandler(queueName);
     }
+
+    /**
+     * Method to reload data from the database on becoming the active node.
+     *
+     * @throws BrokerException if an error occurs retrieving queue and exchange data from the database
+     */
+    void reloadOnBecomingActive() throws BrokerException {
+        sharedMessageStore.clearPendingMessages();
+        queueRegistry.reloadQueuesOnBecomingActive();
+        exchangeRegistry.reloadExchangesOnBecomingActive(queueRegistry);
+    }
+
 }
