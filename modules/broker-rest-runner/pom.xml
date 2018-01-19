@@ -94,6 +94,7 @@
                         <Import-Package>
                             io.netty.*; version="${netty.import.package.range.version}",
                             org.wso2.broker.core.*; version="${broker.package.import.range.version}",
+                            org.wso2.broker.coordination.*; version="${broker.package.import.range.version}",
                             org.wso2.broker.common.*; version="${broker.package.import.range.version}",
                             org.slf4j.*; version="${slf4j.logging.package.import.version.range}",
                             org.wso2.msf4j.*; version="${msf4j.package.import.version.range}",
