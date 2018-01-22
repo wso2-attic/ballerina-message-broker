@@ -64,6 +64,9 @@ public class RdbmsHaStrategyTest {
     private int heartbeatInterval = 5000;
     private int coordinatorEntryCreationWaitTime = 3000;
 
+    private static final String SYNC_TEST_QUEUE_NAME = "testSyncingOnFailover";
+    private static final int SYNC_TEST_NUMBER_OF_MESSAGES = 100;
+
     @Parameters({ "broker-1-port", "broker-1-ssl-port", "broker-1-rest-port", "broker-1-hostname", "broker-2-port",
             "broker-2-ssl-port", "broker-2-rest-port", "broker-2-hostname", "admin-username", "admin-password"})
     @BeforeClass
@@ -147,6 +150,36 @@ public class RdbmsHaStrategyTest {
 
     @Test(dependsOnMethods = "testSendReceiveForPassiveNodeBeforeFailover")
     public void testFailoverWithActiveNodeShutdown() throws Exception {
+        //Send messages for the sync test prior to initializing failover
+        String hostname;
+        String port;
+        if (activeNode.equals(nodeOne)) {
+            hostname = hostnameOne;
+            port = portOne;
+        } else {
+            hostname = hostnameTwo;
+            port = portTwo;
+        }
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder("admin", "admin", hostname, port)
+                .withQueue(SYNC_TEST_QUEUE_NAME)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        Session producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = producerSession.createQueue(SYNC_TEST_QUEUE_NAME);
+        MessageProducer producer = producerSession.createProducer(queue);
+
+        for (int i = 0; i < SYNC_TEST_NUMBER_OF_MESSAGES; i++) {
+            producer.send(producerSession.createTextMessage("Test message " + i));
+        }
+        producerSession.close();
+        connection.close();
+
         activeNode.shutdown();
         //Change to expected states
         if (nodeOne.equals(passiveNode)) {
@@ -193,6 +226,40 @@ public class RdbmsHaStrategyTest {
             port = portTwo;
         }
         sendReceiveForNode("testSendReceiveForPassiveNodeAfterFailover", hostname, port);
+    }
+
+    @Test(dependsOnMethods = "testSendReceiveForActiveNodeAfterFailover")
+    public void testSyncingOnFailover() throws Exception {
+        String hostname;
+        String port;
+        if (activeNode.equals(nodeOne)) {
+            hostname = hostnameOne;
+            port = portOne;
+        } else {
+            hostname = hostnameTwo;
+            port = portTwo;
+        }
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder("admin", "admin", hostname, port)
+                .withQueue(SYNC_TEST_QUEUE_NAME)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // Consume messages send to the original active node
+        Session subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(SYNC_TEST_QUEUE_NAME);
+        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
+
+        for (int i = 0; i < SYNC_TEST_NUMBER_OF_MESSAGES; i++) {
+            Message message = consumer.receive(5000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+        subscriberSession.close();
+        connection.close();
     }
 
     private void sendReceiveForNode(String queueName, String hostname, String port) throws Exception {
