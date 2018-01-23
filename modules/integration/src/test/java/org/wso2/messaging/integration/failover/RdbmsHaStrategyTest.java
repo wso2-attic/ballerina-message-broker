@@ -27,8 +27,8 @@ import org.testng.annotations.Test;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.coordination.BrokerHaConfiguration;
 import org.wso2.broker.coordination.rdbms.RdbmsCoordinationConstants;
+import org.wso2.messaging.integration.util.BrokerNode;
 import org.wso2.messaging.integration.util.ClientHelper;
-import org.wso2.messaging.integration.util.Node;
 import org.wso2.messaging.integration.util.TestConfigProvider;
 
 import java.util.HashMap;
@@ -47,14 +47,21 @@ import javax.naming.NamingException;
 
 /**
  * Test class for the {@link org.wso2.broker.coordination.rdbms.RdbmsHaStrategy} implementation.
+ *
+ * This class introduces tests for fail-over by simulating a fail-over scenario, based on the RDBMS coordination
+ * strategy.
+ *
+ * Two MB instances (nodes) are started up on different ports. Fail-over is simulated by pausing the coordination
+ * strategy for the active node, which prevents the active node from updating the DB entry, resulting in the originally
+ * passive node becoming the active node, and the originally active node being marked as the passive node.
  */
 public class RdbmsHaStrategyTest {
 
-    private Node nodeOne;
-    private Node nodeTwo;
+    private BrokerNode brokerNodeOne;
+    private BrokerNode brokerNodeTwo;
 
-    private Node activeNode;
-    private Node passiveNode;
+    private BrokerNode activeBrokerNode;
+    private BrokerNode passiveBrokerNode;
 
     private int heartbeatInterval = 5000;
     private int coordinatorEntryCreationWaitTime = 3000;
@@ -85,68 +92,74 @@ public class RdbmsHaStrategyTest {
 
         startupContext.registerService(BrokerHaConfiguration.class, haConfiguration);
 
-        nodeOne = new Node(hostnameOne, portOne, sslPortOne, restPortOne, adminUsername, adminPassword,
-                           startupContext, configProvider);
-        nodeOne.startUp();
+        brokerNodeOne = new BrokerNode(hostnameOne, portOne, sslPortOne, restPortOne, adminUsername, adminPassword,
+                                       startupContext, configProvider);
+        brokerNodeOne.startUp();
 
-        nodeTwo = new Node(hostnameTwo, portTwo, sslPortTwo, restPortTwo, adminUsername, adminPassword,
-                           startupContext, configProvider);
-        nodeTwo.startUp();
+        brokerNodeTwo = new BrokerNode(hostnameTwo, portTwo, sslPortTwo, restPortTwo, adminUsername, adminPassword,
+                                       startupContext, configProvider);
+        brokerNodeTwo.startUp();
 
         //Allow for initial coordinator entry creation
         Thread.sleep(heartbeatInterval + coordinatorEntryCreationWaitTime + 1000);
     }
 
-    @Test
+    @Test(description = "Confirm election of a single active node, and marking of the remaining node as passive")
     public void testSingleActiveNode() throws Exception {
-        Assert.assertNotEquals(nodeOne.isActiveNode(), nodeTwo.isActiveNode(), "Two nodes marked as active nodes");
+        Assert.assertNotEquals(brokerNodeOne.isActiveNode(), brokerNodeTwo.isActiveNode(),
+                               "Two nodes marked as active nodes");
     }
 
-    @Test(dependsOnMethods = "testSingleActiveNode")
+    @Test(dependsOnMethods = "testSingleActiveNode",
+          description = "Confirm expected behaviour with the active node before fail-over")
     public void testSendReceiveForActiveNodeBeforeFailover() throws Exception {
-        if (nodeOne.isActiveNode()) {
-            activeNode = nodeOne;
-            passiveNode = nodeTwo;
-        } else if (nodeTwo.isActiveNode()) {
-            activeNode = nodeTwo;
-            passiveNode = nodeOne;
+        if (brokerNodeOne.isActiveNode()) {
+            activeBrokerNode = brokerNodeOne;
+            passiveBrokerNode = brokerNodeTwo;
+        } else if (brokerNodeTwo.isActiveNode()) {
+            activeBrokerNode = brokerNodeTwo;
+            passiveBrokerNode = brokerNodeOne;
         } else {
             Assert.fail("No ACTIVE node!");
         }
         sendReceiveForNode("testSendReceiveForActiveNodeBeforeFailover",
-                           activeNode.getHostname(), activeNode.getPort());
+                           activeBrokerNode.getHostname(), activeBrokerNode.getPort());
     }
 
-    @Test(dependsOnMethods = "testSendReceiveForActiveNodeBeforeFailover", expectedExceptions = JMSException.class)
+    @Test(dependsOnMethods = "testSendReceiveForActiveNodeBeforeFailover",
+          expectedExceptions = JMSException.class,
+          description = "Confirm expected behaviour with the passive node before fail-over")
     public void testSendReceiveForPassiveNodeBeforeFailover() throws Exception {
         sendReceiveForNode("testSendReceiveForPassiveNodeBeforeFailover",
-                           passiveNode.getHostname(), passiveNode.getPort());
+                           passiveBrokerNode.getHostname(), passiveBrokerNode.getPort());
     }
 
-    @Test(dependsOnMethods = "testSendReceiveForPassiveNodeBeforeFailover")
-    public void testFailoverWithActiveNodeShutdown() throws Exception {
+    @Test(dependsOnMethods = "testSendReceiveForPassiveNodeBeforeFailover",
+          description = "Confirm failing over, pausing the coordination strategy")
+    public void testFailoverWithActiveNodePause() throws Exception {
         sendMessagesForSyncTest();
-        activeNode.shutdown();
+        activeBrokerNode.pause();
         //Change to expected states
-        if (nodeOne.equals(passiveNode)) {
-            activeNode = nodeOne;
-            passiveNode = nodeTwo;
+        if (brokerNodeOne.equals(passiveBrokerNode)) {
+            activeBrokerNode = brokerNodeOne;
+            passiveBrokerNode = brokerNodeTwo;
         } else {
-            activeNode = nodeTwo;
-            passiveNode = nodeOne;
+            activeBrokerNode = brokerNodeTwo;
+            passiveBrokerNode = brokerNodeOne;
         }
 
         //Allow for failover
         Thread.sleep(3 * heartbeatInterval + coordinatorEntryCreationWaitTime + 1000);
 
-        Assert.assertTrue(activeNode.isActiveNode());
+        Assert.assertTrue(activeBrokerNode.isActiveNode());
+        passiveBrokerNode.resume(); //resume the previously active node (now passive), which was paused
     }
 
     private void sendMessagesForSyncTest() throws NamingException, JMSException {
         //Send messages for the sync test prior to initializing failover
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin",
-                                          activeNode.getHostname(), activeNode.getPort())
+                                          activeBrokerNode.getHostname(), activeBrokerNode.getPort())
                 .withQueue(SYNC_TEST_QUEUE_NAME)
                 .build();
 
@@ -166,23 +179,27 @@ public class RdbmsHaStrategyTest {
         connection.close();
     }
 
-    @Test(dependsOnMethods = "testFailoverWithActiveNodeShutdown")
+    @Test(dependsOnMethods = "testFailoverWithActiveNodePause",
+          description = "Confirm expected behaviour with the active node after fail-over")
     public void testSendReceiveForActiveNodeAfterFailover() throws Exception {
         sendReceiveForNode("testSendReceiveForActiveNodeAfterFailover",
-                           activeNode.getHostname(), activeNode.getPort());
+                           activeBrokerNode.getHostname(), activeBrokerNode.getPort());
     }
 
-    @Test(dependsOnMethods = "testSendReceiveForActiveNodeAfterFailover", expectedExceptions = JMSException.class)
+    @Test(dependsOnMethods = "testSendReceiveForActiveNodeAfterFailover",
+          expectedExceptions = JMSException.class,
+          description = "Confirm expected behaviour with the passive node after fail-over")
     public void testSendReceiveForPassiveNodeAfterFailover() throws Exception {
         sendReceiveForNode("testSendReceiveForPassiveNodeAfterFailover",
-                           passiveNode.getHostname(), passiveNode.getPort());
+                           passiveBrokerNode.getHostname(), passiveBrokerNode.getPort());
     }
 
-    @Test(dependsOnMethods = "testSendReceiveForActiveNodeAfterFailover")
+    @Test(dependsOnMethods = "testSendReceiveForActiveNodeAfterFailover",
+          description = "Confirm expected behaviour syncing data from the database by the active node, after fail-over")
     public void testSyncingOnFailover() throws Exception {
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin",
-                                          activeNode.getHostname(), activeNode.getPort())
+                                          activeBrokerNode.getHostname(), activeBrokerNode.getPort())
                 .withQueue(SYNC_TEST_QUEUE_NAME)
                 .build();
 
@@ -240,7 +257,8 @@ public class RdbmsHaStrategyTest {
 
     @AfterClass
     public void teardown(ITestContext context) throws Exception {
-        nodeTwo.shutdown();
+        brokerNodeOne.shutdown();
+        brokerNodeTwo.shutdown();
     }
 
 }

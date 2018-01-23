@@ -65,7 +65,6 @@ public abstract class AbstractHaStrategy implements HaStrategy {
             prioritizedHaListener = prioritizedHaListenerIterator.next();
             if (prioritizedHaListener.haListener.equals(haListener)) {
                 prioritizedHaListenerIterator.remove();
-                break;
             }
         }
     }

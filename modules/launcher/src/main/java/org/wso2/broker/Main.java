@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.Server;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
+import org.wso2.broker.coordination.CoordinationException;
 import org.wso2.broker.coordination.HaStrategy;
 import org.wso2.broker.coordination.HaStrategyFactory;
 import org.wso2.broker.core.Broker;
-import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.security.authentication.user.User;
 import org.wso2.broker.core.security.authentication.user.UserStoreManager;
@@ -77,7 +77,7 @@ public class Main {
                     startupContext.registerService(HaStrategy.class, haStrategy);
                 }
             } catch (Exception e) {
-                throw new BrokerException("Error initializing HA Strategy: ", e);
+                throw new CoordinationException("Error initializing HA Strategy: ", e);
             }
 
             BrokerMetricService metricService = new BrokerMetricService(startupContext);

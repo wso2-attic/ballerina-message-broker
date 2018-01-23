@@ -18,8 +18,6 @@
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -43,11 +41,6 @@ import javax.sql.DataSource;
  * Test class for RDBMS coordination with Derby.
  */
 public class RdbmsCoordinationStrategyTest {
-
-    /**
-     * Class logger.
-     */
-    private Logger logger = LoggerFactory.getLogger(RdbmsCoordinationStrategyTest.class);
 
     /**
      * Instance of {@link RdbmsCoordinationStrategy} being tested.

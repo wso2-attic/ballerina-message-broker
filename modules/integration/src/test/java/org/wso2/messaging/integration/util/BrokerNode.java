@@ -23,10 +23,11 @@ import org.wso2.broker.amqp.Server;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.coordination.BrokerHaConfiguration;
+import org.wso2.broker.coordination.CoordinationException;
 import org.wso2.broker.coordination.HaStrategy;
 import org.wso2.broker.coordination.HaStrategyFactory;
+import org.wso2.broker.coordination.rdbms.RdbmsHaStrategy;
 import org.wso2.broker.core.Broker;
-import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule;
 import org.wso2.broker.core.security.authentication.user.User;
@@ -48,7 +49,7 @@ import javax.sql.DataSource;
 /**
  * Representation of a single MB node.
  */
-public class Node {
+public class BrokerNode {
 
     private Broker broker;
 
@@ -62,8 +63,8 @@ public class Node {
 
     private String port;
 
-    public Node(String hostname, String port, String sslPort, String restPort, String adminUsername,
-                String adminPassword, StartupContext startupContext, TestConfigProvider configProvider)
+    public BrokerNode(String hostname, String port, String sslPort, String restPort, String adminUsername,
+                      String adminPassword, StartupContext startupContext, TestConfigProvider configProvider)
             throws Exception {
 
         this.hostname = hostname;
@@ -104,7 +105,7 @@ public class Node {
             try {
                 haStrategy = HaStrategyFactory.getHaStrategy(startupContext);
             } catch (Exception e) {
-                throw new BrokerException("Error initializing HA Strategy: ", e);
+                throw new CoordinationException("Error initializing HA Strategy: ", e);
             }
             startupContext.registerService(HaStrategy.class, haStrategy);
         }
@@ -141,6 +142,22 @@ public class Node {
         server.stop();
         server.awaitServerClose();
         broker.stopMessageDelivery();
+    }
+
+    public void pause() throws CoordinationException {
+        if (haStrategy instanceof RdbmsHaStrategy) {
+            ((RdbmsHaStrategy) haStrategy).pause();
+        } else {
+            throw new CoordinationException("Pause functionality not available for " + haStrategy.getClass());
+        }
+    }
+
+    public void resume() throws CoordinationException {
+        if (haStrategy instanceof RdbmsHaStrategy) {
+            ((RdbmsHaStrategy) haStrategy).resume();
+        } else {
+            throw new CoordinationException("Resume functionality not available for " + haStrategy.getClass());
+        }
     }
 
     public boolean isActiveNode() {
