@@ -30,6 +30,7 @@ import org.wso2.broker.core.store.dao.MessageDao;
 import org.wso2.broker.core.store.dao.QueueDao;
 import org.wso2.broker.core.store.dao.SharedMessageStore;
 import org.wso2.broker.core.task.TaskExecutorService;
+import org.wso2.broker.core.util.MessageTracer;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -180,6 +181,7 @@ final class MessagingEngine {
                     LOGGER.info("Dropping message since no queues found for routing key " + routingKey + " in "
                                         + exchange);
                     message.release();
+                    MessageTracer.trace(metadata, MessageTracer.NO_ROUTES);
                 } else {
                     try {
                         sharedMessageStore.add(message);
@@ -201,6 +203,8 @@ final class MessagingEngine {
                     }
                 }
             } else {
+                message.release();
+                MessageTracer.trace(metadata, MessageTracer.UNKNOWN_EXCHANGE);
                 throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
             }
         } finally {
@@ -213,17 +217,14 @@ final class MessagingEngine {
         if (uniqueQueues.isEmpty()) {
             LOGGER.info("Dropping message since message didn't have any routes to {}",
                         message.getMetadata().getRoutingKey());
+            MessageTracer.trace(message.getMetadata(), MessageTracer.NO_ROUTES);
             return;
         }
 
         for (String queueName : uniqueQueues) {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
             Message copiedMessage = message.shallowCopy();
-            boolean success = queueHandler.enqueue(copiedMessage);
-            if (!success) {
-                LOGGER.info("Failed to publish message {} to the queue {}", message, queueName);
-                copiedMessage.release();
-            }
+            queueHandler.enqueue(copiedMessage);
         }
     }
 

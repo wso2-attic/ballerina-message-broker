@@ -23,6 +23,7 @@ import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.store.dao.SharedMessageStore;
+import org.wso2.broker.core.util.MessageTracer;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -106,18 +107,22 @@ public final class QueueHandler {
     }
 
     /**
-     * Put the message to the tail of the queue. If the queue is full returns falls.
-     * <p>
-     * Note: The caller should handle the message queue full scenario
+     * Put the message to the tail of the queue. If the queue is full message will get dropped
      *
      * @param message {@link Message}
-     * @return True if successfully enqueued, false otherwise
      */
-    boolean enqueue(Message message) throws BrokerException {
+    void enqueue(Message message) throws BrokerException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Enqueuing message {} to queue {}", message, queue.getName());
         }
-        return queue.enqueue(message);
+        boolean success = queue.enqueue(message);
+        if (success) {
+            MessageTracer.trace(message, this, MessageTracer.PUBLISH_SUCCESSFUL);
+        } else {
+            message.release();
+            MessageTracer.trace(message, this, MessageTracer.PUBLISH_FAILURE);
+            LOGGER.info("Failed to publish message {} to the queue {}", message, queue.getName());
+        }
     }
 
     /**
@@ -129,6 +134,9 @@ public final class QueueHandler {
         Message message = redeliveryQueue.dequeue();
         if (message == null) {
             message = queue.dequeue();
+            MessageTracer.trace(message, this, MessageTracer.RETRIEVE_FOR_DELIVERY);
+        } else {
+            MessageTracer.trace(message, this, MessageTracer.RETRIEVE_FOR_REDELIVERY);
         }
 
         return message;
@@ -136,10 +144,12 @@ public final class QueueHandler {
 
     void acknowledge(Message message) throws BrokerException {
         queue.detach(message);
+        MessageTracer.trace(message, this, MessageTracer.ACKNOWLEDGE);
     }
 
     public void requeue(Message message) throws BrokerException {
         redeliveryQueue.enqueue(message);
+        MessageTracer.trace(message, this, MessageTracer.REQUEUE);
     }
 
     /**

@@ -28,11 +28,18 @@ import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
+import org.wso2.broker.core.util.MessageTracer;
+import org.wso2.broker.core.util.TraceField;
 
 /**
  * AMQP delivery message which consists of the basic.deliver, ContentHeader and ContentBody frames
  */
 public class AmqpDeliverMessage {
+
+    private static final String SEND_MESSAGE = "Delivering message to client from AMQP transport.";
+    private static final String SENT_ON_HOLD = "Message delivery on hold. Flow disabled.";
+    private static final String QUEUE_NAME_FIELD = "queueName";
+    private static final String CONSUMER_ADDRESS_FIELD = "consumerAddress";
 
     private final ShortString consumerTag;
     private final AmqpChannel channel;
@@ -49,6 +56,14 @@ public class AmqpDeliverMessage {
     public void write(ChannelHandlerContext ctx) {
         if (!channel.isFlowEnabled()) {
             channel.hold(this);
+            if (MessageTracer.isTraceEnabled()) {
+                MessageTracer.trace(message, SENT_ON_HOLD,
+                                    new TraceField(AmqpConsumer.CONSUMER_TAG_FIELD_NAME, consumerTag),
+                                    new TraceField(AmqpChannel.CHANNEL_ID_FIELD_NAME, channel.getChannelId()),
+                                    new TraceField(QUEUE_NAME_FIELD, queueName),
+                                    new TraceField(CONSUMER_ADDRESS_FIELD, ctx.channel().remoteAddress())
+                                   );
+            }
         } else {
             long deliveryTag = channel.getNextDeliveryTag();
             channel.recordMessageDelivery(deliveryTag, new AckData(message.shallowCopy(), queueName, consumerTag));
@@ -73,6 +88,17 @@ public class AmqpDeliverMessage {
                                                              chunk.getBytes());
                 ctx.write(contentFrame);
             }
+
+            if (MessageTracer.isTraceEnabled()) {
+                MessageTracer.trace(message, SEND_MESSAGE,
+                                    new TraceField(AmqpChannel.DELIVERY_TAG_FIELD_NAME, deliveryTag),
+                                    new TraceField(AmqpChannel.CHANNEL_ID_FIELD_NAME, channel.getChannelId()),
+                                    new TraceField(QUEUE_NAME_FIELD, queueName),
+                                    new TraceField(AmqpConsumer.CONSUMER_TAG_FIELD_NAME, consumerTag),
+                                    new TraceField(CONSUMER_ADDRESS_FIELD, ctx.channel().remoteAddress())
+                                    );
+            }
+
         }
     }
 

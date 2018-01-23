@@ -28,6 +28,11 @@ import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Consumer;
 import org.wso2.broker.core.Message;
+import org.wso2.broker.core.util.MessageTracer;
+import org.wso2.broker.core.util.TraceField;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * AMQP based message consumer.
@@ -38,6 +43,8 @@ public class AmqpConsumer extends Consumer {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConsumer.class);
 
+    public static final String CONSUMER_TAG_FIELD_NAME = "consumerTag";
+
     private final String queueName;
 
     private final ShortString consumerTag;
@@ -47,7 +54,10 @@ public class AmqpConsumer extends Consumer {
     private final ChannelHandlerContext context;
 
     private final AmqpChannel channel;
+
     private ChannelFutureListener errorLogger;
+
+    private final List<TraceField> tracingProperties;
 
     public AmqpConsumer(ChannelHandlerContext ctx, AmqpChannel channel,
                         String queueName, ShortString consumerTag, boolean isExclusive) {
@@ -57,6 +67,9 @@ public class AmqpConsumer extends Consumer {
         this.context = ctx;
         this.channel = channel;
         this.errorLogger = new ErrorLogger(queueName);
+        this.tracingProperties = new ArrayList<>(2);
+        tracingProperties.add(new TraceField(AmqpChannel.CHANNEL_ID_FIELD_NAME, channel.getChannelId()));
+        tracingProperties.add(new TraceField(CONSUMER_TAG_FIELD_NAME, consumerTag));
     }
 
     @Override
@@ -64,18 +77,21 @@ public class AmqpConsumer extends Consumer {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Adding message to AMQP Netty outbound; messageId: {}, consumerTag: {}, queueName: {}",
-                        message.getMetadata().getInternalId(),
-                        consumerTag,
-                        queueName);
+                         message.getMetadata().getInternalId(),
+                         consumerTag,
+                         queueName);
         }
 
-        AmqpDeliverMessage deliverMessage = new AmqpDeliverMessage(message,
-                                                                   consumerTag,
-                                                                   channel,
-                                                                   queueName);
+        AmqpDeliverMessage deliverMessage = new AmqpDeliverMessage(message, consumerTag, channel, queueName);
 
+        ChannelFutureListener channelListener;
+        if (MessageTracer.isTraceEnabled()) {
+            channelListener = new TracingChannelFutureListener(message, this);
+        } else {
+            channelListener = errorLogger;
+        }
         ChannelFuture channelFuture = context.channel().writeAndFlush(deliverMessage);
-        channelFuture.addListener(errorLogger);
+        channelFuture.addListener(channelListener);
     }
 
     @Override
@@ -119,5 +135,34 @@ public class AmqpConsumer extends Consumer {
                 + ", consumerTag=" + consumerTag
                 + ", isExclusive=" + isExclusive
                 + '}';
+    }
+
+    /**
+     * Channel listener to trace errors with message written to the socket.
+     */
+    private class TracingChannelFutureListener implements ChannelFutureListener {
+
+        private static final String TRANSPORT_DELIVERY_FAILURE = "Message delivery failed. AMQP transport error.";
+
+        private static final String SENT_FROM_TRANSPORT = "Message sent from transport.";
+
+        private final Message message;
+
+        private final AmqpConsumer consumer;
+
+        TracingChannelFutureListener(Message message, AmqpConsumer consumer) {
+            this.message = message;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public void operationComplete(ChannelFuture channelFuture) {
+            if (channelFuture.isSuccess()) {
+                MessageTracer.trace(message, consumer, SENT_FROM_TRANSPORT, tracingProperties);
+            } else {
+                LOGGER.warn("Error while sending message for " + queueName, channelFuture.cause());
+                MessageTracer.trace(message, consumer, TRANSPORT_DELIVERY_FAILURE, tracingProperties);
+            }
+        }
     }
 }

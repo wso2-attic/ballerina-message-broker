@@ -29,4 +29,6 @@ public interface EncodableData {
     long getSize();
 
     void write(ByteBuf buf);
+
+    String toString();
 }

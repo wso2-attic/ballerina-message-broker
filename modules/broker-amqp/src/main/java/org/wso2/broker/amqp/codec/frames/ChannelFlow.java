@@ -33,6 +33,7 @@ import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
  *     1.active (bit) - current flow setting
  */
 public class ChannelFlow extends MethodFrame {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ChannelFlow.class);
 
     private final boolean active;
@@ -56,6 +57,7 @@ public class ChannelFlow extends MethodFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
         channel.setFlow(active);
+        LOGGER.debug("Channel.flow method received. ChannelId: {} active: {} ", getChannel(), active);
         ctx.write(new ChannelFlowOk(getChannel(), active));
 
         if (active) {
