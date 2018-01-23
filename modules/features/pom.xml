@@ -23,7 +23,7 @@
     <parent>
         <artifactId>message-broker</artifactId>
         <groupId>org.wso2.messaging</groupId>
-        <version>4.0.16-SNAPSHOT</version>
+        <version>4.0.16</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
