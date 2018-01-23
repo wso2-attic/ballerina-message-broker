@@ -75,11 +75,19 @@ public class BrokerRestServer {
         LOGGER.info("Broker admin service stopped.");
     }
 
+    public void shutdown() {
+        brokerRestRunnerHelper.shutdown();
+    }
+
     private class BrokerRestRunnerHelper {
 
         public void start() {
             microservicesRunner.start();
             LOGGER.info("Broker admin service started on port {}", port);
+        }
+
+        public void shutdown() {
+            stop();
         }
 
     }
@@ -100,6 +108,12 @@ public class BrokerRestServer {
                 return;
             }
             super.start();
+        }
+
+        @Override
+        public void shutdown() {
+            haStrategy.unregisterListener(basicHaListener);
+            super.shutdown();
         }
 
         /**

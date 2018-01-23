@@ -165,6 +165,10 @@ public final class Broker {
         messagingEngine.stopMessageDelivery();
     }
 
+    public void shutdown() {
+        brokerHelper.shutdown();
+    }
+
     public long getNextMessageId() {
         return messagingEngine.getNextMessageId();
     }
@@ -192,6 +196,10 @@ public final class Broker {
             messagingEngine.startMessageDelivery();
         }
 
+        public void shutdown() {
+            stopMessageDelivery();
+        }
+
     }
 
     private class HaEnabledBrokerHelper extends BrokerHelper implements HaListener {
@@ -210,6 +218,12 @@ public final class Broker {
                 return;
             }
             super.startMessageDelivery();
+        }
+
+        @Override
+        public void shutdown() {
+            haStrategy.unregisterListener(basicHaListener);
+            super.shutdown();
         }
 
         /**

@@ -184,6 +184,10 @@ public class Server {
         }
     }
 
+    public void shutdown() throws InterruptedException {
+        serverHelper.shutdown();
+    }
+
     /**
      * Method to close the channels.
      */
@@ -236,6 +240,7 @@ public class Server {
     }
 
     private class ServerHelper {
+
         public void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
                 NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
                 IOException {
@@ -247,6 +252,11 @@ public class Server {
                 sslServerChannel = sslSocketFuture.channel();
             }
         }
+
+        public void shutdown() throws InterruptedException {
+            stop();
+        }
+
     }
 
     private class HaEnabledServerHelper extends ServerHelper implements HaListener {
@@ -267,6 +277,12 @@ public class Server {
                 return;
             }
             super.start();
+        }
+
+        @Override
+        public void shutdown() throws InterruptedException {
+            haStrategy.unregisterListener(basicHaListener);
+            super.shutdown();
         }
 
         /**
