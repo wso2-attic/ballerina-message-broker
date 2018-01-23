@@ -35,6 +35,7 @@ import org.wso2.broker.core.security.authentication.user.User;
 import org.wso2.broker.core.security.authentication.user.UserStoreManager;
 import org.wso2.broker.core.security.authentication.user.UsersFile;
 import org.wso2.broker.core.security.authentication.util.BrokerSecurityConstants;
+import org.wso2.broker.metrics.BrokerMetricService;
 import org.wso2.broker.rest.BrokerRestServer;
 import org.wso2.carbon.config.ConfigProviderFactory;
 import org.wso2.carbon.config.ConfigurationException;
@@ -79,16 +80,18 @@ public class Main {
                 throw new BrokerException("Error initializing HA Strategy: ", e);
             }
 
+            BrokerMetricService metricService = new BrokerMetricService(startupContext);
             BrokerRestServer restServer = new BrokerRestServer(startupContext);
             Broker broker = new Broker(startupContext);
             Server amqpServer = new Server(startupContext);
-            registerShutdownHook(broker, amqpServer, restServer, haStrategy);
+            registerShutdownHook(broker, amqpServer, restServer, haStrategy, metricService);
 
             if (haStrategy != null) {
                 //Start the HA strategy after all listeners have been registered, and before the listeners are started
                 haStrategy.start();
             }
 
+            metricService.start();
             broker.startMessageDelivery();
             amqpServer.start();
             restServer.start();
@@ -164,15 +167,18 @@ public class Main {
     /**
      * Method to register a shutdown hook to ensure proper cleaning up.
      */
-    private static void registerShutdownHook(Broker broker, Server server, BrokerRestServer brokerRestServer,
-                                             HaStrategy haStrategy) {
+    private static void registerShutdownHook(Broker broker,
+                                             Server server,
+                                             BrokerRestServer brokerRestServer,
+                                             HaStrategy haStrategy,
+                                             BrokerMetricService metricService) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             synchronized (LOCK) {
                 shutdownHookTriggered = true;
+                brokerRestServer.stop();
                 if (haStrategy != null) {
                     haStrategy.stop();
                 }
-                brokerRestServer.stop();
                 try {
                     server.stop();
                     server.awaitServerClose();
@@ -180,6 +186,7 @@ public class Main {
                     LOGGER.warn("Error stopping transport on shut down {}", e);
                 }
                 broker.stopMessageDelivery();
+                metricService.stop();
                 LOCK.notifyAll();
             }
         }));
