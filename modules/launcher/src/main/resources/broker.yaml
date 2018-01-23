@@ -93,3 +93,39 @@ wso2.broker.admin.service:
   hostName: localhost
   # Port used for the nonsecured admin service.
   port: 9000
+
+# This is the main configuration for metrics
+wso2.metrics:
+ # Enable Metrics
+ enabled: true
+
+ # Metrics JMX Configuration
+ jmx:
+  # Register MBean when initializing Metrics
+  registerMBean: true
+  # MBean Name
+  name: org.wso2.carbon:type=Metrics
+
+ # Metrics reporting configurations
+ # The JMX, Console, CSV and SLF4J reporters are in the Metrics Core feature.
+ reporting:
+  jmx:
+   - # The name for the JMX Reporter
+     name: JMX
+     # Enable JMX Reporter
+     enabled: true
+     # Metrics domain used to report metrics
+     domain: org.wso2.broker
+
+  slf4j:
+   - # The name for the SLF4J Reporter
+     name: SLF4J
+     # Enable SLF4J Reporter
+     enabled: false
+     # The Logger name
+     loggerName: org.wso2.broker.MetricsLogger
+     # The Marker name
+     # markerName: metrics
+     # Polling Period in seconds.
+     # This is the period for polling metrics from the metric registry and logging to the configured logger
+     pollingPeriod: 60

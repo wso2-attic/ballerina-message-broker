@@ -28,11 +28,16 @@ import org.wso2.broker.coordination.BasicHaListener;
 import org.wso2.broker.coordination.HaListener;
 import org.wso2.broker.coordination.HaStrategy;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
+import org.wso2.broker.core.metrics.BrokerMetricManager;
+import org.wso2.broker.core.metrics.DefaultBrokerMetricManager;
+import org.wso2.broker.core.metrics.NullBrokerMetricManager;
 import org.wso2.broker.core.rest.api.QueuesApi;
 import org.wso2.broker.core.security.authentication.AuthenticationManager;
 import org.wso2.broker.rest.BrokerServiceRunner;
+import org.wso2.carbon.metrics.core.MetricService;
 
 import java.util.Collection;
+import java.util.Objects;
 import javax.sql.DataSource;
 
 /**
@@ -45,6 +50,11 @@ public final class Broker {
     private final MessagingEngine messagingEngine;
 
     private final AuthenticationManager authenticationManager;
+
+    /**
+     * Used to manage metrics related to broker
+     */
+    private final BrokerMetricManager metricManager;
 
     /**
      * The {@link HaStrategy} for which the HA listener is registered.
@@ -69,6 +79,13 @@ public final class Broker {
             LOGGER.info("Broker is in PASSIVE mode"); //starts up in passive mode
             brokerHelper = new HaEnabledBrokerHelper();
         }
+
+        MetricService metrics = startupContext.getService(MetricService.class);
+        if (Objects.nonNull(metrics)) {
+            metricManager = new DefaultBrokerMetricManager(metrics);
+        } else {
+            metricManager = new NullBrokerMetricManager();
+        }
     }
 
     /**
@@ -82,6 +99,7 @@ public final class Broker {
 
     public void publish(Message message) throws BrokerException {
         messagingEngine.publish(message);
+        metricManager.markPublish();
     }
 
     /**
