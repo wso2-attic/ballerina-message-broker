@@ -37,4 +37,9 @@ public class NullBrokerMetricManager implements BrokerMetricManager {
     public void removeInMemoryMessage() {
         // do nothing
     }
+
+    @Override
+    public void markAcknowledge() {
+        // do nothing
+    }
 }

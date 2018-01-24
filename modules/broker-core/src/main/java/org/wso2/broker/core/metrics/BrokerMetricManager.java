@@ -28,4 +28,6 @@ public interface BrokerMetricManager {
     void addInMemoryMessage();
 
     void removeInMemoryMessage();
+
+    void markAcknowledge();
 }

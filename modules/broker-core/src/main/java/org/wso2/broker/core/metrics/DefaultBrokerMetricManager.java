@@ -31,9 +31,11 @@ import org.wso2.carbon.metrics.core.MetricService;
 public class DefaultBrokerMetricManager implements BrokerMetricManager {
     private final Meter totalPublishedCounter;
     private final Counter totalEnqueueCounter;
+    private final Meter totalAckCounter;
 
     public DefaultBrokerMetricManager(MetricService metrics) {
         totalPublishedCounter = metrics.meter(MetricService.name(Broker.class, "node", "totalPublished"), Level.INFO);
+        totalAckCounter = metrics.meter(MetricService.name(Broker.class, "node", "totalAcknowledged"), Level.INFO);
         totalEnqueueCounter = metrics.counter(MetricService.name(Broker.class, "node", "totalInMemoryMessages"),
                                               Level.INFO);
     }
@@ -51,6 +53,11 @@ public class DefaultBrokerMetricManager implements BrokerMetricManager {
     @Override
     public void removeInMemoryMessage() {
         totalEnqueueCounter.dec();
+    }
+
+    @Override
+    public void markAcknowledge() {
+        totalAckCounter.mark();
     }
 
 }
