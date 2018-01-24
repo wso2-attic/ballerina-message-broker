@@ -8,8 +8,10 @@ import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
+import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.store.DbOperation;
 import org.wso2.broker.core.store.dao.MessageDao;
+import org.wso2.carbon.metrics.core.Timer.Context;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,8 +29,11 @@ import javax.sql.DataSource;
  */
 public class MessageDaoImpl extends MessageDao {
 
-    public MessageDaoImpl(DataSource dataSource) {
+    private final BrokerMetricManager metricManager;
+
+    public MessageDaoImpl(DataSource dataSource, BrokerMetricManager metricManager) {
         super(dataSource);
+        this.metricManager = metricManager;
     }
 
     @Override
@@ -38,7 +43,7 @@ public class MessageDaoImpl extends MessageDao {
         PreparedStatement metadataStmt = null;
         PreparedStatement contentStmt = null;
         PreparedStatement insertToQueueStmt = null;
-
+        Context context = metricManager.startMessageWriteTimer();
         try {
             connection = getConnection();
             metadataStmt = connection.prepareStatement(RDBMSConstants.PS_INSERT_METADATA);
@@ -58,6 +63,7 @@ public class MessageDaoImpl extends MessageDao {
         } catch (SQLException e) {
             throw new BrokerException("Error persisting messages.", e);
         } finally {
+            context.stop();
             close(metadataStmt);
             close(contentStmt);
             close(insertToQueueStmt);

@@ -24,6 +24,8 @@ import org.wso2.carbon.metrics.core.Counter;
 import org.wso2.carbon.metrics.core.Level;
 import org.wso2.carbon.metrics.core.Meter;
 import org.wso2.carbon.metrics.core.MetricService;
+import org.wso2.carbon.metrics.core.Timer;
+import org.wso2.carbon.metrics.core.Timer.Context;
 
 /**
  * Default implementation of {@link BrokerMetricManager}
@@ -32,12 +34,14 @@ public class DefaultBrokerMetricManager implements BrokerMetricManager {
     private final Meter totalPublishedCounter;
     private final Counter totalEnqueueCounter;
     private final Meter totalAckCounter;
+    private final Timer messageWriteTimer;
 
     public DefaultBrokerMetricManager(MetricService metrics) {
         totalPublishedCounter = metrics.meter(MetricService.name(Broker.class, "node", "totalPublished"), Level.INFO);
         totalAckCounter = metrics.meter(MetricService.name(Broker.class, "node", "totalAcknowledged"), Level.INFO);
         totalEnqueueCounter = metrics.counter(MetricService.name(Broker.class, "node", "totalInMemoryMessages"),
                                               Level.INFO);
+        messageWriteTimer = metrics.timer(MetricService.name(Broker.class, "node", "messageWrite"), Level.INFO);
     }
 
     @Override
@@ -58,6 +62,11 @@ public class DefaultBrokerMetricManager implements BrokerMetricManager {
     @Override
     public void markAcknowledge() {
         totalAckCounter.mark();
+    }
+
+    @Override
+    public Context startMessageWriteTimer() {
+        return messageWriteTimer.start();
     }
 
 }

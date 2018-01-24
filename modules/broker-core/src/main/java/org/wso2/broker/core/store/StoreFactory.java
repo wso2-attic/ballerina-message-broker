@@ -38,7 +38,7 @@ public class StoreFactory {
     private final BrokerMetricManager metricManager;
 
     public StoreFactory(DataSource dataSource, BrokerMetricManager metricManager) {
-        daoFactory = new DaoFactory(dataSource);
+        daoFactory = new DaoFactory(dataSource, metricManager);
         this.metricManager = metricManager;
     }
 

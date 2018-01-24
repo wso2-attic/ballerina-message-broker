@@ -19,6 +19,7 @@
 
 package org.wso2.broker.core.store.dao;
 
+import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.store.dao.impl.BindingDaoImpl;
 import org.wso2.broker.core.store.dao.impl.ExchangeDaoImpl;
 import org.wso2.broker.core.store.dao.impl.MessageDaoImpl;
@@ -32,9 +33,11 @@ import javax.sql.DataSource;
 public class DaoFactory {
 
     private final DataSource dataSource;
+    private final BrokerMetricManager metricManager;
 
-    public DaoFactory(DataSource dataSource) {
+    public DaoFactory(DataSource dataSource, BrokerMetricManager metricManager) {
         this.dataSource = dataSource;
+        this.metricManager = metricManager;
     }
 
     public QueueDao createQueueDao() {
@@ -42,7 +45,7 @@ public class DaoFactory {
     }
 
     public MessageDao createMessageDao() {
-        return new MessageDaoImpl(dataSource);
+        return new MessageDaoImpl(dataSource, metricManager);
     }
 
     public ExchangeDao createExchangeDao() {
