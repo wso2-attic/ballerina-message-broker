@@ -76,7 +76,6 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
-                <version>1.4.0</version>
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
@@ -85,6 +84,7 @@
                         </Private-Package>
                         <Import-Package>
                             io.netty.buffer.*;version="${netty.import.package.range.version}",
+                            org.slf4j.*;version="${slf4j.logging.package.import.version.range}"
                         </Import-Package>
                         <Export-Package>
                             org.wso2.broker.common.*;version="${project.version}",
