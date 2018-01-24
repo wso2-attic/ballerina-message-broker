@@ -34,4 +34,6 @@ public interface AmqpMetricManager {
     void incrementConsumerCount();
 
     void decrementConsumerCount();
+
+    void markReject();
 }

@@ -230,6 +230,7 @@ public class AmqpChannel {
     }
 
     public void reject(long deliveryTag, boolean requeue) throws BrokerException {
+        metricManager.markReject();
         AckData ackData = unackedMessageMap.remove(deliveryTag);
         if (MessageTracer.isTraceEnabled()) {
             String description = Objects.nonNull(ackData) ? REJECT_RECEIVED : UNKNOWN_REJECT;

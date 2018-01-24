@@ -22,6 +22,7 @@ package org.wso2.broker.amqp.metrics;
 import org.wso2.broker.amqp.Server;
 import org.wso2.carbon.metrics.core.Counter;
 import org.wso2.carbon.metrics.core.Level;
+import org.wso2.carbon.metrics.core.Meter;
 import org.wso2.carbon.metrics.core.MetricService;
 
 /**
@@ -32,12 +33,14 @@ public class DefaultAmqpMetricManager implements AmqpMetricManager {
     private final Counter totalChannelCounter;
     private final Counter totalConnectionCounter;
     private final Counter totalConsumerCounter;
+    private final Meter rejectMeter;
 
     public DefaultAmqpMetricManager(MetricService metrics) {
         totalChannelCounter = metrics.counter(MetricService.name(Server.class, "node", "totalChannels"), Level.INFO);
         totalConnectionCounter = metrics.counter(MetricService.name(Server.class, "node", "totalConnections"),
                                                  Level.INFO);
         totalConsumerCounter = metrics.counter(MetricService.name(Server.class, "node", "totalConsumers"), Level.INFO);
+        rejectMeter = metrics.meter(MetricService.name(Server.class, "node", "totalConsumers"), Level.INFO);
     }
 
     @Override
@@ -68,5 +71,10 @@ public class DefaultAmqpMetricManager implements AmqpMetricManager {
     @Override
     public void decrementConsumerCount() {
         totalConsumerCounter.dec();
+    }
+
+    @Override
+    public void markReject() {
+        rejectMeter.mark();
     }
 }

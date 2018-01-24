@@ -52,4 +52,9 @@ public class NullAmqpMetricManager implements AmqpMetricManager {
     public void decrementConsumerCount() {
         // do nothing
     }
+
+    @Override
+    public void markReject() {
+        // do nothing
+    }
 }
