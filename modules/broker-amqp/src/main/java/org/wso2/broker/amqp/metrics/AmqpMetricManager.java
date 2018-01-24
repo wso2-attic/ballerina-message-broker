@@ -26,4 +26,8 @@ public interface AmqpMetricManager {
     void incrementChannelCount();
 
     void decrementChannelCount();
+
+    void incrementConnectionCount();
+
+    void decrementConnectionCount();
 }

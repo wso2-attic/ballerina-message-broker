@@ -57,10 +57,11 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         this.configuration = configuration;
         this.broker = broker;
         this.metricManager = metricManager;
+        metricManager.incrementConnectionCount();
     }
 
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        ctx.channel().closeFuture().addListener(future -> closeConnection(ctx));
+        ctx.channel().closeFuture().addListener(future -> onConnectionClose());
     }
 
     @Override
@@ -82,14 +83,20 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         closeConnection(ctx);
     }
 
-    private ChannelHandlerContext closeConnection(ChannelHandlerContext ctx) {
-        return ctx.fireChannelRead((BlockingTask) () -> {
+    private void closeConnection(ChannelHandlerContext ctx) {
+        ctx.fireChannelRead((BlockingTask) () -> {
             try {
-                closeAllChannels();
+                // TODO: May be we don't have to call onConnectionClose since channel close listener is called when
+                // closing
+                onConnectionClose();
             } finally {
                 ctx.close();
             }
         });
+    }
+    private void onConnectionClose() {
+            closeAllChannels();
+            metricManager.decrementConnectionCount();
     }
 
     private void handleProtocolInit(ChannelHandlerContext ctx, ProtocolInitFrame msg) {
@@ -136,6 +143,8 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         for (AmqpChannel channel: channels.values()) {
             closeChannel(channel);
         }
+
+        channels.clear();
     }
 
     /**

@@ -30,10 +30,12 @@ import org.wso2.carbon.metrics.core.MetricService;
 public class DefaultAmqpMetricManager implements AmqpMetricManager {
 
     private final Counter totalChannelCounter;
+    private final Counter totalConnectionCounter;
 
     public DefaultAmqpMetricManager(MetricService metrics) {
-        totalChannelCounter = metrics.counter(MetricService.name(Server.class, "node", "totalChannels"),
-                                              Level.INFO);
+        totalChannelCounter = metrics.counter(MetricService.name(Server.class, "node", "totalChannels"), Level.INFO);
+        totalConnectionCounter = metrics.counter(MetricService.name(Server.class, "node", "totalConnections"),
+                                                 Level.INFO);
     }
 
     @Override
@@ -45,4 +47,15 @@ public class DefaultAmqpMetricManager implements AmqpMetricManager {
     public void decrementChannelCount() {
         totalChannelCounter.dec();
     }
+
+    @Override
+    public void incrementConnectionCount() {
+        totalConnectionCounter.inc();
+    }
+
+    @Override
+    public void decrementConnectionCount() {
+        totalConnectionCounter.dec();
+    }
+
 }
