@@ -23,11 +23,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.data.types.FieldTable;
-import org.wso2.broker.core.store.dao.BindingDao;
-import org.wso2.broker.core.store.dao.DaoFactory;
-import org.wso2.broker.core.store.dao.ExchangeDao;
-import org.wso2.broker.core.store.dao.MessageDao;
-import org.wso2.broker.core.store.dao.QueueDao;
+import org.wso2.broker.core.metrics.BrokerMetricManager;
+import org.wso2.broker.core.store.StoreFactory;
 import org.wso2.broker.core.store.dao.SharedMessageStore;
 import org.wso2.broker.core.task.TaskExecutorService;
 import org.wso2.broker.core.util.MessageTracer;
@@ -38,7 +35,6 @@ import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javax.sql.DataSource;
 
 /**
  * Broker's messaging core which handles message publishing, create and delete queue operations.
@@ -84,16 +80,17 @@ final class MessagingEngine {
      */
     private final MessageIdGenerator messageIdGenerator;
 
-    MessagingEngine(DataSource dataSource) throws BrokerException {
-        DaoFactory daoFactory = new DaoFactory(dataSource);
-        QueueDao queueDao = daoFactory.createQueueDao();
-        ExchangeDao exchangeDao = daoFactory.createExchangeDao();
-        BindingDao bindingDao = daoFactory.createBindingDao();
-        MessageDao messageDao = daoFactory.createMessageDao();
-        exchangeRegistry = new ExchangeRegistry(exchangeDao, bindingDao);
+    /**
+     * Used to report messaging metrics
+     */
+    private final BrokerMetricManager metricManager;
+
+    MessagingEngine(StoreFactory storeFactory, BrokerMetricManager metricManager) throws BrokerException {
+        this.metricManager = metricManager;
+        exchangeRegistry = storeFactory.getExchangeRegistry();
         // TODO: get the buffer sizes from configs
-        sharedMessageStore = new SharedMessageStore(messageDao, 32768, 1024);
-        queueRegistry = new QueueRegistry(queueDao, sharedMessageStore);
+        sharedMessageStore = storeFactory.getSharedMessageStore(32768, 1024);
+        queueRegistry = storeFactory.getQueueRegistry(sharedMessageStore);
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder()

@@ -20,6 +20,7 @@
 package org.wso2.broker.core;
 
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.queue.Queue;
 import org.wso2.broker.core.store.dao.BindingDao;
 import org.wso2.broker.core.store.dao.NoOpBindingDao;
 

@@ -24,4 +24,8 @@ package org.wso2.broker.core.metrics;
  */
 public interface BrokerMetricManager {
     void markPublish();
+
+    void addInMemoryMessage();
+
+    void removeInMemoryMessage();
 }

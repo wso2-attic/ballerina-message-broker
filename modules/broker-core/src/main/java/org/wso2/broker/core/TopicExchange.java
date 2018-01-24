@@ -22,6 +22,7 @@ package org.wso2.broker.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.queue.Queue;
 import org.wso2.broker.core.store.dao.BindingDao;
 
 import java.util.ArrayList;

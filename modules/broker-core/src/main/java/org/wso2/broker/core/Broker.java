@@ -33,6 +33,7 @@ import org.wso2.broker.core.metrics.DefaultBrokerMetricManager;
 import org.wso2.broker.core.metrics.NullBrokerMetricManager;
 import org.wso2.broker.core.rest.api.QueuesApi;
 import org.wso2.broker.core.security.authentication.AuthenticationManager;
+import org.wso2.broker.core.store.StoreFactory;
 import org.wso2.broker.rest.BrokerServiceRunner;
 import org.wso2.carbon.metrics.core.MetricService;
 
@@ -64,7 +65,16 @@ public final class Broker {
     private BrokerHelper brokerHelper;
 
     public Broker(StartupContext startupContext) throws Exception {
-        this.messagingEngine = new MessagingEngine(startupContext.getService(DataSource.class));
+        MetricService metrics = startupContext.getService(MetricService.class);
+        if (Objects.nonNull(metrics)) {
+            metricManager = new DefaultBrokerMetricManager(metrics);
+        } else {
+            metricManager = new NullBrokerMetricManager();
+        }
+
+        DataSource dataSource = startupContext.getService(DataSource.class);
+        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager);
+        this.messagingEngine = new MessagingEngine(storeFactory, metricManager);
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new QueuesApi(this));
         startupContext.registerService(Broker.class, this);
@@ -78,13 +88,6 @@ public final class Broker {
         } else {
             LOGGER.info("Broker is in PASSIVE mode"); //starts up in passive mode
             brokerHelper = new HaEnabledBrokerHelper();
-        }
-
-        MetricService metrics = startupContext.getService(MetricService.class);
-        if (Objects.nonNull(metrics)) {
-            metricManager = new DefaultBrokerMetricManager(metrics);
-        } else {
-            metricManager = new NullBrokerMetricManager();
         }
     }
 
