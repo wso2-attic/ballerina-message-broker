@@ -36,6 +36,7 @@ public class DefaultBrokerMetricManager implements BrokerMetricManager {
     private final Meter totalAckCounter;
     private final Timer messageWriteTimer;
     private final Timer messageDeleteTimer;
+    private final Timer messageReadTimer;
 
     public DefaultBrokerMetricManager(MetricService metrics) {
         totalPublishedCounter = metrics.meter(MetricService.name(Broker.class, "node", "totalPublished"), Level.INFO);
@@ -44,6 +45,7 @@ public class DefaultBrokerMetricManager implements BrokerMetricManager {
                                               Level.INFO);
         messageWriteTimer = metrics.timer(MetricService.name(Broker.class, "node", "messageWrite"), Level.INFO);
         messageDeleteTimer = metrics.timer(MetricService.name(Broker.class, "node", "messageDelete"), Level.INFO);
+        messageReadTimer = metrics.timer(MetricService.name(Broker.class, "node", "messageRead"), Level.INFO);
     }
 
     @Override
@@ -76,4 +78,8 @@ public class DefaultBrokerMetricManager implements BrokerMetricManager {
         return messageDeleteTimer.start();
     }
 
+    @Override
+    public Context startMessageReadTimer() {
+        return messageReadTimer.start();
+    }
 }

@@ -40,7 +40,7 @@ public class DefaultAmqpMetricManager implements AmqpMetricManager {
         totalConnectionCounter = metrics.counter(MetricService.name(Server.class, "node", "totalConnections"),
                                                  Level.INFO);
         totalConsumerCounter = metrics.counter(MetricService.name(Server.class, "node", "totalConsumers"), Level.INFO);
-        rejectMeter = metrics.meter(MetricService.name(Server.class, "node", "totalConsumers"), Level.INFO);
+        rejectMeter = metrics.meter(MetricService.name(Server.class, "node", "messageRejects"), Level.INFO);
     }
 
     @Override

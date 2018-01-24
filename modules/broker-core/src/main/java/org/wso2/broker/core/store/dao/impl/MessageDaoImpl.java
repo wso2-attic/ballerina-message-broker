@@ -36,6 +36,9 @@ public class MessageDaoImpl extends MessageDao {
         this.metricManager = metricManager;
     }
 
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+            justification = "Return value of context.stop() is not required.")
     @Override
     public void persist(Collection<Message> messageList) throws BrokerException {
 
@@ -139,6 +142,9 @@ public class MessageDaoImpl extends MessageDao {
         }
     }
 
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+            justification = "Return value of context.stop() is not required.")
     @Override
     public void delete(Collection<Long> internalIdList) throws BrokerException {
         Connection connection = null;
@@ -162,10 +168,15 @@ public class MessageDaoImpl extends MessageDao {
         }
     }
 
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+            justification = "Return value of context.stop() is not required.")
     @Override
     public Collection<Message> readAll(String queueName) throws BrokerException {
         Connection connection = null;
         Map<Long, Message> messageMap = new HashMap<>();
+        Context context = metricManager.startMessageReadTimer();
+
         try {
             connection = getConnection();
             List<Long> messageList = getMessagesIdsForQueue(connection, queueName);
@@ -180,6 +191,7 @@ public class MessageDaoImpl extends MessageDao {
             throw new BrokerException("Error occurred while reading messages", e);
         } finally {
             close(connection);
+            context.stop();
         }
     }
 

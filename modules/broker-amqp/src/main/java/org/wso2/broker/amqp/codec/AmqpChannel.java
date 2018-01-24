@@ -187,7 +187,7 @@ public class AmqpChannel {
         try {
             broker.removeConsumer(consumer);
         } finally {
-            metricManager.incrementConsumerCount();
+            metricManager.decrementConsumerCount();
         }
     }
 

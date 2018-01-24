@@ -57,6 +57,11 @@ public class NullBrokerMetricManager implements BrokerMetricManager {
         return nullContext;
     }
 
+    @Override
+    public Context startMessageReadTimer() {
+        return nullContext;
+    }
+
     /**
      * Null object representation for Timer context
      */
