@@ -19,6 +19,7 @@
 
 package org.wso2.broker.amqp;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -55,6 +56,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Objects;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * AMQP Server implementation.
@@ -104,7 +106,9 @@ public class Server {
         }
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
-        ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS);
+        ThreadFactory blockingTaskThreadFactory = new ThreadFactoryBuilder().setNameFormat("NettyBlockingTaskThread-%d")
+                                                                            .build();
+        ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS, blockingTaskThreadFactory);
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
             serverHelper = new ServerHelper();
