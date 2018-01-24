@@ -31,10 +31,12 @@ import org.wso2.broker.amqp.codec.frames.AmqpBadMessage;
 import org.wso2.broker.amqp.codec.frames.ConnectionStart;
 import org.wso2.broker.amqp.codec.frames.GeneralFrame;
 import org.wso2.broker.amqp.codec.frames.ProtocolInitFrame;
+import org.wso2.broker.amqp.metrics.AmqpMetricManager;
 import org.wso2.broker.core.Broker;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import javax.security.sasl.SaslServer;
 
 /**
@@ -46,11 +48,15 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
     private final AmqpServerConfiguration configuration;
     private final Broker broker;
+    private final AmqpMetricManager metricManager;
     private SaslServer saslServer = null;
 
-    public AmqpConnectionHandler(AmqpServerConfiguration configuration, Broker broker) {
+    public AmqpConnectionHandler(AmqpServerConfiguration configuration,
+                                 Broker broker,
+                                 AmqpMetricManager metricManager) {
         this.configuration = configuration;
         this.broker = broker;
+        this.metricManager = metricManager;
     }
 
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
@@ -101,6 +107,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
                     "Channel ID " + channelId + " Already exists");
         }
         channels.put(channelId, new AmqpChannel(configuration, broker, channelId));
+        metricManager.incrementChannelCount();
     }
 
     /**
@@ -113,13 +120,21 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         return channels.get(channelId);
     }
 
-    public void closeChannel(int channel) {
-        channels.remove(channel);
+    public void closeChannel(int channelId) {
+        AmqpChannel channel = channels.remove(channelId);
+        if (Objects.nonNull(channel)) {
+            closeChannel(channel);
+        }
+    }
+
+    private void closeChannel(AmqpChannel channel) {
+        metricManager.decrementChannelCount();
+        channel.close();
     }
 
     public void closeAllChannels() {
         for (AmqpChannel channel: channels.values()) {
-            channel.close();
+            closeChannel(channel);
         }
     }
 

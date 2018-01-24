@@ -37,12 +37,16 @@ import org.wso2.broker.amqp.codec.handlers.AmqpDecoder;
 import org.wso2.broker.amqp.codec.handlers.AmqpEncoder;
 import org.wso2.broker.amqp.codec.handlers.AmqpMessageWriter;
 import org.wso2.broker.amqp.codec.handlers.BlockingTaskHandler;
+import org.wso2.broker.amqp.metrics.AmqpMetricManager;
+import org.wso2.broker.amqp.metrics.DefaultAmqpMetricManager;
+import org.wso2.broker.amqp.metrics.NullAmqpMetricManager;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.coordination.BasicHaListener;
 import org.wso2.broker.coordination.HaListener;
 import org.wso2.broker.coordination.HaStrategy;
 import org.wso2.broker.core.Broker;
+import org.wso2.carbon.metrics.core.MetricService;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -50,6 +54,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Objects;
 
 /**
  * AMQP Server implementation.
@@ -67,6 +72,7 @@ public class Server {
 
     private final Broker broker;
     private final AmqpServerConfiguration configuration;
+    private final AmqpMetricManager metricManager;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private EventExecutorGroup ioExecutors;
@@ -81,6 +87,13 @@ public class Server {
     private ServerHelper serverHelper;
 
     public Server(StartupContext startupContext) throws Exception {
+        MetricService metrics = startupContext.getService(MetricService.class);
+        if (Objects.nonNull(metrics)) {
+            metricManager = new DefaultAmqpMetricManager(metrics);
+        } else {
+            metricManager = new NullAmqpMetricManager();
+        }
+
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         this.configuration = configProvider
                 .getConfigurationObject(AmqpServerConfiguration.NAMESPACE, AmqpServerConfiguration.class);
@@ -191,7 +204,7 @@ public class Server {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, broker))
+                         .addLast(new AmqpConnectionHandler(configuration, broker, metricManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
@@ -212,7 +225,7 @@ public class Server {
                          .addLast(sslHandlerFactory.create())
                          .addLast(new AmqpDecoder())
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, broker))
+                         .addLast(new AmqpConnectionHandler(configuration, broker, metricManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }

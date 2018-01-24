@@ -17,17 +17,19 @@
  *
  */
 
-package org.wso2.broker.core.metrics;
+package org.wso2.broker.amqp.metrics;
 
 /**
- * BrokerMetricManager handles all the metrics related to Broker class
+ * Null object implementation for {@link AmqpMetricManager}
  */
-public interface BrokerMetricManager {
-    void markPublish();
+public class NullAmqpMetricManager implements AmqpMetricManager {
+    @Override
+    public void incrementChannelCount() {
+        // do nothing
+    }
 
-    void addInMemoryMessage();
-
-    void removeInMemoryMessage();
-
-    void markAcknowledge();
+    @Override
+    public void decrementChannelCount() {
+        // do nothing
+    }
 }
