@@ -59,7 +59,7 @@ public class TopicExchangeTest {
     public void testPositiveSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException {
         QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager());
-        QueueHandler handler = factory.createNonDurableQueue(subscribedPattern, 10, false);
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, 10, false);
         Queue queue = handler.getQueue();
         topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
@@ -77,7 +77,7 @@ public class TopicExchangeTest {
     public void testNegativeSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException {
         QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager());
-        QueueHandler handler = factory.createNonDurableQueue(subscribedPattern, 10, false);
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, 10, false);
         Queue queue = handler.getQueue();
         topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
@@ -89,7 +89,7 @@ public class TopicExchangeTest {
     @Test(dataProvider = "positiveTopicPairs", description = "Test topic removal")
     public void testTopicRemoval(String subscribedPattern, String publishedTopic) throws BrokerException {
         QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager());
-        QueueHandler handler = factory.createNonDurableQueue(subscribedPattern, 1000, false);
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, 1000, false);
         Queue queue = handler.getQueue();
         topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
         topicExchange.unbind(queue, subscribedPattern);

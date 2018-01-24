@@ -61,10 +61,10 @@ public final class QueueRegistry {
         } else {
             if (Objects.isNull(queueHandler)) {
                 if (durable) {
-                    queueHandler = queueHandlerFactory.createDurableQueue(queueName, autoDelete);
+                    queueHandler = queueHandlerFactory.createDurableQueueHandler(queueName, autoDelete);
                     queueDao.persist(queueHandler.getQueue());
                 } else {
-                    queueHandler = queueHandlerFactory.createNonDurableQueue(queueName, 1000, autoDelete);
+                    queueHandler = queueHandlerFactory.createNonDurableQueueHandler(queueName, 1000, autoDelete);
                 }
                 queueHandlerMap.put(queueName, queueHandler);
                 return true;
@@ -100,7 +100,7 @@ public final class QueueRegistry {
 
     private void retrieveQueuesFromDao() throws BrokerException {
             queueDao.retrieveAll((name) -> {
-                QueueHandler handler = queueHandlerFactory.createDurableQueue(name, false);
+                QueueHandler handler = queueHandlerFactory.createDurableQueueHandler(name, false);
                 queueHandlerMap.putIfAbsent(name, handler);
             });
     }

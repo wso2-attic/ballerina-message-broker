@@ -37,12 +37,28 @@ public class QueueHandlerFactory {
         this.metricManager = metricManager;
     }
 
-    public QueueHandler createDurableQueue(String queueName, boolean autoDelete) throws BrokerException {
+    /**
+     * Create a durable queue handler with the give arguments.
+     *
+     * @param queueName  name of the queue
+     * @param autoDelete true if auto deletable
+     * @return QueueHandler object
+     * @throws BrokerException if cannot create queue handler
+     */
+    QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete) throws BrokerException {
         Queue queue = new DbBackedQueueImpl(queueName, autoDelete, sharedMessageStore);
         return new QueueHandler(queue, metricManager);
     }
 
-    public QueueHandler createNonDurableQueue(String queueName, int capacity, boolean autoDelete) {
+    /**
+     * Create a non durable queue handler with the give arguments.
+     *
+     * @param queueName  name of the queue
+     * @param capacity   max capacity
+     * @param autoDelete true if auto deletable
+     * @return QueueHandler object
+     */
+    QueueHandler createNonDurableQueueHandler(String queueName, int capacity, boolean autoDelete) {
         Queue queue = new MemQueueImpl(queueName, capacity, autoDelete);
         return new QueueHandler(queue, metricManager);
     }

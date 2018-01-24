@@ -42,14 +42,26 @@ public class StoreFactory {
         this.metricManager = metricManager;
     }
 
+    /**
+     * Create exchange registry
+     * @return ExchangeRegistry object
+     */
     public ExchangeRegistry getExchangeRegistry() {
         return new ExchangeRegistry(daoFactory.createExchangeDao(), daoFactory.createBindingDao());
     }
 
+    /**
+     * Create message registry
+     * @return SharedMessageStore object
+     */
     public SharedMessageStore getSharedMessageStore(int bufferSize, int maxDbBatchSize) {
         return new SharedMessageStore(daoFactory.createMessageDao(), bufferSize, maxDbBatchSize);
     }
 
+    /**
+     * Create queue registry
+     * @return QueueRegistry object
+     */
     public QueueRegistry getQueueRegistry(SharedMessageStore messageStore) throws BrokerException {
         return new QueueRegistry(daoFactory.createQueueDao(), new QueueHandlerFactory(messageStore, metricManager));
     }
