@@ -30,4 +30,8 @@ public interface AmqpMetricManager {
     void incrementConnectionCount();
 
     void decrementConnectionCount();
+
+    void incrementConsumerCount();
+
+    void decrementConsumerCount();
 }

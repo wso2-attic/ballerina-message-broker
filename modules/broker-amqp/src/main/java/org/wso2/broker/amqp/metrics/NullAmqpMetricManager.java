@@ -42,4 +42,14 @@ public class NullAmqpMetricManager implements AmqpMetricManager {
     public void decrementConnectionCount() {
         // do nothing
     }
+
+    @Override
+    public void incrementConsumerCount() {
+        // do nothing
+    }
+
+    @Override
+    public void decrementConsumerCount() {
+        // do nothing
+    }
 }

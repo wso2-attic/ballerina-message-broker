@@ -31,11 +31,13 @@ public class DefaultAmqpMetricManager implements AmqpMetricManager {
 
     private final Counter totalChannelCounter;
     private final Counter totalConnectionCounter;
+    private final Counter totalConsumerCounter;
 
     public DefaultAmqpMetricManager(MetricService metrics) {
         totalChannelCounter = metrics.counter(MetricService.name(Server.class, "node", "totalChannels"), Level.INFO);
         totalConnectionCounter = metrics.counter(MetricService.name(Server.class, "node", "totalConnections"),
                                                  Level.INFO);
+        totalConsumerCounter = metrics.counter(MetricService.name(Server.class, "node", "totalConsumers"), Level.INFO);
     }
 
     @Override
@@ -58,4 +60,13 @@ public class DefaultAmqpMetricManager implements AmqpMetricManager {
         totalConnectionCounter.dec();
     }
 
+    @Override
+    public void incrementConsumerCount() {
+        totalConsumerCounter.inc();
+    }
+
+    @Override
+    public void decrementConsumerCount() {
+        totalConsumerCounter.dec();
+    }
 }
