@@ -143,6 +143,7 @@ public class MessageDaoImpl extends MessageDao {
     public void delete(Collection<Long> internalIdList) throws BrokerException {
         Connection connection = null;
         PreparedStatement statement = null;
+        Context context = metricManager.startMessageDeleteTimer();
 
         try {
             connection = getConnection();
@@ -156,6 +157,7 @@ public class MessageDaoImpl extends MessageDao {
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while deleting messages", e);
         } finally {
+            context.stop();
             close(connection, statement);
         }
     }

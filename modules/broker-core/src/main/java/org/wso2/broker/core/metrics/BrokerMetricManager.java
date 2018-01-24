@@ -34,4 +34,6 @@ public interface BrokerMetricManager {
     void markAcknowledge();
 
     Context startMessageWriteTimer();
+
+    Context startMessageDeleteTimer();
 }
