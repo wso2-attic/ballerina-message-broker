@@ -25,6 +25,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.metrics.NullBrokerMetricManager;
+import org.wso2.broker.core.store.StoreFactory;
 
 import javax.sql.DataSource;
 
@@ -43,7 +45,9 @@ public class MessagingEngineTest {
     @BeforeClass
     public void beforeTest() throws BrokerException {
         dataSource = DbUtil.getDataSource();
-        messagingEngine = new MessagingEngine(dataSource);
+        NullBrokerMetricManager metricManager = new NullBrokerMetricManager();
+        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager);
+        messagingEngine = new MessagingEngine(storeFactory, metricManager);
     }
 
     @BeforeMethod

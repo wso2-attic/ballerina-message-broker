@@ -20,6 +20,7 @@
 package org.wso2.broker.core;
 
 import org.wso2.broker.common.data.types.FieldValue;
+import org.wso2.broker.core.queue.Queue;
 
 import java.util.Collection;
 import java.util.Map;

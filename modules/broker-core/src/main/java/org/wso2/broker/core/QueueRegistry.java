@@ -20,7 +20,6 @@
 package org.wso2.broker.core;
 
 import org.wso2.broker.core.store.dao.QueueDao;
-import org.wso2.broker.core.store.dao.SharedMessageStore;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,18 +29,18 @@ import java.util.Objects;
 /**
  * Registry object which contains all the queues of the broker
  */
-final class QueueRegistry {
+public final class QueueRegistry {
 
     private final Map<String, QueueHandler> queueHandlerMap;
 
     private final QueueDao queueDao;
 
-    private final SharedMessageStore sharedMessageStore;
+    private final QueueHandlerFactory queueHandlerFactory;
 
-    QueueRegistry(QueueDao queueDao, SharedMessageStore messageStore) throws BrokerException {
+    public QueueRegistry(QueueDao queueDao, QueueHandlerFactory queueHandlerFactory) throws BrokerException {
         this.queueHandlerMap = new HashMap<>();
         this.queueDao = queueDao;
-        this.sharedMessageStore = messageStore;
+        this.queueHandlerFactory = queueHandlerFactory;
         retrieveQueuesFromDao();
     }
 
@@ -62,10 +61,10 @@ final class QueueRegistry {
         } else {
             if (Objects.isNull(queueHandler)) {
                 if (durable) {
-                    queueHandler = QueueHandler.createDurableQueue(queueName, autoDelete, sharedMessageStore);
+                    queueHandler = queueHandlerFactory.createDurableQueueHandler(queueName, autoDelete);
                     queueDao.persist(queueHandler.getQueue());
                 } else {
-                    queueHandler = QueueHandler.createNonDurableQueue(queueName, 1000, autoDelete);
+                    queueHandler = queueHandlerFactory.createNonDurableQueueHandler(queueName, 1000, autoDelete);
                 }
                 queueHandlerMap.put(queueName, queueHandler);
                 return true;
@@ -101,7 +100,7 @@ final class QueueRegistry {
 
     private void retrieveQueuesFromDao() throws BrokerException {
             queueDao.retrieveAll((name) -> {
-                QueueHandler handler = QueueHandler.createDurableQueue(name, false, sharedMessageStore);
+                QueueHandler handler = queueHandlerFactory.createDurableQueueHandler(name, false);
                 queueHandlerMap.putIfAbsent(name, handler);
             });
     }

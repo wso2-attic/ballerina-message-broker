@@ -22,6 +22,7 @@ package org.wso2.broker.core;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.FieldValue;
 import org.wso2.broker.common.data.types.ShortString;
+import org.wso2.broker.core.queue.Queue;
 import org.wso2.broker.core.selector.BooleanExpression;
 import org.wso2.broker.core.selector.generated.MessageFilter;
 

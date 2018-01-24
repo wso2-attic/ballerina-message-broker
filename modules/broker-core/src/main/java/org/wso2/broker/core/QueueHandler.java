@@ -22,7 +22,10 @@ package org.wso2.broker.core;
 import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.core.store.dao.SharedMessageStore;
+import org.wso2.broker.core.metrics.BrokerMetricManager;
+import org.wso2.broker.core.queue.MemQueueImpl;
+import org.wso2.broker.core.queue.Queue;
+import org.wso2.broker.core.queue.UnmodifiableQueueWrapper;
 import org.wso2.broker.core.util.MessageTracer;
 
 import java.util.Collection;
@@ -30,8 +33,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Represents the queue of the broker. Contains a bounded queue to store messages. Subscriptions for the queue
@@ -47,29 +48,24 @@ public final class QueueHandler {
 
     private final Queue redeliveryQueue;
 
+    /**
+     * Used to send metric signals related to queue handler
+     */
+    private final BrokerMetricManager metricManager;
+
     private final Set<Consumer> consumers;
 
     private final Queue unmodifiableQueueView;
 
-    private QueueHandler(Queue queue) {
+    QueueHandler(Queue queue, BrokerMetricManager metricManager) {
         this.queue = queue;
         unmodifiableQueueView = new UnmodifiableQueueWrapper(queue);
         // TODO: take message count from queue configuration
         this.redeliveryQueue = new MemQueueImpl(queue.getName(), 1000, false);
+        this.metricManager = metricManager;
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
 
-    }
-
-    public static QueueHandler createNonDurableQueue(String queueName, int capacity, boolean autoDelete) {
-        Queue queue = new MemQueueImpl(queueName, capacity, autoDelete);
-        return new QueueHandler(queue);
-    }
-
-    public static QueueHandler createDurableQueue(String queueName, boolean autoDelete,
-                                                  SharedMessageStore sharedMessageStore) throws BrokerException {
-        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, sharedMessageStore);
-        return new QueueHandler(queue);
     }
 
     public Queue getQueue() {
@@ -117,6 +113,7 @@ public final class QueueHandler {
         }
         boolean success = queue.enqueue(message);
         if (success) {
+            metricManager.addInMemoryMessage();
             MessageTracer.trace(message, this, MessageTracer.PUBLISH_SUCCESSFUL);
         } else {
             message.release();
@@ -144,11 +141,18 @@ public final class QueueHandler {
 
     void acknowledge(Message message) throws BrokerException {
         queue.detach(message);
+        metricManager.removeInMemoryMessage();
         MessageTracer.trace(message, this, MessageTracer.ACKNOWLEDGE);
     }
 
     public void requeue(Message message) throws BrokerException {
-        redeliveryQueue.enqueue(message);
+        boolean success = redeliveryQueue.enqueue(message);
+        if (!success) {
+            LOGGER.warn("Enqueuing message since redelivery queue for {} is full. message:{}",
+                        queue.getName(),
+                        message);
+            enqueue(message);
+        }
         MessageTracer.trace(message, this, MessageTracer.REQUEUE);
     }
 
@@ -210,130 +214,4 @@ public final class QueueHandler {
         return consumers.size();
     }
 
-    /**
-     * In memory queue implementation for non durable queues.
-     */
-    private static class MemQueueImpl extends Queue {
-
-        private final int capacity;
-
-        private final java.util.Queue<Message> queue;
-
-        MemQueueImpl(String name, int capacity, boolean autoDelete) {
-            super(name, false, autoDelete);
-            this.capacity = capacity;
-            queue = new LinkedBlockingDeque<>(capacity);
-        }
-
-        @Override
-        public int capacity() {
-            return capacity;
-        }
-
-        @Override
-        public int size() {
-            return queue.size();
-        }
-
-        @Override
-        public boolean enqueue(Message message) {
-            return queue.offer(message);
-        }
-
-        @Override
-        public Message dequeue() {
-            return queue.poll();
-        }
-
-        @Override
-        public void detach(Message message) {
-            // nothing to do
-        }
-
-    }
-
-    /**
-     * Database backed queue implementation.
-     */
-    private static class DbBackedQueueImpl extends Queue {
-
-        private final java.util.Queue<Message> memQueue;
-
-        private final SharedMessageStore sharedMessageStore;
-
-        DbBackedQueueImpl(String queueName, boolean autoDelete,
-                          SharedMessageStore sharedMessageStore) throws BrokerException {
-            super(queueName, true, autoDelete);
-            this.sharedMessageStore = sharedMessageStore;
-            this.memQueue = new LinkedBlockingQueue<>();
-            Collection<Message> messages = sharedMessageStore.readStoredMessages(queueName);
-            memQueue.addAll(messages);
-        }
-
-        @Override
-        public int capacity() {
-            return Queue.UNBOUNDED;
-        }
-
-        @Override
-        public int size() {
-            return memQueue.size();
-        }
-
-        @Override
-        public boolean enqueue(Message message) throws BrokerException {
-            if (message.getMetadata().getByteProperty(Metadata.DELIVERY_MODE) == Metadata.PERSISTENT_MESSAGE) {
-                sharedMessageStore.attach(getName(), message.getMetadata().getInternalId());
-            }
-            return memQueue.offer(message);
-        }
-
-        @Override
-        public Message dequeue() {
-            return memQueue.poll();
-        }
-
-        @Override
-        public void detach(Message message) {
-            sharedMessageStore.detach(getName(), message);
-        }
-    }
-
-    /**
-     * Queue representation which is unmodifiable. Used to return a view of the underlying queue to the outside.
-     */
-    private static class UnmodifiableQueueWrapper extends Queue {
-
-        private final Queue queue;
-
-        UnmodifiableQueueWrapper(Queue queue) {
-            super(queue.getName(), queue.isDurable(), queue.isAutoDelete());
-            this.queue = queue;
-        }
-
-        @Override
-        public int capacity() {
-            return queue.capacity();
-        }
-
-        @Override
-        public int size() {
-            return queue.size();
-        }
-
-        @Override
-        public boolean enqueue(Message message) {
-            throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
-        }
-
-        @Override
-        public Message dequeue() {
-            throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
-        }
-
-        @Override
-        public void detach(Message message) {
-            throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
-        }
-    }
 }

@@ -47,7 +47,7 @@ public final class ExchangeRegistry {
 
     private final BindingDao bindingDao;
 
-    ExchangeRegistry(ExchangeDao exchangeDao, BindingDao bindingDao) {
+    public ExchangeRegistry(ExchangeDao exchangeDao, BindingDao bindingDao) {
         exchangeMap = new ConcurrentHashMap<>(3);
         exchangeMap.put(DIRECT, new DirectExchange(DIRECT, bindingDao));
         exchangeMap.put(TOPIC, new TopicExchange(TOPIC, bindingDao));

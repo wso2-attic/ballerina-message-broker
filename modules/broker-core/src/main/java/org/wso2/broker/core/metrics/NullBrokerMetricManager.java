@@ -27,4 +27,14 @@ public class NullBrokerMetricManager implements BrokerMetricManager {
     public void markPublish() {
         // do nothing
     }
+
+    @Override
+    public void addInMemoryMessage() {
+        // do nothing
+    }
+
+    @Override
+    public void removeInMemoryMessage() {
+        // do nothing
+    }
 }

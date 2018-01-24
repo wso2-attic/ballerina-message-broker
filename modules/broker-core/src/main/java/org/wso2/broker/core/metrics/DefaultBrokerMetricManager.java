@@ -20,6 +20,7 @@
 package org.wso2.broker.core.metrics;
 
 import org.wso2.broker.core.Broker;
+import org.wso2.carbon.metrics.core.Counter;
 import org.wso2.carbon.metrics.core.Level;
 import org.wso2.carbon.metrics.core.Meter;
 import org.wso2.carbon.metrics.core.MetricService;
@@ -29,13 +30,27 @@ import org.wso2.carbon.metrics.core.MetricService;
  */
 public class DefaultBrokerMetricManager implements BrokerMetricManager {
     private final Meter totalPublishedCounter;
+    private final Counter totalEnqueueCounter;
 
     public DefaultBrokerMetricManager(MetricService metrics) {
         totalPublishedCounter = metrics.meter(MetricService.name(Broker.class, "node", "totalPublished"), Level.INFO);
+        totalEnqueueCounter = metrics.counter(MetricService.name(Broker.class, "node", "totalInMemoryMessages"),
+                                              Level.INFO);
     }
 
     @Override
     public void markPublish() {
         totalPublishedCounter.mark();
     }
+
+    @Override
+    public void addInMemoryMessage() {
+        totalEnqueueCounter.inc();
+    }
+
+    @Override
+    public void removeInMemoryMessage() {
+        totalEnqueueCounter.dec();
+    }
+
 }

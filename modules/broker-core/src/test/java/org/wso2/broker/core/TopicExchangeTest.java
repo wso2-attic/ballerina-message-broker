@@ -25,6 +25,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.metrics.NullBrokerMetricManager;
+import org.wso2.broker.core.queue.Queue;
 import org.wso2.broker.core.store.dao.NoOpBindingDao;
 
 import java.util.Collection;
@@ -56,7 +58,8 @@ public class TopicExchangeTest {
     @Test(dataProvider = "positiveTopicPairs", description = "Test positive topic matching")
     public void testPositiveSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException {
-        QueueHandler handler = QueueHandler.createNonDurableQueue(subscribedPattern, 10, false);
+        QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager());
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, 10, false);
         Queue queue = handler.getQueue();
         topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
@@ -73,7 +76,8 @@ public class TopicExchangeTest {
     @Test(dataProvider = "negativeTopicPairs", description = "Test negative topic matching")
     public void testNegativeSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException {
-        QueueHandler handler = QueueHandler.createNonDurableQueue(subscribedPattern, 10, false);
+        QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager());
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, 10, false);
         Queue queue = handler.getQueue();
         topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
 
@@ -84,8 +88,8 @@ public class TopicExchangeTest {
 
     @Test(dataProvider = "positiveTopicPairs", description = "Test topic removal")
     public void testTopicRemoval(String subscribedPattern, String publishedTopic) throws BrokerException {
-
-        QueueHandler handler = QueueHandler.createNonDurableQueue(subscribedPattern, 1000, false);
+        QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager());
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, 1000, false);
         Queue queue = handler.getQueue();
         topicExchange.bind(queue, subscribedPattern, FieldTable.EMPTY_TABLE);
         topicExchange.unbind(queue, subscribedPattern);
