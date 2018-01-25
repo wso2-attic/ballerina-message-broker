@@ -8,8 +8,10 @@ import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
+import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.store.DbOperation;
 import org.wso2.broker.core.store.dao.MessageDao;
+import org.wso2.carbon.metrics.core.Timer.Context;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,10 +29,16 @@ import javax.sql.DataSource;
  */
 public class MessageDaoImpl extends MessageDao {
 
-    public MessageDaoImpl(DataSource dataSource) {
+    private final BrokerMetricManager metricManager;
+
+    public MessageDaoImpl(DataSource dataSource, BrokerMetricManager metricManager) {
         super(dataSource);
+        this.metricManager = metricManager;
     }
 
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+            justification = "Return value of context.stop() is not required.")
     @Override
     public void persist(Collection<Message> messageList) throws BrokerException {
 
@@ -38,7 +46,7 @@ public class MessageDaoImpl extends MessageDao {
         PreparedStatement metadataStmt = null;
         PreparedStatement contentStmt = null;
         PreparedStatement insertToQueueStmt = null;
-
+        Context context = metricManager.startMessageWriteTimer();
         try {
             connection = getConnection();
             metadataStmt = connection.prepareStatement(RDBMSConstants.PS_INSERT_METADATA);
@@ -58,6 +66,7 @@ public class MessageDaoImpl extends MessageDao {
         } catch (SQLException e) {
             throw new BrokerException("Error persisting messages.", e);
         } finally {
+            context.stop();
             close(metadataStmt);
             close(contentStmt);
             close(insertToQueueStmt);
@@ -133,10 +142,14 @@ public class MessageDaoImpl extends MessageDao {
         }
     }
 
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+            justification = "Return value of context.stop() is not required.")
     @Override
     public void delete(Collection<Long> internalIdList) throws BrokerException {
         Connection connection = null;
         PreparedStatement statement = null;
+        Context context = metricManager.startMessageDeleteTimer();
 
         try {
             connection = getConnection();
@@ -150,14 +163,20 @@ public class MessageDaoImpl extends MessageDao {
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while deleting messages", e);
         } finally {
+            context.stop();
             close(connection, statement);
         }
     }
 
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+            justification = "Return value of context.stop() is not required.")
     @Override
     public Collection<Message> readAll(String queueName) throws BrokerException {
         Connection connection = null;
         Map<Long, Message> messageMap = new HashMap<>();
+        Context context = metricManager.startMessageReadTimer();
+
         try {
             connection = getConnection();
             List<Long> messageList = getMessagesIdsForQueue(connection, queueName);
@@ -172,6 +191,7 @@ public class MessageDaoImpl extends MessageDao {
             throw new BrokerException("Error occurred while reading messages", e);
         } finally {
             close(connection);
+            context.stop();
         }
     }
 

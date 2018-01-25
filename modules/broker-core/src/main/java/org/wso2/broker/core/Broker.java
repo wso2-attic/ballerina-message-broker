@@ -112,6 +112,7 @@ public final class Broker {
      */
     public void acknowledge(String queueName, Message message) throws BrokerException {
         messagingEngine.acknowledge(queueName, message);
+        metricManager.markAcknowledge();
     }
 
     /**

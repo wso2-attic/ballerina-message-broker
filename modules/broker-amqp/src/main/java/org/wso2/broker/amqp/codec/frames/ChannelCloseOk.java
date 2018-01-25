@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
@@ -48,7 +49,7 @@ public class ChannelCloseOk extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        connectionHandler.closeChannel(getChannel());
+        ctx.fireChannelRead((BlockingTask) () -> connectionHandler.closeChannel(getChannel()));
     }
 
     public static AmqMethodBodyFactory getFactory() {

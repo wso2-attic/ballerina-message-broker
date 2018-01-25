@@ -19,10 +19,14 @@
 
 package org.wso2.broker.core.metrics;
 
+import org.wso2.carbon.metrics.core.Timer.Context;
+
 /**
  * Null object implementation for {@link BrokerMetricManager}
  */
 public class NullBrokerMetricManager implements BrokerMetricManager {
+    private static NullContext nullContext = new NullContext();
+
     @Override
     public void markPublish() {
         // do nothing
@@ -36,5 +40,41 @@ public class NullBrokerMetricManager implements BrokerMetricManager {
     @Override
     public void removeInMemoryMessage() {
         // do nothing
+    }
+
+    @Override
+    public void markAcknowledge() {
+        // do nothing
+    }
+
+    @Override
+    public Context startMessageWriteTimer() {
+        return nullContext;
+    }
+
+    @Override
+    public Context startMessageDeleteTimer() {
+        return nullContext;
+    }
+
+    @Override
+    public Context startMessageReadTimer() {
+        return nullContext;
+    }
+
+    /**
+     * Null object representation for Timer context
+     */
+    private static class NullContext implements Context {
+
+        @Override
+        public long stop() {
+            return 0;
+        }
+
+        @Override
+        public void close() {
+            // do nothing
+        }
     }
 }

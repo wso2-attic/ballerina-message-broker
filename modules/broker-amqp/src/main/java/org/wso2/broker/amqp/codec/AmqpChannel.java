@@ -27,6 +27,7 @@ import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.AmqpDeliverMessage;
 import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.codec.flow.ChannelFlowManager;
+import org.wso2.broker.amqp.metrics.AmqpMetricManager;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Broker;
@@ -71,6 +72,7 @@ public class AmqpChannel {
     private final Broker broker;
 
     private final int channelId;
+    private final AmqpMetricManager metricManager;
 
     private final Map<ShortString, AmqpConsumer> consumerMap;
 
@@ -119,9 +121,13 @@ public class AmqpChannel {
      */
     private int prefetchCount;
 
-    public AmqpChannel(AmqpServerConfiguration configuration, Broker broker, int channelId) {
+    public AmqpChannel(AmqpServerConfiguration configuration,
+                       Broker broker,
+                       int channelId,
+                       AmqpMetricManager metricManager) {
         this.broker = broker;
         this.channelId = channelId;
+        this.metricManager = metricManager;
         this.consumerMap = new HashMap<>();
         this.messageAggregator = new InMemoryMessageAggregator(broker);
         this.flowManager = new ChannelFlowManager(this,
@@ -155,22 +161,33 @@ public class AmqpChannel {
         AmqpConsumer amqpConsumer = new AmqpConsumer(ctx, this, queueName.toString(), tag, exclusive);
         consumerMap.put(consumerTag, amqpConsumer);
         broker.addConsumer(amqpConsumer);
+        metricManager.incrementConsumerCount();
         return tag;
     }
 
     public void close() {
         for (Consumer consumer : consumerMap.values()) {
-            broker.removeConsumer(consumer);
+            closeConsumer(consumer);
         }
+
+        consumerMap.clear();
     }
 
     public void cancelConsumer(ShortString consumerTag) throws ChannelException {
         AmqpConsumer amqpConsumer = consumerMap.remove(consumerTag);
         if (amqpConsumer != null) {
-            broker.removeConsumer(amqpConsumer);
+            closeConsumer(amqpConsumer);
         } else {
             throw new ChannelException(ChannelException.NOT_FOUND,
                                        "Invalid Consumer tag [ " + consumerTag + " ] for the channel: " + channelId);
+        }
+    }
+
+    private void closeConsumer(Consumer consumer) {
+        try {
+            broker.removeConsumer(consumer);
+        } finally {
+            metricManager.decrementConsumerCount();
         }
     }
 
@@ -213,6 +230,7 @@ public class AmqpChannel {
     }
 
     public void reject(long deliveryTag, boolean requeue) throws BrokerException {
+        metricManager.markReject();
         AckData ackData = unackedMessageMap.remove(deliveryTag);
         if (MessageTracer.isTraceEnabled()) {
             String description = Objects.nonNull(ackData) ? REJECT_RECEIVED : UNKNOWN_REJECT;
