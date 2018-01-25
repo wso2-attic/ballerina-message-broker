@@ -175,18 +175,18 @@ public class Main {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             synchronized (LOCK) {
                 shutdownHookTriggered = true;
-                brokerRestServer.stop();
-                if (haStrategy != null) {
-                    haStrategy.stop();
-                }
+                brokerRestServer.shutdown();
                 try {
-                    server.stop();
+                    server.shutdown();
                     server.awaitServerClose();
                 } catch (InterruptedException e) {
                     LOGGER.warn("Error stopping transport on shut down {}", e);
                 }
-                broker.stopMessageDelivery();
+                broker.shutdown();
                 metricService.stop();
+                if (haStrategy != null) {
+                    haStrategy.stop();
+                }
                 LOCK.notifyAll();
             }
         }));

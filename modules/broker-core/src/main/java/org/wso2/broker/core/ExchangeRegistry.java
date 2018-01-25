@@ -134,6 +134,17 @@ public final class ExchangeRegistry {
     }
 
     /**
+     * Method to reload exchanges and bindings from the database on becoming the active node.
+     *
+     * @param queueRegistry the queue registry object
+     * @throws BrokerException if an error occurs retrieving exchanges/bindings from the database
+     */
+    void reloadExchangesOnBecomingActive(QueueRegistry queueRegistry) throws BrokerException {
+        exchangeMap.clear();
+        retrieveFromStore(queueRegistry);
+    }
+
+    /**
      * Factory class to create the relevant exchange for the requested exchange type.
      */
     public static class ExchangeFactory {
