@@ -58,9 +58,16 @@ public class Node {
 
     private HaStrategy haStrategy;
 
+    private String hostname;
+
+    private String port;
+
     public Node(String hostname, String port, String sslPort, String restPort, String adminUsername,
                 String adminPassword, StartupContext startupContext, TestConfigProvider configProvider)
             throws Exception {
+
+        this.hostname = hostname;
+        this.port = port;
 
         BrokerConfiguration brokerConfiguration = new BrokerConfiguration();
         BrokerConfiguration.AuthenticationConfiguration authenticationConfiguration = new BrokerConfiguration
@@ -140,4 +147,11 @@ public class Node {
         return haStrategy.isActiveNode();
     }
 
+    public String getHostname() {
+        return hostname;
+    }
+
+    public String getPort() {
+        return port;
+    }
 }

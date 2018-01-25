@@ -43,17 +43,12 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * Test class for the {@link org.wso2.broker.coordination.rdbms.RdbmsHaStrategy} implementation.
  */
 public class RdbmsHaStrategyTest {
-
-    private String hostnameOne;
-    private String hostnameTwo;
-
-    private String portOne;
-    private String portTwo;
 
     private Node nodeOne;
     private Node nodeTwo;
@@ -73,11 +68,6 @@ public class RdbmsHaStrategyTest {
     public void setup(String portOne, String sslPortOne, String restPortOne, String hostnameOne, String portTwo,
                       String sslPortTwo, String restPortTwo, String hostnameTwo, String adminUsername,
                       String adminPassword, ITestContext context) throws Exception {
-
-        this.portOne = portOne;
-        this.portTwo = portTwo;
-        this.hostnameOne = hostnameOne;
-        this.hostnameTwo = hostnameTwo;
 
         StartupContext startupContext = new StartupContext();
         TestConfigProvider configProvider = new TestConfigProvider();
@@ -114,54 +104,49 @@ public class RdbmsHaStrategyTest {
 
     @Test(dependsOnMethods = "testSingleActiveNode")
     public void testSendReceiveForActiveNodeBeforeFailover() throws Exception {
-        String hostname = null;
-        String port = null;
         if (nodeOne.isActiveNode()) {
             activeNode = nodeOne;
             passiveNode = nodeTwo;
-            hostname = hostnameOne;
-            port = portOne;
         } else if (nodeTwo.isActiveNode()) {
             activeNode = nodeTwo;
             passiveNode = nodeOne;
-            hostname = hostnameTwo;
-            port = portTwo;
         } else {
             Assert.fail("No ACTIVE node!");
         }
-        sendReceiveForNode("testSendReceiveForActiveNodeBeforeFailover", hostname, port);
+        sendReceiveForNode("testSendReceiveForActiveNodeBeforeFailover",
+                           activeNode.getHostname(), activeNode.getPort());
     }
 
     @Test(dependsOnMethods = "testSendReceiveForActiveNodeBeforeFailover", expectedExceptions = JMSException.class)
     public void testSendReceiveForPassiveNodeBeforeFailover() throws Exception {
-        String hostname = null;
-        String port = null;
-        if (nodeOne.equals(passiveNode)) {
-            hostname = hostnameOne;
-            port = portOne;
-        } else if (nodeTwo.equals(passiveNode)) {
-            hostname = hostnameTwo;
-            port = portTwo;
-        } else {
-            Assert.fail("No PASSIVE node in the two node HA group!");
-        }
-        sendReceiveForNode("testSendReceiveForPassiveNodeBeforeFailover", hostname, port);
+        sendReceiveForNode("testSendReceiveForPassiveNodeBeforeFailover",
+                           passiveNode.getHostname(), passiveNode.getPort());
     }
 
     @Test(dependsOnMethods = "testSendReceiveForPassiveNodeBeforeFailover")
     public void testFailoverWithActiveNodeShutdown() throws Exception {
-        //Send messages for the sync test prior to initializing failover
-        String hostname;
-        String port;
-        if (activeNode.equals(nodeOne)) {
-            hostname = hostnameOne;
-            port = portOne;
+        sendMessagesForSyncTest();
+        activeNode.shutdown();
+        //Change to expected states
+        if (nodeOne.equals(passiveNode)) {
+            activeNode = nodeOne;
+            passiveNode = nodeTwo;
         } else {
-            hostname = hostnameTwo;
-            port = portTwo;
+            activeNode = nodeTwo;
+            passiveNode = nodeOne;
         }
+
+        //Allow for failover
+        Thread.sleep(3 * heartbeatInterval + coordinatorEntryCreationWaitTime + 1000);
+
+        Assert.assertTrue(activeNode.isActiveNode());
+    }
+
+    private void sendMessagesForSyncTest() throws NamingException, JMSException {
+        //Send messages for the sync test prior to initializing failover
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", hostname, port)
+                .getInitialContextBuilder("admin", "admin",
+                                          activeNode.getHostname(), activeNode.getPort())
                 .withQueue(SYNC_TEST_QUEUE_NAME)
                 .build();
 
@@ -179,68 +164,25 @@ public class RdbmsHaStrategyTest {
         }
         producerSession.close();
         connection.close();
-
-        activeNode.shutdown();
-        //Change to expected states
-        if (nodeOne.equals(passiveNode)) {
-            activeNode = nodeOne;
-            passiveNode = nodeTwo;
-        } else {
-            activeNode = nodeTwo;
-            passiveNode = nodeOne;
-        }
-
-        //Allow for failover
-        Thread.sleep(3 * heartbeatInterval + coordinatorEntryCreationWaitTime + 1000);
-
-        Assert.assertTrue(activeNode.isActiveNode());
     }
 
     @Test(dependsOnMethods = "testFailoverWithActiveNodeShutdown")
     public void testSendReceiveForActiveNodeAfterFailover() throws Exception {
-        String hostname = null;
-        String port = null;
-        if (activeNode.equals(nodeOne)) {
-            passiveNode = nodeTwo;
-            hostname = hostnameOne;
-            port = portOne;
-        } else if (activeNode.equals(nodeTwo)) {
-            passiveNode = nodeOne;
-            hostname = hostnameTwo;
-            port = portTwo;
-        } else {
-            Assert.fail("No ACTIVE node!");
-        }
-        sendReceiveForNode("testSendReceiveForActiveNodeAfterFailover", hostname, port);
+        sendReceiveForNode("testSendReceiveForActiveNodeAfterFailover",
+                           activeNode.getHostname(), activeNode.getPort());
     }
 
     @Test(dependsOnMethods = "testSendReceiveForActiveNodeAfterFailover", expectedExceptions = JMSException.class)
     public void testSendReceiveForPassiveNodeAfterFailover() throws Exception {
-        String hostname;
-        String port;
-        if (passiveNode.equals(nodeOne)) {
-            hostname = hostnameOne;
-            port = portOne;
-        } else {
-            hostname = hostnameTwo;
-            port = portTwo;
-        }
-        sendReceiveForNode("testSendReceiveForPassiveNodeAfterFailover", hostname, port);
+        sendReceiveForNode("testSendReceiveForPassiveNodeAfterFailover",
+                           passiveNode.getHostname(), passiveNode.getPort());
     }
 
     @Test(dependsOnMethods = "testSendReceiveForActiveNodeAfterFailover")
     public void testSyncingOnFailover() throws Exception {
-        String hostname;
-        String port;
-        if (activeNode.equals(nodeOne)) {
-            hostname = hostnameOne;
-            port = portOne;
-        } else {
-            hostname = hostnameTwo;
-            port = portTwo;
-        }
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", hostname, port)
+                .getInitialContextBuilder("admin", "admin",
+                                          activeNode.getHostname(), activeNode.getPort())
                 .withQueue(SYNC_TEST_QUEUE_NAME)
                 .build();
 
