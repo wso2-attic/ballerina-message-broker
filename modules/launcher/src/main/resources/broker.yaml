@@ -25,10 +25,15 @@ wso2.broker:
   # Database password.
   password: root
 
+# Broker auth related configurations.
+wso2.broker.auth:
  # Broker authentication related configurations.
- authenticator:
-  # JAAS login module used to authenticate users.
-  loginModule: org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule
+ authentication:
+  # Enable the authentication
+  enabled: true
+  jaas:
+   # JAAS login module used to authenticate users
+   loginModule: org.wso2.broker.auth.authentication.jaas.BrokerLoginModule
 
 # AMQP transport related configurations.
 wso2.broker.transport.amqp:

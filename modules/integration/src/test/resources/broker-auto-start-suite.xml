@@ -26,6 +26,8 @@
     <parameter name="broker-hostname" value="localhost"/>
     <parameter name="admin-username" value="admin"/>
     <parameter name="admin-password" value="admin"/>
+    <parameter name="test-username" value="test"/>
+    <parameter name="test-password" value="a1D-M*i2+n"/>
 
     <listeners>
         <listener class-name="org.wso2.messaging.integration.util.TestExecutionListener"/>

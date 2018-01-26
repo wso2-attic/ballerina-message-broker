@@ -23,3 +23,9 @@ broker.users:
    -
     admin
 
+ -
+   username: test
+   password: a1D-M*i2+n
+   roles:
+   -
+    test

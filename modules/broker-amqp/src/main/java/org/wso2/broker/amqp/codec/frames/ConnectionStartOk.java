@@ -23,16 +23,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.amqp.codec.AmqConstant;
 import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import org.wso2.broker.auth.AuthManager;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.LongString;
 import org.wso2.broker.common.data.types.ShortString;
-import org.wso2.broker.core.Broker;
-import org.wso2.broker.core.security.authentication.sasl.SaslServerBuilder;
 
-import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
@@ -72,38 +69,35 @@ public class ConnectionStartOk extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         ctx.fireChannelRead((BlockingTask) () -> {
-            Broker broker = connectionHandler.getBroker();
-            SaslServer saslServer;
-            SaslServerBuilder saslServerBuilder = broker.getAuthenticationManager().getSaslMechanisms()
-                    .get(mechanism.toString());
-            try {
-                if (saslServerBuilder != null) {
-                    saslServer = Sasl.createSaslServer(mechanism.toString(), AmqConstant.AMQP_PROTOCOL_IDENTIFIER,
-                            connectionHandler.getConfiguration().getHostName(),
-                            saslServerBuilder.getProperties(), saslServerBuilder.getCallbackHandler());
-                    connectionHandler.setSaslServer(saslServer);
-                } else {
-                    throw new SaslException("Server does not support for mechanism: " + mechanism);
-                }
-                if (saslServer != null) {
-                    byte[] challenge = saslServer.evaluateResponse(response.getBytes());
-                    if (saslServer.isComplete()) {
-                        ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
+            AuthManager authManager = connectionHandler.getBroker().getAuthManager();
+            if (authManager.isAuthenticationEnabled()) {
+                try {
+                    SaslServer saslServer = authManager
+                            .createSaslServer(connectionHandler.getConfiguration().getHostName(), mechanism.toString());
+                    if (saslServer != null) {
+                        connectionHandler.setSaslServer(saslServer);
+                        byte[] challenge = authManager.authenticate(saslServer, response.getBytes());
+                        if (saslServer.isComplete()) {
+                            ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
+                        } else {
+                            ctx.writeAndFlush(new ConnectionSecure(getChannel(), LongString.parse(challenge)));
+                        }
                     } else {
-                        ctx.writeAndFlush(new ConnectionSecure(getChannel(), LongString.parse(challenge)));
+                        throw new SaslException("Sasl server cannot be found for mechanism: " + mechanism);
                     }
-                } else {
-                    throw new SaslException("Sasl server cannot be found for mechanism: " + mechanism);
+                } catch (SaslException e) {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Exception occurred while authenticating incoming connection. ", e);
+                    }
+                    String replyText = "Authentication Failed";
+                    ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(replyText), 10, 11));
                 }
-            } catch (SaslException e) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Exception occurred while authenticating incoming connection ", e);
-                }
-                String replyText = "Authentication Failed";
-                ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(replyText), 10, 11));
+            } else {
+                ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
             }
         });
     }
+
 
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {

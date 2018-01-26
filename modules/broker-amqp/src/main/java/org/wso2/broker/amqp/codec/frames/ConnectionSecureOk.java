@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import org.wso2.broker.auth.AuthManager;
 import org.wso2.broker.common.data.types.LongString;
 import org.wso2.broker.common.data.types.ShortString;
 
@@ -60,9 +61,10 @@ public class ConnectionSecureOk extends MethodFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         ctx.fireChannelRead((BlockingTask) () -> {
             try {
+                AuthManager authManager = connectionHandler.getBroker().getAuthManager();
                 SaslServer saslServer = connectionHandler.getSaslServer();
                 if (saslServer != null) {
-                    byte[] challenge = saslServer.evaluateResponse(response.getBytes());
+                    byte[] challenge = authManager.authenticate(saslServer, response.getBytes());
                     if (saslServer.isComplete()) {
                         ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
                     } else {

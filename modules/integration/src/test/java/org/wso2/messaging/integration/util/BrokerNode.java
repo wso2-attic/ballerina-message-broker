@@ -20,6 +20,11 @@ package org.wso2.messaging.integration.util;
 
 import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.Server;
+import org.wso2.broker.auth.AuthManager;
+import org.wso2.broker.auth.BrokerAuthConfiguration;
+import org.wso2.broker.auth.BrokerAuthConstants;
+import org.wso2.broker.auth.user.UserStoreManager;
+import org.wso2.broker.auth.user.impl.UserStoreManagerImpl;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.coordination.BrokerHaConfiguration;
@@ -29,21 +34,16 @@ import org.wso2.broker.coordination.HaStrategyFactory;
 import org.wso2.broker.coordination.rdbms.RdbmsHaStrategy;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
-import org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule;
-import org.wso2.broker.core.security.authentication.user.User;
-import org.wso2.broker.core.security.authentication.user.UserStoreManager;
-import org.wso2.broker.core.security.authentication.user.UsersFile;
 import org.wso2.broker.rest.BrokerRestServer;
 import org.wso2.broker.rest.config.RestServerConfiguration;
 
 import java.io.IOException;
+import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.LinkedList;
-import java.util.List;
 import javax.sql.DataSource;
 
 /**
@@ -71,10 +71,6 @@ public class BrokerNode {
         this.port = port;
 
         BrokerConfiguration brokerConfiguration = new BrokerConfiguration();
-        BrokerConfiguration.AuthenticationConfiguration authenticationConfiguration = new BrokerConfiguration
-                .AuthenticationConfiguration();
-        authenticationConfiguration.setLoginModule(BrokerLoginModule.class.getCanonicalName());
-        brokerConfiguration.setAuthenticator(authenticationConfiguration);
         configProvider.registerConfigurationObject(BrokerConfiguration.NAMESPACE, brokerConfiguration);
 
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
@@ -110,14 +106,16 @@ public class BrokerNode {
             startupContext.registerService(HaStrategy.class, haStrategy);
         }
 
-        UsersFile usersFile = new UsersFile();
-        User testUser = new User();
-        testUser.setUsername(adminUsername);
-        testUser.setPassword(adminPassword);
-        List<User> userList = new LinkedList<>();
-        userList.add(testUser);
-        usersFile.setUsers(userList);
-        UserStoreManager.addUser(usersFile.getUsers().get(0));
+        // auth configurations
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL resource = classLoader.getResource(BrokerAuthConstants.USERS_FILE_NAME);
+        if (resource != null) {
+            System.setProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG, resource.getFile());
+        }
+        UserStoreManager userStoreManager = new UserStoreManagerImpl();
+        BrokerAuthConfiguration securityConfiguration = new BrokerAuthConfiguration();
+        startupContext.registerService(AuthManager.class, new AuthManager(securityConfiguration,
+                                                                          DbUtils.getDataSource(), userStoreManager));
 
         brokerRestServer = new BrokerRestServer(startupContext);
         broker = new Broker(startupContext);

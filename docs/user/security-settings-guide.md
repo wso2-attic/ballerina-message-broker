@@ -5,7 +5,7 @@ password of client connections. Authentication will be handled by the JAAS login
 
 
     authenticator:
-      loginModule: org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule
+      loginModule: org.wso2.broker.auth.authentication.jaas.BrokerLoginModule
 
 ## Change default Login module
 

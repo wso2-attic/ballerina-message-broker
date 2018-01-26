@@ -37,6 +37,10 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
             <artifactId>broker-coordination</artifactId>
         </dependency>
         <dependency>
@@ -112,6 +116,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-auth</artifactId>
+            <version>4.0.23-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -193,6 +202,7 @@
                             org.wso2.broker.common.data.types.*;version="${broker.package.import.range.version}",
                             org.wso2.broker.coordination.*; version="${broker.package.import.range.version}",
                             org.wso2.broker.rest.*;version="${broker.package.import.range.version}",
+                            org.wso2.broker.auth.*;version="${broker.package.import.range.version}",
                             org.wso2.msf4j.*;version="${msf4j.package.import.version.range}"
                         </Import-Package>
                         <Export-Package>

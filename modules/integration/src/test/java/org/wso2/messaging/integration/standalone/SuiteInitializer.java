@@ -27,22 +27,22 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Parameters;
 import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.Server;
+import org.wso2.broker.auth.AuthManager;
+import org.wso2.broker.auth.BrokerAuthConfiguration;
+import org.wso2.broker.auth.BrokerAuthConstants;
+import org.wso2.broker.auth.user.UserStoreManager;
+import org.wso2.broker.auth.user.impl.UserStoreManagerImpl;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.configuration.BrokerConfiguration;
-import org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule;
-import org.wso2.broker.core.security.authentication.user.User;
-import org.wso2.broker.core.security.authentication.user.UserStoreManager;
-import org.wso2.broker.core.security.authentication.user.UsersFile;
 import org.wso2.broker.rest.BrokerRestServer;
 import org.wso2.broker.rest.config.RestServerConfiguration;
 import org.wso2.messaging.integration.util.DbUtils;
 import org.wso2.messaging.integration.util.TestConfigProvider;
 import org.wso2.messaging.integration.util.TestConstants;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.net.URL;
 import javax.sql.DataSource;
 
 public class SuiteInitializer {
@@ -68,10 +68,6 @@ public class SuiteInitializer {
         TestConfigProvider configProvider = new TestConfigProvider();
 
         BrokerConfiguration brokerConfiguration = new BrokerConfiguration();
-        BrokerConfiguration.AuthenticationConfiguration authenticationConfiguration = new BrokerConfiguration
-                .AuthenticationConfiguration();
-        authenticationConfiguration.setLoginModule(BrokerLoginModule.class.getCanonicalName());
-        brokerConfiguration.setAuthenticator(authenticationConfiguration);
         configProvider.registerConfigurationObject(BrokerConfiguration.NAMESPACE, brokerConfiguration);
 
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
@@ -92,24 +88,26 @@ public class SuiteInitializer {
         startupContext.registerService(BrokerConfigProvider.class, configProvider);
 
         DbUtils.setupDB();
-        startupContext.registerService(DataSource.class, DbUtils.getDataSource());
+        DataSource dataSource = DbUtils.getDataSource();
+        startupContext.registerService(DataSource.class, dataSource);
+
+        // Auth configurations
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL resource = classLoader.getResource(BrokerAuthConstants.USERS_FILE_NAME);
+        if (resource != null) {
+            System.setProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG, resource.getFile());
+        }
+        UserStoreManager userStoreManager = new UserStoreManagerImpl();
+        BrokerAuthConfiguration securityConfiguration = new BrokerAuthConfiguration(); ;
+        startupContext.registerService(AuthManager.class, new AuthManager(securityConfiguration, dataSource,
+                                                                          userStoreManager));
+
         restServer = new BrokerRestServer(startupContext);
         broker = new Broker(startupContext);
         broker.startMessageDelivery();
         server = new Server(startupContext);
         server.start();
         restServer.start();
-
-        //Add test user
-        UsersFile usersFile = new UsersFile();
-        User testUser = new User();
-        testUser.setUsername(adminUsername);
-        testUser.setPassword(adminPassword);
-        List<User> userList = new LinkedList<>();
-        userList.add(testUser);
-        usersFile.setUsers(userList);
-        UserStoreManager.addUser(usersFile.getUsers().get(0));
-
     }
 
     @AfterSuite
