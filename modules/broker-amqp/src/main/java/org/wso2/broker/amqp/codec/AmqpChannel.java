@@ -82,6 +82,7 @@ public class AmqpChannel {
 
     private final int maxRedeliveryCount;
 
+    private AtomicBoolean closed = new AtomicBoolean(false);
     /**
      * This tag is unique per subscription to a queue. The server returns this in response
      * to a basic.consume request.
@@ -166,6 +167,7 @@ public class AmqpChannel {
     }
 
     public void close() {
+        closed.set(true);
         for (Consumer consumer : consumerMap.values()) {
             closeConsumer(consumer);
         }
@@ -307,7 +309,15 @@ public class AmqpChannel {
      * @return true if messages can be delivered through the channel, false otherwise
      */
     public boolean isReady() {
-        return flow.get() && hasRoom.get();
+        return flow.get() && hasRoom.get() && !closed.get();
+    }
+
+    /**
+     * Indicate if the channel is closed by client
+     * @return true if channel is closed, false otherwise
+     */
+    public boolean isClosed() {
+        return closed.get();
     }
 
     /**
@@ -338,6 +348,10 @@ public class AmqpChannel {
 
     public void setPrefetchCount(int prefetchCount) {
         this.prefetchCount = prefetchCount;
+    }
+
+    public AmqpDeliverMessage createDeliverMessage(Message message, ShortString consumerTag, String queueName) {
+        return new AmqpDeliverMessage(message, consumerTag, this, queueName, broker);
     }
 
     /**

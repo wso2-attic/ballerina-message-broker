@@ -25,7 +25,6 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.AckData;
-import org.wso2.broker.amqp.AmqpDeliverMessage;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
@@ -75,9 +74,8 @@ public class BasicRecover extends MethodFrame {
                 Collection<AckData> unackedMessages = channel.recover();
                 for (AckData ackData : unackedMessages) {
                     Message message = ackData.getMessage();
-                    nettyChannel.write(new AmqpDeliverMessage(message,
+                    nettyChannel.write(channel.createDeliverMessage(message,
                                                               ackData.getConsumerTag(),
-                                                              channel,
                                                               ackData.getQueueName()));
                 }
                 nettyChannel.flush();

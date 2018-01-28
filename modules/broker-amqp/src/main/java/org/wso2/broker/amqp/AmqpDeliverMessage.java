@@ -20,11 +20,15 @@
 package org.wso2.broker.amqp;
 
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.frames.BasicDeliver;
 import org.wso2.broker.amqp.codec.frames.ContentFrame;
 import org.wso2.broker.amqp.codec.frames.HeaderFrame;
 import org.wso2.broker.common.data.types.ShortString;
+import org.wso2.broker.core.Broker;
+import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
@@ -35,6 +39,8 @@ import org.wso2.broker.core.util.TraceField;
  * AMQP delivery message which consists of the basic.deliver, ContentHeader and ContentBody frames
  */
 public class AmqpDeliverMessage {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AmqpDeliverMessage.class);
+
 
     private static final String SEND_MESSAGE = "Delivering message to client from AMQP transport.";
     private static final String SENT_ON_HOLD = "Message delivery on hold. Flow disabled.";
@@ -45,16 +51,31 @@ public class AmqpDeliverMessage {
     private final AmqpChannel channel;
     private final Message message;
     private final String queueName;
+    private final Broker broker;
 
-    public AmqpDeliverMessage(Message message, ShortString consumerTag, AmqpChannel channel, String queueName) {
+    public AmqpDeliverMessage(Message message,
+                              ShortString consumerTag,
+                              AmqpChannel channel,
+                              String queueName,
+                              Broker broker) {
         this.message = message;
         this.consumerTag = consumerTag;
         this.channel = channel;
         this.queueName = queueName;
+        this.broker = broker;
     }
 
     public void write(ChannelHandlerContext ctx) {
-        if (!channel.isFlowEnabled()) {
+        if (channel.isClosed()) {
+            try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Requeueing message since subscriber is already closed. {}", message);
+                }
+                broker.requeue(queueName, message);
+            } catch (BrokerException e) {
+                LOGGER.error("Error while requeueing message {} for queue {}", message, queueName, e);
+            }
+        } else if (!channel.isFlowEnabled()) {
             channel.hold(this);
             if (MessageTracer.isTraceEnabled()) {
                 MessageTracer.trace(message, SENT_ON_HOLD,
