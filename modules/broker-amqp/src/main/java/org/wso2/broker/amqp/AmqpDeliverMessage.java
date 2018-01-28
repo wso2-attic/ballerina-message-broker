@@ -122,11 +122,4 @@ public class AmqpDeliverMessage {
 
         }
     }
-
-    /**
-     * Getter for channel
-     */
-    public AmqpChannel getChannel() {
-        return channel;
-    }
 }

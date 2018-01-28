@@ -21,8 +21,6 @@ package org.wso2.broker.metrics;
 
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
-import org.wso2.carbon.config.ConfigurationException;
-import org.wso2.carbon.config.provider.ConfigProvider;
 import org.wso2.carbon.metrics.core.MetricService;
 import org.wso2.carbon.metrics.core.Metrics;
 
@@ -45,39 +43,5 @@ public class BrokerMetricService {
 
     public void stop() {
         metrics.deactivate();
-    }
-
-    /**
-     * Adapter class to handle Carbon Config provider
-     */
-    private static class CarbonConfigAdapter implements ConfigProvider {
-        private BrokerConfigProvider configProvider;
-
-        private CarbonConfigAdapter(BrokerConfigProvider configProvider) {
-            this.configProvider = configProvider;
-        }
-
-        private <T> T getConfig(String s, Class<T> aClass) throws ConfigurationException {
-            try {
-                return configProvider.getConfigurationObject(s, aClass);
-            } catch (Exception e) {
-                throw new ConfigurationException("Error while reading metrics config", e);
-            }
-        }
-
-        @Override
-        public <T> T getConfigurationObject(Class<T> aClass) throws ConfigurationException {
-            return getConfig(aClass.getCanonicalName(), aClass);
-        }
-
-        @Override
-        public Object getConfigurationObject(String s) throws ConfigurationException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> T getConfigurationObject(String s, Class<T> aClass) throws ConfigurationException {
-            return getConfig(s, aClass);
-        }
     }
 }
