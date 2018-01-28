@@ -38,6 +38,16 @@ public class MemQueueImpl extends Queue {
         queue = new LinkedBlockingDeque<>(capacity);
     }
 
+    /**
+     * Create an unbounded in memory queue
+     *
+     * @param name       name of the queue
+     * @param autoDelete auto delete capability
+     */
+    public MemQueueImpl(String name, boolean autoDelete) {
+        this(name, Queue.UNBOUNDED, autoDelete);
+    }
+
     @Override
     public int capacity() {
         return capacity;

@@ -171,6 +171,21 @@ public class AmqpChannel {
         }
 
         consumerMap.clear();
+        requeueUnackedMessages();
+    }
+
+    private void requeueUnackedMessages() {
+        Collection<AckData> ackDataList = unackedMessageMap.clear();
+
+        for (AckData ackData : ackDataList) {
+            Message message = ackData.getMessage();
+            String queueName = ackData.getQueueName();
+            try {
+                broker.requeue(queueName, message);
+            } catch (BrokerException e) {
+                LOGGER.error("Error while requeueing message {} for queue ()", message, queueName, e);
+            }
+        }
     }
 
     public void cancelConsumer(ShortString consumerTag) throws ChannelException {

@@ -61,7 +61,10 @@ public final class QueueHandler {
         this.queue = queue;
         unmodifiableQueueView = new UnmodifiableQueueWrapper(queue);
         // TODO: take message count from queue configuration
-        this.redeliveryQueue = new MemQueueImpl(queue.getName(), 1000, false);
+        // We create an unbounded redelivery queue since we keep the messages which are already in memory which does
+        // not increase memory usage. When loading data to meory we should consider messages in both queue and
+        // redelivery queue data structures.
+        this.redeliveryQueue = new MemQueueImpl(queue.getName(), false);
         this.metricManager = metricManager;
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
