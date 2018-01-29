@@ -21,7 +21,7 @@ package org.wso2.broker.auth;
 /**
  * Constants related to broker auth.
  */
-public class BrokerAuthConstants {
+public final class BrokerAuthConstants {
 
     private BrokerAuthConstants() {
     }
@@ -49,7 +49,7 @@ public class BrokerAuthConstants {
     // System property to specify the path of the users config file.
     public static final String SYSTEM_PARAM_USERS_CONFIG = "broker.users.config";
     // users configuration namespace in users config file.
-    public static final String USERS_CONFIG_NAMESPACE = "broker.users";
+    public static final String USERS_CONFIG_NAMESPACE = "wso2.broker.users";
     // user manager property name
     public static final String USER_STORE_MANAGER_PROPERTY = "UserStoreManagerImpl";
 }

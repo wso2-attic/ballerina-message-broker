@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
-import org.wso2.broker.auth.AuthManager;
 import org.wso2.broker.common.data.types.LongString;
 import org.wso2.broker.common.data.types.ShortString;
 
@@ -40,6 +39,9 @@ import javax.security.sasl.SaslServer;
 public class ConnectionSecureOk extends MethodFrame {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionSecureOk.class);
+
+    private static final String AUTHENTICATION_FAILED = "Authentication Failed";
+
     private final LongString response;
 
     public ConnectionSecureOk(int channel, LongString response) {
@@ -61,10 +63,9 @@ public class ConnectionSecureOk extends MethodFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         ctx.fireChannelRead((BlockingTask) () -> {
             try {
-                AuthManager authManager = connectionHandler.getBroker().getAuthManager();
                 SaslServer saslServer = connectionHandler.getSaslServer();
                 if (saslServer != null) {
-                    byte[] challenge = authManager.authenticate(saslServer, response.getBytes());
+                    byte[] challenge = saslServer.evaluateResponse(response.getBytes());
                     if (saslServer.isComplete()) {
                         ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
                     } else {
@@ -77,8 +78,7 @@ public class ConnectionSecureOk extends MethodFrame {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Exception occurred while authenticating incoming connection ", e);
                 }
-                String replyText = "Authentication Failed";
-                ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(replyText), 10, 21));
+                ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(AUTHENTICATION_FAILED), 10, 21));
             }
         });
     }

@@ -20,7 +20,7 @@ package org.wso2.broker.auth.user;
 
 import org.wso2.broker.auth.BrokerAuthException;
 
-import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Interface provides user store operations required for broker.
@@ -35,7 +35,7 @@ public interface UserStoreManager {
      * @return Authentication result
      * @throws BrokerAuthException Exception throws when authentication failed.
      */
-    public boolean authenticate(String userName, char... credentials) throws BrokerAuthException;
+    boolean authenticate(String userName, char... credentials) throws BrokerAuthException;
 
     /**
      * Retrieve the list of users for given username.
@@ -44,5 +44,5 @@ public interface UserStoreManager {
      * @return List of roles
      * @throws BrokerAuthException Exception throws when getting role list from user manager
      */
-    public HashSet<String> getUserRoleList(String userName) throws BrokerAuthException;
+    Set<String> getUserRoleList(String userName) throws BrokerAuthException;
 }

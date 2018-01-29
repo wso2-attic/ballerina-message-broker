@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.Server;
 import org.wso2.broker.auth.AuthManager;
-import org.wso2.broker.auth.BrokerAuthConfiguration;
 import org.wso2.broker.auth.user.UserStoreManager;
 import org.wso2.broker.auth.user.impl.UserStoreManagerImpl;
 import org.wso2.broker.common.BrokerConfigProvider;
@@ -65,13 +64,8 @@ public class Main {
             BrokerConfiguration brokerConfiguration =
                     service.getConfigurationObject(BrokerConfiguration.NAMESPACE, BrokerConfiguration.class);
             DataSource dataSource = getDataSource(brokerConfiguration.getDataSource());
+            startupContext.registerService(UserStoreManager.class, new UserStoreManagerImpl());
             startupContext.registerService(DataSource.class, dataSource);
-            // Initializing broker auth module
-            UserStoreManager userStoreManager = new UserStoreManagerImpl();
-            BrokerAuthConfiguration securityConfiguration = service
-                    .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
-            startupContext.registerService(AuthManager.class, new AuthManager(securityConfiguration, dataSource,
-                                                                              userStoreManager));
             HaStrategy haStrategy;
             //Initializing an HaStrategy implementation only if HA is enabled
             try {
@@ -87,7 +81,8 @@ public class Main {
             BrokerRestServer restServer = new BrokerRestServer(startupContext);
             Broker broker = new Broker(startupContext);
             Server amqpServer = new Server(startupContext);
-            registerShutdownHook(broker, amqpServer, restServer, haStrategy, metricService);
+            AuthManager authManager = new AuthManager(startupContext);
+            registerShutdownHook(broker, amqpServer, restServer, haStrategy, authManager, metricService);
 
             if (haStrategy != null) {
                 //Start the HA strategy after all listeners have been registered, and before the listeners are started
@@ -95,6 +90,7 @@ public class Main {
             }
 
             metricService.start();
+            authManager.start();
             broker.startMessageDelivery();
             amqpServer.start();
             restServer.start();
@@ -151,11 +147,13 @@ public class Main {
                                              Server server,
                                              BrokerRestServer brokerRestServer,
                                              HaStrategy haStrategy,
+                                             AuthManager authManager,
                                              BrokerMetricService metricService) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             synchronized (LOCK) {
                 shutdownHookTriggered = true;
                 brokerRestServer.shutdown();
+                authManager.stop();
                 try {
                     server.shutdown();
                     server.awaitServerClose();

@@ -112,11 +112,13 @@ public class BrokerNode {
         if (resource != null) {
             System.setProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG, resource.getFile());
         }
-        UserStoreManager userStoreManager = new UserStoreManagerImpl();
-        BrokerAuthConfiguration securityConfiguration = new BrokerAuthConfiguration();
-        startupContext.registerService(AuthManager.class, new AuthManager(securityConfiguration,
-                                                                          DbUtils.getDataSource(), userStoreManager));
 
+        BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
+        configProvider.registerConfigurationObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
+        startupContext.registerService(UserStoreManager.class, new UserStoreManagerImpl());
+        AuthManager authManager = new AuthManager(startupContext);
+
+        authManager.start();
         brokerRestServer = new BrokerRestServer(startupContext);
         broker = new Broker(startupContext);
         server = new Server(startupContext);

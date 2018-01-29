@@ -184,11 +184,6 @@
                 <version>${geronimo-jms_1.1_spec.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon</groupId>
-                <artifactId>org.wso2.carbon.core</artifactId>
-                <version>${carbon.kernel.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.carbon.config</groupId>
                 <artifactId>org.wso2.carbon.config</artifactId>
                 <version>${carbon.config.version}</version>
@@ -326,7 +321,6 @@
 
     <properties>
         <broker.package.import.range.version>[4.0.0,5.0.0)</broker.package.import.range.version>
-        <carbon.kernel.version>5.2.7</carbon.kernel.version>
         <netty.version>4.1.17.Final</netty.version>
         <netty.import.package.range.version>(4,5]</netty.import.package.range.version>
         <slf4j.version>1.7.25</slf4j.version>

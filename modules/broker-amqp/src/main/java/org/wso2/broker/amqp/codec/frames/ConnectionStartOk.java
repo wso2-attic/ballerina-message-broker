@@ -39,18 +39,23 @@ import javax.security.sasl.SaslServer;
 public class ConnectionStartOk extends MethodFrame {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStartOk.class);
+
+    private static final String AUTHENTICATION_FAILED = "Authentication Failed";
+
     private final FieldTable clientProperties;
     private final ShortString mechanism;
     private final ShortString locale;
     private final LongString response;
+    private final AuthManager authManager;
 
     public ConnectionStartOk(int channel, FieldTable clientProperties, ShortString mechanisms, ShortString locale,
-            LongString response) {
+                             LongString response, AuthManager authManager) {
         super(channel, (short) 10, (short) 11);
         this.clientProperties = clientProperties;
         this.mechanism = mechanisms;
         this.locale = locale;
         this.response = response;
+        this.authManager = authManager;
     }
 
     @Override
@@ -69,28 +74,22 @@ public class ConnectionStartOk extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         ctx.fireChannelRead((BlockingTask) () -> {
-            AuthManager authManager = connectionHandler.getBroker().getAuthManager();
             if (authManager.isAuthenticationEnabled()) {
                 try {
                     SaslServer saslServer = authManager
                             .createSaslServer(connectionHandler.getConfiguration().getHostName(), mechanism.toString());
-                    if (saslServer != null) {
-                        connectionHandler.setSaslServer(saslServer);
-                        byte[] challenge = authManager.authenticate(saslServer, response.getBytes());
-                        if (saslServer.isComplete()) {
-                            ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
-                        } else {
-                            ctx.writeAndFlush(new ConnectionSecure(getChannel(), LongString.parse(challenge)));
-                        }
+                    connectionHandler.setSaslServer(saslServer);
+                    byte[] challenge = saslServer.evaluateResponse(response.getBytes());
+                    if (saslServer.isComplete()) {
+                        ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
                     } else {
-                        throw new SaslException("Sasl server cannot be found for mechanism: " + mechanism);
+                        ctx.writeAndFlush(new ConnectionSecure(getChannel(), LongString.parse(challenge)));
                     }
                 } catch (SaslException e) {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Exception occurred while authenticating incoming connection. ", e);
                     }
-                    String replyText = "Authentication Failed";
-                    ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(replyText), 10, 11));
+                    ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(AUTHENTICATION_FAILED), 10, 11));
                 }
             } else {
                 ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
@@ -99,13 +98,13 @@ public class ConnectionStartOk extends MethodFrame {
     }
 
 
-    public static AmqMethodBodyFactory getFactory() {
+    public static AmqMethodBodyFactory getFactory(AuthManager authManager) {
         return (buf, channel, size) -> {
             FieldTable clientProperties = FieldTable.parse(buf);
             ShortString mechanism = ShortString.parse(buf);
             LongString response = LongString.parse(buf);
             ShortString locale = ShortString.parse(buf);
-            return new ConnectionStartOk(channel, clientProperties, mechanism, locale, response);
+            return new ConnectionStartOk(channel, clientProperties, mechanism, locale, response, authManager);
         };
     }
 }

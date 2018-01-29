@@ -21,7 +21,6 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.auth.AuthManager;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
@@ -50,9 +49,6 @@ public final class Broker {
     private static final Logger LOGGER = LoggerFactory.getLogger(Broker.class);
 
     private final MessagingEngine messagingEngine;
-
-    private final AuthManager authManager;
-
     /**
      * Used to manage metrics related to broker
      */
@@ -86,16 +82,6 @@ public final class Broker {
             LOGGER.info("Broker is in PASSIVE mode"); //starts up in passive mode
             brokerHelper = new HaEnabledBrokerHelper();
         }
-        this.authManager = startupContext.getService(AuthManager.class);
-    }
-
-    /**
-     * Provides {@link AuthManager} for broker
-     *
-     * @return Broker authentication manager
-     */
-    public AuthManager getAuthManager() {
-        return authManager;
     }
 
     public void publish(Message message) throws BrokerException {

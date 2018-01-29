@@ -85,8 +85,9 @@ public class BrokerLoginModule implements LoginModule {
      * @throws BrokerAuthException Throws if error occurred while authenticating user
      */
     private boolean validateUserPassword(String userName, char... password) throws BrokerAuthException {
-        return userName != null && password != null && userStoreManager != null && userStoreManager
-                .authenticate(userName, password);
+        return userName != null
+                && password != null
+                && userStoreManager.authenticate(userName, password);
     }
 
     @Override

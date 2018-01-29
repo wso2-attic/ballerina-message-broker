@@ -45,7 +45,7 @@ public class AmqpDecoder extends ByteToMessageDecoder {
      * Used to lookup AMQP method frames depending on their class ID and method ID. We keep this as a static variable
      * since it is read only
      */
-    private static final AmqMethodRegistry methodRegistry = new AmqMethodRegistry();
+    private final AmqMethodRegistry methodRegistry;
     private static final int FRAME_SIZE_WITHOUT_PAYLOAD = 8;
     private static final CharSequence AMQP_PROTOCOL_IDENTIFIER = "AMQP";
 
@@ -53,6 +53,10 @@ public class AmqpDecoder extends ByteToMessageDecoder {
      * class-id(short) + weight(short) + body-size(long long) + property-flags(short).
      */
     private static final int MIN_HEADER_FRAME_SIZE = 14;
+
+    public AmqpDecoder(AmqMethodRegistry methodRegistry) {
+        this.methodRegistry = methodRegistry;
+    }
 
     /**
      * The internal state of {@link AmqpDecoder}.

@@ -33,6 +33,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.frames.AmqMethodRegistryFactory;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.handlers.AmqpDecoder;
 import org.wso2.broker.amqp.codec.handlers.AmqpEncoder;
@@ -41,6 +42,7 @@ import org.wso2.broker.amqp.codec.handlers.BlockingTaskHandler;
 import org.wso2.broker.amqp.metrics.AmqpMetricManager;
 import org.wso2.broker.amqp.metrics.DefaultAmqpMetricManager;
 import org.wso2.broker.amqp.metrics.NullAmqpMetricManager;
+import org.wso2.broker.auth.AuthManager;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.coordination.BasicHaListener;
@@ -88,6 +90,8 @@ public class Server {
 
     private ServerHelper serverHelper;
 
+    private AmqMethodRegistryFactory amqMethodRegistryFactory;
+
     public Server(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
         if (Objects.nonNull(metrics)) {
@@ -116,6 +120,7 @@ public class Server {
             LOGGER.info("AMQP Transport is in PASSIVE mode"); //starts up in passive mode
             serverHelper = new HaEnabledServerHelper();
         }
+        amqMethodRegistryFactory = new AmqMethodRegistryFactory(startupContext.getService(AuthManager.class));
     }
 
     private void shutdownExecutors() {
@@ -210,7 +215,7 @@ public class Server {
 
         protected void initChannel(SocketChannel socketChannel) {
             socketChannel.pipeline()
-                         .addLast(new AmqpDecoder())
+                         .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
                          .addLast(new AmqpConnectionHandler(configuration, broker, metricManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
@@ -231,7 +236,7 @@ public class Server {
         protected void initChannel(SocketChannel socketChannel) {
             socketChannel.pipeline()
                          .addLast(sslHandlerFactory.create())
-                         .addLast(new AmqpDecoder())
+                         .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
                          .addLast(new AmqpConnectionHandler(configuration, broker, metricManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())

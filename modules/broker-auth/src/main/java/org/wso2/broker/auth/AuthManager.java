@@ -18,14 +18,14 @@
  */
 package org.wso2.broker.auth;
 
-import com.sun.security.auth.UserPrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.auth.authentication.sasl.BrokerSecurityProvider;
 import org.wso2.broker.auth.authentication.sasl.SaslServerBuilder;
 import org.wso2.broker.auth.authentication.sasl.plain.PlainSaslServerBuilder;
 import org.wso2.broker.auth.user.UserStoreManager;
-import org.wso2.carbon.kernel.context.PrivilegedCarbonContext;
+import org.wso2.broker.common.BrokerConfigProvider;
+import org.wso2.broker.common.StartupContext;
 
 import java.security.Security;
 import java.util.HashMap;
@@ -35,11 +35,10 @@ import javax.security.auth.login.Configuration;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
-import javax.sql.DataSource;
 
 /**
- * Class for manage authentication and authorization of message broker incoming connections.
- * This has list of sasl servers registered by the message broker which will be used during authentication of incoming
+ * Class to manage authentication and authorization of message broker incoming connections.
+ * This has a list of sasl servers registered by the message broker which will be used during authentication of incoming
  * connections.
  */
 public class AuthManager {
@@ -50,21 +49,22 @@ public class AuthManager {
      */
     private Map<String, SaslServerBuilder> saslMechanisms = new HashMap<>();
 
+    private BrokerAuthConfiguration brokerAuthConfiguration;
+
     private UserStoreManager userStoreManager;
 
-    private boolean authenticationEnabled;
+    public AuthManager(StartupContext startupContext)  throws Exception {
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        brokerAuthConfiguration = configProvider
+                .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
+        startupContext.registerService(AuthManager.class, this);
+        userStoreManager = startupContext.getService(UserStoreManager.class);
+    }
 
-    /**
-     * Constructor for initialize authentication manager and register sasl servers for auth provider mechanisms
-     */
-    public AuthManager(BrokerAuthConfiguration securityConfiguration, DataSource dataSource,
-                       UserStoreManager userStoreManager) throws Exception {
-
-        this.authenticationEnabled = securityConfiguration.getAuthentication().isEnabled();
-        this.userStoreManager = userStoreManager;
-        if (authenticationEnabled) {
+    public void start() {
+        if (brokerAuthConfiguration.getAuthentication().isEnabled()) {
             String jaasConfigPath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_JAAS_CONFIG);
-            BrokerAuthConfiguration.JaasConfiguration jaasConf = securityConfiguration.getAuthentication().getJaas();
+            BrokerAuthConfiguration.JaasConfiguration jaasConf = brokerAuthConfiguration.getAuthentication().getJaas();
             if (jaasConfigPath == null || jaasConfigPath.trim().isEmpty()) {
                 Configuration jaasConfig = createJaasConfig(jaasConf.getLoginModule(), userStoreManager,
                                                             jaasConf.getOptions());
@@ -72,6 +72,10 @@ public class AuthManager {
             }
             registerSaslServers();
         }
+    }
+
+    public void stop() {
+        LOGGER.info("Broker auth manager service stopped.");
     }
 
     /**
@@ -126,42 +130,18 @@ public class AuthManager {
     public SaslServer createSaslServer(String hostName, String mechanism) throws SaslException {
         SaslServerBuilder saslServerBuilder = saslMechanisms.get(mechanism);
         if (saslServerBuilder != null) {
-            return Sasl.createSaslServer(mechanism, BrokerAuthConstants.AMQP_PROTOCOL_IDENTIFIER, hostName,
-                                         saslServerBuilder.getProperties(),
-                                         saslServerBuilder.getCallbackHandler());
+            SaslServer saslServer = Sasl.createSaslServer(mechanism, BrokerAuthConstants.AMQP_PROTOCOL_IDENTIFIER,
+                                                          hostName,
+                                                          saslServerBuilder.getProperties(),
+                                                          saslServerBuilder.getCallbackHandler());
+            if (saslServer != null) {
+                return saslServer;
+            } else {
+                throw new SaslException("Sasl server cannot be found for mechanism: " + mechanism);
+            }
         } else {
             throw new SaslException("Server does not support for mechanism: " + mechanism);
         }
-    }
-
-    /**
-     * Authenticate response based on given sasl server
-     *
-     * @param saslServer Sasl server
-     * @param response   Client response
-     * @return challenge
-     * @throws SaslException Throws if error occurs while evaluating the response
-     */
-    public byte[] authenticate(SaslServer saslServer, byte[] response) throws SaslException {
-        byte[] challenge = saslServer.evaluateResponse(response);
-        if (saslServer.isComplete()) {
-            PrivilegedCarbonContext privilegedCarbonContext = PrivilegedCarbonContext.getCurrentContext();
-            if (privilegedCarbonContext.getUserPrincipal() == null) {
-                UserPrincipal userPrincipal = new UserPrincipal(saslServer.getAuthorizationID());
-                privilegedCarbonContext.setUserPrincipal(userPrincipal);
-            }
-        }
-        return challenge;
-    }
-
-
-    /**
-     * Provides map of security mechanisms registered for broker
-     *
-     * @return Registered security Mechanisms
-     */
-    public Map<String, SaslServerBuilder> getSaslMechanisms() {
-        return saslMechanisms;
     }
 
     /**
@@ -169,6 +149,6 @@ public class AuthManager {
      * @return broker authentication enabled or not
      */
     public boolean isAuthenticationEnabled() {
-        return authenticationEnabled;
+        return brokerAuthConfiguration.getAuthentication().isEnabled();
     }
 }

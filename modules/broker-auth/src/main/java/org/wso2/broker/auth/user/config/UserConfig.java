@@ -13,14 +13,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.wso2.broker.auth.user;
+package org.wso2.broker.auth.user.config;
 
 import java.util.List;
 
 /**
- * User mapper class.
+ * UserConfig mapper class.
  */
-public class User {
+public class UserConfig {
 
     private String username = null;
 

@@ -23,7 +23,7 @@
     <parent>
         <artifactId>message-broker</artifactId>
         <groupId>org.wso2.messaging</groupId>
-        <version>4.0.23-SNAPSHOT</version>
+        <version>4.0.25-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -35,10 +35,6 @@
         <dependency>
             <groupId>org.wso2.messaging</groupId>
             <artifactId>broker-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -101,7 +97,9 @@
                         <Private-Package>
                         </Private-Package>
                         <Import-Package>
-                            org.slf4j.*;version="${slf4j.logging.package.import.version.range}"
+                            com.google.common.*;version="${guava.package.import.version.range}",
+                            org.slf4j.*;version="${slf4j.logging.package.import.version.range}",
+                            org.wso2.broker.common.*;version="${broker.package.import.range.version}"
                         </Import-Package>
                         <Export-Package>
                             org.wso2.broker.auth.*;version=${project.version},
@@ -112,3 +110,4 @@
         </plugins>
     </build>
 </project>
+

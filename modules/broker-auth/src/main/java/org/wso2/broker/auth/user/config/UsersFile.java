@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.wso2.broker.auth.user;
+package org.wso2.broker.auth.user.config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +23,13 @@ import java.util.List;
  */
 public class UsersFile {
 
-    private List<User> users = new ArrayList<>();
+    private List<UserConfig> users = new ArrayList<>();
 
-    public List<User> getUsers() {
+    public List<UserConfig> getUserConfigs() {
         return users;
     }
 
-    public void setUsers(List<User> users) {
+    public void setUserConfigs(List<UserConfig> users) {
         this.users = users;
     }
 }

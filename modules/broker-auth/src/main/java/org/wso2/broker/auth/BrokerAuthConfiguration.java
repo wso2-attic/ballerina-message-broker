@@ -39,9 +39,7 @@ public class BrokerAuthConfiguration {
         return authentication;
     }
 
-    public void setAuthentication(
-            AuthenticationConfiguration authentication
-                                 ) {
+    public void setAuthentication(AuthenticationConfiguration authentication) {
         this.authentication = authentication;
     }
 

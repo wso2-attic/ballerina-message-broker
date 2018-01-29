@@ -21,6 +21,7 @@ package org.wso2.broker.amqp.codec.frames;
 
 import org.wso2.broker.amqp.codec.AmqConstant;
 import org.wso2.broker.amqp.codec.AmqFrameDecodingException;
+import org.wso2.broker.auth.AuthManager;
 
 /**
  * Keep factory classes for different class IDs and method IDs.
@@ -28,9 +29,9 @@ import org.wso2.broker.amqp.codec.AmqFrameDecodingException;
 public class AmqMethodRegistry {
     public AmqMethodBodyFactory[][] factories = new AmqMethodBodyFactory[101][];
 
-    public AmqMethodRegistry() {
+    public AmqMethodRegistry(AuthManager authManager) {
         factories[10] = new AmqMethodBodyFactory[52];
-        factories[10][11] = ConnectionStartOk.getFactory();
+        factories[10][11] = ConnectionStartOk.getFactory(authManager);
         factories[10][20] = ConnectionSecure.getFactory();
         factories[10][21] = ConnectionSecureOk.getFactory();
         factories[10][31] = ConnectionTuneOk.getFactory();
