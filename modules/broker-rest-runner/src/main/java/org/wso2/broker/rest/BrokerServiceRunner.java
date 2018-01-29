@@ -29,7 +29,8 @@ public class BrokerServiceRunner {
     private MicroservicesRunner runner;
 
     BrokerServiceRunner(MicroservicesRunner runner) {
-        runner.addExceptionMapper(new ResourceNotFoundMapper(), new BadRequestMapper());
+        runner.addExceptionMapper(new ResourceNotFoundMapper(), new BadRequestMapper(),
+                                  new InternalServerErrorExceptionMapper());
         this.runner = runner;
     }
 
