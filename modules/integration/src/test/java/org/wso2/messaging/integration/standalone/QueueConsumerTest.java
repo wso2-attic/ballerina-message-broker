@@ -217,4 +217,65 @@ public class QueueConsumerTest {
 
         connection.close();
     }
+
+    @Parameters({ "broker-port", "admin-username", "admin-password", "broker-hostname" })
+    @Test
+    public void testConsumerRestart(String port,
+                                             String adminUsername,
+                                             String adminPassword,
+                                             String brokerHostname) throws Exception {
+        String queueName = "testConsumerRestart";
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
+                .withQueue(queueName)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // publish 100 messages
+        Session producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = producerSession.createQueue(queueName);
+        MessageProducer producer = producerSession.createProducer(queue);
+
+        int numberOfMessages = 100;
+        for (int i = 0; i < numberOfMessages; i++) {
+            producer.send(producerSession.createTextMessage("Test message " + i));
+        }
+        producerSession.close();
+
+        // Consume published messages
+        Session subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
+
+        for (int i = 0; i < 10; i++) {
+            Message message = consumer.receive(5000);
+            Assert.assertNotNull(message, "Message was not received");
+        }
+
+        // Restart consumer
+        subscriberSession.close();
+        subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        consumer = subscriberSession.createConsumer(subscriberDestination);
+
+        for (int i = 0; i < 10; i++) {
+            Message message = consumer.receive(5000);
+            Assert.assertNotNull(message, "Message was not received");
+        }
+
+        // Restart consumer
+        subscriberSession.close();
+        subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        consumer = subscriberSession.createConsumer(subscriberDestination);
+
+        for (int i = 0; i < numberOfMessages - 20; i++) {
+            Message message = consumer.receive(5000);
+            Assert.assertNotNull(message, "Message " + i + " was not received");
+        }
+
+        connection.close();
+    }
 }
