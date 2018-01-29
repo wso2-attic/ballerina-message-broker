@@ -50,6 +50,8 @@ public class AmqMethodRegistry {
         factories[40] = new AmqMethodBodyFactory[24];
         factories[40][10] = ExchangeDeclare.getFactory();
         factories[40][11] = ExchangeDeclareOk.getFactory();
+        factories[40][20] = ExchangeDelete.getFactory();
+        factories[40][21] = ExchangeDeleteOk.getFactory();
 
         factories[50] = new AmqMethodBodyFactory[52];
         factories[50][10] = QueueDeclare.getFactory();

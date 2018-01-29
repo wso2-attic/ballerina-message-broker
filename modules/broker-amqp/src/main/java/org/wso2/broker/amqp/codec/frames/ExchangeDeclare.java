@@ -25,6 +25,7 @@ import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.BrokerException;
@@ -102,6 +103,12 @@ public class ExchangeDeclare extends MethodFrame {
             } catch (BrokerException e) {
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
                                                    ChannelException.NOT_ALLOWED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            } catch (ValidationException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.PRECONDITION_FAILED,
                                                    ShortString.parseString(e.getMessage()),
                                                    CLASS_ID,
                                                    METHOD_ID));
