@@ -82,9 +82,7 @@ final class MessageDeliveryTask extends Task {
                 Message message = queueHandler.dequeue();
 
                 if (message != null) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Sending message {}", message);
-                    }
+                    LOGGER.debug("Sending message {} to {}", message, consumer);
                     MessageTracer.trace(message, queueHandler, MessageTracer.DELIVER);
                     consumer.send(message);
                     deliveredCount++;
