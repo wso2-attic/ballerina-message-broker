@@ -19,10 +19,14 @@
 
 package org.wso2.messaging.integration.util;
 
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import org.wso2.broker.core.rest.BrokerAdminService;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Properties;
+import java.util.concurrent.TimeoutException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -49,6 +53,17 @@ public class ClientHelper {
 
     public static String getRestApiBasePath(String brokerHost, String port) throws URISyntaxException {
         return "http://" + brokerHost + ":" + port + BrokerAdminService.API_BASE_PATH;
+    }
+
+    public static Connection getAmqpConnection(String userName, String password, String brokerHost, String port)
+            throws IOException, TimeoutException {
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        connectionFactory.setUsername(userName);
+        connectionFactory.setPassword(password);
+        connectionFactory.setVirtualHost("carbon");
+        connectionFactory.setHost(brokerHost);
+        connectionFactory.setPort(Integer.valueOf(port));
+        return connectionFactory.newConnection();
     }
 
     public static class InitialContextBuilder {

@@ -287,6 +287,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>com.rabbitmq</groupId>
+                <artifactId>amqp-client</artifactId>
+                <version>${rabbitmq.client.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -351,5 +356,6 @@
         <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
         <guava.package.import.version.range>[20.0,30.0)</guava.package.import.version.range>
         <carbon.metrics.version>2.3.7</carbon.metrics.version>
+        <rabbitmq.client.version>5.1.2</rabbitmq.client.version>
     </properties>
 </project>
