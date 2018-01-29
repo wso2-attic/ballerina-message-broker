@@ -94,6 +94,13 @@ do
     MESSAGE_BROKER_CLASSPATH="$MESSAGE_BROKER_CLASSPATH":$j
 done
 
+# Add following options in java command to enable remote JMX monitoring.
+# Please note that you have to use the machine IP instead of '127.0.0.1'.
+#   -Djava.rmi.server.hostname=127.0.0.1 \
+#   -Dcom.sun.management.jmxremote.port=9595 \
+#   -Dcom.sun.management.jmxremote.ssl=false \
+#   -Dcom.sun.management.jmxremote.authenticate=false \
+
 $JAVACMD \
     -Xms256m -Xmx1024m \
     -XX:+HeapDumpOnOutOfMemoryError \

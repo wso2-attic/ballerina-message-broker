@@ -20,10 +20,10 @@
 package org.wso2.broker.core.store.dao;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventTranslatorOneArg;
 import com.lmax.disruptor.EventTranslatorTwoArg;
-import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.wso2.broker.core.BrokerException;
@@ -68,7 +68,7 @@ public class SharedMessageStore {
                 .setNameFormat("DisruptorMessageStoreThread-%d").build();
 
         disruptor = new Disruptor<>(DbOperation.getFactory(),
-                bufferSize, namedThreadFactory, ProducerType.MULTI, new SleepingWaitStrategy());
+                bufferSize, namedThreadFactory, ProducerType.MULTI, new BlockingWaitStrategy());
 
         disruptor.setDefaultExceptionHandler(new LogExceptionHandler());
 
