@@ -19,11 +19,15 @@
 
 package org.wso2.broker.core;
 
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.core.store.dao.BindingDao;
 import org.wso2.broker.core.store.dao.ExchangeDao;
 import org.wso2.broker.core.store.dao.NoOpBindingDao;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -47,6 +51,8 @@ public final class ExchangeRegistry {
 
     private final BindingDao bindingDao;
 
+    private final Collection<Exchange> unmodifiableExchangesView;
+
     public ExchangeRegistry(ExchangeDao exchangeDao, BindingDao bindingDao) {
         exchangeMap = new ConcurrentHashMap<>(3);
         exchangeMap.put(DIRECT, new DirectExchange(DIRECT, bindingDao));
@@ -55,23 +61,30 @@ public final class ExchangeRegistry {
         exchangeMap.put(DEFAULT_DEAD_LETTER_EXCHANGE, new DirectExchange(DEFAULT_DEAD_LETTER_EXCHANGE, bindingDao));
         this.exchangeDao = exchangeDao;
         this.bindingDao = bindingDao;
-
+        this.unmodifiableExchangesView = Collections.unmodifiableCollection(exchangeMap.values());
     }
 
     Exchange getExchange(String exchangeName) {
         return exchangeMap.get(exchangeName);
     }
 
-    void deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException {
-        // TODO: ifUnused property
+    boolean deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException, ValidationException {
         Exchange exchange = exchangeMap.get(exchangeName);
-        if (exchange == null) {
-            return;
+        if (Objects.isNull(exchange)) {
+            return false;
         }
         if (!isBuiltInExchange(exchange)) {
-            exchangeMap.remove(exchangeName);
+            if (!ifUnused || exchange.isUnused()) {
+                if (exchange.isDurable()) {
+                    exchangeDao.delete(exchange);
+                }
+                exchangeMap.remove(exchangeName);
+                return true;
+            } else {
+                throw new ValidationException("Cannot delete exchange. Exchange " + exchangeName + " has bindings.");
+            }
         } else {
-            throw new BrokerException("Cannot delete built in exchange '" + exchangeName + "'");
+            throw new ValidationException("Cannot delete built in exchange '" + exchangeName + "'");
         }
     }
 
@@ -81,35 +94,53 @@ public final class ExchangeRegistry {
     }
 
     /**
+     * Method to create or check for existence of an exchange. If passive boolean is set exchange existence can be
+     * checked.
+     *
      * @param exchangeName name of the exchange
      * @param type         type of the exchange
      * @param passive      if true do not create exchange
      * @param durable      is the exchange durable or not.
-     * @throws BrokerException throws on exchange creation failure
+     * @throws BrokerException on exchange creation failure
      */
-    void declareExchange(String exchangeName, Exchange.Type type,
-                         boolean passive, boolean durable) throws BrokerException {
+    void declareExchange(String exchangeName, String type,
+                         boolean passive, boolean durable) throws ValidationException, BrokerException {
         if (exchangeName.isEmpty()) {
-            throw new BrokerException("Exchange name cannot be empty.");
+            throw new ValidationException("Exchange name cannot be empty.");
         }
 
         Exchange exchange = exchangeMap.get(exchangeName);
-        if (passive && exchange == null) {
-            throw new BrokerException(
-                    "Exchange [ " + exchangeName
-                            + " ] doesn't exists. Passive parameter is set, hence not creating the exchange.");
-        } else if (exchange == null) {
+        if (passive) {
+            if (Objects.isNull(exchange)) {
+                throw new ValidationException("Exchange [ " + exchangeName + " ] doesn't exists. Passive parameter "
+                                                      + "is set, hence not creating the exchange.");
+            }
+        } else {
+            createExchange(exchangeName, Exchange.Type.from(type), durable);
+        }
+    }
+
+    /**
+     * Creates a exchange with given parameters.
+     *
+     * @param exchangeName name of the exchange
+     * @param type {@link org.wso2.broker.core.Exchange.Type} of the exchange
+     * @param durable durability of the exchange
+     * @throws BrokerException if there is an internal error when creating the exchange.
+     * @throws ValidationException if exchange already exist
+     */
+    public void createExchange(String exchangeName, Exchange.Type type, boolean durable) throws BrokerException,
+                                                                                                ValidationException {
+        Exchange exchange = exchangeMap.get(exchangeName);
+        if (Objects.isNull(exchange)) {
             BindingDao dao = durable ? bindingDao : NO_OP_BINDING_DAO;
             exchange = ExchangeFactory.newInstance(exchangeName, type, dao);
             exchangeMap.put(exchange.getName(), exchange);
             if (durable) {
                 exchangeDao.persist(exchange);
             }
-        } else if (!passive) {
-            throw new BrokerException("Exchange [ " + exchangeName + " ] already exists.");
-        } else if (exchange.getType() != type) {
-            throw new BrokerException("Exchange type [ " + type + " ] does not match the existing one [ "
-                    + exchange.getType() + " ].");
+        } else {
+            throw new ValidationException("Exchange [ " + exchangeName + " ] already exists.");
         }
     }
 
@@ -117,7 +148,7 @@ public final class ExchangeRegistry {
         exchangeDao.retrieveAll(
                 (name, typeString) -> {
                     Exchange exchange = ExchangeFactory.newInstance(name,
-                            Exchange.Type.from(typeString), bindingDao);
+                                                                    Exchange.Type.from(typeString), bindingDao);
                     exchangeMap.putIfAbsent(name, exchange);
                 });
     }
@@ -128,9 +159,13 @@ public final class ExchangeRegistry {
 
     public void retrieveFromStore(QueueRegistry queueRegistry) throws BrokerException {
         retrieveAllExchangesFromDao();
-        for (Exchange exchange: exchangeMap.values()) {
+        for (Exchange exchange : exchangeMap.values()) {
             exchange.retrieveBindingsFromDb(queueRegistry);
         }
+    }
+
+    public Collection<Exchange> getAllExchanges() {
+        return unmodifiableExchangesView;
     }
 
     /**

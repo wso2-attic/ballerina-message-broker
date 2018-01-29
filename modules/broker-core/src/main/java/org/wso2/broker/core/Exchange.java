@@ -106,7 +106,6 @@ public abstract class Exchange {
 
     /**
      * Whether there are any bindings for the exchange.
-     * TODO This is only used in tests. Should we have such methods?
      */
     boolean isUnused() {
         return bindingsRegistry.isEmpty();

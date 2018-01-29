@@ -27,6 +27,7 @@ import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.BrokerException;
@@ -86,7 +87,7 @@ public class QueueBind extends MethodFrame {
                 channel.bind(queue, exchange, routingKey, arguments);
                 ctx.writeAndFlush(new QueueBindOk(getChannel()));
 
-            } catch (BrokerException e) {
+            } catch (BrokerException | ValidationException e) {
                 LOGGER.error("Error while binding to {} with queue {} with routing key {} "
                         , exchange, queue, routingKey, e);
                 ctx.writeAndFlush(new ChannelClose(getChannel(),

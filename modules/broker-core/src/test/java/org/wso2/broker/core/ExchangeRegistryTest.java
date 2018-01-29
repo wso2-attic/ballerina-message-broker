@@ -24,7 +24,10 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.core.store.dao.NoOpBindingDao;
+
+import static org.wso2.broker.core.Exchange.Type.DIRECT;
 
 /**
  * Tests the functionality for {@link #exchangeRegistry}.
@@ -50,36 +53,37 @@ public class ExchangeRegistryTest {
 
     }
 
-    @Test(description = "test frequently used exchanges types are defined", expectedExceptions = BrokerException.class)
-    public void testDeclareExchangesWithEmptyName() throws BrokerException {
-
-        exchangeRegistry.declareExchange("", Exchange.Type.DIRECT, false, true);
-
+    @Test(description = "Test frequently used exchanges types are defined",
+          expectedExceptions = ValidationException.class)
+    public void testDeclareExchangesWithEmptyName() throws ValidationException, BrokerException {
+        exchangeRegistry.declareExchange("", DIRECT.toString(), false, true);
     }
 
     @Test(dataProvider = "exchangeNames", description = "declare a existing exchange with passive parameter set")
-    public void testDeclareExistingExchangesWithPassiveParameter(String exchangeName) throws BrokerException {
-
-        // This should not throw any exception.
-        exchangeRegistry.declareExchange(exchangeName, Exchange.Type.DIRECT, true, false);
+    public void testDeclareExistingExchangesWithPassiveParameter(String exchangeName) throws BrokerException,
+                                                                                             ValidationException {
+        // This should not throw any exception. durable and type params should be ignored.
+        exchangeRegistry.declareExchange(exchangeName, null, true, true);
+        exchangeRegistry.declareExchange(exchangeName, "", true, false);
+        exchangeRegistry.declareExchange(exchangeName, DIRECT.toString(), true, true);
 
     }
 
-    @Test(description = "declare a non-existing exchange with passive parameter set", 
-                                                                            expectedExceptions = BrokerException.class)
-    public void testDeclareNonExistingExchangesWithPassiveParameter() throws BrokerException {
+    @Test(description = "Declare a non-existing exchange with passive parameter set",
+          expectedExceptions = ValidationException.class)
+    public void testDeclareNonExistingExchangesWithPassiveParameter() throws BrokerException, ValidationException {
 
         // This should throw an exception.
-        exchangeRegistry.declareExchange(NON_EXISTING_EXCHANGE, Exchange.Type.DIRECT, true, false);
-        Assert.fail("declaring a non existing exchange with passive parameter set should throw a error");
+        exchangeRegistry.declareExchange(NON_EXISTING_EXCHANGE, DIRECT.toString(), true, false);
+        Assert.fail("Declaring a non existing exchange with passive parameter set should throw a error.");
 
     }
 
-    @Test(description = "declare a non-existing exchange with passive parameter set")
-    public void testDeclareNonExistingExchangesWithoutPassiveParameter() throws BrokerException {
+    @Test(description = "Declare a non-existing exchange without passive parameter set")
+    public void testDeclareNonExistingExchangesWithoutPassiveParameter() throws BrokerException, ValidationException {
 
         // This should not throw an exception.
-        exchangeRegistry.declareExchange(NON_EXISTING_EXCHANGE, Exchange.Type.DIRECT, false, false);
+        exchangeRegistry.declareExchange(NON_EXISTING_EXCHANGE, DIRECT.toString(), false, false);
 
         Exchange declaredExchange = exchangeRegistry.getExchange(NON_EXISTING_EXCHANGE);
 
@@ -87,11 +91,11 @@ public class ExchangeRegistryTest {
     }
 
     
-    @Test(description = "declare a non-existing exchange with passive parameter set")
-    public void testDeleteExchange() throws BrokerException {
+    @Test(description = "Test exchange delete operation")
+    public void testDeleteExchange() throws BrokerException, ValidationException {
 
         // This should not throw an exception.
-        exchangeRegistry.declareExchange(NON_EXISTING_EXCHANGE, Exchange.Type.DIRECT, false, false);
+        exchangeRegistry.declareExchange(NON_EXISTING_EXCHANGE, DIRECT.toString(), false, false);
         
         exchangeRegistry.deleteExchange(NON_EXISTING_EXCHANGE, true);
         
@@ -102,14 +106,14 @@ public class ExchangeRegistryTest {
     }
 
     @Test(dataProvider = "exchangeNames", description = "try to delete built in exchanges",
-                                                                            expectedExceptions = BrokerException.class)
-    public void testDeleteBuiltInExchanges(String exchangeName) throws BrokerException {
+          expectedExceptions = ValidationException.class)
+    public void testDeleteBuiltInExchanges(String exchangeName) throws BrokerException, ValidationException {
 
         exchangeRegistry.deleteExchange(exchangeName,  true);
         Assert.fail("built in exchange type - " + exchangeName + " shouldn't be allowed to delete");
 
     }
-    
+
     @AfterMethod
     public void tearDown() {
         exchangeRegistry = null;

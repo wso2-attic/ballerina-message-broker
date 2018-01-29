@@ -22,6 +22,7 @@ package org.wso2.broker.core;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.store.StoreFactory;
@@ -31,6 +32,8 @@ import org.wso2.broker.core.util.MessageTracer;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -85,7 +88,8 @@ final class MessagingEngine {
      */
     private final BrokerMetricManager metricManager;
 
-    MessagingEngine(StoreFactory storeFactory, BrokerMetricManager metricManager) throws BrokerException {
+    MessagingEngine(StoreFactory storeFactory, BrokerMetricManager metricManager)
+            throws BrokerException, ValidationException {
         this.metricManager = metricManager;
         exchangeRegistry = storeFactory.getExchangeRegistry();
         // TODO: get the buffer sizes from configs
@@ -101,7 +105,7 @@ final class MessagingEngine {
         initDefaultDeadLetterQueue();
     }
 
-    private void initDefaultDeadLetterQueue() throws BrokerException {
+    private void initDefaultDeadLetterQueue() throws BrokerException, ValidationException {
         createQueue(DEFAULT_DEAD_LETTER_QUEUE, false, true, false);
         bind(DEFAULT_DEAD_LETTER_QUEUE,
              ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE,
@@ -109,17 +113,19 @@ final class MessagingEngine {
              FieldTable.EMPTY_TABLE);
     }
 
-    void bind(String queueName, String exchangeName, String routingKey, FieldTable arguments) throws BrokerException {
+    void bind(String queueName, String exchangeName, String routingKey, FieldTable arguments)
+            throws BrokerException, ValidationException {
+
         lock.writeLock().lock();
         try {
             Exchange exchange = exchangeRegistry.getExchange(exchangeName);
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
             if (exchange == null) {
-                throw new BrokerException("Unknown exchange name: " + exchangeName);
+                throw new ValidationException("Unknown exchange name: " + exchangeName);
             }
 
             if (queueHandler == null) {
-                throw new BrokerException("Unknown queue name: " + queueName);
+                throw new ValidationException("Unknown queue name: " + queueName);
             }
 
             if (!routingKey.isEmpty()) {
@@ -130,18 +136,18 @@ final class MessagingEngine {
         }
     }
 
-    void unbind(String queueName, String exchangeName, String routingKey) throws BrokerException {
+    void unbind(String queueName, String exchangeName, String routingKey) throws BrokerException, ValidationException {
         lock.writeLock().lock();
         try {
             Exchange exchange = exchangeRegistry.getExchange(exchangeName);
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
 
             if (exchange == null) {
-                throw new BrokerException("Unknown exchange name: " + exchangeName);
+                throw new ValidationException("Unknown exchange name: " + exchangeName);
             }
 
             if (queueHandler == null) {
-                throw new BrokerException("Unknown queue name: " + queueName);
+                throw new ValidationException("Unknown queue name: " + queueName);
             }
 
             exchange.unbind(queueHandler.getQueue(), routingKey);
@@ -278,20 +284,30 @@ final class MessagingEngine {
         deliveryTaskService.stop();
     }
 
-    void createExchange(String exchangeName, String type,
-                        boolean passive, boolean durable) throws BrokerException {
+    void declareExchange(String exchangeName, String type,
+                         boolean passive, boolean durable) throws BrokerException, ValidationException {
         lock.writeLock().lock();
         try {
-            exchangeRegistry.declareExchange(exchangeName, Exchange.Type.from(type), passive, durable);
+            exchangeRegistry.declareExchange(exchangeName, type, passive, durable);
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    void deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException {
+    void createExchange(String exchangeName, String type, boolean durable) throws BrokerException,
+                                                                                  ValidationException {
         lock.writeLock().lock();
         try {
-            exchangeRegistry.deleteExchange(exchangeName, ifUnused);
+            exchangeRegistry.createExchange(exchangeName, Exchange.Type.from(type), durable);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    boolean deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException, ValidationException {
+        lock.writeLock().lock();
+        try {
+            return exchangeRegistry.deleteExchange(exchangeName, ifUnused);
         } finally {
             lock.writeLock().unlock();
         }
@@ -347,11 +363,54 @@ final class MessagingEngine {
     }
 
     public Collection<QueueHandler> getAllQueues() {
-        return queueRegistry.getAllQueues();
+        lock.readLock().lock();
+        try {
+            return queueRegistry.getAllQueues();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public QueueHandler getQueue(String queueName) {
-        return queueRegistry.getQueueHandler(queueName);
+        lock.readLock().lock();
+        try {
+            return queueRegistry.getQueueHandler(queueName);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public Collection<Exchange> getAllExchanges() {
+        lock.readLock().lock();
+        try {
+            return exchangeRegistry.getAllExchanges();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public Map<String, BindingSet> getAllBindingsForExchange(String exchangeName) throws ValidationException {
+        lock.readLock().lock();
+
+        try {
+            Exchange exchange = exchangeRegistry.getExchange(exchangeName);
+            if (Objects.isNull(exchange)) {
+                throw new ValidationException("Non existing exchange name " + exchangeName);
+            }
+
+            return exchange.getBindingsRegistry().getAllBindings();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public Exchange getExchange(String exchangeName) {
+        lock.readLock().lock();
+        try {
+            return exchangeRegistry.getExchange(exchangeName);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**

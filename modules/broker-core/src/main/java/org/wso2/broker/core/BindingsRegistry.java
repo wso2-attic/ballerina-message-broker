@@ -23,13 +23,12 @@ import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.queue.Queue;
 import org.wso2.broker.core.store.dao.BindingDao;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Manages the bindings for a given {@link Exchange}.
- * TODO why do we repeat routing key in two places (as key and as field in binding object)?
- * Feels like we need to refactor this class.
  */
 public final class BindingsRegistry {
 
@@ -39,10 +38,13 @@ public final class BindingsRegistry {
 
     private final BindingDao bindingDao;
 
+    private final Map<String, BindingSet> unmodifiableBindingSetView;
+
     public BindingsRegistry(Exchange exchange, BindingDao bindingDao) {
         this.routingKeyToBindingMap = new HashMap<>();
         this.exchange = exchange;
         this.bindingDao = bindingDao;
+        this.unmodifiableBindingSetView = Collections.unmodifiableMap(routingKeyToBindingMap);
     }
 
     void bind(Queue queue, String bindingKey, FieldTable arguments) throws BrokerException {
@@ -86,5 +88,9 @@ public final class BindingsRegistry {
             BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
             bindingSet.add(binding);
         });
+    }
+
+    public Map<String, BindingSet> getAllBindings() {
+        return unmodifiableBindingSetView;
     }
 }

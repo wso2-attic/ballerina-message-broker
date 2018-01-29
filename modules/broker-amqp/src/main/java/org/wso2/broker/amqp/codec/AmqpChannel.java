@@ -28,6 +28,7 @@ import org.wso2.broker.amqp.AmqpDeliverMessage;
 import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.codec.flow.ChannelFlowManager;
 import org.wso2.broker.amqp.metrics.AmqpMetricManager;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.Broker;
@@ -139,8 +140,12 @@ public class AmqpChannel {
     }
 
     public void declareExchange(String exchangeName, String exchangeType,
-                                boolean passive, boolean durable) throws BrokerException {
-        broker.createExchange(exchangeName, exchangeType, passive, durable);
+                                boolean passive, boolean durable) throws BrokerException, ValidationException {
+        broker.declareExchange(exchangeName, exchangeType, passive, durable);
+    }
+
+    public void deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException, ValidationException {
+        broker.deleteExchange(exchangeName, ifUnused);
     }
 
     public void declareQueue(ShortString queue, boolean passive,
@@ -149,7 +154,7 @@ public class AmqpChannel {
     }
 
     public void bind(ShortString queue, ShortString exchange,
-                     ShortString routingKey, FieldTable arguments) throws BrokerException {
+                     ShortString routingKey, FieldTable arguments) throws BrokerException, ValidationException {
         broker.bind(queue.toString(), exchange.toString(), routingKey.toString(), arguments);
     }
 
