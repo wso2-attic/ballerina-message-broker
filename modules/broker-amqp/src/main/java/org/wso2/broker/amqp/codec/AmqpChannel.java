@@ -158,6 +158,11 @@ public class AmqpChannel {
         broker.bind(queue.toString(), exchange.toString(), routingKey.toString(), arguments);
     }
 
+    public void unbind(ShortString queue, ShortString exchange, ShortString routingKey)
+            throws BrokerException, ValidationException {
+        broker.unbind(queue.toString(), exchange.toString(), routingKey.toString());
+    }
+
     public ShortString consume(ShortString queueName, ShortString consumerTag, boolean exclusive,
                                ChannelHandlerContext ctx) throws BrokerException {
         ShortString tag = consumerTag;

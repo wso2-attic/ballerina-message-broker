@@ -58,6 +58,8 @@ public class AmqMethodRegistry {
         factories[50][11] = QueueDeclareOk.getFactory();
         factories[50][20] = QueueBind.getFactory();
         factories[50][21] = QueueBindOk.getFactory();
+        factories[50][50] = QueueUnbind.getFactory();
+        factories[50][51] = QueueUnbindOk.getFactory();
 
         factories[60] = new AmqMethodBodyFactory[112];
         factories[60][10] = BasicQos.getFactory();
