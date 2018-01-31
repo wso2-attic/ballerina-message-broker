@@ -49,8 +49,9 @@ rem ----- update classpath -----------------------------------------------------
 :updateClasspath
 
 setlocal EnableDelayedExpansion
+cd %MESSAGE_BROKER_HOME%
 set MESSAGE_BROKER_CLASSPATH=
-FOR %%C in ("%MESSAGE_BROKER_HOME%\lib\*.jar") DO set MESSAGE_BROKER_CLASSPATH=!MESSAGE_BROKER_CLASSPATH!;"%MESSAGE_BROKER_HOME%\lib\%%~nC%%~xC"
+FOR %%C in ("%MESSAGE_BROKER_HOME%\lib\*.jar") DO set MESSAGE_BROKER_CLASSPATH=!MESSAGE_BROKER_CLASSPATH!;".\lib\%%~nC%%~xC"
 
 rem ----- Process the input command -------------------------------------------
 
