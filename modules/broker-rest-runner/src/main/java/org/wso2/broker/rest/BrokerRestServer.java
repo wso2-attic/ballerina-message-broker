@@ -19,6 +19,7 @@
 
 package org.wso2.broker.rest;
 
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.BrokerConfigProvider;
@@ -41,8 +42,6 @@ public class BrokerRestServer {
 
     private final MicroservicesRunner microservicesRunner;
 
-    private final int port;
-
     /**
      * The {@link HaStrategy} for which the HA listener is registered.
      */
@@ -51,11 +50,19 @@ public class BrokerRestServer {
     private BrokerRestRunnerHelper brokerRestRunnerHelper;
 
     public BrokerRestServer(StartupContext startupContext) throws Exception {
-        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        RestServerConfiguration configuration = configProvider.getConfigurationObject(RestServerConfiguration.NAMESPACE,
-                                                                                      RestServerConfiguration.class);
-        port = Integer.parseInt(configuration.getPlain().getPort());
-        microservicesRunner = new MicroservicesRunner(port);
+        String transportConfig = System.getProperty("transports.netty.conf");
+
+        if (Strings.isNullOrEmpty(transportConfig)) {
+            BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+            RestServerConfiguration configuration
+                    = configProvider.getConfigurationObject(RestServerConfiguration.NAMESPACE,
+                                                            RestServerConfiguration.class);
+            int port = Integer.parseInt(configuration.getPlain().getPort());
+            microservicesRunner = new MicroservicesRunner(port);
+        } else {
+            microservicesRunner = new MicroservicesRunner();
+        }
+
         startupContext.registerService(BrokerServiceRunner.class, new BrokerServiceRunner(microservicesRunner));
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
@@ -83,7 +90,7 @@ public class BrokerRestServer {
 
         public void start() {
             microservicesRunner.start();
-            LOGGER.info("Broker admin service started on port {}", port);
+            LOGGER.info("Broker admin service started");
         }
 
         public void shutdown() {
