@@ -91,14 +91,6 @@ wso2.broker.failover:
  # Whether or not failover is enabled
  enabled: false
 
-# Admin service related configurations.
-wso2.broker.admin.service:
- plain:
-  # Hostname configuration used in creating server socket
-  hostName: localhost
-  # Port used for the nonsecured admin service.
-  port: 9000
-
 # This is the main configuration for metrics
 wso2.metrics:
  # Enable Metrics
