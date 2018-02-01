@@ -21,20 +21,17 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.coordination.BasicHaListener;
 import org.wso2.broker.coordination.HaListener;
 import org.wso2.broker.coordination.HaStrategy;
-import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.metrics.DefaultBrokerMetricManager;
 import org.wso2.broker.core.metrics.NullBrokerMetricManager;
 import org.wso2.broker.core.rest.api.ExchangesApi;
 import org.wso2.broker.core.rest.api.QueuesApi;
-import org.wso2.broker.core.security.authentication.AuthenticationManager;
 import org.wso2.broker.core.store.StoreFactory;
 import org.wso2.broker.rest.BrokerServiceRunner;
 import org.wso2.carbon.metrics.core.MetricService;
@@ -52,9 +49,6 @@ public final class Broker {
     private static final Logger LOGGER = LoggerFactory.getLogger(Broker.class);
 
     private final MessagingEngine messagingEngine;
-
-    private final AuthenticationManager authenticationManager;
-
     /**
      * Used to manage metrics related to broker
      */
@@ -81,10 +75,6 @@ public final class Broker {
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new QueuesApi(this), new ExchangesApi(this));
         startupContext.registerService(Broker.class, this);
-        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        BrokerConfiguration brokerConfiguration = configProvider
-                .getConfigurationObject(BrokerConfiguration.NAMESPACE, BrokerConfiguration.class);
-        this.authenticationManager = new AuthenticationManager(brokerConfiguration);
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
             brokerHelper = new BrokerHelper();
@@ -92,15 +82,6 @@ public final class Broker {
             LOGGER.info("Broker is in PASSIVE mode"); //starts up in passive mode
             brokerHelper = new HaEnabledBrokerHelper();
         }
-    }
-
-    /**
-     * Provides {@link AuthenticationManager} for broker
-     *
-     * @return Broker authentication manager
-     */
-    public AuthenticationManager getAuthenticationManager() {
-        return authenticationManager;
     }
 
     public void publish(Message message) throws BrokerException {

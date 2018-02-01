@@ -79,6 +79,10 @@
             <artifactId>broker-metrics</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-auth</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
         </dependency>

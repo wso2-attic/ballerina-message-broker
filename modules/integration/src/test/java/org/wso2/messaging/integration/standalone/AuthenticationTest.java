@@ -34,7 +34,7 @@ import javax.naming.InitialContext;
 public class AuthenticationTest {
 
     @Parameters({ "broker-port", "admin-username", "admin-password" })
-    @Test
+    @Test(description = "Test user with valid credentials")
     public void testValidClientConnection(String port, String adminUsername, String adminPassword) throws Exception {
         String topicName = "MyTopic1";
         InitialContext initialContext = ClientHelper
@@ -46,8 +46,23 @@ public class AuthenticationTest {
         connection.close();
     }
 
+    @Parameters({ "broker-port", "test-username", "test-password" })
+    @Test(description = "Test valid user password with special characters")
+    public void testPasswordWithSpecialCharacters(String port, String testUsername, String testPassword) throws
+            Exception {
+        String topicName = "MyTopic1";
+        InitialContext initialContext = ClientHelper
+                .getInitialContextBuilder(testUsername, testPassword, "localhost", port).withTopic(topicName).build();
+        TopicConnectionFactory connectionFactory = (TopicConnectionFactory) initialContext
+                .lookup(ClientHelper.CONNECTION_FACTORY);
+        TopicConnection connection = connectionFactory.createTopicConnection();
+        connection.start();
+        connection.close();
+    }
+
     @Parameters({ "broker-port", "admin-username" })
-    @Test(expectedExceptions = JMSException.class)
+    @Test(description = "Test user with invalid credentials",
+          expectedExceptions = JMSException.class)
     public void testInvalidClientConnection(String port, String adminUsername) throws Exception {
         String topicName = "MyTopic1";
         InitialContext initialContext = ClientHelper
@@ -57,4 +72,5 @@ public class AuthenticationTest {
                 .lookup(ClientHelper.CONNECTION_FACTORY);
         connectionFactory.createTopicConnection();
     }
+
 }

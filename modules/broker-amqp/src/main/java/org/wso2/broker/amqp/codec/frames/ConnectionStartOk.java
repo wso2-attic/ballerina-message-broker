@@ -23,18 +23,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.broker.amqp.codec.AmqConstant;
 import org.wso2.broker.amqp.codec.BlockingTask;
+import org.wso2.broker.amqp.codec.auth.AuthenticationStrategy;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.LongString;
 import org.wso2.broker.common.data.types.ShortString;
-import org.wso2.broker.core.Broker;
-import org.wso2.broker.core.security.authentication.sasl.SaslServerBuilder;
-
-import javax.security.sasl.Sasl;
-import javax.security.sasl.SaslException;
-import javax.security.sasl.SaslServer;
+import org.wso2.broker.core.BrokerException;
 
 /**
  * AMQP connection.start frame.
@@ -42,18 +37,23 @@ import javax.security.sasl.SaslServer;
 public class ConnectionStartOk extends MethodFrame {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStartOk.class);
+
+    private static final String AUTHENTICATION_FAILED = "Authentication Failed";
+
     private final FieldTable clientProperties;
     private final ShortString mechanism;
     private final ShortString locale;
     private final LongString response;
+    private final AuthenticationStrategy authenticationStrategy;
 
     public ConnectionStartOk(int channel, FieldTable clientProperties, ShortString mechanisms, ShortString locale,
-            LongString response) {
+                             LongString response, AuthenticationStrategy authenticationStrategy) {
         super(channel, (short) 10, (short) 11);
         this.clientProperties = clientProperties;
         this.mechanism = mechanisms;
         this.locale = locale;
         this.response = response;
+        this.authenticationStrategy = authenticationStrategy;
     }
 
     @Override
@@ -72,46 +72,26 @@ public class ConnectionStartOk extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         ctx.fireChannelRead((BlockingTask) () -> {
-            Broker broker = connectionHandler.getBroker();
-            SaslServer saslServer;
-            SaslServerBuilder saslServerBuilder = broker.getAuthenticationManager().getSaslMechanisms()
-                    .get(mechanism.toString());
             try {
-                if (saslServerBuilder != null) {
-                    saslServer = Sasl.createSaslServer(mechanism.toString(), AmqConstant.AMQP_PROTOCOL_IDENTIFIER,
-                            connectionHandler.getConfiguration().getHostName(),
-                            saslServerBuilder.getProperties(), saslServerBuilder.getCallbackHandler());
-                    connectionHandler.setSaslServer(saslServer);
-                } else {
-                    throw new SaslException("Server does not support for mechanism: " + mechanism);
-                }
-                if (saslServer != null) {
-                    byte[] challenge = saslServer.evaluateResponse(response.getBytes());
-                    if (saslServer.isComplete()) {
-                        ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
-                    } else {
-                        ctx.writeAndFlush(new ConnectionSecure(getChannel(), LongString.parse(challenge)));
-                    }
-                } else {
-                    throw new SaslException("Sasl server cannot be found for mechanism: " + mechanism);
-                }
-            } catch (SaslException e) {
+                authenticationStrategy.handle(getChannel(), ctx, connectionHandler, mechanism, response);
+            } catch (BrokerException e) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Exception occurred while authenticating incoming connection ", e);
+                    LOGGER.debug("Exception occurred while authenticating incoming connection. ", e);
                 }
-                String replyText = "Authentication Failed";
-                ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(replyText), 10, 11));
+                ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(AUTHENTICATION_FAILED), 10, 11));
             }
         });
     }
 
-    public static AmqMethodBodyFactory getFactory() {
+
+    public static AmqMethodBodyFactory getFactory(AuthenticationStrategy authenticationStrategy) {
         return (buf, channel, size) -> {
             FieldTable clientProperties = FieldTable.parse(buf);
             ShortString mechanism = ShortString.parse(buf);
             LongString response = LongString.parse(buf);
             ShortString locale = ShortString.parse(buf);
-            return new ConnectionStartOk(channel, clientProperties, mechanism, locale, response);
+            return new ConnectionStartOk(channel, clientProperties, mechanism, locale, response,
+                                         authenticationStrategy);
         };
     }
 }

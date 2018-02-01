@@ -27,7 +27,7 @@
         <version>5</version>
     </parent>
 
-    <groupId>org.wso2.messaging</groupId> 
+    <groupId>org.wso2.messaging</groupId>
     <artifactId>message-broker</artifactId>
     <packaging>pom</packaging>
     <version>4.0.31-SNAPSHOT</version>
@@ -43,6 +43,7 @@
 
     <modules>
         <module>modules/broker-common</module>
+        <module>modules/broker-auth</module>
         <module>modules/broker-metrics</module>
         <module>modules/broker-rest-runner</module>
         <module>modules/broker-core</module>
@@ -89,6 +90,11 @@
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-metrics</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.messaging</groupId>
+                <artifactId>broker-auth</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

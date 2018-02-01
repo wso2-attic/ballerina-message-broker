@@ -21,9 +21,12 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.BlockingTask;
+import org.wso2.broker.amqp.codec.auth.SaslAuthenticationStrategy;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.common.data.types.LongString;
 import org.wso2.broker.common.data.types.ShortString;
@@ -39,6 +42,9 @@ import javax.security.sasl.SaslServer;
 public class ConnectionSecureOk extends MethodFrame {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionSecureOk.class);
+
+    private static final String AUTHENTICATION_FAILED = "Authentication Failed";
+
     private final LongString response;
 
     public ConnectionSecureOk(int channel, LongString response) {
@@ -60,12 +66,16 @@ public class ConnectionSecureOk extends MethodFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         ctx.fireChannelRead((BlockingTask) () -> {
             try {
-                SaslServer saslServer = connectionHandler.getSaslServer();
-                if (saslServer != null) {
+                Attribute<SaslServer> saslServerAttribute =
+                        ctx.channel().attr(AttributeKey.valueOf(SaslAuthenticationStrategy.SASL_SERVER_ATTRIBUTE));
+                SaslServer saslServer;
+                if (saslServerAttribute != null && (saslServer = saslServerAttribute.get()) != null) {
                     byte[] challenge = saslServer.evaluateResponse(response.getBytes());
                     if (saslServer.isComplete()) {
                         ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
                     } else {
+                        ctx.channel().attr(AttributeKey.valueOf(SaslAuthenticationStrategy.SASL_SERVER_ATTRIBUTE))
+                            .set(null);
                         ctx.writeAndFlush(new ConnectionSecure(getChannel(), LongString.parse(challenge)));
                     }
                 } else {
@@ -75,8 +85,7 @@ public class ConnectionSecureOk extends MethodFrame {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Exception occurred while authenticating incoming connection ", e);
                 }
-                String replyText = "Authentication Failed";
-                ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(replyText), 10, 21));
+                ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(AUTHENTICATION_FAILED), 10, 21));
             }
         });
     }
