@@ -70,6 +70,14 @@ public class RdbmsHaStrategy extends AbstractHaStrategy implements RdbmsCoordina
         rdbmsCoordinationStrategy.stop();
     }
 
+    public void pause() {
+        rdbmsCoordinationStrategy.pause();
+    }
+
+    public void resume() {
+        rdbmsCoordinationStrategy.resume();
+    }
+
     /**
      * {@inheritDoc}
      */

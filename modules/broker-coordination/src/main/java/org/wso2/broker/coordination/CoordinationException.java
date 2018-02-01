@@ -23,23 +23,12 @@ package org.wso2.broker.coordination;
  */
 public class CoordinationException extends Exception {
 
-    private String errorCode;
-
     public CoordinationException(String message) {
         super(message);
     }
 
     public CoordinationException(String message, Throwable throwable) {
         super(message, throwable);
-    }
-
-    public CoordinationException(String message, String errorCode, Throwable throwable) {
-        this(message, throwable);
-        this.errorCode = errorCode;
-    }
-
-    public String getErrorCode() {
-        return errorCode;
     }
 
 }

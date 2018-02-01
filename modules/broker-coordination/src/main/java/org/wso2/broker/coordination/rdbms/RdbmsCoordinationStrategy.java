@@ -174,6 +174,22 @@ public class RdbmsCoordinationStrategy implements CoordinationStrategy {
         }
     }
 
+    /**
+     * Method to pause the coordination strategy.
+     */
+    void pause() {
+        /* Stops running the tasks (coordinator/standby/election) - if the node was the coordinator, the state
+        expiration task will set the node state to election. */
+        coordinatorElectionTask.stop();
+    }
+
+    /**
+     * Method to resume the paused coordination strategy.
+     */
+    void resume() {
+        start();
+    }
+
     /*
     * ======================== Methods from CoordinationStrategy ============================
     */
