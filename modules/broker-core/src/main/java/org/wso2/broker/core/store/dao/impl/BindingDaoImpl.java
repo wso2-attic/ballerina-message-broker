@@ -50,7 +50,7 @@ public class BindingDaoImpl extends BindingDao {
             statement = connection.prepareStatement(RDBMSConstants.PS_INSERT_BINDING);
             statement.setString(1, exchangeName);
             statement.setString(2, binding.getQueue().getName());
-            statement.setString(3, binding.getRoutingKey());
+            statement.setString(3, binding.getBindingPattern());
             FieldTable arguments = binding.getArguments();
             byte[] bytes = new byte[(int) arguments.getSize()];
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bytes);

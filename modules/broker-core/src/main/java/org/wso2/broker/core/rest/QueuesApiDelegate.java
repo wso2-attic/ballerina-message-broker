@@ -23,9 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
-import org.wso2.broker.core.Consumer;
 import org.wso2.broker.core.QueueHandler;
-import org.wso2.broker.core.rest.model.ConsumerMetadata;
 import org.wso2.broker.core.rest.model.QueueCreateRequest;
 import org.wso2.broker.core.rest.model.QueueCreateResponse;
 import org.wso2.broker.core.rest.model.QueueMetadata;
@@ -127,49 +125,5 @@ public class QueuesApiDelegate {
                 .capacity(queueHandler.getQueue().capacity())
                 .consumerCount(queueHandler.consumerCount())
                 .size(queueHandler.size());
-    }
-
-    public Response getConsumer(String queueName, Integer consumerId) {
-        QueueHandler queue = broker.getQueue(queueName);
-        if (Objects.isNull(queue)) {
-            throw new NotFoundException("Unknown queue name " + queueName);
-        }
-        Consumer matchingConsumer = null;
-        for (Consumer consumer : queue.getConsumers()) {
-            if (consumer.getId() == consumerId) {
-                matchingConsumer = consumer;
-                break;
-            }
-        }
-        if (Objects.nonNull(matchingConsumer)) {
-            return Response.ok().entity(toConsumerMetadata(matchingConsumer)).build();
-        } else {
-            throw new NotFoundException("Consumer with id " + consumerId + " for queue " + queueName + "  not found.");
-        }
-    }
-
-    public Response getAllConsumers(String queueName) {
-        QueueHandler queueHandler = broker.getQueue(queueName);
-        if (Objects.isNull(queueHandler)) {
-            throw new NotFoundException("Unknown queue Name " + queueName);
-        }
-
-        Collection<Consumer> consumers = queueHandler.getConsumers();
-        List<ConsumerMetadata> consumerMetadataList = new ArrayList<>(consumers.size());
-        for (Consumer consumer : consumers) {
-            consumerMetadataList.add(toConsumerMetadata(consumer));
-        }
-        return Response.ok().entity(consumerMetadataList).build();
-    }
-
-    private ConsumerMetadata toConsumerMetadata(Consumer consumer) {
-        return new ConsumerMetadata()
-                .id(consumer.getId())
-                .isExclusive(consumer.isExclusive())
-                .flowEnabled(consumer.isReady());
-    }
-
-    public Response deleteConsumer(String queueName, Integer consumerId) {
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
     }
 }

@@ -199,11 +199,11 @@ public class FastTopicMatcher {
     public void remove(String topicPattern) {
 
         int removeIndex = subscribedTopicList.indexOf(topicPattern);
-        subscribedTopicList.remove(removeIndex);
         if (removeIndex == -1) {
             LOGGER.debug("Topic pattern {} not found.", topicPattern);
             return;
         }
+        subscribedTopicList.remove(removeIndex);
 
         for (Map<String, BitSet> table : constituentTables) {
             for (Map.Entry<String, BitSet> entry : table.entrySet()) {

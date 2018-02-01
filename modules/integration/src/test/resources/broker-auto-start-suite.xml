@@ -36,6 +36,7 @@
     <test name="broker-integration-tests" verbose="2">
         <packages>
             <package name="org.wso2.messaging.integration.standalone"/>
+            <package name="org.wso2.messaging.integration.standalone.rest" />
         </packages>
     </test>
 </suite>

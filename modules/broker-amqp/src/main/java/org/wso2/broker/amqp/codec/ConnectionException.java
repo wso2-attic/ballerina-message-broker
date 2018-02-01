@@ -25,6 +25,8 @@ package org.wso2.broker.amqp.codec;
  */
 public class ConnectionException extends Exception {
     public static final int CHANNEL_ERROR = 504;
+    public static final int NOT_ALLOWED = 530;
+    public static final int INTERNAL_ERROR = 541;
 
     private final int replyCode;
 

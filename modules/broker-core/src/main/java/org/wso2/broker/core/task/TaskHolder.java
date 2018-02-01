@@ -183,13 +183,16 @@ final class TaskHolder<T extends Task> implements Delayed {
      */
     @Override
     public boolean equals(Object obj) {
-        boolean isEqual;
-        if (obj instanceof TaskHolder) {
-            isEqual = ((TaskHolder) obj).getId().compareTo(getId()) == 0;
-        } else {
-            isEqual = this.equals(obj);
+
+        if (this == obj) {
+            return true;
         }
-        return isEqual;
+
+        if (obj instanceof TaskHolder) {
+            return  getId().equals(((TaskHolder) obj).getId());
+        }
+
+        return false;
     }
 
     /**

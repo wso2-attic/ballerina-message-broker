@@ -17,25 +17,20 @@
  *
  */
 
-package org.wso2.broker.rest;
-
-import org.wso2.msf4j.MicroservicesRunner;
+package org.wso2.broker.common;
 
 /**
- * {@link BrokerServiceRunner} is used to deploy exposed admin services
+ * Exception thrown when broker client requests has unexpected
+ * validation problems.
  */
-public class BrokerServiceRunner {
+public class ValidationException extends Exception {
 
-    private MicroservicesRunner runner;
-
-    BrokerServiceRunner(MicroservicesRunner runner) {
-        runner.addExceptionMapper(new ResourceNotFoundMapper(), new BadRequestMapper(),
-                                  new InternalServerErrorExceptionMapper());
-        this.runner = runner;
+    public ValidationException(String message) {
+        super(message);
     }
 
-    public void deploy(Object... service) {
-        runner.deploy(service);
+    public ValidationException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }

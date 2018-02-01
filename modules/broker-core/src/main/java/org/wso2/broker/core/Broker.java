@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.coordination.BasicHaListener;
 import org.wso2.broker.coordination.HaListener;
@@ -31,6 +32,7 @@ import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.metrics.DefaultBrokerMetricManager;
 import org.wso2.broker.core.metrics.NullBrokerMetricManager;
+import org.wso2.broker.core.rest.api.ExchangesApi;
 import org.wso2.broker.core.rest.api.QueuesApi;
 import org.wso2.broker.core.security.authentication.AuthenticationManager;
 import org.wso2.broker.core.store.StoreFactory;
@@ -38,6 +40,7 @@ import org.wso2.broker.rest.BrokerServiceRunner;
 import org.wso2.carbon.metrics.core.MetricService;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import javax.sql.DataSource;
 
@@ -76,7 +79,7 @@ public final class Broker {
         StoreFactory storeFactory = new StoreFactory(dataSource, metricManager);
         this.messagingEngine = new MessagingEngine(storeFactory, metricManager);
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
-        serviceRunner.deploy(new QueuesApi(this));
+        serviceRunner.deploy(new QueuesApi(this), new ExchangesApi(this));
         startupContext.registerService(Broker.class, this);
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerConfiguration brokerConfiguration = configProvider
@@ -129,13 +132,18 @@ public final class Broker {
         messagingEngine.closeConsumer(consumer);
     }
 
-    public void createExchange(String exchangeName, String type,
-                               boolean passive, boolean durable) throws BrokerException {
-        messagingEngine.createExchange(exchangeName, type, passive, durable);
+    public void declareExchange(String exchangeName, String type,
+                                boolean passive, boolean durable) throws BrokerException, ValidationException {
+        messagingEngine.declareExchange(exchangeName, type, passive, durable);
     }
 
-    public void deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException {
-        messagingEngine.deleteExchange(exchangeName, ifUnused);
+    public void createExchange(String exchangeName, String type, boolean durable) throws BrokerException,
+                                                                                         ValidationException {
+        messagingEngine.createExchange(exchangeName, type, durable);
+    }
+
+    public boolean deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException, ValidationException {
+        return messagingEngine.deleteExchange(exchangeName, ifUnused);
     }
 
     public boolean createQueue(String queueName, boolean passive,
@@ -148,11 +156,12 @@ public final class Broker {
     }
 
     public void bind(String queueName, String exchangeName,
-                     String routingKey, FieldTable arguments) throws BrokerException {
+                     String routingKey, FieldTable arguments) throws BrokerException, ValidationException {
         messagingEngine.bind(queueName, exchangeName, routingKey, arguments);
     }
 
-    public void unbind(String queueName, String exchangeName, String routingKey) throws BrokerException {
+    public void unbind(String queueName, String exchangeName, String routingKey)
+            throws BrokerException, ValidationException {
         messagingEngine.unbind(queueName, exchangeName, routingKey);
     }
 
@@ -187,6 +196,18 @@ public final class Broker {
 
     public void moveToDlc(String queueName, Message message) throws BrokerException {
         messagingEngine.moveToDlc(queueName, message);
+    }
+
+    public Collection<Exchange> getAllExchanges() {
+        return messagingEngine.getAllExchanges();
+    }
+
+    public Map<String, BindingSet> getAllBindingsForExchange(String exchangeName) throws ValidationException {
+        return messagingEngine.getAllBindingsForExchange(exchangeName);
+    }
+
+    public Exchange getExchange(String exchangeName) {
+        return messagingEngine.getExchange(exchangeName);
     }
 
     private class BrokerHelper {

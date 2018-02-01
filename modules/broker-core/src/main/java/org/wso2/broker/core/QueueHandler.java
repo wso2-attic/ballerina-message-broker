@@ -185,7 +185,7 @@ public final class QueueHandler {
      * @return Number of {@link Message} objects in the queue.
      */
     public int size() {
-        return queue.size();
+        return queue.size() + redeliveryQueue.size();
     }
 
     /**

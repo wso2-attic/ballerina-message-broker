@@ -63,7 +63,9 @@ final class TopicExchange extends Exchange {
         lock.writeLock().lock();
         try {
             getBindingsRegistry().unbind(queue, routingPattern);
-            fastTopicMatcher.remove(routingPattern);
+            if (getBindingsRegistry().getBindingsForRoute(routingPattern).isEmpty()) {
+                fastTopicMatcher.remove(routingPattern);
+            }
             LOGGER.debug("Binding removed from queue {} with pattern {}", queue, routingPattern);
         } finally {
             lock.writeLock().unlock();

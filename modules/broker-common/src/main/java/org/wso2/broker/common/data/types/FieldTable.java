@@ -45,6 +45,10 @@ public class FieldTable implements EncodableData {
         this.properties = properties;
     }
 
+    public FieldTable() {
+        this.properties = new HashMap<>();
+    }
+
     public long getSize() {
         long tableEntrySize = 0L;
         for (Map.Entry<ShortString, FieldValue> fieldEntry : properties.entrySet()) {

@@ -24,6 +24,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.metrics.NullBrokerMetricManager;
 import org.wso2.broker.core.store.StoreFactory;
@@ -31,8 +32,6 @@ import org.wso2.broker.core.store.StoreFactory;
 import javax.sql.DataSource;
 
 public class MessagingEngineTest {
-
-    private DataSource dataSource;
 
     private MessagingEngine messagingEngine;
 
@@ -43,53 +42,55 @@ public class MessagingEngineTest {
     private static final String DEFAULT_ROUTING_KEY = "TestQueue";
 
     @BeforeClass
-    public void beforeTest() throws BrokerException {
-        dataSource = DbUtil.getDataSource();
+    public void beforeTest() throws BrokerException, ValidationException {
+        DataSource dataSource = DbUtil.getDataSource();
         NullBrokerMetricManager metricManager = new NullBrokerMetricManager();
         StoreFactory storeFactory = new StoreFactory(dataSource, metricManager);
         messagingEngine = new MessagingEngine(storeFactory, metricManager);
     }
 
     @BeforeMethod
-    public void setup() throws BrokerException {
+    public void setup() throws BrokerException, ValidationException {
         messagingEngine.createQueue(DEFAULT_QUEUE_NAME, false, false, false);
         messagingEngine.bind(DEFAULT_QUEUE_NAME, DEFAULT_EXCHANGE_NAME, DEFAULT_ROUTING_KEY, FieldTable.EMPTY_TABLE);
     }
 
     @AfterMethod
-    public void tearDown() throws BrokerException {
+    public void tearDown() throws BrokerException, ValidationException {
         messagingEngine.unbind(DEFAULT_QUEUE_NAME, DEFAULT_EXCHANGE_NAME, DEFAULT_ROUTING_KEY);
 
     }
 
     @Test (description = "Test multiple identical binding calls for the same queue. This shouldn't throw any errors")
-    public void testMultipleIdenticalBindingsForTheSameQueue() throws BrokerException {
+    public void testMultipleIdenticalBindingsForTheSameQueue() throws BrokerException, ValidationException {
         messagingEngine.bind(DEFAULT_QUEUE_NAME, DEFAULT_EXCHANGE_NAME, DEFAULT_ROUTING_KEY, FieldTable.EMPTY_TABLE);
         messagingEngine.bind(DEFAULT_QUEUE_NAME, DEFAULT_EXCHANGE_NAME, DEFAULT_ROUTING_KEY, FieldTable.EMPTY_TABLE);
     }
 
     @Test (dataProvider = "nonExistingQueues", description = "Test bind operation with non existing queues"
-            , expectedExceptions = BrokerException.class)
+            , expectedExceptions = ValidationException.class)
     public void testNegativeBindWithNonExistingQueue(String queueName) throws Exception {
         messagingEngine.bind(queueName, DEFAULT_EXCHANGE_NAME, DEFAULT_ROUTING_KEY, FieldTable.EMPTY_TABLE);
     }
 
     @Test (dataProvider = "nonExistingExchanges", description = "Test bind operation with non existing queues"
-            , expectedExceptions = BrokerException.class)
+            , expectedExceptions = ValidationException.class)
     public void testNegativeBindWithNonExistingExchange(String exchangeName) throws Exception {
         messagingEngine.bind(DEFAULT_QUEUE_NAME, exchangeName, DEFAULT_ROUTING_KEY, FieldTable.EMPTY_TABLE);
     }
 
     @Test (dataProvider = "nonExistingExchanges"
             , description = "Test multiple bind operation for the same queue with identical bindings"
-            , expectedExceptions = BrokerException.class)
-    public void testNegativeUnbindWithNonExistingExchangeTest(String exchangeName) throws BrokerException {
+            , expectedExceptions = ValidationException.class)
+    public void testNegativeUnbindWithNonExistingExchangeTest(String exchangeName)
+            throws BrokerException, ValidationException {
         messagingEngine.unbind(DEFAULT_QUEUE_NAME, exchangeName, DEFAULT_ROUTING_KEY);
     }
 
     @Test (dataProvider = "nonExistingQueues", description = "Test unbind operation with non existing queues"
-            , expectedExceptions = BrokerException.class)
-    public void testNegativeUnbindWithNonExistingQueueTest(String queueName) throws BrokerException {
+            , expectedExceptions = ValidationException.class)
+    public void testNegativeUnbindWithNonExistingQueueTest(String queueName) throws BrokerException,
+                                                                                    ValidationException {
         messagingEngine.unbind(queueName, DEFAULT_EXCHANGE_NAME, DEFAULT_ROUTING_KEY);
     }
 
@@ -101,7 +102,7 @@ public class MessagingEngineTest {
 
     @Test (dataProvider = "nonExistingExchanges",
             description = "Test non existing exchange delete. This shouldn't throw an exception")
-    public void testNonExistingExchangeDelete(String exchangeName) throws BrokerException {
+    public void testNonExistingExchangeDelete(String exchangeName) throws BrokerException, ValidationException {
         messagingEngine.deleteExchange(exchangeName, false);
     }
 

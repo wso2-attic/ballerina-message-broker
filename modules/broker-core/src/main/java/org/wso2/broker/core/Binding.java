@@ -35,15 +35,15 @@ public final class Binding {
 
     private final Queue queue;
 
-    private final String routingKey;
+    private final String bindingPattern;
 
     private final FieldTable arguments;
 
     private final BooleanExpression filterExpression;
 
-    Binding(Queue queue, String routingKey, FieldTable arguments) throws BrokerException {
+    Binding(Queue queue, String bindingPattern, FieldTable arguments) throws BrokerException {
         this.queue = queue;
-        this.routingKey = routingKey;
+        this.bindingPattern = bindingPattern;
         this.arguments = arguments;
         String filterString = null;
         try {
@@ -66,8 +66,8 @@ public final class Binding {
         return queue;
     }
 
-    public String getRoutingKey() {
-        return routingKey;
+    public String getBindingPattern() {
+        return bindingPattern;
     }
 
     public FieldValue getArgument(ShortString propertyName) {
@@ -86,7 +86,7 @@ public final class Binding {
     public String toString() {
         return "Binding{"
                 + "queue=" + queue
-                + ", routingKey='" + routingKey + '\''
+                + ", bindingPattern='" + bindingPattern + '\''
                 + '}';
     }
 }
