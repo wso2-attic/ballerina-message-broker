@@ -101,6 +101,13 @@ done
 #   -Dcom.sun.management.jmxremote.ssl=false \
 #   -Dcom.sun.management.jmxremote.authenticate=false \
 
+# Add following option in java command to enable JFR dumping on exit
+# -XX:+UnlockCommercialFeatures \
+# -XX:+FlightRecorder \
+# -XX:+UnlockDiagnosticVMOptions \
+# -XX:+DebugNonSafepoints \
+# -XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/tmp,maxage=2h,dumponexit=true,dumponexitpath=/tmp/message-broker.jfr
+
 $JAVACMD \
     -Xms256m -Xmx1024m \
     -XX:+HeapDumpOnOutOfMemoryError \
