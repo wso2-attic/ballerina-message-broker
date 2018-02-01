@@ -49,12 +49,40 @@ rem ----- update classpath -----------------------------------------------------
 :updateClasspath
 
 setlocal EnableDelayedExpansion
+cd %MESSAGE_BROKER_HOME%
 set MESSAGE_BROKER_CLASSPATH=
-FOR %%C in ("%MESSAGE_BROKER_HOME%\lib\*.jar") DO set MESSAGE_BROKER_CLASSPATH=!MESSAGE_BROKER_CLASSPATH!;"%MESSAGE_BROKER_HOME%\lib\%%~nC%%~xC"
+FOR %%C in ("%MESSAGE_BROKER_HOME%\lib\*.jar") DO set MESSAGE_BROKER_CLASSPATH=!MESSAGE_BROKER_CLASSPATH!;".\lib\%%~nC%%~xC"
 
 rem ----- Process the input command -------------------------------------------
+
+rem Slurp the command line arguments. This loop allows for an unlimited number
+rem of arguments (up to the command line limit, anyway).
+
 :setupArgs
 if ""%1""=="""" goto doneStart
+
+if ""%1""==""debug""    goto commandDebug
+if ""%1""==""-debug""   goto commandDebug
+if ""%1""==""--debug""  goto commandDebug
+
+shift
+goto setupArgs
+
+
+rem ----- commandDebug ---------------------------------------------------------
+:commandDebug
+shift
+set DEBUG_PORT=%1
+if "%DEBUG_PORT%"=="" goto noDebugPort
+if not "%JAVA_OPTS%"=="" echo Warning !!!. User specified JAVA_OPTS will be ignored, once you give the --debug option.
+set JAVA_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%DEBUG_PORT%
+echo Please start the remote debugging client to continue...
+goto runServer
+
+:noDebugPort
+echo Please specify the debug port after the --debug option
+goto end
+
 
 :doneStart
 if "%OS%"=="Windows_NT" @setlocal
