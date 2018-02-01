@@ -37,7 +37,6 @@ import org.wso2.broker.core.Broker;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.security.sasl.SaslServer;
 
 /**
  * Netty handler for handling an AMQP connection.
@@ -49,7 +48,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     private final AmqpServerConfiguration configuration;
     private final Broker broker;
     private final AmqpMetricManager metricManager;
-    private SaslServer saslServer = null;
 
     public AmqpConnectionHandler(AmqpServerConfiguration configuration,
                                  Broker broker,
@@ -152,22 +150,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      */
     public AmqpServerConfiguration getConfiguration() {
         return configuration;
-    }
-
-    /**
-     * Set {@link SaslServer} to handler
-     */
-    public void setSaslServer(SaslServer saslServer) {
-        this.saslServer = saslServer;
-    }
-
-    /**
-     * Returns the {@link SaslServer} for authenticate client connection
-     *
-     * @return SaslServer
-     */
-    public SaslServer getSaslServer() {
-        return saslServer;
     }
 
 }

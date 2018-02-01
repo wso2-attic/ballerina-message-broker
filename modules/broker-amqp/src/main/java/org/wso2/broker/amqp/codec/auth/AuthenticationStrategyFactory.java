@@ -16,22 +16,21 @@
  *   under the License.
  *
  */
-package org.wso2.broker.amqp.codec.frames;
+package org.wso2.broker.amqp.codec.auth;
 
-import org.wso2.broker.amqp.codec.auth.AuthenticationStrategy;
+import org.wso2.broker.auth.AuthManager;
 
 /**
- * Factory Class for create new instance of @{@link AmqMethodRegistry}
+ * Factory Class for provide @{@link AuthenticationStrategy} based on given @{@link AuthManager}
  */
-public class AmqMethodRegistryFactory {
+public class AuthenticationStrategyFactory {
 
-    private final AuthenticationStrategy authenticationStrategy;
+    public AuthenticationStrategy getStrategy(AuthManager authManager) {
+        if (authManager.isAuthenticationEnabled()) {
+            return new SaslAuthenticationStrategy(authManager);
+        } else {
+            return new NoAuthenticationStrategy();
+        }
 
-    public AmqMethodRegistryFactory(AuthenticationStrategy authenticationStrategy) {
-        this.authenticationStrategy = authenticationStrategy;
-    }
-
-    public AmqMethodRegistry newInstance() {
-        return new AmqMethodRegistry(authenticationStrategy);
     }
 }

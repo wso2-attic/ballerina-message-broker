@@ -24,14 +24,12 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.BlockingTask;
+import org.wso2.broker.amqp.codec.auth.AuthenticationStrategy;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
-import org.wso2.broker.auth.AuthManager;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.LongString;
 import org.wso2.broker.common.data.types.ShortString;
-
-import javax.security.sasl.SaslException;
-import javax.security.sasl.SaslServer;
+import org.wso2.broker.core.BrokerException;
 
 /**
  * AMQP connection.start frame.
@@ -46,16 +44,16 @@ public class ConnectionStartOk extends MethodFrame {
     private final ShortString mechanism;
     private final ShortString locale;
     private final LongString response;
-    private final AuthManager authManager;
+    private final AuthenticationStrategy authenticationStrategy;
 
     public ConnectionStartOk(int channel, FieldTable clientProperties, ShortString mechanisms, ShortString locale,
-                             LongString response, AuthManager authManager) {
+                             LongString response, AuthenticationStrategy authenticationStrategy) {
         super(channel, (short) 10, (short) 11);
         this.clientProperties = clientProperties;
         this.mechanism = mechanisms;
         this.locale = locale;
         this.response = response;
-        this.authManager = authManager;
+        this.authenticationStrategy = authenticationStrategy;
     }
 
     @Override
@@ -74,37 +72,26 @@ public class ConnectionStartOk extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         ctx.fireChannelRead((BlockingTask) () -> {
-            if (authManager.isAuthenticationEnabled()) {
-                try {
-                    SaslServer saslServer = authManager
-                            .createSaslServer(connectionHandler.getConfiguration().getHostName(), mechanism.toString());
-                    connectionHandler.setSaslServer(saslServer);
-                    byte[] challenge = saslServer.evaluateResponse(response.getBytes());
-                    if (saslServer.isComplete()) {
-                        ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
-                    } else {
-                        ctx.writeAndFlush(new ConnectionSecure(getChannel(), LongString.parse(challenge)));
-                    }
-                } catch (SaslException e) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Exception occurred while authenticating incoming connection. ", e);
-                    }
-                    ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(AUTHENTICATION_FAILED), 10, 11));
+            try {
+                authenticationStrategy.handle(getChannel(), ctx, connectionHandler, mechanism, response);
+            } catch (BrokerException e) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Exception occurred while authenticating incoming connection. ", e);
                 }
-            } else {
-                ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
+                ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(AUTHENTICATION_FAILED), 10, 11));
             }
         });
     }
 
 
-    public static AmqMethodBodyFactory getFactory(AuthManager authManager) {
+    public static AmqMethodBodyFactory getFactory(AuthenticationStrategy authenticationStrategy) {
         return (buf, channel, size) -> {
             FieldTable clientProperties = FieldTable.parse(buf);
             ShortString mechanism = ShortString.parse(buf);
             LongString response = LongString.parse(buf);
             ShortString locale = ShortString.parse(buf);
-            return new ConnectionStartOk(channel, clientProperties, mechanism, locale, response, authManager);
+            return new ConnectionStartOk(channel, clientProperties, mechanism, locale, response,
+                                         authenticationStrategy);
         };
     }
 }

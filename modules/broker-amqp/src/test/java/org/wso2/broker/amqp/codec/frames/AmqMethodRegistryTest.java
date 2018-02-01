@@ -23,34 +23,37 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.broker.amqp.codec.AmqFrameDecodingException;
-import org.wso2.broker.auth.AuthManager;
+import org.wso2.broker.amqp.codec.auth.AuthenticationStrategy;
 
 public class AmqMethodRegistryTest {
 
-    AuthManager authManager;
+    AuthenticationStrategy authenticationStrategy;
 
     @BeforeTest
     public void init() {
-        authManager = Mockito.mock(AuthManager.class);
+        authenticationStrategy = Mockito.mock(AuthenticationStrategy.class);
     }
     @Test(expectedExceptions = AmqFrameDecodingException.class)
     public void testInvalidMethodValue() throws Exception {
-        AmqMethodBodyFactory factory = new AmqMethodRegistry(authManager).getFactory((short) 12, (short) 12);
+        AmqMethodBodyFactory factory =
+                new AmqMethodRegistry(authenticationStrategy).getFactory((short) 12, (short) 12);
     }
 
     @Test(expectedExceptions = AmqFrameDecodingException.class)
     public void testLargeMethodValue() throws Exception {
-        AmqMethodBodyFactory factory = new AmqMethodRegistry(authManager).getFactory((short) 10, (short) 2000);
+        AmqMethodBodyFactory factory =
+                new AmqMethodRegistry(authenticationStrategy).getFactory((short) 10, (short) 2000);
     }
 
     @Test(expectedExceptions = AmqFrameDecodingException.class)
     public void testLargeClassValue() throws Exception {
-        AmqMethodBodyFactory factory = new AmqMethodRegistry(authManager).getFactory((short) 2000, (short) 10);
+        AmqMethodBodyFactory factory =
+                new AmqMethodRegistry(authenticationStrategy).getFactory((short) 2000, (short) 10);
     }
 
     @Test(expectedExceptions = AmqFrameDecodingException.class)
     public void testInvalidMethodValueInValidClass() throws Exception {
-        AmqMethodBodyFactory factory = new AmqMethodRegistry(authManager).getFactory((short) 60, (short) 5);
+        AmqMethodBodyFactory factory = new AmqMethodRegistry(authenticationStrategy).getFactory((short) 60, (short) 5);
     }
 
 }

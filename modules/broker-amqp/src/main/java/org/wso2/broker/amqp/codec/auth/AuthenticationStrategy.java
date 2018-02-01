@@ -16,22 +16,19 @@
  *   under the License.
  *
  */
-package org.wso2.broker.amqp.codec.frames;
+package org.wso2.broker.amqp.codec.auth;
 
-import org.wso2.broker.amqp.codec.auth.AuthenticationStrategy;
+import io.netty.channel.ChannelHandlerContext;
+import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import org.wso2.broker.common.data.types.LongString;
+import org.wso2.broker.common.data.types.ShortString;
+import org.wso2.broker.core.BrokerException;
 
 /**
- * Factory Class for create new instance of @{@link AmqMethodRegistry}
+ * Authentication Strategy handles the authentication of the broker client connection.
  */
-public class AmqMethodRegistryFactory {
+public interface AuthenticationStrategy {
 
-    private final AuthenticationStrategy authenticationStrategy;
-
-    public AmqMethodRegistryFactory(AuthenticationStrategy authenticationStrategy) {
-        this.authenticationStrategy = authenticationStrategy;
-    }
-
-    public AmqMethodRegistry newInstance() {
-        return new AmqMethodRegistry(authenticationStrategy);
-    }
+    void handle(int channel, ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler,
+                ShortString mechanism, LongString response) throws BrokerException;
 }

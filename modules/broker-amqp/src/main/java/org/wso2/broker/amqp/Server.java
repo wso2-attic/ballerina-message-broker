@@ -33,6 +33,8 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.amqp.codec.auth.AuthenticationStrategy;
+import org.wso2.broker.amqp.codec.auth.AuthenticationStrategyFactory;
 import org.wso2.broker.amqp.codec.frames.AmqMethodRegistryFactory;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.amqp.codec.handlers.AmqpDecoder;
@@ -120,7 +122,10 @@ public class Server {
             LOGGER.info("AMQP Transport is in PASSIVE mode"); //starts up in passive mode
             serverHelper = new HaEnabledServerHelper();
         }
-        amqMethodRegistryFactory = new AmqMethodRegistryFactory(startupContext.getService(AuthManager.class));
+
+        AuthenticationStrategy authenticationStrategy = new AuthenticationStrategyFactory().getStrategy(
+                startupContext.getService(AuthManager.class));
+        amqMethodRegistryFactory = new AmqMethodRegistryFactory(authenticationStrategy);
     }
 
     private void shutdownExecutors() {

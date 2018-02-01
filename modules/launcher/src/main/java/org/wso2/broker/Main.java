@@ -77,11 +77,11 @@ public class Main {
                 throw new CoordinationException("Error initializing HA Strategy: ", e);
             }
 
+            AuthManager authManager = new AuthManager(startupContext);
             BrokerMetricService metricService = new BrokerMetricService(startupContext);
             BrokerRestServer restServer = new BrokerRestServer(startupContext);
             Broker broker = new Broker(startupContext);
             Server amqpServer = new Server(startupContext);
-            AuthManager authManager = new AuthManager(startupContext);
             registerShutdownHook(broker, amqpServer, restServer, haStrategy, authManager, metricService);
 
             if (haStrategy != null) {
