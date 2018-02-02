@@ -58,7 +58,7 @@ public class QueueDelete extends MethodFrame {
 
     private final boolean noWait;
 
-    private QueueDelete(int channel, ShortString queue, boolean ifUnused, boolean ifEmpty, boolean noWait) {
+    QueueDelete(int channel, ShortString queue, boolean ifUnused, boolean ifEmpty, boolean noWait) {
         super(channel, CLASS_ID, METHOD_ID);
         this.queue = queue;
         this.ifUnused = ifUnused;
