@@ -1,10 +1,15 @@
 # Configuring Message Broker
 
+All the configuration files for the broker can be located under ${message.broker.home}/conf. Following is a summary 
+of the all available configuration options.
+
+## Main configuration file (broker.yaml)
+
 The main configuration file of the broker can be located at ${message.broker.home}/conf/broker.yaml. The default 
 values are sufficient to run the message broker in some environments (e.g. development, QA). This guide can be use to
  assist you in configuring the broker for other use cases.
 
-## Broker-core configurations
+### Broker-core configurations
 
 These configurations are defined under the namespace `wso2.broker`. 
 
@@ -15,7 +20,7 @@ These configurations are defined under the namespace `wso2.broker`.
 | database:password           | root                                   | Database password.                            |
 | authenticator:loginModule   | org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule          | JAAS login module used to authenticate users. |
 
-## AMQP transport configurations
+### AMQP transport configurations
 
 These configurations are defined under the namespace `wso2.broker.transport.amqp`. 
 
@@ -38,11 +43,20 @@ These configurations are defined under the namespace `wso2.broker.transport.amqp
 | ssl:trustStore:password     | wso2carbon                                   | Truststore password.                                                                                         |
 | ssl:trustStore:certType     | SunX509                                      | Cert type used in the truststore file.                                                                       |
 
-## Admin service related configurations
 
-These configurations are defined under the namespace `wso2.broker.transport.amqp`. 
+## Admin service related configurations (admin-service-transports.yaml)
+
+### Admin service listener configurations
+
+These configurations are defined under the namespace `listenerConfigurations`. We can define a list of listener 
+configurations under this section. 
 
 | Config         | Default value | Description                                           |
 |----------------|---------------|-------------------------------------------------------|
-| plain:hostName | localhost     | Hostname configuration used in creating server socket |
-| plain:port     | 9000          | Port used for the nonsecured admin service.           |
+| id | default     | listener identifier used internally in MSF4j. |
+| host     | 0.0.0.0          | Hostname used for the admin service.           |
+| port     | 8080          | Port used for the admin service.           |
+| scheme     | http          | Scheme used for the admin service. Can be http or https.          |
+| keyStoreFile     | -          | Keystore file used for the admin service when https is used.           |
+| keyStorePassword     | -          | Password of the used keystore file.           |
+| certPass     | -          | Certificate password used in the keystore file.           |
