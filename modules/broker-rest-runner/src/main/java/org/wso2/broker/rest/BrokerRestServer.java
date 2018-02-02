@@ -22,6 +22,7 @@ package org.wso2.broker.rest;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.auth.AuthManager;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.coordination.BasicHaListener;
@@ -51,7 +52,7 @@ public class BrokerRestServer {
 
     public BrokerRestServer(StartupContext startupContext) throws Exception {
         String transportConfig = System.getProperty("transports.netty.conf");
-
+        AuthManager authManager = startupContext.getService(AuthManager.class);
         if (Strings.isNullOrEmpty(transportConfig)) {
             BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
             RestServerConfiguration configuration
@@ -63,7 +64,8 @@ public class BrokerRestServer {
             microservicesRunner = new MicroservicesRunner();
         }
 
-        startupContext.registerService(BrokerServiceRunner.class, new BrokerServiceRunner(microservicesRunner));
+        startupContext.registerService(BrokerServiceRunner.class,
+                                       new BrokerServiceRunner(microservicesRunner, authManager.getAuthenticator()));
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
             brokerRestRunnerHelper = new BrokerRestRunnerHelper();

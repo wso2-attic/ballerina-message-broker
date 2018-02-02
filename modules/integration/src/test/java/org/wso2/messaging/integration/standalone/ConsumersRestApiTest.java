@@ -106,6 +106,7 @@ public class ConsumersRestApiTest {
 
         HttpGet httpGet = new HttpGet(apiBasePath + QueuesApiDelegate.QUEUES_API_PATH
                                               + "/" + queueName + "/consumers");
+        ClientHelper.setAuthHeader(httpGet, username, password);
 
         CloseableHttpResponse response = client.execute(httpGet);
         String body = EntityUtils.toString(response.getEntity());
@@ -143,6 +144,7 @@ public class ConsumersRestApiTest {
 
         HttpGet getAllConsumers = new HttpGet(apiBasePath + QueuesApiDelegate.QUEUES_API_PATH
                                               + "/" + queueName + "/consumers");
+        ClientHelper.setAuthHeader(getAllConsumers, username, password);
 
         CloseableHttpResponse response = client.execute(getAllConsumers);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
@@ -155,6 +157,7 @@ public class ConsumersRestApiTest {
         int id = consumers[0].getId();
         HttpGet getConsumer = new HttpGet(apiBasePath + QueuesApiDelegate.QUEUES_API_PATH + "/"
                                                   + queueName + "/consumers/" + id);
+        ClientHelper.setAuthHeader(getConsumer, username, password);
 
         response = client.execute(getConsumer);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
@@ -192,6 +195,7 @@ public class ConsumersRestApiTest {
 
         HttpGet getAllConsumers = new HttpGet(apiBasePath + QueuesApiDelegate.QUEUES_API_PATH
                                               + "/" + queueName + "/consumers");
+        ClientHelper.setAuthHeader(getAllConsumers, username, password);
 
         CloseableHttpResponse response = client.execute(getAllConsumers);
 
@@ -206,6 +210,7 @@ public class ConsumersRestApiTest {
 
         HttpGet getConsumer = new HttpGet(apiBasePath + QueuesApiDelegate.QUEUES_API_PATH
                                               + "/" + queueName + "/consumers/" + String.valueOf(id));
+        ClientHelper.setAuthHeader(getConsumer, username, password);
 
         response = client.execute(getConsumer);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_NOT_FOUND);
@@ -216,11 +221,13 @@ public class ConsumersRestApiTest {
         Assert.assertFalse(error.getMessage().isEmpty(), "Error message should be non empty.");
     }
 
+    @Parameters({"admin-username", "admin-password"})
     @Test
-    public void testConsumerInNonExistingQueue() throws Exception {
+    public void testConsumerInNonExistingQueue(String username, String password) throws Exception {
         String queueName = "testConsumerInNonExistingQueue";
         HttpGet httpGet = new HttpGet(apiBasePath + QueuesApiDelegate.QUEUES_API_PATH
                                               + "/" + queueName + "/consumers");
+        ClientHelper.setAuthHeader(httpGet, username, password);
 
         CloseableHttpResponse response = client.execute(httpGet);
 

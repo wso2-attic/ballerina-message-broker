@@ -19,6 +19,8 @@
 
 package org.wso2.broker.rest;
 
+import org.wso2.broker.auth.authentication.authenticator.Authenticator;
+import org.wso2.broker.rest.auth.BasicAuthSecurityInterceptor;
 import org.wso2.msf4j.MicroservicesRunner;
 
 /**
@@ -28,7 +30,9 @@ public class BrokerServiceRunner {
 
     private MicroservicesRunner runner;
 
-    BrokerServiceRunner(MicroservicesRunner runner) {
+    BrokerServiceRunner(MicroservicesRunner runner, Authenticator authenticator) {
+        runner.addGlobalRequestInterceptor(
+                new BasicAuthSecurityInterceptor(authenticator::authenticate));
         runner.addExceptionMapper(new ResourceNotFoundMapper(), new BadRequestMapper(),
                                   new InternalServerErrorExceptionMapper());
         this.runner = runner;

@@ -65,6 +65,10 @@ public class ExchangesRestApiTest {
 
     private ObjectMapper objectMapper;
 
+    private String username;
+
+    private String password;
+
     @Parameters({"broker-hostname", "broker-rest-port"})
     @BeforeClass
     public void setUp(String brokerHost, String restPort) throws Exception {
@@ -83,6 +87,8 @@ public class ExchangesRestApiTest {
             throws IOException, TimeoutException {
         client = HttpClients.createDefault();
         amqpConnection = ClientHelper.getAmqpConnection(username, password, brokerHost, brokerPort);
+        this.username = username;
+        this.password = password;
     }
 
     @AfterMethod
@@ -98,7 +104,7 @@ public class ExchangesRestApiTest {
                 .name(exchangeName).durable(false).type(type);
 
         HttpPost httpPost = new HttpPost(apiBasePath + "/exchanges");
-
+        ClientHelper.setAuthHeader(httpPost, username, password);
         String value = objectMapper.writeValueAsString(request);
         StringEntity stringEntity = new StringEntity(value, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
@@ -125,6 +131,7 @@ public class ExchangesRestApiTest {
         channel.exchangeDeclare(exchangeName, type);
 
         HttpGet httpGet = new HttpGet(apiBasePath + "/exchanges/" + exchangeName);
+        ClientHelper.setAuthHeader(httpGet, username, password);
         CloseableHttpResponse response = client.execute(httpGet);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
@@ -141,6 +148,7 @@ public class ExchangesRestApiTest {
     @Test (dataProvider = "exchangeData")
     public void testRetrieveExchangeWithInvalidName(String exchangeName, String type) throws Exception {
         HttpGet httpGet = new HttpGet(apiBasePath + "/exchanges/" + exchangeName);
+        ClientHelper.setAuthHeader(httpGet, username, password);
         CloseableHttpResponse response = client.execute(httpGet);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_NOT_FOUND);
@@ -158,6 +166,7 @@ public class ExchangesRestApiTest {
         channel.exchangeDeclare(exchangeName, type);
 
         HttpGet httpGet = new HttpGet(apiBasePath + "/exchanges");
+        ClientHelper.setAuthHeader(httpGet, username, password);
         CloseableHttpResponse response = client.execute(httpGet);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK, "Invalid status code");
@@ -202,6 +211,7 @@ public class ExchangesRestApiTest {
         channel.close();
 
         HttpDelete httpDelete = new HttpDelete(apiBasePath + "/exchanges/" + exchangeName);
+        ClientHelper.setAuthHeader(httpDelete, username, password);
         CloseableHttpResponse response = client.execute(httpDelete);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
@@ -225,6 +235,7 @@ public class ExchangesRestApiTest {
 
         // Test delete with ifUnused not set
         HttpDelete httpDelete = new HttpDelete(apiBasePath + "/exchanges/" + exchangeName);
+        ClientHelper.setAuthHeader(httpDelete, username, password);
         CloseableHttpResponse response = client.execute(httpDelete);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_BAD_REQUEST);
@@ -233,6 +244,7 @@ public class ExchangesRestApiTest {
 
         // Test delete with ifUnused set to false
         httpDelete = new HttpDelete(apiBasePath + "/exchanges/" + exchangeName + "?ifUnused=false");
+        ClientHelper.setAuthHeader(httpDelete, username, password);
         response = client.execute(httpDelete);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
