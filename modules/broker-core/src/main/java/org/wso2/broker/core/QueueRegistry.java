@@ -19,6 +19,8 @@
 
 package org.wso2.broker.core;
 
+import org.wso2.broker.common.ResourceNotFoundException;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.core.store.dao.QueueDao;
 
 import java.util.Collection;
@@ -78,23 +80,25 @@ public final class QueueRegistry {
         }
     }
 
-    boolean removeQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
+    int removeQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException,
+                                                                                ValidationException,
+                                                                                ResourceNotFoundException {
         QueueHandler queueHandler = queueHandlerMap.get(queueName);
         if (queueHandler == null) {
-            return false;
+            throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
         }
 
         if (ifUnused && !queueHandler.isUnused()) {
-            throw new BrokerException("Cannot delete queue. Queue [ " + queueName
+            throw new ValidationException("Cannot delete queue. Queue [ " + queueName
                     + " ] has active consumers and the ifUnused parameter is set.");
         } else if (ifEmpty && !queueHandler.isEmpty()) {
-            throw new BrokerException("Cannot delete queue. Queue [ " + queueName
+            throw new ValidationException("Cannot delete queue. Queue [ " + queueName
                     + " ] is not empty and the ifEmpty parameter is set.");
         } else {
             queueHandlerMap.remove(queueName);
             queueHandler.closeAllConsumers();
             queueDao.delete(queueHandler.getQueue());
-            return true;
+            return queueHandler.size();
         }
     }
 

@@ -21,6 +21,7 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.ResourceNotFoundException;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
@@ -132,7 +133,9 @@ public final class Broker {
         return messagingEngine.createQueue(queueName, passive, durable, autoDelete);
     }
 
-    public boolean deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
+    public int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException,
+                                                                                           ValidationException,
+                                                                                           ResourceNotFoundException {
         return messagingEngine.deleteQueue(queueName, ifUnused, ifEmpty);
     }
 

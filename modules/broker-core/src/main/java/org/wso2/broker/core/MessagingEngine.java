@@ -22,6 +22,7 @@ package org.wso2.broker.core;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.ResourceNotFoundException;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
@@ -245,7 +246,9 @@ final class MessagingEngine {
         }
     }
 
-    boolean deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException {
+    int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException,
+                                                                                ValidationException,
+                                                                                ResourceNotFoundException {
         lock.writeLock().lock();
         try {
             return queueRegistry.removeQueue(queueName, ifUnused, ifEmpty);

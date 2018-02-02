@@ -21,6 +21,8 @@ package org.wso2.broker.core.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.ResourceNotFoundException;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.QueueHandler;
@@ -83,13 +85,14 @@ public class QueuesApiDelegate {
         }
 
         try {
-            if (broker.deleteQueue(queueName, ifUnused, ifEmpty)) {
-                return Response.ok().build();
-            } else {
-                throw new NotFoundException("Queue " + queueName + " doesn't exist.");
-            }
-        } catch (BrokerException e) {
+            broker.deleteQueue(queueName, ifUnused, ifEmpty);
+            return Response.ok().build();
+        } catch (ValidationException e) {
             throw new BadRequestException(e.getMessage(), e);
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
+        } catch (ResourceNotFoundException e) {
+            throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
         }
     }
 

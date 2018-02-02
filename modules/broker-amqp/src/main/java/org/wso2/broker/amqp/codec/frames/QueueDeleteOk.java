@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -21,56 +21,45 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
-import org.wso2.broker.common.data.types.ShortString;
 
 /**
- * AMQP frame for queue.declare-ok
+ * AMQP frame for queue.delete-ok
  * Parameter Summary:
- *     1. queue (ShortString) - queue name
- *     2. message-count (long) - message count
- *     3. consumer-count (long) - number of consumers
+ * 1. message-count (long) - message count
  */
-public class QueueDeclareOk extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(QueueDeclareOk.class);
+public class QueueDeleteOk extends MethodFrame {
 
-    private final ShortString queue;
-    private final long messageCount;
-    private final long consumerCount;
+    private static final short CLASS_ID = 50;
 
-    public QueueDeclareOk(int channel, ShortString queue, long messageCount, long consumerCount) {
-        super(channel, (short) 50, (short) 11);
-        this.queue = queue;
+    private static final short METHOD_ID = 41;
+
+    private long messageCount;
+
+    QueueDeleteOk(int channel, long messageCount) {
+        super(channel, CLASS_ID, METHOD_ID);
         this.messageCount = messageCount;
-        this.consumerCount = consumerCount;
     }
 
     @Override
     protected long getMethodBodySize() {
-        return queue.getSize() + 4L + 4L;
+        return 4L;
     }
 
     @Override
     protected void writeMethod(ByteBuf buf) {
-        queue.write(buf);
         buf.writeInt((int) messageCount);
-        buf.writeInt((int) consumerCount);
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // Server does not handle basic.consumer-ok
+        // server doesn't handle this frame
     }
 
     public static AmqMethodBodyFactory getFactory() {
         return (buf, channel, size) -> {
-            ShortString queue = ShortString.parse(buf);
             long messageCount = buf.readUnsignedInt();
-            long consumerCount = buf.readUnsignedInt();
-
-            return new QueueDeclareOk(channel, queue, messageCount, consumerCount);
+            return new QueueDeleteOk(channel, messageCount);
         };
     }
 }
