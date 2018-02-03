@@ -57,7 +57,7 @@ public class ConsumersApiDelegate {
         if (Objects.nonNull(matchingConsumer)) {
             return Response.ok().entity(toConsumerMetadata(matchingConsumer)).build();
         } else {
-            throw new NotFoundException("Consumer with id " + consumerId + " for queue " + queueName + "  not found.");
+            throw new NotFoundException("Consumer with id " + consumerId + " for queue " + queueName + " not found.");
         }
     }
 
