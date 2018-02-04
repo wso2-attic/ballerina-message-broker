@@ -52,7 +52,6 @@
                             <outputDirectory>${basedir}/target/coverage-reports/site</outputDirectory>
                             <excludes>
                                 <exclude>
-                                    **/*org/wso2/broker/core/selector/generated/**/*,
                                     **/*org/wso2/broker/core/rest/api/*,
                                     **/*org/wso2/broker/core/rest/model/*,
                                 </exclude>
