@@ -13,7 +13,7 @@ values are sufficient to run the message broker in some environments (e.g. devel
 
 These configurations are defined under the namespace `wso2.broker`. 
 
-| Config                      | Default value                          | Description                                   |
+| Config                      | Default Value                          | Description                                   |
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
 | datasource:url              | jdbc:derby:database                    | Database URL.                                 |
 | database:user               | root                                   | Database username                             |
@@ -24,7 +24,7 @@ These configurations are defined under the namespace `wso2.broker`.
 
 These configurations are defined under the namespace `wso2.broker.transport.amqp`. 
 
-| Config                      | Default value                                | Description                                                                                                  |
+| Config                      | Default Value                                | Description                                                                                                  |
 |-----------------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------|
 | hostName                    | localhost                                    | Hostname configuration used in creating the server socket                                                    |
 | maxRedeliveryCount          | 5                                            | Maximum number of redeliveries before publishing a message to the DLX (dead letter exchange).                |
@@ -43,6 +43,16 @@ These configurations are defined under the namespace `wso2.broker.transport.amqp
 | ssl:trustStore:password     | wso2carbon                                   | Truststore password.                                                                                         |
 | ssl:trustStore:certType     | SunX509                                      | Cert type used in the truststore file.                                                                       |
 
+### Fail-over configurations
+
+These configurations are defined under the namespace `wso2.broker.failover`. 
+
+| Config                                   | Default Value                 | Description                                                                              |
+|------------------------------------------|-------------------------------|------------------------------------------------------------------------------------------|
+| enabled                                  | false                         | Whether or not fail-over is enabled                                                      |
+| strategy                                 | org.wso2.broker.coordination. rdbms.RdbmsHaStrategy | The high availability strategy to use to provide fail-over functionality                 |
+| options:heartbeatInterval                | 5000                          | The interval, in milliseconds, at which nodes in the fail-over group update the database (for RdbmsHaStrategy) |
+| options:coordinatorEntryCreationWaitTime | 3000                          | The interval, in milliseconds, to wait prior to confirming election as coordinator (for RdbmsHaStrategy) |
 
 ## Admin service related configurations (admin-service-transports.yaml)
 
@@ -51,7 +61,7 @@ These configurations are defined under the namespace `wso2.broker.transport.amqp
 These configurations are defined under the namespace `listenerConfigurations`. We can define a list of listener 
 configurations under this section. 
 
-| Config         | Default value | Description                                           |
+| Config         | Default Value | Description                                           |
 |----------------|---------------|-------------------------------------------------------|
 | id | default     | listener identifier used internally in MSF4j. |
 | host     | 0.0.0.0          | Hostname used for the admin service.           |
