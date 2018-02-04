@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Class for testing user file get and set operations
+ * Class for testing user file get and set operations.
  */
 public class UsersFileTest {
 

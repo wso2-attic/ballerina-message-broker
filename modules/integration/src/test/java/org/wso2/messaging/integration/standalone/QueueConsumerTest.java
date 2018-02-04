@@ -35,6 +35,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+/**
+ * Test class for Queue Consumer.
+ */
 public class QueueConsumerTest {
 
     @Parameters({ "broker-port"})

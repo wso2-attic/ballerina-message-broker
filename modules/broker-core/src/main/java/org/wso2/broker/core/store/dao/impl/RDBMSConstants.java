@@ -20,7 +20,7 @@
 package org.wso2.broker.core.store.dao.impl;
 
 /**
- * Constants related to message store
+ * Constants related to message store.
  */
 final class RDBMSConstants {
 

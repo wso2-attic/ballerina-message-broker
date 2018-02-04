@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Set of {@link Binding} objects organised into bindings with filters and without filters
+ * Set of {@link Binding} objects organised into bindings with filters and without filters.
  */
 public class BindingSet {
 
@@ -81,7 +81,7 @@ public class BindingSet {
     }
 
     /**
-     * Empty binding set implementation
+     * Empty binding set implementation.
      */
     private static class EmptyBindingSet extends BindingSet {
 

@@ -30,7 +30,9 @@ import org.wso2.broker.core.metrics.NullBrokerMetricManager;
 import org.wso2.broker.core.store.StoreFactory;
 
 import javax.sql.DataSource;
-
+/**
+ * Test class for Messaging Engine.
+ */
 public class MessagingEngineTest {
 
     private MessagingEngine messagingEngine;

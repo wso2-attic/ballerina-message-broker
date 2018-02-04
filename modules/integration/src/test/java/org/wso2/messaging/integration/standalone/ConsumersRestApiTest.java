@@ -47,7 +47,7 @@ import javax.jms.QueueSession;
 import javax.naming.InitialContext;
 
 /**
- * Test consumer api
+ * Test consumer api.
  */
 public class ConsumersRestApiTest {
 

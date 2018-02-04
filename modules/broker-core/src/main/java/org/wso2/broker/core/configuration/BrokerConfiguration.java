@@ -25,7 +25,7 @@ package org.wso2.broker.core.configuration;
 public class BrokerConfiguration {
 
     /**
-     * Namespace used in config file
+     * Namespace used in config file.
      */
     public static final String NAMESPACE = "wso2.broker";
     /**

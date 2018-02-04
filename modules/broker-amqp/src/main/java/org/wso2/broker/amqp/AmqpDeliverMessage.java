@@ -36,7 +36,7 @@ import org.wso2.broker.core.util.MessageTracer;
 import org.wso2.broker.core.util.TraceField;
 
 /**
- * AMQP delivery message which consists of the basic.deliver, ContentHeader and ContentBody frames
+ * AMQP delivery message which consists of the basic.deliver, ContentHeader and ContentBody frames.
  */
 public class AmqpDeliverMessage {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpDeliverMessage.class);

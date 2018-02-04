@@ -22,7 +22,7 @@ package org.wso2.broker.rest;
 import org.wso2.msf4j.MicroservicesRunner;
 
 /**
- * {@link BrokerServiceRunner} is used to deploy exposed admin services
+ * {@link BrokerServiceRunner} is used to deploy exposed admin services.
  */
 public class BrokerServiceRunner {
 

@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * Message store class that is used by all the durable queues to persist messages
+ * Message store class that is used by all the durable queues to persist messages.
  * <p>
  * Note: This class is thread safe
  */

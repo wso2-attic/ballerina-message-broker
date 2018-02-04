@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
- * AMQP frame for channel.flow-ok
+ * AMQP frame for channel.flow-ok.
  * Parameter Summary:
  *     1.active (bit) - current flow setting
  */

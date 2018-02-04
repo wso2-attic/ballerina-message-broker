@@ -32,11 +32,11 @@ import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
 
 /**
- * AMQP content frame
+ * AMQP content frame.
  */
 public class ContentFrame extends GeneralFrame {
     /**
-     * Class logger
+     * Class logger.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ContentFrame.class);
 

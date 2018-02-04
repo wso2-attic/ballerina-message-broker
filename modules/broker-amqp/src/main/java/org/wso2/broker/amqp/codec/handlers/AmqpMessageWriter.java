@@ -28,7 +28,7 @@ import org.wso2.broker.amqp.AmqpDeliverMessage;
 import java.util.List;
 
 /**
- * Writes {@link AmqpDeliverMessage} to the outbound channel
+ * Writes {@link AmqpDeliverMessage} to the outbound channel.
  */
 public class AmqpMessageWriter extends ChannelOutboundHandlerAdapter {
 

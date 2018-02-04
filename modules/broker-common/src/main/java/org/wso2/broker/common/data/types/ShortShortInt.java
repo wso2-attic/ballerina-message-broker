@@ -22,7 +22,7 @@ package org.wso2.broker.common.data.types;
 import io.netty.buffer.ByteBuf;
 
 /**
- * AMQP Short-Short-Int
+ * AMQP Short-Short-Int.
  */
 public class ShortShortInt implements EncodableData {
 

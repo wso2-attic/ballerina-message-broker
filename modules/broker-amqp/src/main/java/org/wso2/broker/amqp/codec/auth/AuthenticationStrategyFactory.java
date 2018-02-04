@@ -21,7 +21,7 @@ package org.wso2.broker.amqp.codec.auth;
 import org.wso2.broker.auth.AuthManager;
 
 /**
- * Factory Class for provide @{@link AuthenticationStrategy} based on given @{@link AuthManager}
+ * Factory Class for provide @{@link AuthenticationStrategy} based on given @{@link AuthManager}.
  */
 public class AuthenticationStrategyFactory {
 

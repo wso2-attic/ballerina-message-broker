@@ -44,7 +44,7 @@ public class BrokerAuthConfiguration {
     }
 
     /**
-     * Represents authentication configuration for broker
+     * Represents authentication configuration for broker.
      */
     public static class AuthenticationConfiguration {
 
@@ -70,17 +70,17 @@ public class BrokerAuthConfiguration {
     }
 
     /**
-     * Represents jaas configuration for authentication
+     * Represents jaas configuration for authentication.
      */
     public static class JaasConfiguration {
 
         /**
-         * Jaas login module class name
+         * Jaas login module class name.
          */
         private String loginModule = BrokerLoginModule.class.getCanonicalName();
 
         /**
-         * Jaas login module options
+         * Jaas login module options.
          */
         private Map<String, Object> options = new HashMap<>();
 

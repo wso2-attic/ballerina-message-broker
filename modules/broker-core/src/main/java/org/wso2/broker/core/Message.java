@@ -79,7 +79,7 @@ public class Message {
     }
 
     /**
-     * Set redelivery flag
+     * Set redelivery flag.
      */
     public int setRedeliver() {
         redelivered = true;
@@ -87,14 +87,14 @@ public class Message {
     }
 
     /**
-     * Getter for redeliveryCount
+     * Getter for redeliveryCount.
      */
     public int getRedeliveryCount() {
         return redeliveryCount;
     }
 
     /**
-     * Check if redelivery flag is set
+     * Check if redelivery flag is set.
      */
     public boolean isRedelivered() {
         return redelivered;

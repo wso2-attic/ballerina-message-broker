@@ -26,7 +26,7 @@ import org.wso2.carbon.metrics.core.Meter;
 import org.wso2.carbon.metrics.core.MetricService;
 
 /**
- * Default implementation of {@link AmqpMetricManager}
+ * Default implementation of {@link AmqpMetricManager}.
  */
 public class DefaultAmqpMetricManager implements AmqpMetricManager {
 

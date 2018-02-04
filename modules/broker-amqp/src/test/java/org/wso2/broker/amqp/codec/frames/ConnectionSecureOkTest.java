@@ -23,7 +23,9 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.broker.common.data.types.LongString;
-
+/**
+ * Test class for Connection Secure Ok.
+ */
 public class ConnectionSecureOkTest {
 
     @Test

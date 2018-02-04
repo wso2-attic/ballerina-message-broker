@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 
 /**
- * AMQP Boolean type
+ * AMQP Boolean type.
  */
 public class Boolean implements EncodableData {
 

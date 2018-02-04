@@ -24,6 +24,9 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+/**
+ * Tests for AMQP Field value data.
+ */
 public class FieldValueTest {
 
     public static final int DATA_VALUE = 1;

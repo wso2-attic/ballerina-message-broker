@@ -24,7 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
- * AMQP frame for queue.unbind-ok
+ * AMQP frame for queue.unbind-ok.
  * Parameter Summary:
  *     No parameters
  */

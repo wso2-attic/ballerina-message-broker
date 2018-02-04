@@ -20,7 +20,7 @@
 package org.wso2.broker.amqp.metrics;
 
 /**
- * Null object implementation for {@link AmqpMetricManager}
+ * Null object implementation for {@link AmqpMetricManager}.
  */
 public class NullAmqpMetricManager implements AmqpMetricManager {
     @Override

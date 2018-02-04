@@ -27,7 +27,7 @@ import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
- * AMQP frame for channel.close-ok
+ * AMQP frame for channel.close-ok.
  * Parameter Summary:
  *     No parameters
  */

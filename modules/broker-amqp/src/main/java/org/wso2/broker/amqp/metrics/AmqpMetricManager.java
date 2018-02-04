@@ -20,7 +20,7 @@
 package org.wso2.broker.amqp.metrics;
 /**
  **
- * AmqpMetricManager handles all the metrics related to Broker class
+ * AmqpMetricManager handles all the metrics related to Broker class.
  */
 public interface AmqpMetricManager {
     void incrementChannelCount();

@@ -24,6 +24,9 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+/**
+ * Tests for AMQP long-int.
+ */
 public class LongIntTest {
 
     private static final LongInt TEST_OBJECT = LongInt.parse(1);

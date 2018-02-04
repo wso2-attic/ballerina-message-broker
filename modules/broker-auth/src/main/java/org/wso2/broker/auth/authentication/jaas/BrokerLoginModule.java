@@ -77,7 +77,7 @@ public class BrokerLoginModule implements LoginModule {
     }
 
     /**
-     * Authenticate user credentials using user-store manager
+     * Authenticate user credentials using user-store manager.
      *
      * @param userName Username
      * @param password Password

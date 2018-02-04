@@ -68,7 +68,7 @@ public abstract class Consumer {
     public abstract boolean isExclusive();
 
     /**
-     * Indicate if consumer is ready to receive messages
+     * Indicate if consumer is ready to receive messages.
      *
      * @return true if the consumer can receive messages, false otherwise
      */

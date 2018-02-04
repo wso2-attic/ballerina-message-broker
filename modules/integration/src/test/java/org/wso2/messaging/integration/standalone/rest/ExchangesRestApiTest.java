@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Tests related to /exchanges api
+ * Tests related to /exchanges api.
  */
 public class ExchangesRestApiTest {
 

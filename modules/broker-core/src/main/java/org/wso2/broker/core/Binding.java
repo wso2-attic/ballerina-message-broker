@@ -27,7 +27,7 @@ import org.wso2.broker.core.selector.BooleanExpression;
 import org.wso2.broker.core.selector.generated.MessageFilter;
 
 /**
- * Represents an binding object which binds a {@link Queue} to a given {@link Exchange}
+ * Represents an binding object which binds a {@link Queue} to a given {@link Exchange}.
  */
 public final class Binding {
 

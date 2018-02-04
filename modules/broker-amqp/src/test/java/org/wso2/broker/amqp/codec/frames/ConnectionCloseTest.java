@@ -24,7 +24,9 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.broker.amqp.codec.ConnectionException;
-
+/**
+ * Test class for Connection Close.
+ */
 public class ConnectionCloseTest {
 
     @Test

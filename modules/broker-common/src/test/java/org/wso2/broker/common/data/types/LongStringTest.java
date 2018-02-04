@@ -24,6 +24,9 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+/**
+ * Tests for AMQP Long String.
+ */
 public class LongStringTest {
 
     private static final String DEFAULT_DATA_STRING = "TestString";

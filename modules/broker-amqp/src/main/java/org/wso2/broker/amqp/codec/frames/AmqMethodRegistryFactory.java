@@ -21,7 +21,7 @@ package org.wso2.broker.amqp.codec.frames;
 import org.wso2.broker.amqp.codec.auth.AuthenticationStrategy;
 
 /**
- * Factory Class for create new instance of @{@link AmqMethodRegistry}
+ * Factory Class for create new instance of @{@link AmqMethodRegistry}.
  */
 public class AmqMethodRegistryFactory {
 

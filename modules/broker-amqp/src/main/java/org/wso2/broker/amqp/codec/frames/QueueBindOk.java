@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
- * AMQP frame for queue.bind-ok
+ * AMQP frame for queue.bind-ok.
  * Parameter Summary:
  *     No parameters
  */

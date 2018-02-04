@@ -20,7 +20,7 @@
 package org.wso2.broker.common;
 
 /**
- * Contains commonly used constants
+ * Contains commonly used constants.
  */
 public class CommonConstants {
     public static final String MESSAGE_BROKER_HOME_PROPERTY = "message.broker.home";

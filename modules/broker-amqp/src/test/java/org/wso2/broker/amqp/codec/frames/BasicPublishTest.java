@@ -24,7 +24,9 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.broker.common.data.types.ShortString;
-
+/**
+ * Test class for Basic Publish.
+ */
 public class BasicPublishTest {
     @Test
     public void testEncodeDecode() throws Exception {

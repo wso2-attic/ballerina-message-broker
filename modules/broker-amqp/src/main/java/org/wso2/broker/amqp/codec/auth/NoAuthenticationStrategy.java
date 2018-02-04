@@ -27,7 +27,7 @@ import org.wso2.broker.core.BrokerException;
 
 /**
  * Class implements @AuthenticationStrategy to provide authentication strategy disabling authentication for client
- * connections
+ * connections.
  */
 public class NoAuthenticationStrategy implements AuthenticationStrategy {
     @Override

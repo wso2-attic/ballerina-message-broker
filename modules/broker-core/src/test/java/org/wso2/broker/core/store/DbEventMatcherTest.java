@@ -36,6 +36,9 @@ import static org.wso2.broker.core.store.DbOperation.DbOpType.DETACH_MSG_FROM_QU
 import static org.wso2.broker.core.store.DbOperation.DbOpType.INSERT_MESSAGE;
 import static org.wso2.broker.core.store.DbOperation.DbOpType.NO_OP;
 
+/**
+ * Test class for Db Event Matcher.
+ */
 public class DbEventMatcherTest {
 
     /**

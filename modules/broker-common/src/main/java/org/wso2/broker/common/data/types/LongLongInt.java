@@ -22,7 +22,7 @@ package org.wso2.broker.common.data.types;
 import io.netty.buffer.ByteBuf;
 
 /**
- * AMQP long-long-int
+ * AMQP long-long-int.
  */
 public class LongLongInt implements EncodableData {
 

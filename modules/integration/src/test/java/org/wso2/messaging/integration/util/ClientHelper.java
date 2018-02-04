@@ -30,16 +30,18 @@ import java.util.concurrent.TimeoutException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-
+/**
+ * Client Helper class.
+ */
 public class ClientHelper {
     /**
-     * Full qualified class name of the andes initial context factory
+     * Full qualified class name of the andes initial context factory.
      */
     public static final String ANDES_INITIAL_CONTEXT_FACTORY = "org.wso2.andes.jndi" +
             ".PropertiesFileInitialContextFactory";
 
     /**
-     * Queue connection factory name used
+     * Queue connection factory name used.
      */
     public static final String CONNECTION_FACTORY = "ConnectionFactory";
 
@@ -65,7 +67,9 @@ public class ClientHelper {
         connectionFactory.setPort(Integer.valueOf(port));
         return connectionFactory.newConnection();
     }
-
+    /**
+     *  Initial Context Builder class.
+     */
     public static class InitialContextBuilder {
 
         public static final String CONNECTION_FACTORY_PREFIX = "connectionfactory.";

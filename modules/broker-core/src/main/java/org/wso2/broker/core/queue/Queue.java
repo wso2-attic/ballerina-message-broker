@@ -23,7 +23,7 @@ import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
 
 /**
- * Abstract class to represent an underlying queue for the broker
+ * Abstract class to represent an underlying queue for the broker.
  */
 public abstract class Queue {
 

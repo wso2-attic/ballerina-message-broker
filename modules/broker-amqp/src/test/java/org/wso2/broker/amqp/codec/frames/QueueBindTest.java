@@ -25,7 +25,9 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
-
+/**
+ * Test class for Queue Bind.
+ */
 public class QueueBindTest {
     @Test
     public void testEncodeDecode() throws Exception {

@@ -84,7 +84,7 @@ final class MessagingEngine {
     private final MessageIdGenerator messageIdGenerator;
 
     /**
-     * Used to report messaging metrics
+     * Used to report messaging metrics.
      */
     private final BrokerMetricManager metricManager;
 

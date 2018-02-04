@@ -28,7 +28,7 @@ import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
- * AMQP frame for channel.flow
+ * AMQP frame for channel.flow.
  * Parameter Summary:
  *     1.active (bit) - current flow setting
  */

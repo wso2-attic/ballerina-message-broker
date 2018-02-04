@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Test for adapter class to handle Carbon Config provider.
+ */
 public class CarbonConfigAdapterTest {
 
     private static final String TEST_CONFIG_NAMESPACE = "test.config";
