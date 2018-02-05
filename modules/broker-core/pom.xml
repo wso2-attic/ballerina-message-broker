@@ -149,6 +149,7 @@
                         <configuration>
                             <sources>
                                 <source>src/gen/java</source>
+                                <source>target/src/main/java</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -166,7 +167,7 @@
                             <goal>javacc</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>src/main/java/</outputDirectory>
+                            <outputDirectory>target/src/main/java/</outputDirectory>
                             <sourceDirectory>src/main/grammar</sourceDirectory>
                             <includes>
                                 <include>SelectorParser.jj</include>
