@@ -24,6 +24,7 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.broker.amqp.codec.AmqFrameDecodingException;
 import org.wso2.broker.amqp.codec.auth.AuthenticationStrategy;
+
 /**
  * Test class for AMQ Method Registry.
  */

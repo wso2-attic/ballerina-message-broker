@@ -44,6 +44,7 @@ import org.wso2.messaging.integration.util.TestConstants;
 
 import java.net.URL;
 import javax.sql.DataSource;
+
 /**
  * class Suite Initializer.
  */

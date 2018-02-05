@@ -18,6 +18,7 @@
  */
 
 package org.wso2.messaging.integration.util;
+
 /**
  * Test Constants class.
  */
