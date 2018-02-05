@@ -24,6 +24,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.broker.common.ResourceNotFoundException;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.metrics.NullBrokerMetricManager;
@@ -95,8 +96,11 @@ public class MessagingEngineTest {
     }
 
     @Test (dataProvider = "nonExistingQueues",
-            description = "Test non existing queue delete. This shouldn't throw an exception")
-    public void testNonExistingQueueDelete(String queueName) throws BrokerException {
+           description = "Test non existing queue delete.",
+           expectedExceptions = {ResourceNotFoundException.class})
+    public void testNonExistingQueueDelete(String queueName) throws BrokerException,
+                                                                    ResourceNotFoundException,
+                                                                    ValidationException {
         messagingEngine.deleteQueue(queueName, false, false);
     }
 

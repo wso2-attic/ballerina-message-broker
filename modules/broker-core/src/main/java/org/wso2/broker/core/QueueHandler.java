@@ -176,7 +176,7 @@ public final class QueueHandler {
      * @return True if the queue doesn't contain any {@link Message} objects
      */
     boolean isEmpty() {
-        return queue.size() == 0;
+        return (queue.size() + redeliveryQueue.size()) == 0;
     }
 
     /**
