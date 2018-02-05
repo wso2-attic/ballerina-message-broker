@@ -20,6 +20,7 @@
 package org.wso2.broker.core.queue;
 
 import org.wso2.broker.core.Message;
+import org.wso2.broker.core.Queue;
 
 import java.util.concurrent.LinkedBlockingDeque;
 

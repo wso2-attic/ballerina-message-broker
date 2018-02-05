@@ -129,7 +129,7 @@ public final class Broker {
     }
 
     public boolean createQueue(String queueName, boolean passive,
-                            boolean durable, boolean autoDelete) throws BrokerException {
+                               boolean durable, boolean autoDelete) throws BrokerException, ValidationException {
         return messagingEngine.createQueue(queueName, passive, durable, autoDelete);
     }
 

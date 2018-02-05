@@ -19,6 +19,7 @@
 
 package org.wso2.broker.core.store.dao;
 
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.Binding;
 import org.wso2.broker.core.BrokerException;
@@ -48,6 +49,7 @@ public abstract class BindingDao extends BaseDao {
     @FunctionalInterface
     public interface BindingCollector {
 
-        void addBinding(String queueName, String routingKey, FieldTable arguments) throws BrokerException;
+        void addBinding(String queueName, String routingKey, FieldTable arguments) throws BrokerException,
+                                                                                          ValidationException;
     }
 }
