@@ -337,6 +337,7 @@
         <geronimo-jms_1.1_spec.version>1.1.0.wso2v1</geronimo-jms_1.1_spec.version>
         <javacc.plugin.version>2.6</javacc.plugin.version>
         <maven.checkstyleplugin.excludes>
+            **/target/src/**/*,
             **/gen/**/*
         </maven.checkstyleplugin.excludes>
         <carbon.config.version>2.1.5</carbon.config.version>
