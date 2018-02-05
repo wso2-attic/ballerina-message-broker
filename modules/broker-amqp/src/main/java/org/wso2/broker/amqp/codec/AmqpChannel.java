@@ -365,6 +365,24 @@ public class AmqpChannel {
     }
 
     /**
+     * Start local transaction on the channel
+     */
+    public void setLocalTransactional() {
+    }
+
+    /**
+     * Commit the transaction on the channel
+     */
+    public void commit() {
+    }
+
+    /**
+     * Rollback the transaction on the channel
+     */
+    public void rollback() {
+    }
+
+    /**
      * Data-structure to handle unacknowledge messages. This class will update the has room variable depending on the
      * number of messages in the unackedMessageMap.
      */
