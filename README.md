@@ -30,7 +30,8 @@ Please follow the steps below to build message broker from source code.
 ├── database
 ├── dbscripts
 ├── logs
-│   └── broker.log
+│   ├── broker.log
+│   └── broker-trace.log
 └── resources
     └── security
         ├── client-truststore.jks
@@ -47,6 +48,7 @@ Please follow the steps below to build message broker from source code.
 - **database** - contains files related to the embedded Derby database
 - **dbscripts** - database schemas related to supported databases
 - **logs/broker.log** - main logging file
+- **logs/broker-trace.log** - message trace log file
 - **resources/security** - contains both the keystore and the truststore used to create the SSL engine
 
 ## Documentation
