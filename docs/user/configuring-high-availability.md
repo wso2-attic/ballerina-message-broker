@@ -23,3 +23,17 @@ failover:
 
 The sample [broker.yaml](ha-enabled-sample-broker.yaml) configuration file includes the required configuration to enable
 HA and use the default RDBMS coordinator election based HA strategy.
+
+## The default fail-over strategy
+
+The default implementation providing fail-over functionality, the [RdbmsHaStrategy](../../modules/broker-coordination/src/main/java/org/wso2/broker/coordination/rdbms/RdbmsHaStrategy.java), is based on an RDBMS based leader election mechanism.
+
+All nodes in the fail-over group start up in passive mode, and at any given instance only the node elected as the leader
+ will be considered the active node. Any and all other nodes in the fail-over group will be considered passive nodes.
+ 
+If the current leader node loses leader/coordinator state (going in to election state), this node which would have been 
+marked as the active node will be marked as passive, and the new leader/coordinator node, once elected, will be marked 
+as the active node.
+ 
+
+
