@@ -89,7 +89,7 @@ public class SharedMessageStore {
             throw new BrokerException("Unknown message id " + messageInternalId
                     + " cannot attach to queue " + queueName);
         }
-        message.getMetadata().addOwnedQueue(queueName);
+        message.addOwnedQueue(queueName);
     }
 
     private void delete(long messageId) {
@@ -97,8 +97,8 @@ public class SharedMessageStore {
     }
 
     public void detach(String queueName, Message message) {
-        message.getMetadata().removeAttachedQueue(queueName);
-        if (!message.getMetadata().hasAttachedQueues()) {
+        message.removeAttachedQueue(queueName);
+        if (!message.hasAttachedQueues()) {
             delete(message.getMetadata().getInternalId());
         } else {
             disruptor.publishEvent(DETACH_FROM_QUEUE, queueName, message.getMetadata().getInternalId());
@@ -109,7 +109,7 @@ public class SharedMessageStore {
         Message message = pendingMessages.remove(internalMessageId);
         if (message != null) {
 
-            if (message.getMetadata().hasAttachedQueues()) {
+            if (message.hasAttachedQueues()) {
                 disruptor.publishEvent(INSERT_MESSAGE, message);
             } else {
                 message.release();

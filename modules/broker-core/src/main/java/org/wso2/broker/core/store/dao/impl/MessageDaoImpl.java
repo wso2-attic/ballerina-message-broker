@@ -56,7 +56,7 @@ public class MessageDaoImpl extends MessageDao {
             for (Message message : messageList) {
                 Metadata metadata = prepareMetadata(metadataStmt, message);
                 prepareContent(contentStmt, message, metadata);
-                prepareQueueAttachments(insertToQueueStmt, metadata);
+                prepareQueueAttachments(insertToQueueStmt, message);
             }
             metadataStmt.executeBatch();
             contentStmt.executeBatch();
@@ -74,9 +74,9 @@ public class MessageDaoImpl extends MessageDao {
         }
     }
 
-    private void prepareQueueAttachments(PreparedStatement insertToQueueStmt, Metadata metadata) throws SQLException {
-        long id = metadata.getInternalId();
-        for (String queueName : metadata.getAttachedQueues()) {
+    private void prepareQueueAttachments(PreparedStatement insertToQueueStmt, Message message) throws SQLException {
+        long id = message.getMetadata().getInternalId();
+        for (String queueName : message.getAttachedQueues()) {
             insertToQueueStmt.setLong(1, id);
             insertToQueueStmt.setString(2, queueName);
             insertToQueueStmt.addBatch();

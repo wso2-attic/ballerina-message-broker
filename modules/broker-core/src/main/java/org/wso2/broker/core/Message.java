@@ -20,8 +20,11 @@
 package org.wso2.broker.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Represents message received from publishers and delivered to subscribers by the broker.
@@ -37,9 +40,16 @@ public class Message {
 
     private int redeliveryCount;
 
+    private final Set<String> queueSet;
+
     public Message(Metadata metadata) {
+        this(metadata, ConcurrentHashMap.newKeySet());
+    }
+
+    private Message(Metadata metadata, Set<String> queueSet) {
         this.metadata = metadata;
         this.contentChunks = new ArrayList<>();
+        this.queueSet = queueSet;
     }
 
     public Metadata getMetadata() {
@@ -61,7 +71,7 @@ public class Message {
     }
 
     public Message shallowCopy() {
-        Message message = new Message(metadata.shallowCopy());
+        Message message = new Message(metadata.shallowCopy(), queueSet);
         message.redelivered = redelivered;
         message.redeliveryCount = redeliveryCount;
         shallowCopyContent(message);
@@ -76,6 +86,22 @@ public class Message {
 
     private void shallowCopyContent(Message message) {
         contentChunks.stream().map(ContentChunk::shallowCopy).forEach(message::addChunk);
+    }
+
+    public void addOwnedQueue(String queueName) {
+        queueSet.add(queueName);
+    }
+
+    public boolean hasAttachedQueues() {
+        return !queueSet.isEmpty();
+    }
+
+    public void removeAttachedQueue(String queueName) {
+        queueSet.remove(queueName);
+    }
+
+    public Collection<String> getAttachedQueues() {
+        return queueSet;
     }
 
     /**
