@@ -26,10 +26,6 @@ import org.wso2.broker.common.data.types.FieldValue;
 import org.wso2.broker.common.data.types.ShortShortInt;
 import org.wso2.broker.common.data.types.ShortString;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Object representation of a message metadata.
  */
@@ -75,8 +71,6 @@ public class Metadata {
      */
     private final long contentLength;
 
-    private final Set<String> queueSet;
-
     private FieldTable properties;
 
     private FieldTable headers;
@@ -86,7 +80,6 @@ public class Metadata {
         this.routingKey = routingKey;
         this.exchangeName = exchangeName;
         this.contentLength = contentLength;
-        this.queueSet = new HashSet<>();
         this.properties = FieldTable.EMPTY_TABLE;
         this.headers = FieldTable.EMPTY_TABLE;
     }
@@ -107,17 +100,8 @@ public class Metadata {
         return contentLength;
     }
 
-    public void addOwnedQueue(String queueName) {
-        queueSet.add(queueName);
-    }
-
-    public boolean hasAttachedQueues() {
-        return !queueSet.isEmpty();
-    }
-
     public Metadata shallowCopy() {
         Metadata metadata = shallowCopyWith(internalId, routingKey, exchangeName);
-        metadata.queueSet.addAll(queueSet);
         return metadata;
     }
 
@@ -139,14 +123,6 @@ public class Metadata {
                 + ", messageId= " + properties.getValue(MESSAGE_ID) + '\''
                 + ", deliveryMode=" + properties.getValue(DELIVERY_MODE) + '\''
                 + "'}";
-    }
-
-    public void removeAttachedQueue(String queueName) {
-        queueSet.remove(queueName);
-    }
-
-    public Collection<String> getAttachedQueues() {
-        return queueSet;
     }
 
     public void setProperties(FieldTable properties) {
