@@ -19,6 +19,7 @@
 
 package org.wso2.broker.amqp.codec;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,8 @@ import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.AmqpDeliverMessage;
 import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.codec.flow.ChannelFlowManager;
+import org.wso2.broker.amqp.codec.txn.BrokerTransaction;
+import org.wso2.broker.amqp.codec.txn.LocalTransaction;
 import org.wso2.broker.amqp.metrics.AmqpMetricManager;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
@@ -117,6 +120,11 @@ public class AmqpChannel {
     private List<AmqpDeliverMessage> deliveryPendingMessages = new ArrayList<>();
 
     private final TraceField traceChannelIdField;
+
+    /**
+     * Represent the underlying transaction implementation
+     */
+    private BrokerTransaction transaction;
 
     /**
      * Max window size
@@ -368,18 +376,64 @@ public class AmqpChannel {
      * Start local transaction on the channel
      */
     public void setLocalTransactional() {
+        transaction = new LocalTransaction();
     }
 
     /**
      * Commit the transaction on the channel
      */
-    public void commit() {
+    public void commit() throws ChannelException {
+        if (!isTransactional()) {
+            throw new ChannelException(ChannelException.PRECONDITION_FAILED,
+                    "Commit called on non-transactional channel.");
+        }
+        transaction.commit();
     }
 
     /**
      * Rollback the transaction on the channel
      */
-    public void rollback() {
+    public void rollback() throws ChannelException {
+        if (!isTransactional()) {
+            throw new ChannelException(ChannelException.PRECONDITION_FAILED,
+                    "Rollback called on non-transactional channel.");
+        }
+        transaction.rollback();
+    }
+
+    /**
+     * Check whether the channel start local transaction
+     *
+     * @return transaction started or not
+     */
+    public boolean isTransactional () {
+        return null != transaction;
+    }
+
+    /**
+     * Transaction actions to be perform upon acknowledge
+     */
+    private class AcknowledgeAction implements BrokerTransaction.Action {
+
+        /**
+         * List of ack messages
+         */
+        private List<Message> ackMessageList;
+
+        @SuppressFBWarnings({"SIC_INNER_SHOULD_BE_STATIC", "URF_UNREAD_FIELD"})
+        public AcknowledgeAction(List<Message> ackMessageList) {
+            this.ackMessageList = ackMessageList;
+        }
+
+        @Override
+        public void postCommit() {
+            //clear message references
+        }
+
+        @Override
+        public void onRollback() {
+            //resend messages after the tx.rollback-ok is sent
+        }
     }
 
     /**
