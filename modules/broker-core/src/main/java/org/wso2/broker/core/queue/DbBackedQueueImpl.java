@@ -26,24 +26,22 @@ import org.wso2.broker.core.Queue;
 import org.wso2.broker.core.store.SharedMessageStore;
 
 import java.util.Collection;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Database backed queue implementation.
  */
 public class DbBackedQueueImpl extends Queue {
 
-    private final java.util.Queue<Message> memQueue;
-
     private final SharedMessageStore sharedMessageStore;
+
+    private final QueueBuffer buffer = new QueueBuffer();
 
     public DbBackedQueueImpl(String queueName, boolean autoDelete,
                       SharedMessageStore sharedMessageStore) throws BrokerException {
         super(queueName, true, autoDelete);
         this.sharedMessageStore = sharedMessageStore;
-        this.memQueue = new LinkedBlockingQueue<>();
         Collection<Message> messages = sharedMessageStore.readStoredMessages(queueName);
-        memQueue.addAll(messages);
+        buffer.addAll(messages);
     }
 
     @Override
@@ -53,7 +51,7 @@ public class DbBackedQueueImpl extends Queue {
 
     @Override
     public int size() {
-        return memQueue.size();
+        return buffer.size();
     }
 
     @Override
@@ -61,16 +59,18 @@ public class DbBackedQueueImpl extends Queue {
         if (message.getMetadata().getByteProperty(Metadata.DELIVERY_MODE) == Metadata.PERSISTENT_MESSAGE) {
             sharedMessageStore.attach(getName(), message.getMetadata().getInternalId());
         }
-        return memQueue.offer(message);
+        buffer.add(message);
+        return true;
     }
 
     @Override
     public Message dequeue() {
-        return memQueue.poll();
+        return buffer.getFirstDeliverable();
     }
 
     @Override
     public void detach(Message message) {
+        buffer.remove(message);
         sharedMessageStore.detach(getName(), message);
     }
 }
