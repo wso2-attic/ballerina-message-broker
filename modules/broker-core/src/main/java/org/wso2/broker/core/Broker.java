@@ -34,6 +34,8 @@ import org.wso2.broker.core.metrics.NullBrokerMetricManager;
 import org.wso2.broker.core.rest.api.ExchangesApi;
 import org.wso2.broker.core.rest.api.QueuesApi;
 import org.wso2.broker.core.store.StoreFactory;
+import org.wso2.broker.core.transaction.Branch;
+import org.wso2.broker.core.transaction.LocalTransaction;
 import org.wso2.broker.rest.BrokerServiceRunner;
 import org.wso2.carbon.metrics.core.MetricService;
 
@@ -194,6 +196,10 @@ public final class Broker {
         return messagingEngine.getExchange(exchangeName);
     }
 
+    public LocalTransaction newLocalTransaction() {
+        return new LocalTransaction(new Branch());
+    }
+
     private class BrokerHelper {
 
         public void startMessageDelivery() {
@@ -206,7 +212,6 @@ public final class Broker {
         }
 
     }
-
     private class HaEnabledBrokerHelper extends BrokerHelper implements HaListener {
 
         private BasicHaListener basicHaListener;
