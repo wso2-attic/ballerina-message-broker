@@ -52,7 +52,7 @@ public class BrokerLoginModule implements LoginModule {
 
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState,
-            Map<String, ?> options) {
+                           Map<String, ?> options) {
         this.subject = subject;
         this.callbackHandler = callbackHandler;
         this.userStoreManager = (UserStoreManagerImpl) options.get(BrokerAuthConstants.USER_STORE_MANAGER_PROPERTY);
