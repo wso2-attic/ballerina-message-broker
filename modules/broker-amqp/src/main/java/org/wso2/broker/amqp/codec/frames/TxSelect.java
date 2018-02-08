@@ -21,8 +21,6 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
@@ -31,7 +29,6 @@ import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
  */
 public class TxSelect extends MethodFrame {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TxSelect.class);
     private static final short CLASS_ID = 90;
     private static final short METHOD_ID = 10;
 

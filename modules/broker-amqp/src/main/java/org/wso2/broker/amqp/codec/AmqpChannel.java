@@ -19,7 +19,6 @@
 
 package org.wso2.broker.amqp.codec;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +27,6 @@ import org.wso2.broker.amqp.AmqpConsumer;
 import org.wso2.broker.amqp.AmqpDeliverMessage;
 import org.wso2.broker.amqp.AmqpServerConfiguration;
 import org.wso2.broker.amqp.codec.flow.ChannelFlowManager;
-import org.wso2.broker.amqp.codec.txn.BrokerTransaction;
-import org.wso2.broker.amqp.codec.txn.LocalTransaction;
 import org.wso2.broker.amqp.metrics.AmqpMetricManager;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
@@ -38,6 +35,10 @@ import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Consumer;
 import org.wso2.broker.core.Message;
+import org.wso2.broker.core.transaction.AutoCommitTransaction;
+import org.wso2.broker.core.transaction.BrokerTransaction;
+import org.wso2.broker.core.transaction.LocalTransaction;
+import org.wso2.broker.core.transaction.MessageAcknowledgeAction;
 import org.wso2.broker.core.util.MessageTracer;
 import org.wso2.broker.core.util.TraceField;
 
@@ -139,7 +140,8 @@ public class AmqpChannel {
         this.channelId = channelId;
         this.metricManager = metricManager;
         this.consumerMap = new HashMap<>();
-        this.messageAggregator = new InMemoryMessageAggregator(broker);
+        this.transaction = new AutoCommitTransaction(broker);
+        this.messageAggregator = new InMemoryMessageAggregator(broker, transaction);
         this.flowManager = new ChannelFlowManager(this,
                                                   configuration.getChannelFlow().getLowLimit(),
                                                   configuration.getChannelFlow().getHighLimit());
@@ -238,8 +240,9 @@ public class AmqpChannel {
             MessageTracer.trace(description, traceChannelIdField, new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag));
         }
         if (ackData != null) {
-            ackData.getMessage().release();
-            broker.acknowledge(ackData.getQueueName(), ackData.getMessage());
+            Message message = ackData.getMessage();
+            String queue = ackData.getQueueName();
+            transaction.dequeue(queue, message, new MessageAcknowledgeAction(message));
         } else {
             LOGGER.warn("Could not find a matching ack data for acking the delivery tag " + deliveryTag);
         }
@@ -376,7 +379,8 @@ public class AmqpChannel {
      * Start local transaction on the channel
      */
     public void setLocalTransactional() {
-        transaction = new LocalTransaction();
+        transaction = new LocalTransaction(broker);
+        messageAggregator.setTransaction(transaction);
     }
 
     /**
@@ -407,33 +411,7 @@ public class AmqpChannel {
      * @return transaction started or not
      */
     public boolean isTransactional () {
-        return null != transaction;
-    }
-
-    /**
-     * Transaction actions to be perform upon acknowledge
-     */
-    private class AcknowledgeAction implements BrokerTransaction.Action {
-
-        /**
-         * List of ack messages
-         */
-        private List<Message> ackMessageList;
-
-        @SuppressFBWarnings({"SIC_INNER_SHOULD_BE_STATIC", "URF_UNREAD_FIELD"})
-        public AcknowledgeAction(List<Message> ackMessageList) {
-            this.ackMessageList = ackMessageList;
-        }
-
-        @Override
-        public void postCommit() {
-            //clear message references
-        }
-
-        @Override
-        public void onRollback() {
-            //resend messages after the tx.rollback-ok is sent
-        }
+        return transaction.isTransactional();
     }
 
     /**

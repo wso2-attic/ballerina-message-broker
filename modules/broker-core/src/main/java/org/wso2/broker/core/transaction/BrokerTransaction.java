@@ -17,12 +17,10 @@
  *
  */
 
-package org.wso2.broker.amqp.codec.txn;
+package org.wso2.broker.core.transaction;
 
+import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
-import org.wso2.broker.core.queue.Queue;
-
-import java.util.List;
 
 /**
  * Provide standard interface to handle enqueue/dequeue/commit/rollback operation based on underlying
@@ -49,12 +47,12 @@ public interface BrokerTransaction {
     /**
      * Dequeue a message from queue by post transaction action
      */
-    void dequeue(List<Message> messageList, Action postTransactionAction);
+    void dequeue(String queue, Message message, Action postTransactionAction) throws BrokerException;
 
     /**
      * Enqueue a message from queue by post transaction action
      */
-    void enqueue(Queue queue, Message message, Action postTransactionAction);
+    void enqueue(Message message, Action postTransactionAction) throws BrokerException;
 
     /**
      * Commit the transaction represent by this object
@@ -65,4 +63,11 @@ public interface BrokerTransaction {
      * Rollback the transaction represent by this object
      */
     void rollback();
+
+    /**
+     * Return implementation support transaction
+     *
+     * @return transaction supported or not
+     */
+    boolean isTransactional();
 }

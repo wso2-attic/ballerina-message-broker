@@ -21,8 +21,6 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
@@ -33,7 +31,6 @@ import org.wso2.broker.common.data.types.ShortString;
  */
 public class TxCommit extends MethodFrame {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TxCommit.class);
     private static final short CLASS_ID = 90;
     private static final short METHOD_ID = 20;
 
@@ -58,7 +55,7 @@ public class TxCommit extends MethodFrame {
             channel.commit();
             ctx.writeAndFlush(new TxCommitOk(channelId));
         } catch (ChannelException e) {
-            ctx.writeAndFlush(new ConnectionClose(ChannelException.PRECONDITION_FAILED,
+            ctx.writeAndFlush(new ChannelClose(channelId, ChannelException.PRECONDITION_FAILED,
                     ShortString.parseString(e.getMessage()),
                     CLASS_ID,
                     METHOD_ID));

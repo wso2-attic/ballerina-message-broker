@@ -19,24 +19,79 @@
 
 package org.wso2.broker.core.transaction;
 
-import org.wso2.broker.common.ValidationException;
-import org.wso2.broker.core.BrokerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.Message;
 
-public class LocalTransaction {
+import java.util.ArrayList;
+import java.util.List;
 
-    public LocalTransaction(Branch branch) {
+/**
+ * Transactional enqueue or dequeue operation handle in this implementation. The caller responsible for invoking
+ * commit or rollback.
+ */
+public class LocalTransaction implements BrokerTransaction {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalTransaction.class);
+    private final List<Action> postTransactionActions = new ArrayList<>();
+    private final Broker broker;
+
+    public LocalTransaction(Broker broker) {
+        this.broker = broker;
     }
 
-    public void enqueue(Message message) {
+
+    @Override
+    public void dequeue(String queue, Message message, Action postTransactionAction) {
+        postTransactionActions.add(postTransactionAction);
+        broker.newLocalTransaction();
+        //get database connection
+        //delete messages from the table
     }
 
-    public void dequeue(String queueName, Message message) {
+    @Override
+    public void enqueue(Message message, Action postTransactionAction) {
+        //get database connection
+        //insert message into the table
     }
 
-    public void commit() throws BrokerException, ValidationException {
+    @Override
+    public void commit() {
+        //get database connection
+        //commit transaction
+        //do the post commit if any
+        doPostCommit();
     }
 
-    public void rollback() throws BrokerException, ValidationException {
+    @Override
+    public void rollback() {
+        //get database connection
+        //rollback transaction
+        //od the on rollback if any
+        doOnRollback();
+    }
+
+    @Override
+    public boolean isTransactional() {
+        return true;
+    }
+
+    /**
+     * Actions to be perform after commit
+     */
+    private void doPostCommit() {
+        for (Action postTransactionAction : postTransactionActions) {
+            postTransactionAction.postCommit();
+        }
+    }
+
+    /**
+     * Actions to be perform after rollback
+     */
+    private void doOnRollback() {
+        for (Action postTransactionAction : postTransactionActions) {
+            postTransactionAction.onRollback();
+        }
     }
 }

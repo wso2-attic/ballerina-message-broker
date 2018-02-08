@@ -22,22 +22,24 @@ package org.wso2.broker.core.transaction;
 import org.wso2.broker.core.Message;
 
 /**
- * XA transaction information hold within the broker
+ * Transaction actions to be perform upon acknowledge
  */
-public class Branch {
+public class MessageAcknowledgeAction implements BrokerTransaction.Action {
 
-    public Branch() {
+    private Message message;
+
+    public MessageAcknowledgeAction(Message message) {
+        this.message = message;
     }
 
-    public void enqueue(Message message) {
+    @Override
+    public void postCommit() {
+        //clear up memory
+        message.release();
     }
 
-    public void dequeue(String queueName, Message message) {
-    }
+    @Override
+    public void onRollback() {
 
-    public void commit() {
-    }
-
-    public void rollback() {
     }
 }

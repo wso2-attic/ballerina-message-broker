@@ -29,6 +29,8 @@ import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
+import org.wso2.broker.core.transaction.BrokerTransaction;
+import org.wso2.broker.core.transaction.MessagePublishAction;
 import org.wso2.broker.core.util.MessageTracer;
 import org.wso2.broker.core.util.TraceField;
 
@@ -51,14 +53,17 @@ public class InMemoryMessageAggregator {
 
     private final Broker broker;
 
+    private BrokerTransaction transaction;
+
     private String routingKey;
 
     private String exchangeName;
 
     private long receivedPayloadSize;
 
-    InMemoryMessageAggregator(Broker broker) {
+    InMemoryMessageAggregator(Broker broker, BrokerTransaction transaction) {
         this.broker = broker;
+        this.transaction = transaction;
     }
 
     public void basicPublishReceived(ShortString routingKey, ShortString exchangeName) {
@@ -102,8 +107,10 @@ public class InMemoryMessageAggregator {
     }
 
     public void publish(Message message) throws BrokerException {
-        MessageTracer.trace(message, PUBLISH_MESSAGE);
-        broker.publish(message);
+        if (MessageTracer.isTraceEnabled()) {
+            MessageTracer.trace(message, PUBLISH_MESSAGE);
+        }
+        transaction.enqueue(message, new MessagePublishAction());
     }
 
     public boolean contentBodyReceived(long length, ByteBuf payload) throws AmqpException {
@@ -128,5 +135,9 @@ public class InMemoryMessageAggregator {
         clear();
 
         return message;
+    }
+
+    public void setTransaction(BrokerTransaction transaction) {
+        this.transaction = transaction;
     }
 }
