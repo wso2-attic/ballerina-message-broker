@@ -28,7 +28,7 @@ public class QueueDaoImpl extends QueueDao {
             connection = getConnection();
             statement = connection.prepareStatement(RDBMSConstants.PS_INSERT_QUEUE);
             statement.setString(1, queue.getName());
-            statement.setBytes(2, new byte[0]);
+            statement.setBytes(2, new byte[4]);
             statement.executeUpdate();
 
             connection.commit();
