@@ -45,7 +45,7 @@ public class AuthenticatorFactory {
         } else {
             authenticator = new DefaultAuthenticator();
         }
-        authenticator.initialize(startupContext, authenticationConfiguration);
+        authenticator.initialize(startupContext);
         return authenticator;
     }
 }

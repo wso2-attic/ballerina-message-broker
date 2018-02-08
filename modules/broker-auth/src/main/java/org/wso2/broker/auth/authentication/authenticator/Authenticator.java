@@ -18,7 +18,6 @@
  */
 package org.wso2.broker.auth.authentication.authenticator;
 
-import org.wso2.broker.auth.BrokerAuthConfiguration;
 import org.wso2.broker.auth.BrokerAuthException;
 import org.wso2.broker.common.StartupContext;
 
@@ -34,10 +33,8 @@ public interface Authenticator {
      * Initiate authenticator with startup context.
      *
      * @param startupContext the startup context provides registered services for authenticator functionality.
-     * @param authenticationConfiguration the authentication configuration
      */
-    void initialize(StartupContext startupContext,
-                    BrokerAuthConfiguration.AuthenticationConfiguration authenticationConfiguration);
+    void initialize(StartupContext startupContext) throws Exception;
     /**
      * Authenticate given user based on defined authentication strategy.
      *

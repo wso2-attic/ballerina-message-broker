@@ -24,6 +24,7 @@ import org.wso2.broker.auth.BrokerAuthException;
 import org.wso2.broker.auth.authentication.authenticator.Authenticator;
 import org.wso2.broker.auth.authentication.sasl.plain.PlainSaslCallbackHandler;
 import org.wso2.broker.auth.user.UserStoreManager;
+import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 
 import java.util.Map;
@@ -39,11 +40,13 @@ import javax.security.auth.login.LoginException;
 public class JaasAuthenticator implements Authenticator {
 
     @Override
-    public void initialize(StartupContext startupContext,
-                           BrokerAuthConfiguration.AuthenticationConfiguration authenticationConfiguration) {
+    public void initialize(StartupContext startupContext) throws Exception {
         UserStoreManager userStoreManager = startupContext.getService(UserStoreManager.class);
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        BrokerAuthConfiguration brokerAuthConfiguration = configProvider
+                .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
+        BrokerAuthConfiguration.JaasConfiguration jaasConf = brokerAuthConfiguration.getAuthentication().getJaas();
         String jaasConfigPath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_JAAS_CONFIG);
-        BrokerAuthConfiguration.JaasConfiguration jaasConf = authenticationConfiguration.getJaas();
         if (jaasConfigPath == null || jaasConfigPath.trim().isEmpty()) {
             Configuration jaasConfig = createJaasConfig(jaasConf.getLoginModule(), userStoreManager,
                                                         jaasConf.getOptions());

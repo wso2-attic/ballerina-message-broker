@@ -18,7 +18,6 @@
  */
 package org.wso2.broker.auth.authentication.authenticator.impl;
 
-import org.wso2.broker.auth.BrokerAuthConfiguration;
 import org.wso2.broker.auth.authentication.authenticator.Authenticator;
 import org.wso2.broker.common.StartupContext;
 
@@ -28,8 +27,7 @@ import org.wso2.broker.common.StartupContext;
 public class DefaultAuthenticator implements Authenticator {
 
     @Override
-    public void initialize(StartupContext startupContext,
-                           BrokerAuthConfiguration.AuthenticationConfiguration authenticationConfiguration) {
+    public void initialize(StartupContext startupContext) throws Exception {
         // nothing to do when authentication is disabled.
     }
 
