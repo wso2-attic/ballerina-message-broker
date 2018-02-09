@@ -43,15 +43,14 @@ public class LocalTransaction implements BrokerTransaction {
 
 
     @Override
-    public void dequeue(String queue, Message message, Action postTransactionAction) {
-        postTransactionActions.add(postTransactionAction);
+    public void dequeue(String queue, Message message) {
         broker.newLocalTransaction();
         //get database connection
         //delete messages from the table
     }
 
     @Override
-    public void enqueue(Message message, Action postTransactionAction) {
+    public void enqueue(Message message) {
         //get database connection
         //insert message into the table
     }
@@ -77,8 +76,13 @@ public class LocalTransaction implements BrokerTransaction {
         return true;
     }
 
+    @Override
+    public void addPostTransactionAction(Action postTransactionAction) {
+        postTransactionActions.add(postTransactionAction);
+    }
+
     /**
-     * Actions to be perform after commit
+     * Execute post transaction action after commit
      */
     private void doPostCommit() {
         for (Action postTransactionAction : postTransactionActions) {
@@ -87,7 +91,7 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     /**
-     * Actions to be perform after rollback
+     * Execute post transaction action after rollback
      */
     private void doOnRollback() {
         for (Action postTransactionAction : postTransactionActions) {

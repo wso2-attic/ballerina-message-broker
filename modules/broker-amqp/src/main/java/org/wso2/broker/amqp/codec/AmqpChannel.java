@@ -38,7 +38,6 @@ import org.wso2.broker.core.Message;
 import org.wso2.broker.core.transaction.AutoCommitTransaction;
 import org.wso2.broker.core.transaction.BrokerTransaction;
 import org.wso2.broker.core.transaction.LocalTransaction;
-import org.wso2.broker.core.transaction.MessageAcknowledgeAction;
 import org.wso2.broker.core.util.MessageTracer;
 import org.wso2.broker.core.util.TraceField;
 
@@ -240,9 +239,7 @@ public class AmqpChannel {
             MessageTracer.trace(description, traceChannelIdField, new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag));
         }
         if (ackData != null) {
-            Message message = ackData.getMessage();
-            String queue = ackData.getQueueName();
-            transaction.dequeue(queue, message, new MessageAcknowledgeAction(message));
+            transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
         } else {
             LOGGER.warn("Could not find a matching ack data for acking the delivery tag " + deliveryTag);
         }
@@ -386,22 +383,14 @@ public class AmqpChannel {
     /**
      * Commit the transaction on the channel
      */
-    public void commit() throws ChannelException {
-        if (!isTransactional()) {
-            throw new ChannelException(ChannelException.PRECONDITION_FAILED,
-                    "Commit called on non-transactional channel.");
-        }
+    public void commit() throws ValidationException {
         transaction.commit();
     }
 
     /**
      * Rollback the transaction on the channel
      */
-    public void rollback() throws ChannelException {
-        if (!isTransactional()) {
-            throw new ChannelException(ChannelException.PRECONDITION_FAILED,
-                    "Rollback called on non-transactional channel.");
-        }
+    public void rollback() throws ValidationException {
         transaction.rollback();
     }
 

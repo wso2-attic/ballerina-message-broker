@@ -21,9 +21,13 @@ package org.wso2.broker.core.transaction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Non transactional enqueue or dequeue operation handle in this implementation. No effect on commit or rollback
@@ -32,6 +36,7 @@ import org.wso2.broker.core.Message;
 public class AutoCommitTransaction implements BrokerTransaction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoCommitTransaction.class);
+    private final List<Action> postTransactionActions = new ArrayList<>();
     private final Broker broker;
 
     public AutoCommitTransaction(Broker broker) {
@@ -39,27 +44,30 @@ public class AutoCommitTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void dequeue(String queue, Message message, Action postTransactionAction) throws BrokerException {
-        try {
-            broker.acknowledge(queue, message);
-        } finally {
-            postTransactionAction.postCommit();
-        }
+    public void dequeue(String queue, Message message) throws BrokerException {
+        //clear up memory
+        message.release();
+        broker.acknowledge(queue, message);
     }
 
     @Override
-    public void enqueue(Message message, Action postTransactionAction) throws BrokerException {
+    public void enqueue(Message message) throws BrokerException {
         broker.publish(message);
     }
 
     @Override
-    public void commit() {
-
+    public void commit() throws ValidationException {
+        throw new ValidationException("Commit called on non-transactional channel");
     }
 
     @Override
-    public void rollback() {
+    public void rollback() throws ValidationException {
+        throw new ValidationException("Rollback called on non-transactional channel");
+    }
 
+    @Override
+    public void addPostTransactionAction(Action postTransactionAction) {
+        postTransactionActions.add(postTransactionAction);
     }
 
     @Override

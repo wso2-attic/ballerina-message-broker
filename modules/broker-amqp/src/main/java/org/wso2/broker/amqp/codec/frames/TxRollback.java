@@ -21,9 +21,12 @@ package org.wso2.broker.amqp.codec.frames;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.ShortString;
 
 /**
@@ -31,6 +34,7 @@ import org.wso2.broker.common.data.types.ShortString;
  */
 public class TxRollback extends MethodFrame {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TxRollback.class);
     private static final short CLASS_ID = 90;
     private static final short METHOD_ID = 30;
 
@@ -54,7 +58,8 @@ public class TxRollback extends MethodFrame {
         try {
             channel.rollback();
             ctx.writeAndFlush(new TxRollbackOk(channelId));
-        } catch (ChannelException e) {
+        } catch (ValidationException e) {
+            LOGGER.error("Error while rollback transaction", e);
             ctx.writeAndFlush(new ChannelClose(channelId, ChannelException.PRECONDITION_FAILED,
                     ShortString.parseString(e.getMessage()),
                     CLASS_ID,

@@ -19,6 +19,7 @@
 
 package org.wso2.broker.core.transaction;
 
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
 
@@ -45,24 +46,29 @@ public interface BrokerTransaction {
     }
 
     /**
-     * Dequeue a message from queue by post transaction action
+     * Dequeue a message from queue
      */
-    void dequeue(String queue, Message message, Action postTransactionAction) throws BrokerException;
+    void dequeue(String queue, Message message) throws BrokerException;
 
     /**
-     * Enqueue a message from queue by post transaction action
+     * Enqueue a message from queue
      */
-    void enqueue(Message message, Action postTransactionAction) throws BrokerException;
+    void enqueue(Message message) throws BrokerException;
 
     /**
      * Commit the transaction represent by this object
      */
-    void commit();
+    void commit() throws ValidationException;
 
     /**
      * Rollback the transaction represent by this object
      */
-    void rollback();
+    void rollback() throws ValidationException;
+
+    /**
+     * Actions to be perform after commit or rollback
+     */
+    void addPostTransactionAction(Action postTransactionAction);
 
     /**
      * Return implementation support transaction

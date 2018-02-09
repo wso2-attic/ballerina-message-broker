@@ -19,23 +19,14 @@
 
 package org.wso2.broker.core.transaction;
 
-import org.wso2.broker.core.Message;
-
 /**
  * Transaction actions to be perform upon acknowledge
  */
 public class MessageAcknowledgeAction implements BrokerTransaction.Action {
 
-    private Message message;
-
-    public MessageAcknowledgeAction(Message message) {
-        this.message = message;
-    }
-
     @Override
     public void postCommit() {
-        //clear up memory
-        message.release();
+
     }
 
     @Override

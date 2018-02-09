@@ -30,7 +30,6 @@ import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
 import org.wso2.broker.core.transaction.BrokerTransaction;
-import org.wso2.broker.core.transaction.MessagePublishAction;
 import org.wso2.broker.core.util.MessageTracer;
 import org.wso2.broker.core.util.TraceField;
 
@@ -110,7 +109,7 @@ public class InMemoryMessageAggregator {
         if (MessageTracer.isTraceEnabled()) {
             MessageTracer.trace(message, PUBLISH_MESSAGE);
         }
-        transaction.enqueue(message, new MessagePublishAction());
+        transaction.enqueue(message);
     }
 
     public boolean contentBodyReceived(long length, ByteBuf payload) throws AmqpException {
