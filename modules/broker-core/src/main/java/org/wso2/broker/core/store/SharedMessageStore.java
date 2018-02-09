@@ -20,13 +20,13 @@
 package org.wso2.broker.core.store;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventTranslatorOneArg;
 import com.lmax.disruptor.EventTranslatorTwoArg;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
+import org.wso2.broker.core.queue.QueueBuffer;
 import org.wso2.broker.core.store.dao.MessageDao;
 import org.wso2.broker.core.store.disruptor.SleepingBlockingWaitStrategy;
 
@@ -57,6 +57,9 @@ public class SharedMessageStore {
     private static final EventTranslatorOneArg<DbOperation, Long> DELETE_MESSAGE =
             (event, sequence, messageId) -> event.deleteMessage(messageId);
 
+    private static final EventTranslatorTwoArg<DbOperation, QueueBuffer, Message> READ_MESSAGE_DATA =
+            (event, sequence, queueBuffer, message) -> event.readMessageData(queueBuffer, message);
+
     private final MessageDao messageDao;
 
     @SuppressWarnings("unchecked")
@@ -67,20 +70,19 @@ public class SharedMessageStore {
                 .setNameFormat("DisruptorMessageStoreThread-%d").build();
 
         disruptor = new Disruptor<>(DbOperation.getFactory(),
-                                    bufferSize, namedThreadFactory, ProducerType.MULTI, new
-                                            SleepingBlockingWaitStrategy());
+                bufferSize, namedThreadFactory, ProducerType.MULTI, new SleepingBlockingWaitStrategy());
 
         disruptor.setDefaultExceptionHandler(new LogExceptionHandler());
 
         disruptor.handleEventsWith(new DbEventMatcher(bufferSize))
-                 .then(new DbWriter(messageDao, maxDbBatchSize))
-                 .then((EventHandler<DbOperation>) (event, sequence, endOfBatch) -> event.clear());
+                 .then(new DbAccessHandler(messageDao, maxDbBatchSize))
+                 .then(new FinalEventHandler());
         disruptor.start();
         this.messageDao = messageDao;
     }
 
     public void add(Message message) {
-        pendingMessages.put(message.getMetadata().getInternalId(), message.shallowCopy());
+        pendingMessages.put(message.getInternalId(), message.shallowCopy());
     }
 
     public void attach(String queueName, long messageInternalId) throws BrokerException {
@@ -99,10 +101,14 @@ public class SharedMessageStore {
     public void detach(String queueName, Message message) {
         message.removeAttachedQueue(queueName);
         if (!message.hasAttachedQueues()) {
-            delete(message.getMetadata().getInternalId());
+            delete(message.getInternalId());
         } else {
-            disruptor.publishEvent(DETACH_FROM_QUEUE, queueName, message.getMetadata().getInternalId());
+            disruptor.publishEvent(DETACH_FROM_QUEUE, queueName, message.getInternalId());
         }
+    }
+
+    public void readData(QueueBuffer queueBuffer, Message message) {
+        disruptor.publishEvent(READ_MESSAGE_DATA, queueBuffer, message);
     }
 
     public void flush(long internalMessageId) {

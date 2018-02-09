@@ -49,15 +49,9 @@ public final class MessageTracer {
 
     public static void trace(Message message, String description) {
         if (LOGGER.isTraceEnabled() && Objects.nonNull(message)) {
-            trace(message.getMetadata(), description);
-        }
-    }
-
-    public static void trace(Metadata metadata, String description) {
-        if (LOGGER.isTraceEnabled()) {
-            TraceBuilder traceBuilder = new TraceBuilder().internalId(metadata.getInternalId())
-                                                          .routingKey(metadata.getRoutingKey())
-                                                          .exchangeName(metadata.getExchangeName());
+            TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId())
+                                                          .routingKey(message.getMetadata().getRoutingKey())
+                                                          .exchangeName(message.getMetadata().getExchangeName());
             LOGGER.trace(traceBuilder.buildTrace(description));
         }
     }
@@ -66,7 +60,7 @@ public final class MessageTracer {
         if (LOGGER.isTraceEnabled() && Objects.nonNull(message) && Objects.nonNull(queueHandler)) {
             Metadata metadata = message.getMetadata();
             String queueName = queueHandler.getQueue().getName();
-            TraceBuilder traceBuilder = new TraceBuilder().internalId(metadata.getInternalId())
+            TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId())
                                                           .routingKey(metadata.getRoutingKey())
                                                           .exchangeName(metadata.getExchangeName())
                                                           .redeliveryCount(message.getRedeliveryCount())
@@ -82,7 +76,7 @@ public final class MessageTracer {
             Metadata metadata = message.getMetadata();
             String queueName = consumer.getQueueName();
             int id = consumer.getId();
-            TraceBuilder traceBuilder = new TraceBuilder().internalId(metadata.getInternalId())
+            TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId())
                                                           .queueName(queueName)
                                                           .consumerId(id)
                                                           .routingKey(metadata.getRoutingKey())
@@ -94,7 +88,7 @@ public final class MessageTracer {
     public static void trace(Message message, String description, TraceField... traceFields) {
         if (LOGGER.isTraceEnabled() && Objects.nonNull(message)) {
             Metadata metadata = message.getMetadata();
-            TraceBuilder traceBuilder = new TraceBuilder().internalId(metadata.getInternalId())
+            TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId())
                                                           .routingKey(metadata.getRoutingKey())
                                                           .exchangeName(metadata.getExchangeName())
                                                           .fieldList(Arrays.asList(traceFields));
@@ -103,10 +97,10 @@ public final class MessageTracer {
 
     }
 
-    public static void trace(Metadata metadata, String description, List<TraceField> traceFields) {
-        if (LOGGER.isTraceEnabled() && Objects.nonNull(metadata)) {
-            TraceBuilder traceBuilder = new TraceBuilder().internalId(metadata.getInternalId())
-                                                          .routingKey(metadata.getRoutingKey());
+    public static void trace(Message message, String description, List<TraceField> traceFields) {
+        if (LOGGER.isTraceEnabled() && Objects.nonNull(message)) {
+            TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId())
+                                                          .routingKey(message.getMetadata().getRoutingKey());
 
             for (TraceField traceField : traceFields) {
                 traceBuilder.field(traceField);

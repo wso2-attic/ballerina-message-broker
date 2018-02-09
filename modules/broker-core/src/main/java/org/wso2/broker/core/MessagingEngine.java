@@ -186,7 +186,7 @@ final class MessagingEngine {
                     LOGGER.info("Dropping message since no queues found for routing key " + routingKey + " in "
                                         + exchange);
                     message.release();
-                    MessageTracer.trace(metadata, MessageTracer.NO_ROUTES);
+                    MessageTracer.trace(message, MessageTracer.NO_ROUTES);
                 } else {
                     try {
                         sharedMessageStore.add(message);
@@ -202,14 +202,14 @@ final class MessagingEngine {
                         }
                         publishToQueues(message, uniqueQueues);
                     } finally {
-                        sharedMessageStore.flush(metadata.getInternalId());
+                        sharedMessageStore.flush(message.getInternalId());
                         // Release the original message. Shallow copies are distributed
                         message.release(); // TODO: avoid shallow copying when there is only one binding
                     }
                 }
             } else {
                 message.release();
-                MessageTracer.trace(metadata, MessageTracer.UNKNOWN_EXCHANGE);
+                MessageTracer.trace(message, MessageTracer.UNKNOWN_EXCHANGE);
                 throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
             }
         } finally {
@@ -222,7 +222,7 @@ final class MessagingEngine {
         if (uniqueQueues.isEmpty()) {
             LOGGER.info("Dropping message since message didn't have any routes to {}",
                         message.getMetadata().getRoutingKey());
-            MessageTracer.trace(message.getMetadata(), MessageTracer.NO_ROUTES);
+            MessageTracer.trace(message, MessageTracer.NO_ROUTES);
             return;
         }
 

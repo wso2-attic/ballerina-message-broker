@@ -19,6 +19,8 @@
 
 package org.wso2.broker.core.queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
@@ -31,15 +33,20 @@ import java.util.Collection;
  * Database backed queue implementation.
  */
 public class DbBackedQueueImpl extends Queue {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbBackedQueueImpl.class);
+
+
+    private static final int DEFAULT_QUEUE_BUFFER_SIZE = 1000;
 
     private final SharedMessageStore sharedMessageStore;
 
-    private final QueueBuffer buffer = new QueueBuffer();
+    private final QueueBuffer buffer;
 
     public DbBackedQueueImpl(String queueName, boolean autoDelete,
                       SharedMessageStore sharedMessageStore) throws BrokerException {
         super(queueName, true, autoDelete);
         this.sharedMessageStore = sharedMessageStore;
+        buffer = new QueueBuffer(DEFAULT_QUEUE_BUFFER_SIZE, sharedMessageStore::readData);
         Collection<Message> messages = sharedMessageStore.readStoredMessages(queueName);
         buffer.addAll(messages);
     }
@@ -57,7 +64,7 @@ public class DbBackedQueueImpl extends Queue {
     @Override
     public boolean enqueue(Message message) throws BrokerException {
         if (message.getMetadata().getByteProperty(Metadata.DELIVERY_MODE) == Metadata.PERSISTENT_MESSAGE) {
-            sharedMessageStore.attach(getName(), message.getMetadata().getInternalId());
+            sharedMessageStore.attach(getName(), message.getInternalId());
         }
         buffer.add(message);
         return true;
@@ -65,7 +72,8 @@ public class DbBackedQueueImpl extends Queue {
 
     @Override
     public Message dequeue() {
-        return buffer.getFirstDeliverable();
+        Message firstDeliverable = buffer.getFirstDeliverable();
+        return firstDeliverable;
     }
 
     @Override

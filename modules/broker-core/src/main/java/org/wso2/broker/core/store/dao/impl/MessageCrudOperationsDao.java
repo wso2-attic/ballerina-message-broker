@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.sql.DataSource;
 
 /**
@@ -69,8 +70,8 @@ class MessageCrudOperationsDao extends BaseDao {
             insertToQueueStmt = connection.prepareStatement(RDBMSConstants.PS_INSERT_INTO_QUEUE);
 
             for (Message message : messageList) {
-                Metadata metadata = prepareMetadata(metadataStmt, message);
-                prepareContent(contentStmt, message, metadata);
+                prepareMetadata(metadataStmt, message);
+                prepareContent(contentStmt, message);
                 prepareQueueAttachments(insertToQueueStmt, message);
             }
             metadataStmt.executeBatch();
@@ -88,7 +89,7 @@ class MessageCrudOperationsDao extends BaseDao {
     }
 
     private void prepareQueueAttachments(PreparedStatement insertToQueueStmt, Message message) throws SQLException {
-        long id = message.getMetadata().getInternalId();
+        long id = message.getInternalId();
         for (String queueName : message.getAttachedQueues()) {
             insertToQueueStmt.setLong(1, id);
             insertToQueueStmt.setString(2, queueName);
@@ -96,11 +97,11 @@ class MessageCrudOperationsDao extends BaseDao {
         }
     }
 
-    private void prepareContent(PreparedStatement contentStmt, Message message, Metadata metadata) throws SQLException {
+    private void prepareContent(PreparedStatement contentStmt, Message message) throws SQLException {
         byte[] bytes;
 
         for (ContentChunk chunk : message.getContentChunks()) {
-            contentStmt.setLong(1, metadata.getInternalId());
+            contentStmt.setLong(1, message.getInternalId());
             contentStmt.setLong(2, chunk.getOffset());
             bytes = new byte[chunk.getBytes().readableBytes()];
             chunk.getBytes().getBytes(0, bytes);
@@ -109,9 +110,9 @@ class MessageCrudOperationsDao extends BaseDao {
         }
     }
 
-    private Metadata prepareMetadata(PreparedStatement metadataStmt, Message message) throws SQLException {
+    private void prepareMetadata(PreparedStatement metadataStmt, Message message) throws SQLException {
         Metadata metadata = message.getMetadata();
-        metadataStmt.setLong(1, metadata.getInternalId());
+        metadataStmt.setLong(1, message.getInternalId());
         metadataStmt.setString(2, metadata.getExchangeName());
         metadataStmt.setString(3, metadata.getRoutingKey());
         metadataStmt.setLong(4, metadata.getContentLength());
@@ -130,7 +131,6 @@ class MessageCrudOperationsDao extends BaseDao {
         } finally {
             buffer.release();
         }
-        return metadata;
     }
 
     public void detachFromQueue(Connection connection,
@@ -185,15 +185,32 @@ class MessageCrudOperationsDao extends BaseDao {
             List<Long> messageList = getMessagesIdsForQueue(connection, queueName);
 
             if (!messageList.isEmpty()) {
-                String idList = getSQLFormattedIdList(messageList);
+                String idList = getSQLFormattedIdList(messageList.size());
                 populateMessageWithMetadata(connection, idList, messageList, messageMap);
-                populateContent(connection, idList, messageList, messageMap);
+                populateContent(connection, idList, messageMap);
             }
             return messageMap.values();
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while reading messages", e);
         } finally {
             context.stop();
+        }
+    }
+
+    public Collection<Message> read(Connection connection, Map<Long, Message> messageMap) throws BrokerException {
+        Context context = metricManager.startMessageReadTimer();
+
+        try {
+            if (!messageMap.isEmpty()) {
+                String idList = getSQLFormattedIdList(messageMap.size());
+                populateMessageWithMetadata(connection, idList, messageMap.keySet(), messageMap);
+                populateContent(connection, idList, messageMap);
+            }
+            return messageMap.values();
+        } catch (SQLException e) {
+            throw new BrokerException("Error occurred while reading messages", e);
+        } finally {
+            context.close();
         }
     }
 
@@ -215,11 +232,11 @@ class MessageCrudOperationsDao extends BaseDao {
         }
     }
 
-    private String getSQLFormattedIdList(List<Long> messageList) {
+    private String getSQLFormattedIdList(int size) {
         StringBuilder paramList = new StringBuilder();
         paramList.append("?");
 
-        for (int i = 1; i < messageList.size(); i++) {
+        for (int i = 1; i < size; i++) {
             paramList.append(",?");
         }
         return paramList.toString();
@@ -227,7 +244,7 @@ class MessageCrudOperationsDao extends BaseDao {
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     private void populateMessageWithMetadata(Connection connection,
-                                             String idListAsString, List<Long> idList,
+                                             String idListAsString, Collection<Long> idList,
                                              Map<Long, Message> messageMap) throws SQLException, BrokerException {
         String metadataSql = "SELECT MESSAGE_ID, EXCHANGE_NAME, ROUTING_KEY, CONTENT_LENGTH, MESSAGE_METADATA "
                 + " FROM MB_METADATA WHERE MESSAGE_ID IN (" + idListAsString + ") ORDER BY MESSAGE_ID";
@@ -238,8 +255,9 @@ class MessageCrudOperationsDao extends BaseDao {
 
         try {
             selectMetadata = connection.prepareStatement(metadataSql);
-            for (int i = 0; i < idList.size(); i++) {
-                selectMetadata.setLong(i + 1, idList.get(i));
+            int i = 0;
+            for (Long messageId : idList) {
+                selectMetadata.setLong(++i, messageId);
             }
 
             metadataResultSet = selectMetadata.executeQuery();
@@ -251,11 +269,17 @@ class MessageCrudOperationsDao extends BaseDao {
                 byte[] bytes = metadataResultSet.getBytes(5);
                 ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
                 try {
-                    Metadata metadata = new Metadata(messageId, routingKey, exchangeName, contentLength);
+                    Metadata metadata = new Metadata(routingKey, exchangeName, contentLength);
                     metadata.setProperties(FieldTable.parse(buffer));
                     metadata.setHeaders(FieldTable.parse(buffer));
-                    Message message = new Message(metadata);
-                    messageMap.put(messageId, message);
+
+                    Message message = messageMap.get(messageId);
+                    if (Objects.nonNull(message)) {
+                        message.setMetadata(metadata);
+                    } else {
+                        message = new Message(messageId, metadata);
+                        messageMap.put(messageId, message);
+                    }
                 } catch (Exception e) {
                     throw new BrokerException("Error occurred while parsing metadata properties", e);
                 } finally {
@@ -270,7 +294,7 @@ class MessageCrudOperationsDao extends BaseDao {
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     private void populateContent(Connection connection, String idList,
-                                 List<Long> messageList, Map<Long, Message> messageMap) throws SQLException {
+                                 Map<Long, Message> messageMap) throws SQLException {
 
         PreparedStatement selectContent = null;
         ResultSet contentResultSet = null;
@@ -280,8 +304,9 @@ class MessageCrudOperationsDao extends BaseDao {
                     "SELECT MESSAGE_ID, CONTENT_OFFSET, MESSAGE_CONTENT FROM MB_CONTENT "
                             + "WHERE MESSAGE_ID IN(" + idList + ")");
 
-            for (int i = 0; i < messageList.size(); i++) {
-                selectContent.setLong(i + 1, messageList.get(i));
+            int i = 0;
+            for (Long messageId : messageMap.keySet()) {
+                selectContent.setLong(++i, messageId);
             }
 
             contentResultSet = selectContent.executeQuery();

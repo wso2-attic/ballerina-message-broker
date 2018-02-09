@@ -26,6 +26,7 @@ import org.wso2.broker.core.Message;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,8 +34,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class QueueBuffer {
     private static final Logger LOGGER = LoggerFactory.getLogger(QueueBuffer.class);
+    private final int inMemoryLimit;
+    private final MessageReader messageReader;
 
     private AtomicInteger size = new AtomicInteger(0);
+    private AtomicInteger fullMessageCount = new AtomicInteger(0);
 
     /**
      * Pointer to first node.
@@ -44,11 +48,9 @@ public class QueueBuffer {
     private Node first;
 
     /**
-     * Pointer to first deliverable node.
-     * Invariant: (first == null && last == null) ||
-     *            (first.prev == null && first.item != null)
+     * Pointer to first deliverable candidate node.
      */
-    private Node firstDeliverable;
+    private Node firstDeliverableCandidate;
 
     /**
      * Pointer to last deliverable node.
@@ -67,6 +69,11 @@ public class QueueBuffer {
      */
     private Map<Long, Node> keyMap = new HashMap<>();
 
+    public QueueBuffer(int inMemoryLimit, MessageReader messageReader) {
+        this.inMemoryLimit = inMemoryLimit;
+        this.messageReader = messageReader;
+    }
+
     /**
      * Appends the specified message to the end of this list.
      *
@@ -80,26 +87,44 @@ public class QueueBuffer {
      * Links newMessage as last element.
      */
     private void linkLast(Message newMessage) {
+        int queueSize = size.incrementAndGet();
+
         final Node previousLast = last;
         final Node newNode = new Node(previousLast, newMessage, null);
+
+        if (queueSize > inMemoryLimit) {
+
+            // We can take 'inMemoryLimit + 1' since we are incrementing  size only at one place. If we add multiple
+            // places we will have to use queueSize > inMemoryLimit and a boolean to only ser firstUndeliverable once.
+            if (Objects.isNull(firstUndeliverable) && queueSize == inMemoryLimit + 1) {
+                firstUndeliverable = newNode;
+            }
+
+            newMessage.clearData();
+        } else {
+            newNode.state.set(Node.FULL_MESSAGE);
+            fullMessageCount.incrementAndGet();
+
+            if (Objects.isNull(firstDeliverableCandidate)) {
+                firstDeliverableCandidate = newNode;
+            }
+        }
+
         last = newNode;
-        keyMap.put(newMessage.getMetadata().getInternalId(), newNode);
+        keyMap.put(newMessage.getInternalId(), newNode);
 
         if (previousLast == null) {
             first = newNode;
-            firstDeliverable = newNode;
         } else {
             previousLast.next = newNode;
         }
 
-        size.incrementAndGet();
     }
 
     public synchronized void remove(Message message) {
-        long messageId = message.getMetadata().getInternalId();
+        long messageId = message.getInternalId();
         Node node = keyMap.remove(messageId);
         if (node == null) {
-            LOGGER.warn("Asked to remove a non existing message with ID {}", messageId);
             return;
         }
 
@@ -132,6 +157,8 @@ public class QueueBuffer {
 
         node.item = null;
         size.decrementAndGet();
+        fullMessageCount.decrementAndGet();
+        submitMessageReads();
     }
 
     public int size() {
@@ -139,13 +166,55 @@ public class QueueBuffer {
     }
 
     public synchronized Message getFirstDeliverable() {
-        Node deliverableNode = firstDeliverable;
 
-        if (deliverableNode != firstUndeliverable) {
-            firstDeliverable = deliverableNode.next;
-            return deliverableNode.item;
-        } else  {
+        submitMessageReads();
+        Node deliverableCandidate = firstDeliverableCandidate;
+
+        if (deliverableCandidate != firstUndeliverable) {
+
+            if (deliverableCandidate.state.get() != Node.FULL_MESSAGE) {
+                return null;
+            }
+
+
+            firstDeliverableCandidate = deliverableCandidate.next;
+            Message item = deliverableCandidate.item;
+            return item;
+        } else  if (firstUndeliverable != null && firstUndeliverable.state.get() == Node.FULL_MESSAGE) {
+            Node newDeliverable = firstUndeliverable;
+            firstDeliverableCandidate = firstUndeliverable.next;
+            pushFirstUndeliverableCursor();
+
+            Message item = newDeliverable.item;
+
+            return item;
+        } else {
             return null;
+        }
+    }
+
+    private void pushFirstUndeliverableCursor() {
+
+        firstUndeliverable = firstUndeliverable.next;
+
+        while (firstUndeliverable != null && firstUndeliverable.state.get() == Node.FULL_MESSAGE) {
+            firstUndeliverable = firstUndeliverable.next;
+        }
+    }
+
+    private void submitMessageReads() {
+        int fillableMessageCount = inMemoryLimit - fullMessageCount.get();
+
+        Node undeliverableNode = this.firstUndeliverable;
+        while (fillableMessageCount-- > 0 && undeliverableNode != null) {
+            if (undeliverableNode.state.compareAndSet(Node.BARE_MESSAGE, Node.SUBMITTED_FOR_FILLING)) {
+                Message message = undeliverableNode.item;
+                messageReader.fill(this, message);
+            } else {
+                break;
+            }
+
+            undeliverableNode = undeliverableNode.next;
         }
     }
 
@@ -155,15 +224,37 @@ public class QueueBuffer {
         }
     }
 
+    public void markMessageFilled(Message message) {
+        Node node = keyMap.get(message.getInternalId());
+        if (Objects.nonNull(node)) {
+           node.state.set(Node.FULL_MESSAGE);
+           fullMessageCount.incrementAndGet();
+        }
+    }
+
     private static class Node {
-        Message item;
-        Node next;
-        Node prev;
+        private static final int BARE_MESSAGE = 0;
+        private static final int SUBMITTED_FOR_FILLING = 1;
+        private static final int FULL_MESSAGE = 2;
+        private Message item;
+        private Node next;
+        private Node prev;
+        private AtomicInteger state = new AtomicInteger(BARE_MESSAGE);
 
         Node(Node prev, Message element, Node next) {
             this.item = element;
             this.next = next;
             this.prev = prev;
         }
+    }
+
+
+    /**
+     * Interface used to fill message date.
+     */
+    @FunctionalInterface
+    public interface MessageReader {
+
+        void fill(QueueBuffer buffer, Message message);
     }
 }
