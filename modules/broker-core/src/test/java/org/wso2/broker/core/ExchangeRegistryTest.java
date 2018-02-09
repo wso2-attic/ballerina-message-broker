@@ -25,7 +25,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.broker.common.ValidationException;
-import org.wso2.broker.core.store.dao.NoOpBindingDao;
+import org.wso2.broker.core.store.dao.impl.NoOpBindingDao;
 
 import static org.wso2.broker.core.Exchange.Type.DIRECT;
 

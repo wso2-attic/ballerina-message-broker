@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.metrics.NullBrokerMetricManager;
-import org.wso2.broker.core.store.dao.NoOpBindingDao;
+import org.wso2.broker.core.store.dao.impl.NoOpBindingDao;
 
 import java.util.Collection;
 

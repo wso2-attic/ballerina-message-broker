@@ -17,16 +17,18 @@
  *
  */
 
-package org.wso2.broker.core;
+package org.wso2.broker.core.store.dao.impl;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.broker.core.BrokerException;
+import org.wso2.broker.core.DbUtil;
+import org.wso2.broker.core.Exchange;
+import org.wso2.broker.core.ExchangeRegistry;
 import org.wso2.broker.core.store.dao.BindingDao;
-import org.wso2.broker.core.store.dao.impl.BindingDaoImpl;
-import org.wso2.broker.core.store.dao.impl.ExchangeDaoImpl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
