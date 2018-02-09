@@ -45,8 +45,6 @@ public class AutoCommitTransaction implements BrokerTransaction {
 
     @Override
     public void dequeue(String queue, Message message) throws BrokerException {
-        //clear up memory
-        message.release();
         broker.acknowledge(queue, message);
     }
 
