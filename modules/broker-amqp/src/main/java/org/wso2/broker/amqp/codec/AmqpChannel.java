@@ -35,6 +35,9 @@ import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Consumer;
 import org.wso2.broker.core.Message;
+import org.wso2.broker.core.transaction.AutoCommitTransaction;
+import org.wso2.broker.core.transaction.BrokerTransaction;
+import org.wso2.broker.core.transaction.LocalTransaction;
 import org.wso2.broker.core.util.MessageTracer;
 import org.wso2.broker.core.util.TraceField;
 
@@ -119,6 +122,11 @@ public class AmqpChannel {
     private final TraceField traceChannelIdField;
 
     /**
+     * Represent the underlying transaction implementation
+     */
+    private BrokerTransaction transaction;
+
+    /**
      * Max window size
      */
     private int prefetchCount;
@@ -131,7 +139,8 @@ public class AmqpChannel {
         this.channelId = channelId;
         this.metricManager = metricManager;
         this.consumerMap = new HashMap<>();
-        this.messageAggregator = new InMemoryMessageAggregator(broker);
+        this.transaction = new AutoCommitTransaction(broker);
+        this.messageAggregator = new InMemoryMessageAggregator(broker, transaction);
         this.flowManager = new ChannelFlowManager(this,
                                                   configuration.getChannelFlow().getLowLimit(),
                                                   configuration.getChannelFlow().getHighLimit());
@@ -230,8 +239,7 @@ public class AmqpChannel {
             MessageTracer.trace(description, traceChannelIdField, new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag));
         }
         if (ackData != null) {
-            ackData.getMessage().release();
-            broker.acknowledge(ackData.getQueueName(), ackData.getMessage());
+            transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
         } else {
             LOGGER.warn("Could not find a matching ack data for acking the delivery tag " + deliveryTag);
         }
@@ -362,6 +370,37 @@ public class AmqpChannel {
 
     public AmqpDeliverMessage createDeliverMessage(Message message, ShortString consumerTag, String queueName) {
         return new AmqpDeliverMessage(message, consumerTag, this, queueName, broker);
+    }
+
+    /**
+     * Start local transaction on the channel
+     */
+    public void setLocalTransactional() {
+        transaction = new LocalTransaction(broker);
+        messageAggregator.setTransaction(transaction);
+    }
+
+    /**
+     * Commit the transaction on the channel
+     */
+    public void commit() throws ValidationException {
+        transaction.commit();
+    }
+
+    /**
+     * Rollback the transaction on the channel
+     */
+    public void rollback() throws ValidationException {
+        transaction.rollback();
+    }
+
+    /**
+     * Check whether the channel start local transaction
+     *
+     * @return transaction started or not
+     */
+    public boolean isTransactional () {
+        return transaction.isTransactional();
     }
 
     /**
