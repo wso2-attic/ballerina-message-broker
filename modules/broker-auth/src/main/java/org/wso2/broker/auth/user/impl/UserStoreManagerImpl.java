@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -88,8 +89,10 @@ public class UserStoreManagerImpl implements UserStoreManager {
      */
     @Override
     public boolean authenticate(String userName, char... credentials) throws BrokerAuthException {
-        User user = userRegistry.get(userName);
-        if (user == null) {
+        User user;
+        if (Objects.isNull(userName)) {
+            throw new BrokerAuthException("Username cannot be null.");
+        } else if (Objects.isNull(user = userRegistry.get(userName))) {
             throw new BrokerAuthException("User not found for the given username.");
         } else {
             if (credentials != null && Arrays.equals(credentials, user.getPassword())) {

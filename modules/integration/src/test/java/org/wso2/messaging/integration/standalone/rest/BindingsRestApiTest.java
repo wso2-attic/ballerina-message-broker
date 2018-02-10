@@ -64,6 +64,10 @@ public class BindingsRestApiTest {
 
     private ObjectMapper objectMapper;
 
+    private String username;
+
+    private String password;
+
     @Parameters({"broker-hostname", "broker-rest-port"})
     @BeforeClass
     public void setUp(String brokerHost, String restPort) throws Exception {
@@ -82,6 +86,8 @@ public class BindingsRestApiTest {
             throws IOException, TimeoutException {
         client = HttpClients.createDefault();
         amqpConnection = ClientHelper.getAmqpConnection(username, password, brokerHost, brokerPort);
+        this.username = username;
+        this.password = password;
     }
 
     @AfterMethod
@@ -116,6 +122,7 @@ public class BindingsRestApiTest {
         channel.queueBind(queue3, exchangeName, "topic2");
         // Get response
         HttpGet httpGet = new HttpGet(apiBasePath + "/exchanges/" + exchangeName + "/bindings");
+        ClientHelper.setAuthHeader(httpGet, username, password);
         CloseableHttpResponse response = client.execute(httpGet);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
@@ -136,6 +143,7 @@ public class BindingsRestApiTest {
         // Get response
         String nonExistingExchangeName = "testRetrieveFromNonExistingExchange";
         HttpGet httpGet = new HttpGet(apiBasePath + "/exchanges/" + nonExistingExchangeName + "/bindings");
+        ClientHelper.setAuthHeader(httpGet, username, password);
         CloseableHttpResponse response = client.execute(httpGet);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_BAD_REQUEST);
@@ -171,6 +179,7 @@ public class BindingsRestApiTest {
         channel.queueDeclare(queueName, false, false, false, new HashMap<>());
         String exchangeName = "amq.direct";
         HttpPost httpPost = new HttpPost(apiBasePath + "/queues/" + queueName + "/bindings");
+        ClientHelper.setAuthHeader(httpPost, username, password);
         BindingCreateRequest createRequest = new BindingCreateRequest().bindingPattern(bindingPattern)
                                                                        .exchangeName(exchangeName);
 
@@ -198,6 +207,7 @@ public class BindingsRestApiTest {
         channel.close();
         String exchangeName = "InvalidExchange";
         HttpPost httpPost = new HttpPost(apiBasePath + "/queues/" + queueName + "/bindings");
+        ClientHelper.setAuthHeader(httpPost, username, password);
         BindingCreateRequest createRequest = new BindingCreateRequest().bindingPattern(bindingPattern)
                                                                      .exchangeName(exchangeName);
 
@@ -223,6 +233,7 @@ public class BindingsRestApiTest {
         String exchangeName = "amq.topic";
         String filter = "CorrelationId = 'testId123'";
         HttpPost httpPost = new HttpPost(apiBasePath + "/queues/" + queueName + "/bindings");
+        ClientHelper.setAuthHeader(httpPost, username, password);
         BindingCreateRequest createRequest = new BindingCreateRequest().bindingPattern(bindingPattern)
                                                                        .exchangeName(exchangeName)
                                                                        .filterExpression(filter);
