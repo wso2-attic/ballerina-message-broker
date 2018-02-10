@@ -20,18 +20,17 @@ package org.wso2.broker.auth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.auth.authentication.authenticator.Authenticator;
+import org.wso2.broker.auth.authentication.authenticator.AuthenticatorFactory;
 import org.wso2.broker.auth.authentication.sasl.BrokerSecurityProvider;
 import org.wso2.broker.auth.authentication.sasl.SaslServerBuilder;
 import org.wso2.broker.auth.authentication.sasl.plain.PlainSaslServerBuilder;
-import org.wso2.broker.auth.user.UserStoreManager;
 import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.StartupContext;
 
 import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.Configuration;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
@@ -50,26 +49,22 @@ public class AuthManager {
     private Map<String, SaslServerBuilder> saslMechanisms = new HashMap<>();
 
     private BrokerAuthConfiguration brokerAuthConfiguration;
-
-    private UserStoreManager userStoreManager;
+    /**
+     * Authenticator which defines the authentication strategy for auth manager.
+     */
+    private Authenticator authenticator;
 
     public AuthManager(StartupContext startupContext)  throws Exception {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         brokerAuthConfiguration = configProvider
                 .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
         startupContext.registerService(AuthManager.class, this);
-        userStoreManager = startupContext.getService(UserStoreManager.class);
+        authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
+                                                                    brokerAuthConfiguration.getAuthentication());
     }
 
     public void start() {
-        if (brokerAuthConfiguration.getAuthentication().isEnabled()) {
-            String jaasConfigPath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_JAAS_CONFIG);
-            BrokerAuthConfiguration.JaasConfiguration jaasConf = brokerAuthConfiguration.getAuthentication().getJaas();
-            if (jaasConfigPath == null || jaasConfigPath.trim().isEmpty()) {
-                Configuration jaasConfig = createJaasConfig(jaasConf.getLoginModule(), userStoreManager,
-                                                            jaasConf.getOptions());
-                Configuration.setConfiguration(jaasConfig);
-            }
+        if (isAuthenticationEnabled()) {
             registerSaslServers();
         }
     }
@@ -95,28 +90,6 @@ public class AuthManager {
                 LOGGER.debug("AMQ security authentication mechanisms providers are successfully registered.");
             }
         }
-    }
-
-    /**
-     * Creates Jaas config
-     *
-     * @param loginModuleClassName Jaas login module class name
-     * @return Configuration
-     */
-    private static Configuration createJaasConfig(String loginModuleClassName, UserStoreManager userStoreManager,
-                                                  Map<String, Object> options
-                                                 ) {
-        options.put(BrokerAuthConstants.USER_STORE_MANAGER_PROPERTY, userStoreManager);
-        AppConfigurationEntry[] entries = {
-                new AppConfigurationEntry(loginModuleClassName, AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
-                                          options)
-        };
-        return new Configuration() {
-            @Override
-            public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-                return entries;
-            }
-        };
     }
 
     /**
@@ -150,5 +123,13 @@ public class AuthManager {
      */
     public boolean isAuthenticationEnabled() {
         return brokerAuthConfiguration.getAuthentication().isEnabled();
+    }
+
+    /**
+     * Provides authenticator which will be used to authenticate users.
+     * @return broker authenticator
+     */
+    public Authenticator getAuthenticator() {
+        return authenticator;
     }
 }

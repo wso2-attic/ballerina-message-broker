@@ -21,10 +21,13 @@ package org.wso2.messaging.integration.util;
 
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.wso2.broker.core.rest.BrokerAdminService;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Base64;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 import javax.naming.Context;
@@ -43,6 +46,11 @@ public class ClientHelper {
      */
     public static final String CONNECTION_FACTORY = "ConnectionFactory";
 
+    /**
+     * Basic Authentication type
+     */
+    private static final String AUTH_TYPE_BASIC = "Basic ";
+
     public static InitialContextBuilder getInitialContextBuilder(String username,
                                                                  String password,
                                                                  String brokerHost,
@@ -53,6 +61,18 @@ public class ClientHelper {
 
     public static String getRestApiBasePath(String brokerHost, String port) throws URISyntaxException {
         return "http://" + brokerHost + ":" + port + BrokerAdminService.API_BASE_PATH;
+    }
+
+    /**
+     * Set basic auth header to http request
+     *
+     * @param httpRequestBase http request
+     * @param username        username
+     * @param password        password
+     */
+    public static void setAuthHeader(HttpRequestBase httpRequestBase, String username, String password) {
+        String basicAuthHeader = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+        httpRequestBase.setHeader(HttpHeaderNames.AUTHORIZATION.toString(), AUTH_TYPE_BASIC + basicAuthHeader);
     }
 
     public static Connection getAmqpConnection(String userName, String password, String brokerHost, String port)

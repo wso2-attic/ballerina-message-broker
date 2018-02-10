@@ -26,6 +26,7 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.BlockingTask;
+import org.wso2.broker.amqp.codec.ConnectionException;
 import org.wso2.broker.amqp.codec.auth.SaslAuthenticationStrategy;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.common.data.types.LongString;
@@ -43,12 +44,14 @@ public class ConnectionSecureOk extends MethodFrame {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionSecureOk.class);
 
-    private static final String AUTHENTICATION_FAILED = "Authentication Failed";
+    private static final short CLASS_ID = 10;
+
+    private static final short METHOD_ID = 21;
 
     private final LongString response;
 
     public ConnectionSecureOk(int channel, LongString response) {
-        super(channel, (short) 10, (short) 21);
+        super(channel, CLASS_ID, METHOD_ID);
         this.response = response;
     }
 
@@ -85,7 +88,9 @@ public class ConnectionSecureOk extends MethodFrame {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Exception occurred while authenticating incoming connection ", e);
                 }
-                ctx.writeAndFlush(new ConnectionClose(403, ShortString.parseString(AUTHENTICATION_FAILED), 10, 21));
+                ctx.writeAndFlush(new ConnectionClose(ConnectionException.NOT_ALLOWED,
+                                                      ShortString.parseString(e.getMessage()),
+                                                      CLASS_ID, METHOD_ID));
             }
         });
     }
