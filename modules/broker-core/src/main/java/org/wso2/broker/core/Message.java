@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -138,7 +139,12 @@ public class Message {
 
     @Override
     public String toString() {
-        return metadata.toString();
+
+        if (Objects.isNull(metadata)) {
+            return "Bare message";
+        } else {
+            return metadata.toString();
+        }
     }
 
     public void setMetadata(Metadata metadata) {

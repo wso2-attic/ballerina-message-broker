@@ -19,8 +19,6 @@
 
 package org.wso2.broker.core.queue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.Message;
 
 import java.util.Collection;
@@ -33,19 +31,26 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Used to track messages for the queue.
  */
 public class QueueBuffer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(QueueBuffer.class);
-    private final int inMemoryLimit;
-    private final MessageReader messageReader;
-
-    private AtomicInteger size = new AtomicInteger(0);
-    private AtomicInteger fullMessageCount = new AtomicInteger(0);
 
     /**
-     * Pointer to first node.
-     * Invariant: (first == null && last == null) ||
-     *            (first.prev == null && first.item != null)
+     * Maximum number of messages held in memory.
      */
-    private Node first;
+    private final int inMemoryLimit;
+
+    /**
+     * Used to submit read requests for a message.
+     */
+    private final MessageReader messageReader;
+
+    /**
+     * Size of the queue. i.e. in memory messages + DB messages.
+     */
+    private AtomicInteger size = new AtomicInteger(0);
+
+    /**
+     * Number of in memory messages.
+     */
+    private AtomicInteger fullMessageCount = new AtomicInteger(0);
 
     /**
      * Pointer to first deliverable candidate node.
@@ -59,8 +64,6 @@ public class QueueBuffer {
 
     /**
      * Pointer to last node.
-     * Invariant: (first == null && last == null) ||
-     *            (last.next == null && last.item != null)
      */
     private Node last;
 
@@ -69,7 +72,7 @@ public class QueueBuffer {
      */
     private Map<Long, Node> keyMap = new HashMap<>();
 
-    public QueueBuffer(int inMemoryLimit, MessageReader messageReader) {
+    QueueBuffer(int inMemoryLimit, MessageReader messageReader) {
         this.inMemoryLimit = inMemoryLimit;
         this.messageReader = messageReader;
     }
@@ -94,9 +97,7 @@ public class QueueBuffer {
 
         if (queueSize > inMemoryLimit) {
 
-            // We can take 'inMemoryLimit + 1' since we are incrementing  size only at one place. If we add multiple
-            // places we will have to use queueSize > inMemoryLimit and a boolean to only ser firstUndeliverable once.
-            if (Objects.isNull(firstUndeliverable) && queueSize == inMemoryLimit + 1) {
+            if (Objects.isNull(firstUndeliverable)) {
                 firstUndeliverable = newNode;
             }
 
@@ -113,36 +114,35 @@ public class QueueBuffer {
         last = newNode;
         keyMap.put(newMessage.getInternalId(), newNode);
 
-        if (previousLast == null) {
-            first = newNode;
-        } else {
+        if (Objects.nonNull(previousLast)) {
             previousLast.next = newNode;
         }
-
     }
 
-    public synchronized void remove(Message message) {
-        long messageId = message.getInternalId();
-        Node node = keyMap.remove(messageId);
-        if (node == null) {
-            return;
-        }
-
-        unlink(node);
-    }
 
 
     /**
-     * Unlinks non-null node.
+     * Remove a message from the buffer.
+     *
+     * @param message message to remove
+     */
+    public synchronized void remove(Message message) {
+        long messageId = message.getInternalId();
+        Node node = keyMap.remove(messageId);
+        if (Objects.nonNull(node)) {
+            unlink(node);
+        }
+    }
+
+    /**
+     * Unlinks a non-null node.
      */
     private void unlink(Node node) {
         final Node next = node.next;
         final Node prev = node.prev;
 
         // if prev is null we are removing the first element
-        if (prev == null) {
-            first = next;
-        } else {
+        if (Objects.nonNull(prev)) {
             prev.next = next;
             node.prev = null;
         }
@@ -161,10 +161,20 @@ public class QueueBuffer {
         submitMessageReads();
     }
 
+    /**
+     * Size of the queue.
+     *
+     * @return total number of messages tracked in queue buffer
+     */
     public int size() {
         return size.get();
     }
 
+    /**
+     * Return the first deliverable message if one is available.
+     *
+     * @return the next deliverable message in queue
+     */
     public synchronized Message getFirstDeliverable() {
 
         submitMessageReads();
@@ -176,25 +186,20 @@ public class QueueBuffer {
                 return null;
             }
 
-
             firstDeliverableCandidate = deliverableCandidate.next;
-            Message item = deliverableCandidate.item;
-            return item;
-        } else  if (firstUndeliverable != null && firstUndeliverable.state.get() == Node.FULL_MESSAGE) {
+            return deliverableCandidate.item;
+        } else if (firstUndeliverable != null && firstUndeliverable.state.get() == Node.FULL_MESSAGE) {
             Node newDeliverable = firstUndeliverable;
             firstDeliverableCandidate = firstUndeliverable.next;
             pushFirstUndeliverableCursor();
 
-            Message item = newDeliverable.item;
-
-            return item;
+            return newDeliverable.item;
         } else {
             return null;
         }
     }
 
     private void pushFirstUndeliverableCursor() {
-
         firstUndeliverable = firstUndeliverable.next;
 
         while (firstUndeliverable != null && firstUndeliverable.state.get() == Node.FULL_MESSAGE) {
@@ -218,7 +223,7 @@ public class QueueBuffer {
         }
     }
 
-    public void addAll(Collection<Message> messages) {
+    public synchronized void addAll(Collection<Message> messages) {
         for (Message message : messages) {
             add(message);
         }

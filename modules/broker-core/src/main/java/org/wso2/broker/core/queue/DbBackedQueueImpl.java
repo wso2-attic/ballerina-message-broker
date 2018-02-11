@@ -19,8 +19,6 @@
 
 package org.wso2.broker.core.queue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
@@ -33,9 +31,11 @@ import java.util.Collection;
  * Database backed queue implementation.
  */
 public class DbBackedQueueImpl extends Queue {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DbBackedQueueImpl.class);
 
-
+    /**
+     * Maximum number of message data held in memory.
+     * TODO: This should be configurable
+     */
     private static final int DEFAULT_QUEUE_BUFFER_SIZE = 1000;
 
     private final SharedMessageStore sharedMessageStore;
@@ -72,8 +72,7 @@ public class DbBackedQueueImpl extends Queue {
 
     @Override
     public Message dequeue() {
-        Message firstDeliverable = buffer.getFirstDeliverable();
-        return firstDeliverable;
+        return buffer.getFirstDeliverable();
     }
 
     @Override
