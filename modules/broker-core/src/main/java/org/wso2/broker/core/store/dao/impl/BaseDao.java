@@ -98,8 +98,8 @@ abstract class BaseDao {
         }
     }
 
-    <E extends Exception> void transaction(ThrowingConsumer<Connection, E> command,
-                                           String message) throws BrokerException {
+    void transaction(ThrowingConsumer<Connection, Exception> command,
+                     String message) throws BrokerException {
 
         Connection connection = null;
         try {
@@ -114,8 +114,8 @@ abstract class BaseDao {
         }
     }
 
-    <R, E extends Exception> R selectOperation(ThrowingFunction<Connection, R, E> command,
-                                               String message) throws BrokerException {
+    <R> R selectOperation(ThrowingFunction<Connection, R, Exception> command,
+                          String message) throws BrokerException {
 
         Connection connection = null;
         try {
