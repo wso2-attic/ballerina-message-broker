@@ -19,8 +19,9 @@
 
 package org.wso2.broker.core;
 
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
-import org.wso2.broker.core.queue.Queue;
+import org.wso2.broker.common.util.function.ThrowingConsumer;
 import org.wso2.broker.core.store.dao.BindingDao;
 
 import java.util.Collections;
@@ -32,7 +33,7 @@ import java.util.Map;
  */
 public final class BindingsRegistry {
 
-    private final Map<String, BindingSet> routingKeyToBindingMap;
+    private final Map<String, BindingSet> bindingPatternToBindingsMap;
 
     private final Exchange exchange;
 
@@ -40,36 +41,45 @@ public final class BindingsRegistry {
 
     private final Map<String, BindingSet> unmodifiableBindingSetView;
 
-    public BindingsRegistry(Exchange exchange, BindingDao bindingDao) {
-        this.routingKeyToBindingMap = new HashMap<>();
+    private final BindingDeleteListener bindingDeleteListener;
+
+    BindingsRegistry(Exchange exchange, BindingDao bindingDao) {
+        this.bindingPatternToBindingsMap = new HashMap<>();
         this.exchange = exchange;
         this.bindingDao = bindingDao;
-        this.unmodifiableBindingSetView = Collections.unmodifiableMap(routingKeyToBindingMap);
+        this.unmodifiableBindingSetView = Collections.unmodifiableMap(bindingPatternToBindingsMap);
+        bindingDeleteListener = new BindingDeleteListener();
     }
 
-    void bind(Queue queue, String bindingKey, FieldTable arguments) throws BrokerException {
-        BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
+    void bind(QueueHandler queueHandler, String bindingKey, FieldTable arguments) throws BrokerException,
+                                                                                         ValidationException {
+        BindingSet bindingSet = bindingPatternToBindingsMap.computeIfAbsent(bindingKey, k -> new BindingSet());
+        Queue queue = queueHandler.getQueue();
         Binding binding = new Binding(queue, bindingKey, arguments);
         boolean success = bindingSet.add(binding);
-        if (success && queue.isDurable()) {
-            bindingDao.persist(exchange.getName(), binding);
+
+        if (success) {
+            queueHandler.addBinding(binding, bindingDeleteListener);
+            if (queue.isDurable()) {
+                bindingDao.persist(exchange.getName(), binding);
+            }
         }
     }
 
     void unbind(Queue queue, String routingKey) throws BrokerException {
-        BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
+        BindingSet bindingSet = bindingPatternToBindingsMap.get(routingKey);
         if (queue.isDurable()) {
             bindingDao.delete(queue.getName(), routingKey, exchange.getName());
         }
         bindingSet.remove(queue);
 
         if (bindingSet.isEmpty()) {
-            routingKeyToBindingMap.remove(routingKey);
+            bindingPatternToBindingsMap.remove(routingKey);
         }
     }
 
     BindingSet getBindingsForRoute(String routingKey) {
-        BindingSet bindingSet = routingKeyToBindingMap.get(routingKey);
+        BindingSet bindingSet = bindingPatternToBindingsMap.get(routingKey);
         if (bindingSet == null) {
             bindingSet = BindingSet.emptySet();
         }
@@ -77,7 +87,7 @@ public final class BindingsRegistry {
     }
 
     boolean isEmpty() {
-        return routingKeyToBindingMap.isEmpty();
+        return bindingPatternToBindingsMap.isEmpty();
     }
 
     public void retrieveAllBindingsForExchange(QueueRegistry queueRegistry) throws BrokerException {
@@ -85,12 +95,24 @@ public final class BindingsRegistry {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
 
             Binding binding = new Binding(queueHandler.getQueue(), bindingKey, filterTable);
-            BindingSet bindingSet = routingKeyToBindingMap.computeIfAbsent(bindingKey, k -> new BindingSet());
+            BindingSet bindingSet = bindingPatternToBindingsMap.computeIfAbsent(bindingKey, k -> new BindingSet());
             bindingSet.add(binding);
+            queueHandler.addBinding(binding, bindingDeleteListener);
         });
     }
 
     public Map<String, BindingSet> getAllBindings() {
         return unmodifiableBindingSetView;
+    }
+
+    /**
+     * Handles binding delete events coming from listeners.
+     */
+    private class BindingDeleteListener implements ThrowingConsumer<Binding, BrokerException> {
+
+        @Override
+        public void accept(Binding binding) throws BrokerException {
+            unbind(binding.getQueue(), binding.getBindingPattern());
+        }
     }
 }

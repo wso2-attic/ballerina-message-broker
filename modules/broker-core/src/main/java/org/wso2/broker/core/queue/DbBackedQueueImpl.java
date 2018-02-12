@@ -22,7 +22,8 @@ package org.wso2.broker.core.queue;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
-import org.wso2.broker.core.store.dao.SharedMessageStore;
+import org.wso2.broker.core.Queue;
+import org.wso2.broker.core.store.SharedMessageStore;
 
 import java.util.Collection;
 import java.util.concurrent.LinkedBlockingQueue;

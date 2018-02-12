@@ -26,6 +26,7 @@ import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Exchange;
 import org.wso2.broker.core.rest.model.ExchangeCreateRequest;
+import org.wso2.broker.core.rest.model.ExchangeCreateResponse;
 import org.wso2.broker.core.rest.model.ExchangeMetadata;
 
 import java.net.URI;
@@ -60,7 +61,7 @@ public class ExchangesApiDelegate {
             // TODO: exchange create message response type
             return Response.created(new URI(BrokerAdminService.API_BASE_PATH + EXCHANGES_API_PATH
                                                     + "/" + requestBody.getName()))
-                           .entity("").build();
+                           .entity(new ExchangeCreateResponse().message("Exchange created.")).build();
 
 
         } catch (ValidationException e) {

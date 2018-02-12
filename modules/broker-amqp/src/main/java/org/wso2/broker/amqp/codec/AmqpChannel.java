@@ -158,7 +158,7 @@ public class AmqpChannel {
     }
 
     public void declareQueue(ShortString queue, boolean passive,
-                             boolean durable, boolean autoDelete) throws BrokerException {
+                             boolean durable, boolean autoDelete) throws BrokerException, ValidationException {
         broker.createQueue(queue.toString(), passive, durable, autoDelete);
     }
 

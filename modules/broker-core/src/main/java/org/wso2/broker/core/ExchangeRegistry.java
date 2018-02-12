@@ -22,7 +22,7 @@ package org.wso2.broker.core;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.core.store.dao.BindingDao;
 import org.wso2.broker.core.store.dao.ExchangeDao;
-import org.wso2.broker.core.store.dao.NoOpBindingDao;
+import org.wso2.broker.core.store.dao.impl.NoOpBindingDao;
 
 import java.util.Collection;
 import java.util.Collections;

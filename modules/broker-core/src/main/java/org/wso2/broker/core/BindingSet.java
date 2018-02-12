@@ -19,11 +19,12 @@
 
 package org.wso2.broker.core;
 
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldValue;
-import org.wso2.broker.core.queue.Queue;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -47,15 +48,36 @@ public class BindingSet {
         unfilteredQueueBindings = new ConcurrentHashMap<>();
     }
 
-    boolean add(Binding binding) {
-        FieldValue selectorValue = binding.getArgument(Binding.JMS_SELECTOR_ARGUMENT);
-        Map<Queue, Binding> queueBindingMap;
-        if (selectorValue != null && !selectorValue.getValue().toString().isEmpty()) {
-            queueBindingMap = filteredQueueBindings;
-        } else {
-            queueBindingMap = unfilteredQueueBindings;
+    boolean add(Binding binding) throws ValidationException {
+
+        Binding existingBinding = validateBinding(binding);
+
+        if (Objects.isNull(existingBinding)) {
+            Map<Queue, Binding> queueBindingMap;
+            FieldValue selectorValue = binding.getArgument(Binding.JMS_SELECTOR_ARGUMENT);
+            if (Objects.nonNull(selectorValue) && !selectorValue.getValue().toString().isEmpty()) {
+                queueBindingMap = filteredQueueBindings;
+            } else {
+                queueBindingMap = unfilteredQueueBindings;
+            }
+            queueBindingMap.put(binding.getQueue(), binding);
+            return true;
         }
-        return queueBindingMap.putIfAbsent(binding.getQueue(), binding) == null;
+        return false;
+
+    }
+
+    private Binding validateBinding(Binding binding) throws ValidationException {
+        Binding existingBinding = unfilteredQueueBindings.get(binding.getQueue());
+        if (Objects.isNull(existingBinding)) {
+            existingBinding = filteredQueueBindings.get(binding.getQueue());
+        }
+
+        if (Objects.nonNull(existingBinding) && !existingBinding.equals(binding)) {
+            throw new ValidationException("Similar binding with different arguments already exist.");
+        }
+
+        return existingBinding;
     }
 
     void add(BindingSet bindingSet) {
@@ -64,8 +86,14 @@ public class BindingSet {
     }
 
     public void remove(Queue queue) {
-        filteredQueueBindings.remove(queue);
-        unfilteredQueueBindings.remove(queue);
+        Binding binding = filteredQueueBindings.remove(queue);
+        if (Objects.isNull(binding)) {
+            binding = unfilteredQueueBindings.remove(queue);
+        }
+
+        if (Objects.nonNull(binding)) {
+            queue.getQueueHandler().removeBinding(binding);
+        }
     }
 
     public Collection<Binding> getUnfilteredBindings() {
@@ -88,6 +116,7 @@ public class BindingSet {
         private EmptyBindingSet() {
             super();
         }
+
         @Override
         boolean add(Binding binding) {
             throw new UnsupportedOperationException("Cannot modify Unmodifiable binding set.");

@@ -27,6 +27,7 @@ import org.wso2.broker.amqp.codec.AmqpChannel;
 import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.ShortString;
 import org.wso2.broker.core.BrokerException;
@@ -107,6 +108,12 @@ public class QueueDeclare extends MethodFrame {
             try {
                 channel.declareQueue(queue, passive, durable, autoDelete);
                 ctx.writeAndFlush(new QueueDeclareOk(getChannel(), queue, 0, 0));
+            } catch (ValidationException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.PRECONDITION_FAILED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
             } catch (BrokerException e) {
                 LOGGER.warn("Error declaring queue.", e);
                 ctx.writeAndFlush(new ChannelClose(getChannel(),

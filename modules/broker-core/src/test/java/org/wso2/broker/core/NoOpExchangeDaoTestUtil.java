@@ -22,13 +22,9 @@ package org.wso2.broker.core;
 import org.wso2.broker.core.store.dao.ExchangeDao;
 
 /**
- *
+ * Utility DAO class with no backing persistence storage.
  */
-public class NoOpExchangeDaoTestUtil extends ExchangeDao {
-
-    public NoOpExchangeDaoTestUtil() {
-        super(null);
-    }
+public class NoOpExchangeDaoTestUtil implements ExchangeDao {
 
     @Override
     public void persist(Exchange exchange) {

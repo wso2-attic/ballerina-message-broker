@@ -1,7 +1,7 @@
 package org.wso2.broker.core.store.dao.impl;
 
 import org.wso2.broker.core.BrokerException;
-import org.wso2.broker.core.queue.Queue;
+import org.wso2.broker.core.Queue;
 import org.wso2.broker.core.store.dao.QueueDao;
 
 import java.sql.Connection;
@@ -14,9 +14,9 @@ import javax.sql.DataSource;
 /**
  * Implements functionality required to manage Queues in persistent layer.
  */
-public class QueueDaoImpl extends QueueDao {
+class QueueDaoImpl extends BaseDao implements QueueDao {
 
-    public QueueDaoImpl(DataSource dataSource) {
+    QueueDaoImpl(DataSource dataSource) {
         super(dataSource);
     }
 
@@ -33,7 +33,9 @@ public class QueueDaoImpl extends QueueDao {
 
             connection.commit();
         } catch (SQLException e) {
-            throw new BrokerException("Error occurred while storing queue " + queue, e);
+            String message = "Error occurred while storing queue " + queue;
+            rollback(connection, message);
+            throw new BrokerException(message, e);
         } finally {
             close(connection, statement);
         }
@@ -51,7 +53,9 @@ public class QueueDaoImpl extends QueueDao {
 
             connection.commit();
         } catch (SQLException e) {
-            throw new BrokerException("Error occurred while deleting queue " + queue, e);
+            String message = "Error occurred while deleting queue " + queue;
+            rollback(connection, message);
+            throw new BrokerException(message, e);
         } finally {
             close(connection, statement);
         }
@@ -71,10 +75,11 @@ public class QueueDaoImpl extends QueueDao {
                 queueNameConsumer.addQueue(name);
             }
         } catch (SQLException e) {
-            throw new BrokerException("Error occurred while retrieving all the queues", e);
+            String message = "Error occurred while retrieving all the queues";
+            rollback(connection, message);
+            throw new BrokerException(message, e);
         } finally {
             close(connection, statement, resultSet);
         }
     }
-
 }
