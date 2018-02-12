@@ -28,7 +28,7 @@ import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.FieldValue;
 import org.wso2.broker.core.queue.MemQueueImpl;
-import org.wso2.broker.core.store.dao.NoOpBindingDao;
+import org.wso2.broker.core.store.dao.impl.NoOpBindingDao;
 
 import java.util.Collection;
 import java.util.Objects;

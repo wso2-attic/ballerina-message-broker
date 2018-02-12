@@ -32,11 +32,10 @@ import javax.sql.DataSource;
 
 /**
  * Implements functionality required to manipulate exchanges in the storage.
- *
  */
-public class ExchangeDaoImpl extends ExchangeDao {
+class ExchangeDaoImpl extends BaseDao implements ExchangeDao {
 
-    public ExchangeDaoImpl(DataSource dataSource) {
+    ExchangeDaoImpl(DataSource dataSource) {
         super(dataSource);
     }
 
@@ -53,7 +52,9 @@ public class ExchangeDaoImpl extends ExchangeDao {
             connection.commit();
 
         } catch (SQLException e) {
-            throw new BrokerException("Error occurred while storing exchange " + exchange, e);
+            String message = "Error occurred while storing exchange " + exchange;
+            rollback(connection, message);
+            throw new BrokerException(message, e);
         } finally {
             close(connection, statement);
         }
@@ -71,6 +72,8 @@ public class ExchangeDaoImpl extends ExchangeDao {
             statement.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
+            String message = "Error occurred while deleting exchange " + exchange;
+            rollback(connection, message);
             throw new BrokerException("Error occurred while deleting exchange " + exchange, e);
         } finally {
             close(connection, statement);
@@ -93,7 +96,9 @@ public class ExchangeDaoImpl extends ExchangeDao {
                 exchangeCollector.addExchange(name, typeString);
             }
         } catch (SQLException e) {
-            throw new BrokerException("Error occurred while retrieving exchanges", e);
+            String message = "Error occurred while retrieving exchanges";
+            rollback(connection, message);
+            throw new BrokerException(message, e);
         } finally {
             close(connection, statement, resultSet);
         }

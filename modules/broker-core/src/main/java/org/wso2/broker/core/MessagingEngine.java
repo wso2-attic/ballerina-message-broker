@@ -26,8 +26,8 @@ import org.wso2.broker.common.ResourceNotFoundException;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
+import org.wso2.broker.core.store.SharedMessageStore;
 import org.wso2.broker.core.store.StoreFactory;
-import org.wso2.broker.core.store.dao.SharedMessageStore;
 import org.wso2.broker.core.task.TaskExecutorService;
 import org.wso2.broker.core.util.MessageTracer;
 

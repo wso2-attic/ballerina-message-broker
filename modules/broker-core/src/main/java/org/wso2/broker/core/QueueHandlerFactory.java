@@ -22,7 +22,7 @@ package org.wso2.broker.core;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.queue.DbBackedQueueImpl;
 import org.wso2.broker.core.queue.MemQueueImpl;
-import org.wso2.broker.core.store.dao.SharedMessageStore;
+import org.wso2.broker.core.store.SharedMessageStore;
 
 /**
  * Factory for creating queue handler objects.
