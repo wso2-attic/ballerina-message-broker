@@ -16,6 +16,10 @@
 
 # Broker Configurations.
 wso2.broker:
+ # Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better
+ # performance while increasing the memory consumption.
+ queueInMemoryCacheLimit: 10000
+
  # Datasource configurations used to communicate with the database.
  dataSource:
   # Database URL.

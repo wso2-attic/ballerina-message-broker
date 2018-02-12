@@ -31,22 +31,15 @@ import java.util.Collection;
  * Database backed queue implementation.
  */
 public class DbBackedQueueImpl extends Queue {
-
-    /**
-     * Maximum number of message data held in memory.
-     * TODO: This should be configurable
-     */
-    private static final int DEFAULT_QUEUE_BUFFER_SIZE = 1000;
-
     private final SharedMessageStore sharedMessageStore;
 
     private final QueueBuffer buffer;
 
     public DbBackedQueueImpl(String queueName, boolean autoDelete,
-                      SharedMessageStore sharedMessageStore) throws BrokerException {
+            SharedMessageStore sharedMessageStore, QueueBufferFactory queueBufferFactory) throws BrokerException {
         super(queueName, true, autoDelete);
         this.sharedMessageStore = sharedMessageStore;
-        buffer = new QueueBuffer(DEFAULT_QUEUE_BUFFER_SIZE, sharedMessageStore::readData);
+        buffer = queueBufferFactory.createBuffer(sharedMessageStore::readData);
         Collection<Message> messages = sharedMessageStore.readStoredMessages(queueName);
         buffer.addAll(messages);
     }

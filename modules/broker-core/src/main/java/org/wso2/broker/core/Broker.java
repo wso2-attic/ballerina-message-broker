@@ -21,6 +21,7 @@ package org.wso2.broker.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.BrokerConfigProvider;
 import org.wso2.broker.common.ResourceNotFoundException;
 import org.wso2.broker.common.StartupContext;
 import org.wso2.broker.common.ValidationException;
@@ -28,6 +29,7 @@ import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.coordination.BasicHaListener;
 import org.wso2.broker.coordination.HaListener;
 import org.wso2.broker.coordination.HaStrategy;
+import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.metrics.DefaultBrokerMetricManager;
 import org.wso2.broker.core.metrics.NullBrokerMetricManager;
@@ -70,8 +72,11 @@ public final class Broker {
             metricManager = new NullBrokerMetricManager();
         }
 
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
+                                                                                        BrokerConfiguration.class);
         DataSource dataSource = startupContext.getService(DataSource.class);
-        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager);
+        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
         this.messagingEngine = new MessagingEngine(storeFactory, metricManager);
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new QueuesApi(this), new ExchangesApi(this));
