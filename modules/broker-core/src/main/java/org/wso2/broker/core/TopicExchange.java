@@ -22,8 +22,8 @@ package org.wso2.broker.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.FastTopicMatcher;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
-import org.wso2.broker.core.queue.Queue;
 import org.wso2.broker.core.store.dao.BindingDao;
 
 import java.util.concurrent.locks.ReadWriteLock;
@@ -47,7 +47,8 @@ final class TopicExchange extends Exchange {
     }
 
     @Override
-    public void bind(Queue queue, String routingPattern, FieldTable arguments) throws BrokerException {
+    public void bind(QueueHandler queue, String routingPattern, FieldTable arguments) throws BrokerException,
+                                                                                             ValidationException {
         lock.writeLock().lock();
         try {
             LOGGER.debug("Binding added for queue {} with pattern {}", queue, routingPattern);

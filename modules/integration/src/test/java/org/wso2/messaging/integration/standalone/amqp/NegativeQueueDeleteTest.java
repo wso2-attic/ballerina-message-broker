@@ -23,8 +23,8 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DefaultConsumer;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 import org.wso2.messaging.integration.util.ClientHelper;
@@ -43,7 +43,7 @@ public class NegativeQueueDeleteTest {
     private String queueWithMessages = "QueueWithMessages";
 
     @Parameters({"broker-hostname", "broker-port", "admin-username", "admin-password"})
-    @BeforeClass
+    @BeforeMethod
     public void setUp(String hostname, String port, String username, String password) throws Exception {
         amqpConnection = ClientHelper.getAmqpConnection(username, password, hostname, port);
         Channel channel = amqpConnection.createChannel();
@@ -68,12 +68,14 @@ public class NegativeQueueDeleteTest {
         channel.queueDelete(queueWithMessages, false, true);
     }
 
-    @AfterClass
-    public void tearDown() throws Exception {
-        Channel channel = amqpConnection.createChannel();
+    @Parameters({"broker-hostname", "broker-port", "admin-username", "admin-password"})
+    @AfterMethod
+    public void tearDown(String hostname, String port, String username, String password) throws Exception {
+        Connection connection = ClientHelper.getAmqpConnection(username, password, hostname, port);
+        Channel channel = connection.createChannel();
         channel.queueDelete(queueWithConsumers);
         channel.queueDelete(queueWithMessages);
-
-        amqpConnection.close();
+        connection.close();
+        this.amqpConnection.close();
     }
 }

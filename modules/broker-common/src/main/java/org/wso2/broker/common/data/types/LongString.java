@@ -87,6 +87,10 @@ public class LongString implements EncodableData {
         return (obj instanceof LongString) && (Arrays.equals(content, ((LongString) obj).content));
     }
 
+    public boolean isEmpty() {
+        return content.length == 0;
+    }
+
     /**
      * Hashcode of the underlying byte array content.
      *

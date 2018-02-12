@@ -136,10 +136,10 @@ public class BindingsApiDelegate {
     }
 
     public Response deleteBinding(String queueName, String bindingPattern, String filterExpression) {
-        throw new UnsupportedOperationException("Delete bindings is not implemented");
+        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
     }
 
     public Response getBinding(String queueName, String bindingPattern, String filterExpression) {
-        throw new UnsupportedOperationException("Binding delete is not implemented");
+        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
     }
 }

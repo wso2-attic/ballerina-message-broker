@@ -20,6 +20,8 @@
 package org.wso2.broker.core.queue;
 
 import org.wso2.broker.core.Message;
+import org.wso2.broker.core.Queue;
+import org.wso2.broker.core.QueueHandler;
 
 /**
  * Queue representation which is unmodifiable. Used to return a view of the underlying queue to the outside.
@@ -31,6 +33,11 @@ public class UnmodifiableQueueWrapper extends Queue {
     public UnmodifiableQueueWrapper(Queue queue) {
         super(queue.getName(), queue.isDurable(), queue.isAutoDelete());
         this.queue = queue;
+    }
+
+    @Override
+    public QueueHandler getQueueHandler() {
+        return queue.getQueueHandler();
     }
 
     @Override

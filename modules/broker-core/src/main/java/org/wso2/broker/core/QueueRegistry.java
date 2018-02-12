@@ -96,7 +96,7 @@ public final class QueueRegistry {
                     + " ] is not empty and the ifEmpty parameter is set.");
         } else {
             queueHandlerMap.remove(queueName);
-            queueHandler.closeAllConsumers();
+            queueHandler.releaseResources();
             queueDao.delete(queueHandler.getQueue());
             return queueHandler.size();
         }

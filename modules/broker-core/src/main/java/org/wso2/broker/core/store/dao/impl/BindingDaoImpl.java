@@ -35,9 +35,9 @@ import javax.sql.DataSource;
 /**
  * Implements functionality required to manipulate bindings in the storage.
  */
-public class BindingDaoImpl extends BindingDao {
+class BindingDaoImpl extends BaseDao implements BindingDao {
 
-    public BindingDaoImpl(DataSource dataSource) {
+    BindingDaoImpl(DataSource dataSource) {
         super(dataSource);
     }
 
@@ -61,7 +61,9 @@ public class BindingDaoImpl extends BindingDao {
             statement.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
-            throw new BrokerException("Error occurred while storing binding " + binding, e);
+            String message = "Error occurred while storing binding " + binding;
+            rollback(connection, message);
+            throw new BrokerException(message, e);
         } finally {
             close(connection, statement);
         }
@@ -80,8 +82,10 @@ public class BindingDaoImpl extends BindingDao {
             statement.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
-            throw new BrokerException("Error occurred while deleting the binding for queue " + queueName
-                    + " routing key " + routingKey, e);
+            String message = "Error occurred while deleting the binding for queue " + queueName + " routing key "
+                    + routingKey;
+            rollback(connection, message);
+            throw new BrokerException(message, e);
         } finally {
             close(connection, statement);
         }
@@ -107,7 +111,9 @@ public class BindingDaoImpl extends BindingDao {
             }
 
         } catch (Exception e) {
-            throw new BrokerException("Error occurred while retrieving bindings", e);
+            String message = "Error occurred while retrieving bindings";
+            rollback(connection, message);
+            throw new BrokerException(message, e);
         } finally {
             close(connection, statement, resultSet);
         }

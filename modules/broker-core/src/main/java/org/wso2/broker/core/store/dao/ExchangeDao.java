@@ -22,29 +22,23 @@ package org.wso2.broker.core.store.dao;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Exchange;
 
-import javax.sql.DataSource;
-
 /**
  * Defines functionality required at persistence layer for managing {@link Exchange}s.
  */
-public abstract class ExchangeDao extends BaseDao {
+public interface ExchangeDao {
 
-    public ExchangeDao(DataSource dataSource) {
-        super(dataSource);
-    }
+    void persist(Exchange exchange) throws BrokerException;
 
-    public abstract void persist(Exchange exchange) throws BrokerException;
+    void delete(Exchange exchange) throws BrokerException;
 
-    public abstract void delete(Exchange exchange) throws BrokerException;
-
-    public abstract void retrieveAll(ExchangeCollector exchangeCollector) throws BrokerException;
+    void retrieveAll(ExchangeCollector exchangeCollector) throws BrokerException;
 
     /**
      * Interface used as a callback when retrieving exchanges from the database. Callback is invoked per each exchange
      * retrieved from the database.
      */
     @FunctionalInterface
-    public interface ExchangeCollector {
+    interface ExchangeCollector {
 
         void addExchange(String name, String typeString) throws BrokerException;
     }

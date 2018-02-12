@@ -19,35 +19,30 @@
 
 package org.wso2.broker.core.store.dao;
 
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.core.Binding;
 import org.wso2.broker.core.BrokerException;
 
-import javax.sql.DataSource;
-
 /**
  * Defines functionality required at persistence layer for managing {@link Binding}s.
  */
-public abstract class BindingDao extends BaseDao {
+public interface BindingDao {
 
-    public BindingDao(DataSource dataSource) {
-        super(dataSource);
-    }
+    void persist(String exchangeName, Binding binding) throws BrokerException;
 
-    public abstract void persist(String exchangeName, Binding binding) throws BrokerException;
+    void delete(String queueName, String routingKey, String exchangeName) throws BrokerException;
 
-    public abstract void delete(String queueName, String routingKey, String exchangeName) throws BrokerException;
-
-    public abstract void retrieveBindingsForExchange(
-            String exchangeName, BindingCollector bindingCollector) throws BrokerException;
+    void retrieveBindingsForExchange(String exchangeName, BindingCollector bindingCollector) throws BrokerException;
 
     /**
      * Interface used as a callback to retrieve bindings from the database.
      * {@link #addBinding(String, String, FieldTable)} is invoked per each binding retrieved from the database.
      */
     @FunctionalInterface
-    public interface BindingCollector {
+    interface BindingCollector {
 
-        void addBinding(String queueName, String routingKey, FieldTable arguments) throws BrokerException;
+        void addBinding(String queueName, String routingKey, FieldTable arguments) throws BrokerException,
+                                                                                          ValidationException;
     }
 }

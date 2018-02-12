@@ -17,7 +17,7 @@
  *
  */
 
-package org.wso2.broker.core.store.dao;
+package org.wso2.broker.core.store;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.lmax.disruptor.EventHandler;
@@ -27,22 +27,21 @@ import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
-import org.wso2.broker.core.store.DbEventMatcher;
-import org.wso2.broker.core.store.DbOperation;
-import org.wso2.broker.core.store.DbWriter;
-import org.wso2.broker.core.store.LogExceptionHandler;
+import org.wso2.broker.core.store.dao.MessageDao;
 import org.wso2.broker.core.store.disruptor.SleepingBlockingWaitStrategy;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Message store class that is used by all the durable queues to persist messages
- * <p>
+ *
  * Note: This class is thread safe
  */
+@ThreadSafe
 public class SharedMessageStore {
 
     private final Map<Long, Message> pendingMessages;
@@ -61,20 +60,21 @@ public class SharedMessageStore {
     private final MessageDao messageDao;
 
     @SuppressWarnings("unchecked")
-    public SharedMessageStore(MessageDao messageDao, int bufferSize, int maxDbBatchSize) {
+    SharedMessageStore(MessageDao messageDao, int bufferSize, int maxDbBatchSize) {
 
         pendingMessages = new ConcurrentHashMap<>();
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("DisruptorMessageStoreThread-%d").build();
 
         disruptor = new Disruptor<>(DbOperation.getFactory(),
-                bufferSize, namedThreadFactory, ProducerType.MULTI, new SleepingBlockingWaitStrategy());
+                                    bufferSize, namedThreadFactory, ProducerType.MULTI, new
+                                            SleepingBlockingWaitStrategy());
 
         disruptor.setDefaultExceptionHandler(new LogExceptionHandler());
 
         disruptor.handleEventsWith(new DbEventMatcher(bufferSize))
-                .then(new DbWriter(messageDao, maxDbBatchSize))
-                .then((EventHandler<DbOperation>) (event, sequence, endOfBatch) -> event.clear());
+                 .then(new DbWriter(messageDao, maxDbBatchSize))
+                 .then((EventHandler<DbOperation>) (event, sequence, endOfBatch) -> event.clear());
         disruptor.start();
         this.messageDao = messageDao;
     }
@@ -87,7 +87,7 @@ public class SharedMessageStore {
         Message message = pendingMessages.get(messageInternalId);
         if (message == null) {
             throw new BrokerException("Unknown message id " + messageInternalId
-                    + " cannot attach to queue " + queueName);
+                                              + " cannot attach to queue " + queueName);
         }
         message.addOwnedQueue(queueName);
     }

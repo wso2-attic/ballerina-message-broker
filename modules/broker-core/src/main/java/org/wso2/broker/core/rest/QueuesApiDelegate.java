@@ -67,9 +67,9 @@ public class QueuesApiDelegate {
             } else {
                 throw new BadRequestException("Queue already exists.");
             }
-        } catch (BrokerException e) {
+        } catch (ValidationException e) {
             throw new BadRequestException(e.getMessage(), e);
-        } catch (URISyntaxException e) {
+        } catch (BrokerException | URISyntaxException e) {
             LOGGER.error("Error occurred while generating location URI ", e);
             throw new InternalServerErrorException(e.getMessage(), e);
         }

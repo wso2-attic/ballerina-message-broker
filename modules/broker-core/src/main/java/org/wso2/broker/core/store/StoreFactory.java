@@ -24,8 +24,7 @@ import org.wso2.broker.core.ExchangeRegistry;
 import org.wso2.broker.core.QueueHandlerFactory;
 import org.wso2.broker.core.QueueRegistry;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
-import org.wso2.broker.core.store.dao.DaoFactory;
-import org.wso2.broker.core.store.dao.SharedMessageStore;
+import org.wso2.broker.core.store.dao.impl.DaoFactory;
 
 import javax.sql.DataSource;
 
