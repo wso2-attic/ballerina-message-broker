@@ -68,12 +68,14 @@ public class NegativeQueueDeleteTest {
         channel.queueDelete(queueWithMessages, false, true);
     }
 
+    @Parameters({"broker-hostname", "broker-port", "admin-username", "admin-password"})
     @AfterMethod
-    public void tearDown() throws Exception {
-        Channel channel = amqpConnection.createChannel();
+    public void tearDown(String hostname, String port, String username, String password) throws Exception {
+        Connection connection = ClientHelper.getAmqpConnection(username, password, hostname, port);
+        Channel channel = connection.createChannel();
         channel.queueDelete(queueWithConsumers);
         channel.queueDelete(queueWithMessages);
-
-        amqpConnection.close();
+        connection.close();
+        this.amqpConnection.close();
     }
 }
