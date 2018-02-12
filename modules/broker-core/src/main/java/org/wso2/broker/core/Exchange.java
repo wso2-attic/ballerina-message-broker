@@ -19,8 +19,8 @@
 
 package org.wso2.broker.core;
 
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
-import org.wso2.broker.core.queue.Queue;
 import org.wso2.broker.core.store.dao.BindingDao;
 import org.wso2.broker.core.store.dao.NoOpBindingDao;
 
@@ -88,8 +88,9 @@ public abstract class Exchange {
         return type;
     }
 
-    void bind(Queue queue, String routingKey, FieldTable arguments) throws BrokerException {
-        bindingsRegistry.bind(queue, routingKey, arguments);
+    void bind(QueueHandler queueHandler, String routingKey, FieldTable arguments) throws BrokerException,
+                                                                                         ValidationException {
+        bindingsRegistry.bind(queueHandler, routingKey, arguments);
     }
 
     void unbind(Queue queue, String routingKey) throws BrokerException {

@@ -1,7 +1,7 @@
 package org.wso2.broker.core.store.dao.impl;
 
 import org.wso2.broker.core.BrokerException;
-import org.wso2.broker.core.queue.Queue;
+import org.wso2.broker.core.Queue;
 import org.wso2.broker.core.store.dao.QueueDao;
 
 import java.sql.Connection;

@@ -21,10 +21,12 @@ package org.wso2.broker.core;
 
 import org.wso2.broker.common.data.types.FieldTable;
 import org.wso2.broker.common.data.types.FieldValue;
+import org.wso2.broker.common.data.types.LongString;
 import org.wso2.broker.common.data.types.ShortString;
-import org.wso2.broker.core.queue.Queue;
 import org.wso2.broker.core.selector.BooleanExpression;
 import org.wso2.broker.core.selector.generated.MessageFilter;
+
+import java.util.Objects;
 
 /**
  * Represents an binding object which binds a {@link Queue} to a given {@link Exchange}
@@ -41,23 +43,28 @@ public final class Binding {
 
     private final BooleanExpression filterExpression;
 
+    private final LongString filterString;
+
     Binding(Queue queue, String bindingPattern, FieldTable arguments) throws BrokerException {
         this.queue = queue;
         this.bindingPattern = bindingPattern;
         this.arguments = arguments;
-        String filterString = null;
+        LongString selector = null;
         try {
             FieldValue fieldValue = arguments.getValue(JMS_SELECTOR_ARGUMENT);
-            if (fieldValue != null &&
-                    fieldValue.getType() == FieldValue.Type.LONG_STRING &&
-                    !(filterString = fieldValue.getValue().toString()).isEmpty()) {
-                MessageFilter messageFilter = new MessageFilter(filterString);
+            if (Objects.nonNull(fieldValue)
+                    && fieldValue.getType() == FieldValue.Type.LONG_STRING
+                    && !(selector = (LongString) fieldValue.getValue()).isEmpty()) {
+
+                MessageFilter messageFilter = new MessageFilter(selector.toString());
                 filterExpression = messageFilter.parse();
+                filterString = selector;
             } else {
                 filterExpression = null;
+                filterString = null;
             }
         } catch (Exception e) {
-            throw new BrokerException("Error parsing the message filter string [ " + filterString + " ]", e);
+            throw new BrokerException("Error parsing the message filter string [ " + selector + " ]", e);
         }
 
     }
@@ -80,6 +87,26 @@ public final class Binding {
 
     BooleanExpression getFilterExpression() {
         return filterExpression;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof Binding) {
+            return bindingPattern.equals(((Binding) obj).bindingPattern)
+                    && getQueue().equals(((Binding) obj).getQueue())
+                    && (Objects.equals(filterString, ((Binding) obj).filterString));
+
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bindingPattern, getQueue(), filterString);
     }
 
     @Override

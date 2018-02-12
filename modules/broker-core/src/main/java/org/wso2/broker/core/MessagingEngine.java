@@ -130,7 +130,7 @@ final class MessagingEngine {
             }
 
             if (!routingKey.isEmpty()) {
-                exchange.bind(queueHandler.getQueue(), routingKey, arguments);
+                exchange.bind(queueHandler, routingKey, arguments);
             }
         } finally {
             lock.writeLock().unlock();
@@ -157,14 +157,15 @@ final class MessagingEngine {
         }
     }
 
-    boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete) throws BrokerException {
+    boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
+            throws BrokerException, ValidationException {
         lock.writeLock().lock();
         try {
             boolean queueAdded = queueRegistry.addQueue(queueName, passive, durable, autoDelete);
             if (queueAdded) {
                 QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
                 // We need to bind every queue to the default exchange
-                exchangeRegistry.getDefaultExchange().bind(queueHandler.getQueue(), queueName, FieldTable.EMPTY_TABLE);
+                exchangeRegistry.getDefaultExchange().bind(queueHandler, queueName, FieldTable.EMPTY_TABLE);
             }
             return queueAdded;
         } finally {

@@ -9,7 +9,7 @@ info:
 schemes:
   - https
   - http
-basePath: /broker/v.1.0
+basePath: /broker/v1.0
 produces:
   - application/json
 paths:

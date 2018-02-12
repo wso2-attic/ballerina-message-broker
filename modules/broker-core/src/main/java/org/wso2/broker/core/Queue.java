@@ -17,10 +17,7 @@
  *
  */
 
-package org.wso2.broker.core.queue;
-
-import org.wso2.broker.core.BrokerException;
-import org.wso2.broker.core.Message;
+package org.wso2.broker.core;
 
 /**
  * Abstract class to represent an underlying queue for the broker
@@ -30,13 +27,15 @@ public abstract class Queue {
     /**
      * Unbounded queue.
      */
-    static final int UNBOUNDED = Integer.MAX_VALUE;
+    public static final int UNBOUNDED = Integer.MAX_VALUE;
 
     private final String name;
 
     private final boolean durable;
 
     private final boolean autoDelete;
+
+    private QueueHandler queueHandler;
 
     public Queue(String name, boolean durable, boolean autoDelete) {
         this.name = name;
@@ -54,6 +53,14 @@ public abstract class Queue {
 
     public boolean isAutoDelete() {
         return autoDelete;
+    }
+
+    public QueueHandler getQueueHandler() {
+        return queueHandler;
+    }
+
+    void setQueueHandler(QueueHandler queueHandler) {
+        this.queueHandler = queueHandler;
     }
 
     @Override

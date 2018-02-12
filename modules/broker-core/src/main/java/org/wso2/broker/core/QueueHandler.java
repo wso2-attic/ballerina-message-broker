@@ -22,15 +22,16 @@ package org.wso2.broker.core;
 import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.util.function.ThrowingConsumer;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.queue.MemQueueImpl;
-import org.wso2.broker.core.queue.Queue;
 import org.wso2.broker.core.queue.UnmodifiableQueueWrapper;
 import org.wso2.broker.core.util.MessageTracer;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,8 +58,11 @@ public final class QueueHandler {
 
     private final Queue unmodifiableQueueView;
 
+    private final Map<Binding, ThrowingConsumer<Binding, BrokerException>> bindingChangeListenersMap;
+
     QueueHandler(Queue queue, BrokerMetricManager metricManager) {
         this.queue = queue;
+        queue.setQueueHandler(this);
         unmodifiableQueueView = new UnmodifiableQueueWrapper(queue);
         // TODO: take message count from queue configuration
         // We create an unbounded redelivery queue since we keep the messages which are already in memory which does
@@ -68,7 +72,7 @@ public final class QueueHandler {
         this.metricManager = metricManager;
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
-
+        bindingChangeListenersMap = new ConcurrentHashMap<>();
     }
 
     public Queue getQueue() {
@@ -197,7 +201,7 @@ public final class QueueHandler {
         return consumers.isEmpty();
     }
 
-    void closeAllConsumers() {
+    private void closeAllConsumers() {
         Iterator<Consumer> iterator = consumers.iterator();
         while (iterator.hasNext()) {
 
@@ -206,7 +210,7 @@ public final class QueueHandler {
                 consumer.close();
             } catch (BrokerException e) {
                 LOGGER.error("Error occurred while closing the consumer [ " + consumer + " ] " +
-                        "for queue [ " + queue.toString() + " ]", e);
+                                     "for queue [ " + queue.toString() + " ]", e);
             } finally {
                 iterator.remove();
             }
@@ -217,4 +221,19 @@ public final class QueueHandler {
         return consumers.size();
     }
 
+    public void addBinding(Binding binding, ThrowingConsumer<Binding, BrokerException> bindingChangeListener) {
+        bindingChangeListenersMap.put(binding, bindingChangeListener);
+    }
+
+    public void releaseResources() throws BrokerException {
+        closeAllConsumers();
+        for (Map.Entry<Binding, ThrowingConsumer<Binding, BrokerException>> entry
+                : bindingChangeListenersMap.entrySet()) {
+            entry.getValue().accept(entry.getKey());
+        }
+    }
+
+    public void removeBinding(Binding binding) {
+        bindingChangeListenersMap.remove(binding);
+    }
 }
