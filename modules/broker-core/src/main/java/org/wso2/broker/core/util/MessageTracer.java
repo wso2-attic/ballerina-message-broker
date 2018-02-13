@@ -60,12 +60,17 @@ public final class MessageTracer {
         if (LOGGER.isTraceEnabled() && Objects.nonNull(message) && Objects.nonNull(queueHandler)) {
             Metadata metadata = message.getMetadata();
             String queueName = queueHandler.getQueue().getName();
-            TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId())
-                                                          .routingKey(metadata.getRoutingKey())
-                                                          .exchangeName(metadata.getExchangeName())
-                                                          .redeliveryCount(message.getRedeliveryCount())
-                                                          .isRedelivered(message.isRedelivered())
-                                                          .queueName(queueName);
+            TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId());
+
+            // Metadata can be null if we clear message when in-memory queue limit is exceeded
+            if (Objects.nonNull(metadata)) {
+                traceBuilder.routingKey(metadata.getRoutingKey())
+                            .exchangeName(metadata.getExchangeName());
+            }
+            traceBuilder.redeliveryCount(message.getRedeliveryCount())
+                        .isRedelivered(message.isRedelivered())
+                        .queueName(queueName);
+
             LOGGER.trace(traceBuilder.buildTrace(description));
         }
     }
