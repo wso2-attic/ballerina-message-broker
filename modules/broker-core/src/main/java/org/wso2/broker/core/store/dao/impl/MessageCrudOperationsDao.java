@@ -174,14 +174,10 @@ class MessageCrudOperationsDao extends BaseDao {
         }
     }
 
-    @SuppressFBWarnings(
-            value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
-            justification = "Return value of context.stop() is not required.")
     public Collection<Message> readAll(Connection connection, String queueName) throws BrokerException {
         Map<Long, Message> messageMap = new HashMap<>();
-        Context context = metricManager.startMessageReadTimer();
 
-        try {
+        try (Context ignored = metricManager.startMessageReadTimer()) {
             List<Long> messageList = getMessagesIdsForQueue(connection, queueName);
 
             if (!messageList.isEmpty()) {
@@ -192,15 +188,12 @@ class MessageCrudOperationsDao extends BaseDao {
             return messageMap.values();
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while reading messages", e);
-        } finally {
-            context.stop();
         }
     }
 
     public Collection<Message> read(Connection connection, Map<Long, Message> messageMap) throws BrokerException {
-        Context context = metricManager.startMessageReadTimer();
 
-        try {
+        try (Context ignored = metricManager.startMessageReadTimer()) {
             if (!messageMap.isEmpty()) {
                 String idList = getSQLFormattedIdList(messageMap.size());
                 populateMessageWithMetadata(connection, idList, messageMap.keySet(), messageMap);
@@ -209,8 +202,6 @@ class MessageCrudOperationsDao extends BaseDao {
             return messageMap.values();
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while reading messages", e);
-        } finally {
-            context.close();
         }
     }
 

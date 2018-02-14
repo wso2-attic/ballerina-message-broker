@@ -22,9 +22,9 @@ package org.wso2.broker.core.queue;
 import org.wso2.broker.core.Message;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -50,7 +50,7 @@ public class QueueBuffer {
     /**
      * Number of in memory messages.
      */
-    private AtomicInteger fullMessageCount = new AtomicInteger(0);
+    private AtomicInteger deliverableMessageCount = new AtomicInteger(0);
 
     /**
      * Pointer to first deliverable candidate node.
@@ -70,7 +70,7 @@ public class QueueBuffer {
     /**
      * Used to fast lookup the node for a message ID
      */
-    private Map<Long, Node> keyMap = new HashMap<>();
+    private Map<Long, Node> keyMap = new ConcurrentHashMap<>();
 
     QueueBuffer(int inMemoryLimit, MessageReader messageReader) {
         this.inMemoryLimit = inMemoryLimit;
@@ -104,7 +104,7 @@ public class QueueBuffer {
             newMessage.clearData();
         } else {
             newNode.state.set(Node.FULL_MESSAGE);
-            fullMessageCount.incrementAndGet();
+            deliverableMessageCount.incrementAndGet();
 
             if (Objects.isNull(firstDeliverableCandidate)) {
                 firstDeliverableCandidate = newNode;
@@ -157,7 +157,7 @@ public class QueueBuffer {
 
         node.item = null;
         size.decrementAndGet();
-        fullMessageCount.decrementAndGet();
+        deliverableMessageCount.decrementAndGet();
         submitMessageReads();
     }
 
@@ -208,7 +208,7 @@ public class QueueBuffer {
     }
 
     private void submitMessageReads() {
-        int fillableMessageCount = inMemoryLimit - fullMessageCount.get();
+        int fillableMessageCount = inMemoryLimit - deliverableMessageCount.get();
 
         Node undeliverableNode = this.firstUndeliverable;
         while (fillableMessageCount-- > 0 && undeliverableNode != null) {
@@ -233,7 +233,7 @@ public class QueueBuffer {
         Node node = keyMap.get(message.getInternalId());
         if (Objects.nonNull(node)) {
            node.state.set(Node.FULL_MESSAGE);
-           fullMessageCount.incrementAndGet();
+           deliverableMessageCount.incrementAndGet();
         }
     }
 
