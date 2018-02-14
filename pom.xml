@@ -50,10 +50,10 @@
         <module>modules/broker-amqp</module>
         <module>modules/broker-coordination</module>
         <module>modules/launcher</module>
+        <module>modules/broker-cli-client</module>
         <module>modules/integration</module>
         <module>modules/coverage-report</module>
         <module>modules/features</module>
-        <module>modules/broker-cli-client</module>
     </modules>
 
     <dependencyManagement>

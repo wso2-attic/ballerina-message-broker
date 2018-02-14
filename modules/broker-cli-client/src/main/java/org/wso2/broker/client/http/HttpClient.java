@@ -30,7 +30,6 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 import java.util.Objects;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -121,29 +120,30 @@ public class HttpClient {
             BufferedReader in = null;
             StringBuffer response = new StringBuffer();
             try {
-                 // if an error code is returned retrieve the errorStream otherwise inputStream
-                 if (responseCode / 100 == 4 || responseCode / 100 == 5) {
-                     if (Objects.isNull(con.getErrorStream())) {
-                         return new HttpResponse(responseCode, String.valueOf(responseCode) + " " + con.getResponseMessage());
-                     }
-                     in = new BufferedReader(new InputStreamReader(con.getErrorStream(), StandardCharsets.UTF_8));
-                 } else {
-                     if (Objects.isNull(con.getInputStream())) {
-                         return new HttpResponse(responseCode, "");
-                     }
-                     in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
-                 }
+                // if an error code is returned retrieve the errorStream otherwise inputStream
+                if (responseCode / 100 == 4 || responseCode / 100 == 5) {
+                    if (Objects.isNull(con.getErrorStream())) {
+                        return new HttpResponse(responseCode,
+                                String.valueOf(responseCode) + " " + con.getResponseMessage());
+                    }
+                    in = new BufferedReader(new InputStreamReader(con.getErrorStream(), StandardCharsets.UTF_8));
+                } else {
+                    if (Objects.isNull(con.getInputStream())) {
+                        return new HttpResponse(responseCode, "");
+                    }
+                    in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
+                }
 
-                 String inputLine;
+                String inputLine;
 
-                 while ((inputLine = in.readLine()) != null) {
-                     response.append(inputLine);
-                 }
-             } finally {
-                 if (Objects.nonNull(in)) {
-                     in.close();
-                 }
-             }
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+            }
 
             return new HttpResponse(responseCode, response.toString());
         } catch (IOException e) {
