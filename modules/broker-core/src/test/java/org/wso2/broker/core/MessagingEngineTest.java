@@ -27,6 +27,7 @@ import org.testng.annotations.Test;
 import org.wso2.broker.common.ResourceNotFoundException;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.FieldTable;
+import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.metrics.NullBrokerMetricManager;
 import org.wso2.broker.core.store.StoreFactory;
 
@@ -46,7 +47,7 @@ public class MessagingEngineTest {
     public void beforeTest() throws BrokerException, ValidationException {
         DataSource dataSource = DbUtil.getDataSource();
         NullBrokerMetricManager metricManager = new NullBrokerMetricManager();
-        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager);
+        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, new BrokerConfiguration());
         messagingEngine = new MessagingEngine(storeFactory, metricManager);
     }
 

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Message {
 
-    private final Metadata metadata;
+    private Metadata metadata;
 
     private final ArrayList<ContentChunk> contentChunks;
 
@@ -42,11 +43,17 @@ public class Message {
 
     private final Set<String> queueSet;
 
-    public Message(Metadata metadata) {
-        this(metadata, ConcurrentHashMap.newKeySet());
+    /**
+     * Unique id of the message.
+     */
+    private final long internalId;
+
+    public Message(long internalId, Metadata metadata) {
+        this(internalId, metadata, ConcurrentHashMap.newKeySet());
     }
 
-    private Message(Metadata metadata, Set<String> queueSet) {
+    private Message(long internalId, Metadata metadata, Set<String> queueSet) {
+        this.internalId = internalId;
         this.metadata = metadata;
         this.contentChunks = new ArrayList<>();
         this.queueSet = queueSet;
@@ -71,15 +78,15 @@ public class Message {
     }
 
     public Message shallowCopy() {
-        Message message = new Message(metadata.shallowCopy(), queueSet);
+        Message message = new Message(internalId, metadata.shallowCopy(), queueSet);
         message.redelivered = redelivered;
         message.redeliveryCount = redeliveryCount;
         shallowCopyContent(message);
         return message;
     }
 
-    public Message shallowCopyWith(long internalId, String routingKey, String exchangeName) {
-        Message message = new Message(metadata.shallowCopyWith(internalId, routingKey, exchangeName));
+    public Message shallowCopyWith(long newMessageId, String routingKey, String exchangeName) {
+        Message message = new Message(newMessageId, metadata.shallowCopyWith(routingKey, exchangeName));
         shallowCopyContent(message);
         return message;
     }
@@ -102,6 +109,10 @@ public class Message {
 
     public Collection<String> getAttachedQueues() {
         return queueSet;
+    }
+
+    public long getInternalId() {
+        return internalId;
     }
 
     /**
@@ -128,6 +139,21 @@ public class Message {
 
     @Override
     public String toString() {
-        return metadata.toString();
+
+        if (Objects.isNull(metadata)) {
+            return "Bare message";
+        } else {
+            return metadata.toString();
+        }
+    }
+
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
+    }
+
+    public void clearData() {
+        metadata = null;
+        release();
+        contentChunks.clear();
     }
 }

@@ -52,11 +52,6 @@ public class Metadata {
     public static final int NON_PERSISTENT_MESSAGE = 1;
 
     /**
-     * Unique id of the message.
-     */
-    private final long internalId;
-
-    /**
      * Key value used by the router (exchange) to identify the relevant queue(s) for this message.
      */
     private final String routingKey;
@@ -75,17 +70,12 @@ public class Metadata {
 
     private FieldTable headers;
 
-    public Metadata(long internalId, String routingKey, String exchangeName, long contentLength) {
-        this.internalId = internalId;
+    public Metadata(String routingKey, String exchangeName, long contentLength) {
         this.routingKey = routingKey;
         this.exchangeName = exchangeName;
         this.contentLength = contentLength;
         this.properties = FieldTable.EMPTY_TABLE;
         this.headers = FieldTable.EMPTY_TABLE;
-    }
-
-    public long getInternalId() {
-        return internalId;
     }
 
     public String getRoutingKey() {
@@ -101,12 +91,12 @@ public class Metadata {
     }
 
     public Metadata shallowCopy() {
-        Metadata metadata = shallowCopyWith(internalId, routingKey, exchangeName);
+        Metadata metadata = shallowCopyWith(routingKey, exchangeName);
         return metadata;
     }
 
-    public Metadata shallowCopyWith(long internalId, String routingKey, String exchangeName) {
-        Metadata metadata = new Metadata(internalId, routingKey, exchangeName, contentLength);
+    public Metadata shallowCopyWith(String routingKey, String exchangeName) {
+        Metadata metadata = new Metadata(routingKey, exchangeName, contentLength);
         metadata.properties = properties;
         metadata.headers = headers;
         return metadata;
@@ -116,8 +106,7 @@ public class Metadata {
     @Override
     public String toString() {
         return "Metadata{"
-                + "internalId=" + internalId
-                + ", routingKey='" + routingKey + '\''
+                + "routingKey='" + routingKey + '\''
                 + ", exchangeName='" + exchangeName + '\''
                 + ", contentLength=" + contentLength
                 + ", messageId= " + properties.getValue(MESSAGE_ID) + '\''

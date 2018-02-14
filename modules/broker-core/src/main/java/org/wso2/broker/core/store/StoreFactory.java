@@ -23,6 +23,7 @@ import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.ExchangeRegistry;
 import org.wso2.broker.core.QueueHandlerFactory;
 import org.wso2.broker.core.QueueRegistry;
+import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.store.dao.impl.DaoFactory;
 
@@ -35,10 +36,12 @@ public class StoreFactory {
 
     private final DaoFactory daoFactory;
     private final BrokerMetricManager metricManager;
+    private final BrokerConfiguration configuration;
 
-    public StoreFactory(DataSource dataSource, BrokerMetricManager metricManager) {
+    public StoreFactory(DataSource dataSource, BrokerMetricManager metricManager, BrokerConfiguration configuration) {
         daoFactory = new DaoFactory(dataSource, metricManager);
         this.metricManager = metricManager;
+        this.configuration = configuration;
     }
 
     /**
@@ -62,6 +65,7 @@ public class StoreFactory {
      * @return QueueRegistry object
      */
     public QueueRegistry getQueueRegistry(SharedMessageStore messageStore) throws BrokerException {
-        return new QueueRegistry(daoFactory.createQueueDao(), new QueueHandlerFactory(messageStore, metricManager));
+        return new QueueRegistry(daoFactory.createQueueDao(),
+                                 new QueueHandlerFactory(messageStore, metricManager, configuration));
     }
 }
