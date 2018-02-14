@@ -90,6 +90,10 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.messaging</groupId>
+            <artifactId>broker-cli-client</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
