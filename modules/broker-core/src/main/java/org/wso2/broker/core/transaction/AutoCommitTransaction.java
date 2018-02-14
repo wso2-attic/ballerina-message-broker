@@ -28,6 +28,7 @@ import org.wso2.broker.core.Message;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.transaction.xa.Xid;
 
 /**
  * Non transactional enqueue or dequeue operation handle in this implementation. No effect on commit or rollback
@@ -55,12 +56,12 @@ public class AutoCommitTransaction implements BrokerTransaction {
 
     @Override
     public void commit() throws ValidationException {
-        throw new ValidationException("Commit called on non-transactional channel");
+        throw new ValidationException("tx.commit called on non-transactional channel");
     }
 
     @Override
     public void rollback() throws ValidationException {
-        throw new ValidationException("Rollback called on non-transactional channel");
+        throw new ValidationException("tx.rollback called on non-transactional channel");
     }
 
     @Override
@@ -72,4 +73,41 @@ public class AutoCommitTransaction implements BrokerTransaction {
     public boolean isTransactional() {
         return false;
     }
+
+    @Override
+    public void start(Xid xid, boolean join, boolean resume) throws ValidationException {
+        throw new ValidationException("dtx.start called on non-transactional channel");
+    }
+
+    @Override
+    public void end(Xid xid, boolean fail, boolean suspend) throws ValidationException {
+        throw new ValidationException("dtx.end called on non-transactional channel");
+    }
+
+    @Override
+    public void prepare(Xid xid) throws ValidationException {
+        throw new ValidationException("dtx.prepare called on non-transactional channel");
+    }
+
+    @Override
+    public void commit(Xid xid, boolean onePhase) throws ValidationException {
+        throw new ValidationException("dtx.commit called on non-transactional channel");
+    }
+
+    @Override
+    public void rollback(Xid xid) throws ValidationException {
+        throw new ValidationException("dtx.rollback called on non-transactional channel");
+    }
+
+    @Override
+    public void forget(Xid xid) throws ValidationException {
+        throw new ValidationException("dtx.forget called on non-transactional channel");
+    }
+
+    @Override
+    public void setTimeout(Xid xid, long timeout) throws ValidationException {
+        throw new ValidationException("dtx.set-timeout called on non-transactional channel");
+    }
+
+
 }

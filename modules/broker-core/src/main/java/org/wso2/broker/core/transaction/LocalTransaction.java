@@ -21,11 +21,13 @@ package org.wso2.broker.core.transaction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.Message;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.transaction.xa.Xid;
 
 /**
  * Transactional enqueue or dequeue operation handle in this implementation. The caller responsible for invoking
@@ -77,9 +79,45 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     @Override
+    public void start(Xid xid, boolean join, boolean resume) throws ValidationException {
+        throw new ValidationException("dtx.start called on local-transactional channel");
+    }
+
+    @Override
+    public void end(Xid xid, boolean fail, boolean suspend) throws ValidationException {
+        throw new ValidationException("dtx.end called on local-transactional channel");
+    }
+
+    @Override
+    public void prepare(Xid xid) throws ValidationException {
+        throw new ValidationException("dtx.prepare called on local-transactional channel");
+    }
+
+    @Override
+    public void commit(Xid xid, boolean onePhase) throws ValidationException {
+        throw new ValidationException("dtx.commit called on local-transactional channel");
+    }
+
+    @Override
+    public void rollback(Xid xid) throws ValidationException {
+        throw new ValidationException("dtx.rollback called on local-transactional channel");
+    }
+
+    @Override
+    public void forget(Xid xid) throws ValidationException {
+        throw new ValidationException("dtx.forget called on local-transactional channel");
+    }
+
+    @Override
+    public void setTimeout(Xid xid, long timeout) throws ValidationException {
+        throw new ValidationException("dtx.set-timeout called on local-transactional channel");
+    }
+
+    @Override
     public void addPostTransactionAction(Action postTransactionAction) {
         postTransactionActions.add(postTransactionAction);
     }
+
 
     /**
      * Execute post transaction action after commit
