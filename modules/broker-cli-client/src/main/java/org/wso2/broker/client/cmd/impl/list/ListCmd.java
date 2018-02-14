@@ -49,7 +49,7 @@ public class ListCmd extends AbstractCmd {
     @Override
     public void printUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("\tmb list exchange [exchange-name]? [flag]*\n");
-        out.append("\tmb list queue [queue-name]? [flag]*\n");
+        out.append("  mb list exchange [exchange-name]? [flag]*\n");
+        out.append("  mb list queue [queue-name]? [flag]*\n");
     }
 }

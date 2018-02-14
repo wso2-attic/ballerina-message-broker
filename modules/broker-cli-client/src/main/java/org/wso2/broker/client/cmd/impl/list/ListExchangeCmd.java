@@ -84,12 +84,12 @@ public class ListExchangeCmd extends ListCmd {
     @Override
     public void printUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("\tmb list exchange [exchange-name]? [flag]*\n");
+        out.append("  mb list exchange [exchange-name]? [flag]*\n");
         out.append("Example:\n");
-        out.append("\tlist exchange named 'myExchange' in MB.\n");
-        out.append("\tmb list exchange myExchange\n");
-        out.append("\tlist all exchanges in MB.\n");
-        out.append("\tmb list exchange\n");
+        out.append("* list exchange named 'myExchange' in MB.\n");
+        out.append("  mb list exchange myExchange\n");
+        out.append("* list all exchanges in MB.\n");
+        out.append("  mb list exchange\n");
     }
 
 }

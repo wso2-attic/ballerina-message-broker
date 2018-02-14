@@ -88,10 +88,10 @@ public class CreateExchangeCmd extends CreateCmd {
     @Override
     public void printUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("\tmb create exchange [exchange-name] [options]*\n");
+        out.append("  mb create exchange [exchange-name] [options]*\n");
         out.append("Example:\n");
-        out.append("\tCreate a durable direct Exchange in MB.\n");
-        out.append("\tmb create exchange myExchange -t direct -d\n");
+        out.append("* Create a durable direct Exchange in MB.\n");
+        out.append("  mb create exchange myExchange -t direct -d\n");
     }
 
 }

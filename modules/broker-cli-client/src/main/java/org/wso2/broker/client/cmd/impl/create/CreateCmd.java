@@ -43,13 +43,13 @@ public class CreateCmd extends AbstractCmd {
 
     @Override
     public void printLongDesc(StringBuilder out) {
-        out.append("create a resource in MB with parameters\n");
+        out.append("Create a resource in MB with parameters\n");
     }
 
     @Override
     public void printUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("\tmb create exchange [exchange-name] [options]*\n");
-        out.append("\tmb create queue [queue-name] [options]*\n");
+        out.append("  mb create exchange [exchange-name] [options]*\n");
+        out.append("  mb create queue [queue-name] [options]*\n");
     }
 }

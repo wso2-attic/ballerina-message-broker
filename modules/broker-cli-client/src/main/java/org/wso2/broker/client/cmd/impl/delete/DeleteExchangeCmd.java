@@ -86,9 +86,9 @@ public class DeleteExchangeCmd extends DeleteCmd {
     @Override
     public void printUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("\tmb delete exchange [exchange-name] [flag]*\n");
+        out.append("  mb delete exchange [exchange-name] [flag]*\n");
         out.append("Example:\n");
-        out.append("\tDelete exchange named 'myExchange' in MB, only if unused.\n");
-        out.append("\tmb delete exchange myExchange -u\n");
+        out.append("* Delete exchange named 'myExchange' in MB, only if unused.\n");
+        out.append("  mb delete exchange myExchange -u\n");
     }
 }

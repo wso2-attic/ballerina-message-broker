@@ -72,10 +72,9 @@ public class InitCmd extends AbstractCmd {
     @Override
     public void printUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("\tmb init [options]*\n");
-        out.append("\n");
+        out.append("  mb init [options]*\n");
         out.append("Example:\n");
-        out.append("\tEnter MB REST service connection details and user credentials.\n");
-        out.append("\tmb init -H localhost -P 9000 -u admin -p admin123\n");
+        out.append("* Enter MB REST service connection details and user credentials.\n");
+        out.append("  mb init -H localhost -P 9000 -u admin -p admin123\n");
     }
 }

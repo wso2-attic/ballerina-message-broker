@@ -91,6 +91,7 @@ public class Main {
         addSubCommand(jCommanderDelete, deleteExchangeCmd.getName(), deleteExchangeCmd);
 
         // 2. Parse input
+        // todo: implement a tree traversing algorithm for this
         try {
             jCommanderRoot.parse(argv);
 

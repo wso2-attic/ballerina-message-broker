@@ -43,13 +43,13 @@ public class DeleteCmd extends AbstractCmd {
 
     @Override
     public void printLongDesc(StringBuilder out) {
-        out.append("delete a resource in MB\n");
+        out.append("Delete a resource in MB\n");
     }
 
     @Override
     public void printUsage(StringBuilder out) {
-        out.append("usage:\n");
-        out.append("\tmb create exchange [exchange-name] [flag]*\n");
-        out.append("\tmb create queue [queue-name] [flag]*\n");
+        out.append("Usage:\n");
+        out.append("  mb create exchange [exchange-name] [flag]*\n");
+        out.append("  mb create queue [queue-name] [flag]*\n");
     }
 }
