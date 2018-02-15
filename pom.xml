@@ -50,6 +50,7 @@
         <module>modules/broker-amqp</module>
         <module>modules/broker-coordination</module>
         <module>modules/launcher</module>
+        <module>modules/broker-cli-client</module>
         <module>modules/integration</module>
         <module>modules/coverage-report</module>
         <module>modules/features</module>
@@ -95,6 +96,11 @@
             <dependency>
                 <groupId>org.wso2.messaging</groupId>
                 <artifactId>broker-auth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.messaging</groupId>
+                <artifactId>broker-cli-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -298,6 +304,16 @@
                 <artifactId>amqp-client</artifactId>
                 <version>${rabbitmq.client.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.beust</groupId>
+                <artifactId>jcommander</artifactId>
+                <version>${jcommander.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>${json.smart.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -363,5 +379,7 @@
         <guava.package.import.version.range>[20.0,30.0)</guava.package.import.version.range>
         <carbon.metrics.version>2.3.7</carbon.metrics.version>
         <rabbitmq.client.version>5.1.2</rabbitmq.client.version>
+        <jcommander.version>1.72</jcommander.version>
+        <json.smart.version>1.1.1</json.smart.version>
     </properties>
 </project>

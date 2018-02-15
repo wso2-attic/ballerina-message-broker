@@ -40,6 +40,7 @@
             <package name="org.wso2.messaging.integration.standalone"/>
             <package name="org.wso2.messaging.integration.standalone.rest"/>
             <package name="org.wso2.messaging.integration.standalone.amqp"/>
+            <package name="org.wso2.messaging.integration.standalone.cli"/>
         </packages>
     </test>
 </suite>
