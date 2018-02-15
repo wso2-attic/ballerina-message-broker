@@ -20,6 +20,7 @@ package org.wso2.broker.client;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.MissingCommandException;
 import com.beust.jcommander.ParameterException;
+import org.wso2.broker.client.cmd.MBClientCmd;
 import org.wso2.broker.client.cmd.impl.InitCmd;
 import org.wso2.broker.client.cmd.impl.RootCmd;
 import org.wso2.broker.client.cmd.impl.create.CreateCmd;
@@ -31,7 +32,10 @@ import org.wso2.broker.client.cmd.impl.list.ListExchangeCmd;
 import org.wso2.broker.client.utils.BrokerClientException;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static org.wso2.broker.client.utils.Utils.createUsageException;
 
@@ -49,82 +53,43 @@ public class Main {
 
     private static PrintStream outStream = System.err;
 
+    private static Map<JCommander, MBClientCmd> commandsMap = new HashMap<>();
+
     public static void main(String... argv) {
         try {
             parseInput(argv);
         } catch (BrokerClientException e) {
             printBrokerClientException(e, outStream);
         }
-
     }
 
     private static void parseInput(String... argv) throws BrokerClientException {
-
         // 1. Building the parser tree
         // root command
         RootCmd rootCmd = new RootCmd();
         JCommander jCommanderRoot = new JCommander(rootCmd);
 
-        // top level commands
-        InitCmd initCmd = new InitCmd();
-        ListCmd listCmd = new ListCmd();
-        CreateCmd createCmd = new CreateCmd();
-        DeleteCmd deleteCmd = new DeleteCmd();
+        commandsMap.put(jCommanderRoot, rootCmd);
 
         // add to root jCommander
-        addSubCommand(jCommanderRoot, initCmd.getName(), initCmd);
-        JCommander jCommanderList = addSubCommand(jCommanderRoot, listCmd.getName(), listCmd);
-        JCommander jCommanderCreate = addSubCommand(jCommanderRoot, createCmd.getName(), createCmd);
-        JCommander jCommanderDelete = addSubCommand(jCommanderRoot, deleteCmd.getName(), deleteCmd);
+        addChildCommand(jCommanderRoot, "init", new InitCmd());
+        JCommander jCommanderList = addChildCommand(jCommanderRoot, "list", new ListCmd());
+        JCommander jCommanderCreate = addChildCommand(jCommanderRoot, "create", new CreateCmd());
+        JCommander jCommanderDelete = addChildCommand(jCommanderRoot, "delete", new DeleteCmd());
 
         // secondary level commands
         // add list sub-commands
-        ListExchangeCmd listExchangeCmd = new ListExchangeCmd();
-        addSubCommand(jCommanderList, listExchangeCmd.getName(), listExchangeCmd);
+        addChildCommand(jCommanderList, "exchange", new ListExchangeCmd());
 
         // add create sub-commands
-        CreateExchangeCmd createExchangeCmd = new CreateExchangeCmd();
-        addSubCommand(jCommanderCreate, createExchangeCmd.getName(), createExchangeCmd);
+        addChildCommand(jCommanderCreate, "exchange", new CreateExchangeCmd());
 
         // add delete sub-commands
-        DeleteExchangeCmd deleteExchangeCmd = new DeleteExchangeCmd();
-        addSubCommand(jCommanderDelete, deleteExchangeCmd.getName(), deleteExchangeCmd);
+        addChildCommand(jCommanderDelete, "exchange", new DeleteExchangeCmd());
 
-        // 2. Parse input
-        // todo: implement a tree traversing algorithm for this
         try {
+            // 2. Parse
             jCommanderRoot.parse(argv);
-
-            if (initCmd.getName().equals(jCommanderRoot.getParsedCommand())) {
-                initCmd.execute();
-            } else if (listCmd.getName().equals(jCommanderRoot.getParsedCommand())) {
-                if (jCommanderList.getParsedCommand() == null) {
-                    // if there is no child command is given for 'list', execute the 'list' command
-                    listCmd.execute();
-                    return;
-                }
-                // select the respective list command based on resource type
-                listExchangeCmd.execute();
-            } else if (createCmd.getName().equals(jCommanderRoot.getParsedCommand())) {
-                if (jCommanderCreate.getParsedCommand() == null) {
-                    // if there is no child command is given for 'create', execute the 'create' command
-                    createCmd.execute();
-                    return;
-                }
-                // select the respective create command based on resource type
-                createExchangeCmd.execute();
-            } else if (deleteCmd.getName().equals(jCommanderRoot.getParsedCommand())) {
-                if (jCommanderDelete.getParsedCommand() == null) {
-                    // if there is no child command is given for 'delete', execute the 'delete' command
-                    deleteCmd.execute();
-                    return;
-                }
-                // select the respective delete command based on resource type
-                deleteExchangeCmd.execute();
-            } else {
-                rootCmd.execute();
-            }
-
         } catch (MissingCommandException e) {
             String errorMsg = "unknown command '" + e.getUnknownCommand() + "'";
             throw createUsageException(errorMsg);
@@ -149,16 +114,37 @@ public class Main {
                 throw createUsageException(msg);
             }
         }
+
+        // 3. Traverse, find the matching command and execute
+        findLeafCommand(jCommanderRoot).execute();
     }
 
-    private static JCommander addSubCommand(JCommander parentCmd, String commandName, Object commandObject) {
-        parentCmd.addCommand(commandName, commandObject);
+    private static MBClientCmd findLeafCommand(JCommander jCommander) {
+        String commandText = jCommander.getParsedCommand();
+        if (Objects.isNull(commandText)) {
+            return commandsMap.get(jCommander);
+        }
+        return findLeafCommand(jCommander.getCommands().get(commandText));
+    }
 
-        return parentCmd.getCommands().get(commandName);
+
+    private static JCommander addChildCommand(JCommander parentCmd, String commandName, MBClientCmd commandObject) {
+        parentCmd.addCommand(commandName, commandObject);
+        JCommander childCommander =  parentCmd.getCommands().get(commandName);
+        commandsMap.put(childCommander, commandObject);
+        return childCommander;
     }
 
     private static void printBrokerClientException(BrokerClientException e, PrintStream outStream) {
         List<String> errorMessages = e.getMessages();
         errorMessages.forEach(outStream::println);
+    }
+
+    /**
+     * Added for the testing purposes.
+     * Since the commandsMap is static, before each test it should be cleared.
+     */
+    public static void clearCommandsMap() {
+        commandsMap.clear();
     }
 }

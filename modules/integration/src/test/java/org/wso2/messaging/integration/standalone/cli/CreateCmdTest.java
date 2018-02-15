@@ -40,6 +40,8 @@ public class CreateCmdTest {
     private void resetStream() {
         // reset the print stream after each test
         PrintStreamHandler.resetStream();
+        // clear commands map
+        org.wso2.broker.client.Main.clearCommandsMap();
     }
 
     @Test(groups = "StreamReading",
@@ -58,7 +60,7 @@ public class CreateCmdTest {
           description = "test command 'create --help'")
     public void testCreateHelp() {
         String[] cmd = { "create", "--help" };
-        String expectedLog = "create a resource in MB";
+        String expectedLog = "Create a resource in MB";
         String errorMessage = "error when executing 'create --help' command";
 
         org.wso2.broker.client.Main.main(cmd);

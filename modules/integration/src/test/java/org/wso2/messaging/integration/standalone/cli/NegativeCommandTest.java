@@ -40,6 +40,8 @@ public class NegativeCommandTest {
     private void resetStream() {
         // reset the print stream after each test
         PrintStreamHandler.resetStream();
+        // clear commands map
+        org.wso2.broker.client.Main.clearCommandsMap();
     }
 
     @Test(groups = "StreamReading",

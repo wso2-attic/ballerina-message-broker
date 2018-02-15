@@ -47,7 +47,10 @@ public class InitCmdTest {
     public void reset() throws IOException {
         // delete the temp directory
         FileUtils.deleteDir(new File(TEMP_CONFIG_DIR));
+        // clear commands map
+        org.wso2.broker.client.Main.clearCommandsMap();
     }
+
 
     @Test(description = "test command 'init --help'",
           groups = "StreamReading")

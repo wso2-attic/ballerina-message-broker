@@ -40,6 +40,8 @@ public class DeleteCmdTest {
     private void resetStream() {
         // reset the print stream after each test
         PrintStreamHandler.resetStream();
+        // clear commands map
+        org.wso2.broker.client.Main.clearCommandsMap();
     }
 
     @Test(groups = "StreamReading",
@@ -58,7 +60,7 @@ public class DeleteCmdTest {
           description = "test command 'delete --help'")
     public void testDeleteHelp() {
         String[] cmd = { "delete", "--help" };
-        String expectedLog = "delete a resource in MB";
+        String expectedLog = "Delete a resource in MB";
         String errorMessage = "error when executing 'delete --help' command";
 
         org.wso2.broker.client.Main.main(cmd);
