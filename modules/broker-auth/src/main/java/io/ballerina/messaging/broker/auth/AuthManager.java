@@ -18,8 +18,8 @@
  */
 package io.ballerina.messaging.broker.auth;
 
-import io.ballerina.messaging.broker.auth.authentication.authenticator.Authenticator;
-import io.ballerina.messaging.broker.auth.authentication.authenticator.AuthenticatorFactory;
+import io.ballerina.messaging.broker.auth.authentication.Authenticator;
+import io.ballerina.messaging.broker.auth.authentication.AuthenticatorFactory;
 import io.ballerina.messaging.broker.auth.authentication.sasl.BrokerSecurityProvider;
 import io.ballerina.messaging.broker.auth.authentication.sasl.SaslServerBuilder;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.PlainSaslServerBuilder;
@@ -43,6 +43,11 @@ import javax.security.sasl.SaslServer;
 public class AuthManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthManager.class);
+
+    private static final String AMQP_PROTOCOL_IDENTIFIER = "AMQP";
+
+    // The name for the amq Java Cryptography Architecture (JCA) provider. This will be used to register Sasl servers
+    private static final String PROVIDER_NAME = "AMQSASLProvider";
     /**
      * Map of SASL Server mechanisms
      */
@@ -54,7 +59,7 @@ public class AuthManager {
      */
     private Authenticator authenticator;
 
-    public AuthManager(StartupContext startupContext)  throws Exception {
+    public AuthManager(StartupContext startupContext) throws Exception {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         brokerAuthConfiguration = configProvider
                 .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
@@ -78,11 +83,11 @@ public class AuthManager {
      */
     private void registerSaslServers() {
         // create PLAIN SaslServer builder
-        PlainSaslServerBuilder plainSaslServerBuilder = new PlainSaslServerBuilder();
+        PlainSaslServerBuilder plainSaslServerBuilder = new PlainSaslServerBuilder(authenticator);
         saslMechanisms.put(plainSaslServerBuilder.getMechanismName(), plainSaslServerBuilder);
         // Register given Sasl Server factories
         if (Security
-                .insertProviderAt(new BrokerSecurityProvider(BrokerAuthConstants.PROVIDER_NAME, saslMechanisms), 1)
+                .insertProviderAt(new BrokerSecurityProvider(PROVIDER_NAME, saslMechanisms), 1)
                 == -1) {
             LOGGER.info("AMQ security authentication providers are already installed.");
         } else {
@@ -103,7 +108,7 @@ public class AuthManager {
     public SaslServer createSaslServer(String hostName, String mechanism) throws SaslException {
         SaslServerBuilder saslServerBuilder = saslMechanisms.get(mechanism);
         if (saslServerBuilder != null) {
-            SaslServer saslServer = Sasl.createSaslServer(mechanism, BrokerAuthConstants.AMQP_PROTOCOL_IDENTIFIER,
+            SaslServer saslServer = Sasl.createSaslServer(mechanism, AMQP_PROTOCOL_IDENTIFIER,
                                                           hostName,
                                                           saslServerBuilder.getProperties(),
                                                           saslServerBuilder.getCallbackHandler());
@@ -119,6 +124,7 @@ public class AuthManager {
 
     /**
      * Provides broker authentication enabled.
+     *
      * @return broker authentication enabled or not
      */
     public boolean isAuthenticationEnabled() {
@@ -127,6 +133,7 @@ public class AuthManager {
 
     /**
      * Provides authenticator which will be used to authenticate users.
+     *
      * @return broker authenticator
      */
     public Authenticator getAuthenticator() {

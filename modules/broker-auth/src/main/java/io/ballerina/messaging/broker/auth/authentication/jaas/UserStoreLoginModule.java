@@ -21,7 +21,8 @@ package io.ballerina.messaging.broker.auth.authentication.jaas;
 import com.sun.security.auth.UserPrincipal;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
+import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 
 import java.io.IOException;
 import java.util.Map;
@@ -38,28 +39,28 @@ import javax.security.auth.spi.LoginModule;
  * Default JaaS login module {@link LoginModule} for Message broker.
  * This will be configured in jaas.conf file.
  * AuthConfig {
- * {@link BrokerLoginModule} required;
+ * {@link UserStoreLoginModule} required;
  * };
  */
-public class BrokerLoginModule implements LoginModule {
+public class UserStoreLoginModule implements LoginModule {
 
     private String userName;
     private char[] password;
     private boolean success = false;
     private Subject subject;
     private CallbackHandler callbackHandler;
-    private UserStoreManagerImpl userStoreManager;
+    private UserStoreConnector userStoreConnector;
 
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState,
                            Map<String, ?> options) {
         this.subject = subject;
         this.callbackHandler = callbackHandler;
-        this.userStoreManager = (UserStoreManagerImpl) options.get(BrokerAuthConstants.USER_STORE_MANAGER_PROPERTY);
+        this.userStoreConnector = (UserStoreConnector) options.get(BrokerAuthConstants.PROPERTY_USER_STORE_CONNECTOR);
     }
 
     @Override
-    public boolean login() throws LoginException {
+    public boolean login() throws BrokerAuthException {
         NameCallback userNameCallback = new NameCallback("userName");
         PasswordCallback passwordCallback = new PasswordCallback("password", false);
         Callback[] callbacks = { userNameCallback, passwordCallback };
@@ -72,31 +73,20 @@ public class BrokerLoginModule implements LoginModule {
         }
         userName = userNameCallback.getName();
         password = passwordCallback.getPassword();
-        success = validateUserPassword(userName, password);
+        AuthResult authResult = userStoreConnector.authenticate(userName, password);
+        if (authResult.isAuthenticated()) {
+            UserPrincipal userPrincipal = new UserPrincipal(authResult.getUserId());
+            if (!subject.getPrincipals().contains(userPrincipal)) {
+                subject.getPrincipals().add(userPrincipal);
+            }
+        }
+        success = authResult.isAuthenticated();
         return success;
-    }
-
-    /**
-     * Authenticate user credentials using user-store manager
-     *
-     * @param userName Username
-     * @param password Password
-     * @return Whether user authentication success ot not
-     * @throws BrokerAuthException Throws if error occurred while authenticating user
-     */
-    private boolean validateUserPassword(String userName, char... password) throws BrokerAuthException {
-        return userName != null
-                && password != null
-                && userStoreManager.authenticate(userName, password);
     }
 
     @Override
     public boolean commit() throws LoginException {
         if (success) {
-            UserPrincipal userPrincipal = new UserPrincipal(userName);
-            if (!subject.getPrincipals().contains(userPrincipal)) {
-                subject.getPrincipals().add(userPrincipal);
-            }
             userName = null;
             if (password != null) {
                 for (int i = 0; i < password.length; i++) {

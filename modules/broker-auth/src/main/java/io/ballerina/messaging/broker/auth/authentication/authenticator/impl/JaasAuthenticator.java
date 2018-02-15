@@ -18,16 +18,18 @@
  */
 package io.ballerina.messaging.broker.auth.authentication.authenticator.impl;
 
-import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.authentication.authenticator.Authenticator;
-import io.ballerina.messaging.broker.auth.authentication.sasl.plain.PlainSaslCallbackHandler;
-import io.ballerina.messaging.broker.auth.user.UserStoreManager;
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
+import io.ballerina.messaging.broker.auth.authentication.Authenticator;
+import io.ballerina.messaging.broker.auth.authentication.jaas.PlainSaslCallbackHandler;
+import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 import io.ballerina.messaging.broker.common.StartupContext;
-import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 
+import java.security.Principal;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
@@ -40,30 +42,55 @@ import javax.security.auth.login.LoginException;
 public class JaasAuthenticator implements Authenticator {
 
     @Override
-    public void initialize(StartupContext startupContext) throws Exception {
-        UserStoreManager userStoreManager = startupContext.getService(UserStoreManager.class);
-        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        BrokerAuthConfiguration brokerAuthConfiguration = configProvider
-                .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
-        BrokerAuthConfiguration.JaasConfiguration jaasConf = brokerAuthConfiguration.getAuthentication().getJaas();
+    public void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception {
+
         String jaasConfigPath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_JAAS_CONFIG);
         if (jaasConfigPath == null || jaasConfigPath.trim().isEmpty()) {
-            Configuration jaasConfig = createJaasConfig(jaasConf.getLoginModule(), userStoreManager,
-                                                        jaasConf.getOptions());
-            Configuration.setConfiguration(jaasConfig);
+            Object jaasLoginModule = properties.get(BrokerAuthConstants.CONFIG_PROPERTY_JAAS_LOGIN_MODULE);
+            Object userStoreConnectorClass =
+                    properties.get(BrokerAuthConstants.CONFIG_PROPERTY_USER_STORE_CONNECTOR);
+            if (Objects.nonNull(jaasLoginModule)) {
+                // initialize user store from configuration property
+                if (Objects.nonNull(userStoreConnectorClass) &&
+                        !userStoreConnectorClass.toString().trim().isEmpty()) {
+                    // Set user store connector if user store connector property available.
+                    UserStoreConnector userStoreConnector =
+                            (UserStoreConnector) ClassLoader.getSystemClassLoader()
+                                                            .loadClass(userStoreConnectorClass.toString())
+                                                            .newInstance();
+                    userStoreConnector.initialize(startupContext);
+                    startupContext.registerService(UserStoreConnector.class, userStoreConnector);
+                    properties.put(BrokerAuthConstants.PROPERTY_USER_STORE_CONNECTOR,
+                                   userStoreConnector);
+                }
+                Configuration jaasConfig = createJaasConfig(jaasLoginModule.toString(), properties);
+                Configuration.setConfiguration(jaasConfig);
+            } else {
+                throw new BrokerAuthException("Jass login module have not been set.");
+            }
         }
     }
 
     @Override
-    public boolean authenticate(String username, char[] credentials) throws BrokerAuthException {
+    public AuthResult authenticate(String username, char[] password) throws BrokerAuthException {
         try {
             PlainSaslCallbackHandler plainCallbackHandler = new PlainSaslCallbackHandler();
             plainCallbackHandler.setUsername(username);
-            plainCallbackHandler.setPassword(credentials);
+            plainCallbackHandler.setPassword(password);
             LoginContext loginContext = new LoginContext(BrokerAuthConstants.BROKER_SECURITY_CONFIG,
                                                          plainCallbackHandler);
             loginContext.login();
-            return true;
+            String userId = username;
+            Set<Principal> principals;
+            if (Objects.nonNull(loginContext.getSubject()) &&
+                    Objects.nonNull(principals = loginContext.getSubject().getPrincipals()) &&
+                    !principals.isEmpty()) {
+                Principal principal = principals.iterator().next();
+                if (Objects.nonNull(principal)) {
+                    userId = principal.getName();
+                }
+            }
+            return new AuthResult(true, userId);
         } catch (LoginException e) {
             throw new BrokerAuthException("Error while authenticating user with login module", e);
         }
@@ -73,14 +100,11 @@ public class JaasAuthenticator implements Authenticator {
      * Creates Jaas config.
      *
      * @param loginModuleClassName jaas login module class name
-     * @param userStoreManager user store manager use for authenticate users
-     * @param options initial options for login module
+     * @param options              initial options for login module
      * @return login configuration
      */
     private static Configuration createJaasConfig(String loginModuleClassName,
-                                           UserStoreManager userStoreManager,
-                                           Map<String, Object> options) {
-        options.put(BrokerAuthConstants.USER_STORE_MANAGER_PROPERTY, userStoreManager);
+                                                  Map<String, Object> options) {
         AppConfigurationEntry[] entries = {
                 new AppConfigurationEntry(loginModuleClassName,
                                           AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,

@@ -6,7 +6,7 @@
  * in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -14,7 +14,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package io.ballerina.messaging.broker.integration.util;
@@ -24,8 +23,9 @@ import io.ballerina.messaging.broker.amqp.Server;
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
-import io.ballerina.messaging.broker.auth.user.UserStoreManager;
-import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
+import io.ballerina.messaging.broker.auth.authentication.authenticator.impl.JaasAuthenticator;
+import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
+import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.BrokerHaConfiguration;
@@ -45,6 +45,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.HashMap;
 import javax.sql.DataSource;
 
 /**
@@ -115,8 +116,20 @@ public class BrokerNode {
         }
 
         BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
+        BrokerAuthConfiguration.AuthenticationConfiguration authenticationConfiguration =
+                new BrokerAuthConfiguration.AuthenticationConfiguration();
+        BrokerAuthConfiguration.AuthenticatorConfiguration authenticatorConfiguration =
+                new BrokerAuthConfiguration.AuthenticatorConfiguration();
+        HashMap<String, Object> properties = new HashMap<>();
+        properties.put(BrokerAuthConstants.CONFIG_PROPERTY_JAAS_LOGIN_MODULE,
+                       UserStoreLoginModule.class.getCanonicalName());
+        properties.put(BrokerAuthConstants.CONFIG_PROPERTY_USER_STORE_CONNECTOR,
+                       FileBasedUserStoreConnector.class.getCanonicalName());
+        authenticatorConfiguration.setClassName(JaasAuthenticator.class.getCanonicalName());
+        authenticatorConfiguration.setProperties(properties);
+        authenticationConfiguration.setAuthenticator(authenticatorConfiguration);
+        brokerAuthConfiguration.setAuthentication(authenticationConfiguration);
         configProvider.registerConfigurationObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
-        startupContext.registerService(UserStoreManager.class, new UserStoreManagerImpl());
         AuthManager authManager = new AuthManager(startupContext);
 
         authManager.start();

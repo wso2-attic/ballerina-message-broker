@@ -18,8 +18,11 @@
  */
 package io.ballerina.messaging.broker.auth.authentication.authenticator.impl;
 
-import io.ballerina.messaging.broker.auth.authentication.authenticator.Authenticator;
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
+import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 import io.ballerina.messaging.broker.common.StartupContext;
+
+import java.util.Map;
 
 /**
  * Disabled authentication representation for @{@link Authenticator}.
@@ -27,12 +30,12 @@ import io.ballerina.messaging.broker.common.StartupContext;
 public class DefaultAuthenticator implements Authenticator {
 
     @Override
-    public void initialize(StartupContext startupContext) throws Exception {
+    public void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception {
         // nothing to do when authentication is disabled.
     }
 
     @Override
-    public boolean authenticate(String username, char[] credentials) {
-        return true;
+    public AuthResult authenticate(String username, char[] password) {
+        return new AuthResult(true, username);
     }
 }

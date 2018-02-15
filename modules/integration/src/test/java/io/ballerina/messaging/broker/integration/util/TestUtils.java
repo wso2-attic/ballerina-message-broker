@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -22,8 +22,9 @@ package io.ballerina.messaging.broker.integration.util;
 import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
-import io.ballerina.messaging.broker.auth.user.UserStoreManager;
-import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
+import io.ballerina.messaging.broker.auth.authentication.authenticator.impl.JaasAuthenticator;
+import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
+import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
@@ -32,6 +33,7 @@ import io.ballerina.messaging.broker.rest.config.RestServerConfiguration;
 import org.wso2.carbon.config.ConfigurationException;
 
 import java.net.URL;
+import java.util.HashMap;
 
 /**
  * Contains shared helper method used across the integration test suite.
@@ -65,10 +67,6 @@ public class TestUtils {
         RestServerConfiguration restConfig = new RestServerConfiguration();
         restConfig.getPlain().setPort(restPort);
         configProvider.registerConfigurationObject(RestServerConfiguration.NAMESPACE, restConfig);
-
-        BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
-        configProvider.registerConfigurationObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
-
         startupContext.registerService(BrokerConfigProvider.class, configProvider);
 
         // Auth configurations
@@ -78,7 +76,22 @@ public class TestUtils {
             System.setProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG, resource.getFile());
         }
 
-        startupContext.registerService(UserStoreManager.class, new UserStoreManagerImpl());
+
+        BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
+        BrokerAuthConfiguration.AuthenticationConfiguration authenticationConfiguration =
+                new BrokerAuthConfiguration.AuthenticationConfiguration();
+        BrokerAuthConfiguration.AuthenticatorConfiguration authenticatorConfiguration =
+                new BrokerAuthConfiguration.AuthenticatorConfiguration();
+        HashMap<String, Object> properties = new HashMap<>();
+        properties.put(BrokerAuthConstants.CONFIG_PROPERTY_JAAS_LOGIN_MODULE,
+                       UserStoreLoginModule.class.getCanonicalName());
+        properties.put(BrokerAuthConstants.CONFIG_PROPERTY_USER_STORE_CONNECTOR,
+                       FileBasedUserStoreConnector.class.getCanonicalName());
+        authenticatorConfiguration.setClassName(JaasAuthenticator.class.getCanonicalName());
+        authenticatorConfiguration.setProperties(properties);
+        authenticationConfiguration.setAuthenticator(authenticatorConfiguration);
+        brokerAuthConfiguration.setAuthentication(authenticationConfiguration);
+        configProvider.registerConfigurationObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
 
         return startupContext;
     }

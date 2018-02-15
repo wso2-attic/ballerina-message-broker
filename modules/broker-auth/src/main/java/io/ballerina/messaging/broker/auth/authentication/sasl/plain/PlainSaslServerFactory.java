@@ -1,22 +1,25 @@
 /*
- * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *   Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
+ *   WSO2 Inc. licenses this file to you under the Apache License,
+ *   Version 2.0 (the "License"); you may not use this file except
+ *   in compliance with the License.
+ *   You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *   Unless required by applicable law or agreed to in writing,
+ *   software distributed under the License is distributed on an
+ *   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *   KIND, either express or implied.  See the License for the
+ *   specific language governing permissions and limitations
+ *   under the License.
  *
  */
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain;
+
+import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
@@ -34,13 +37,10 @@ public class PlainSaslServerFactory implements SaslServerFactory {
     @Override
     public SaslServer createSaslServer(String mechanism, String protocol, String serverName, Map<String, ?> props,
             CallbackHandler cbh) throws SaslException {
-        if (!(cbh instanceof PlainSaslCallbackHandler)) {
-            throw new SaslException(
-                    "CallbackHandler must be of type of PlainSaslCallbackHandler, but received  : " + cbh
-                            .getClass());
-        }
+        Authenticator authenticator = (Authenticator) props.get(BrokerAuthConstants.PROPERTY_AUTHENTICATOR_INSTANCE);
+
         return (PlainSaslServer.PLAIN_MECHANISM.equals(mechanism)) ?
-                new PlainSaslServer((PlainSaslCallbackHandler) cbh) :
+                new PlainSaslServer(authenticator) :
                 null;
     }
 
