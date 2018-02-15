@@ -35,10 +35,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.sql.DataSource;
@@ -175,19 +173,25 @@ class MessageCrudOperationsDao extends BaseDao {
     }
 
     public Collection<Message> readAll(Connection connection, String queueName) throws BrokerException {
-        Map<Long, Message> messageMap = new HashMap<>();
+        Map<Long, Message> messageList = new LinkedHashMap<>();
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
 
-        try (Context ignored = metricManager.startMessageReadTimer()) {
-            List<Long> messageList = getMessagesIdsForQueue(connection, queueName);
-
-            if (!messageList.isEmpty()) {
-                String idList = getSQLFormattedIdList(messageList.size());
-                populateMessageWithMetadata(connection, idList, messageList, messageMap);
-                populateContent(connection, idList, messageMap);
+        try {
+            statement = connection.prepareStatement(RDBMSConstants.PS_SELECT_MESSAGES_FOR_QUEUE);
+            statement.setString(1, queueName);
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                long messageId = resultSet.getLong(1);
+                Message message = messageList.computeIfAbsent(messageId, k -> new Message(k, null));
+                message.addOwnedQueue(resultSet.getString(2));
             }
-            return messageMap.values();
+            return messageList.values();
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while reading messages", e);
+        } finally {
+            close(resultSet);
+            close(statement);
         }
     }
 
@@ -202,24 +206,6 @@ class MessageCrudOperationsDao extends BaseDao {
             return messageMap.values();
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while reading messages", e);
-        }
-    }
-
-    private List<Long> getMessagesIdsForQueue(Connection connection, String queueName) throws SQLException {
-        ArrayList<Long> messageList = new ArrayList<>();
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        try {
-            statement = connection.prepareStatement(RDBMSConstants.PS_SELECT_MESSAGES_FOR_QUEUE);
-            statement.setString(1, queueName);
-            resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                messageList.add(resultSet.getLong(1));
-            }
-            return messageList;
-        } finally {
-            close(resultSet);
-            close(statement);
         }
     }
 

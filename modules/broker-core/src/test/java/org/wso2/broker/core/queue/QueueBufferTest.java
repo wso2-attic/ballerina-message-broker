@@ -57,6 +57,22 @@ public class QueueBufferTest {
     }
 
     @Test
+    public void testBareAdd() {
+        QueueBuffer queueBuffer = new QueueBuffer(10, messageReader);
+        for (int i = 0; i < 12; i++) {
+            Message message = new Message(i + 1, null);
+            queueBuffer.addBareMessage(message);
+        }
+
+        for (int i = 0; i < 12; i++) {
+            Message message = queueBuffer.getFirstDeliverable();
+            Assert.assertNotNull(message.getMetadata(), "Messages returned from #getFirstDeliverable() should never "
+                    + "be empty");
+            queueBuffer.remove(message);
+        }
+    }
+
+    @Test
     public void testSize() {
         QueueBuffer queueBuffer = new QueueBuffer(10, messageReader);
         for (int i = 0; i < 12; i++) {

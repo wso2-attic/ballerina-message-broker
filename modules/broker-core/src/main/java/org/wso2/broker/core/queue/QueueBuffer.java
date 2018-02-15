@@ -84,32 +84,40 @@ public class QueueBuffer {
      */
     public synchronized void add(Message message) {
         linkLast(message);
+        postProcessDeliverableNode();
+    }
+
+    /**
+     * Add messages as bare messages to the queue buffer. This means that broker has to fetch message data for each
+     * and every message in this list.
+     *
+     * @param messages list of messages
+     */
+    public synchronized void addAllBareMessages(Collection<Message> messages) {
+        for (Message message : messages) {
+            addBareMessage(message);
+        }
+    }
+
+    /**
+     * Add message as a bare messages to the queue buffer. This means that broker has to fetch message data for this
+     * message before giving it out.
+     *
+     * @param message bare message
+     */
+    public synchronized void addBareMessage(Message message) {
+        linkLast(message);
+        postProcessBareMessage();
     }
 
     /**
      * Links newMessage as last element.
      */
     private void linkLast(Message newMessage) {
-        int queueSize = size.incrementAndGet();
+        size.incrementAndGet();
 
         final Node previousLast = last;
         final Node newNode = new Node(previousLast, newMessage, null);
-
-        if (queueSize > inMemoryLimit) {
-
-            if (Objects.isNull(firstUndeliverable)) {
-                firstUndeliverable = newNode;
-            }
-
-            newMessage.clearData();
-        } else {
-            newNode.state.set(Node.FULL_MESSAGE);
-            deliverableMessageCount.incrementAndGet();
-
-            if (Objects.isNull(firstDeliverableCandidate)) {
-                firstDeliverableCandidate = newNode;
-            }
-        }
 
         last = newNode;
         keyMap.put(newMessage.getInternalId(), newNode);
@@ -119,7 +127,41 @@ public class QueueBuffer {
         }
     }
 
+    /**
+     * Post process the added deliverable message looking at the queue size and the in memory limit. Message data
+     * will be cleared if we have deliverable messages than in-memory limit.
+     */
+    private void postProcessDeliverableNode() {
+        Node newNode = last;
+        if (size.get() > inMemoryLimit) {
 
+            if (Objects.isNull(firstUndeliverable)) {
+                firstUndeliverable = newNode;
+            }
+
+            newNode.item.clearData();
+        } else {
+            newNode.state.set(Node.FULL_MESSAGE);
+            deliverableMessageCount.incrementAndGet();
+
+            if (Objects.isNull(firstDeliverableCandidate)) {
+                firstDeliverableCandidate = newNode;
+            }
+        }
+    }
+
+    /**
+     * Post process after adding a bare message.
+     */
+    private void postProcessBareMessage() {
+        Node newNode = last;
+        if (Objects.isNull(firstUndeliverable)) {
+            firstUndeliverable = newNode;
+        }
+        if (Objects.isNull(firstDeliverableCandidate)) {
+            firstDeliverableCandidate = newNode;
+        }
+    }
 
     /**
      * Remove a message from the buffer.
@@ -220,12 +262,6 @@ public class QueueBuffer {
             }
 
             undeliverableNode = undeliverableNode.next;
-        }
-    }
-
-    public synchronized void addAll(Collection<Message> messages) {
-        for (Message message : messages) {
-            add(message);
         }
     }
 
