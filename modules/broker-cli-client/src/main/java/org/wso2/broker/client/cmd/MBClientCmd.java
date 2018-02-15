@@ -30,7 +30,7 @@ public interface MBClientCmd {
     /**
      * Get the name of this command.
      *
-     * @return command .
+     * @return command.
      */
     String getName();
 

@@ -29,4 +29,12 @@ public class Constants {
     public static final String DEFAULT_PASSWORD = "admin";
     public static final String BROKER_CONNECTION_URL_SUFFIX = "/broker/v1.0/";
     public static final String DEFAULT_CONFIG_FILE_PATH = "cli-config.yml";
+
+    // Commands/resource types
+    public static final String CMD_INIT = "init";
+    public static final String CMD_LIST = "list";
+    public static final String CMD_CREATE = "create";
+    public static final String CMD_DELETE = "delete";
+
+    public static final String CMD_EXCHANGE = "exchange";
 }

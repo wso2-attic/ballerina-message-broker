@@ -37,34 +37,52 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.wso2.broker.client.utils.Constants.CMD_CREATE;
+import static org.wso2.broker.client.utils.Constants.CMD_DELETE;
+import static org.wso2.broker.client.utils.Constants.CMD_EXCHANGE;
+import static org.wso2.broker.client.utils.Constants.CMD_INIT;
+import static org.wso2.broker.client.utils.Constants.CMD_LIST;
 import static org.wso2.broker.client.utils.Utils.createUsageException;
 
 /**
- * Main Class of the Broker CLI Client
+ * Main Class of the Broker CLI Client.
  * <p>
- * Main method of this class should run with required arguments to execute a command
+ * Main method of this class should run with required arguments to execute a command.
  */
 public class Main {
 
-    private static final String JC_UNKNOWN_OPTION_PREFIX = "Unknown option:";
-    private static final String JC_EXPECTED_A_VALUE_AFTER_PARAMETER_PREFIX = "Expected a value after parameter";
-    private static final String JC_WAS_PASSED_MAIN_PARAMETER_PREFIX = "Was passed main parameter";
-    private static final String JC_NO_MAIN_PARAM_IS_DEFINED = "but no main parameter was defined in your arg class";
-
     private static PrintStream outStream = System.err;
 
+    /**
+     * This map will contain each Command instance against its JCommander instance.
+     * Map will get populated at the time of building the parser tree and will be referred at the traversal.
+     */
     private static Map<JCommander, MBClientCmd> commandsMap = new HashMap<>();
 
     public static void main(String... argv) {
+
+        // 1. Build the parse tree
+        JCommander parserTreeRoot = buildCommanderTree();
+
         try {
-            parseInput(argv);
+            // 2. Parse the input
+            parseInput(parserTreeRoot, argv);
+
+            // 3. Traverse the parse tree and execute the matched command
+            findLeafCommand(parserTreeRoot).execute();
+
         } catch (BrokerClientException e) {
             printBrokerClientException(e, outStream);
         }
     }
 
-    private static void parseInput(String... argv) throws BrokerClientException {
-        // 1. Building the parser tree
+    /**
+     * Build the parser tree with JCommander instance for each command.
+     *
+     * @return root JCommander of the tree.
+     */
+    private static JCommander buildCommanderTree() {
+        // Building the parser tree
         // root command
         RootCmd rootCmd = new RootCmd();
         JCommander jCommanderRoot = new JCommander(rootCmd);
@@ -72,53 +90,55 @@ public class Main {
         commandsMap.put(jCommanderRoot, rootCmd);
 
         // add to root jCommander
-        addChildCommand(jCommanderRoot, "init", new InitCmd());
-        JCommander jCommanderList = addChildCommand(jCommanderRoot, "list", new ListCmd());
-        JCommander jCommanderCreate = addChildCommand(jCommanderRoot, "create", new CreateCmd());
-        JCommander jCommanderDelete = addChildCommand(jCommanderRoot, "delete", new DeleteCmd());
+        addChildCommand(jCommanderRoot, CMD_INIT, new InitCmd());
+        JCommander jCommanderList = addChildCommand(jCommanderRoot, CMD_LIST, new ListCmd());
+        JCommander jCommanderCreate = addChildCommand(jCommanderRoot, CMD_CREATE, new CreateCmd());
+        JCommander jCommanderDelete = addChildCommand(jCommanderRoot, CMD_DELETE, new DeleteCmd());
 
         // secondary level commands
         // add list sub-commands
-        addChildCommand(jCommanderList, "exchange", new ListExchangeCmd());
+        addChildCommand(jCommanderList, CMD_EXCHANGE, new ListExchangeCmd());
 
         // add create sub-commands
-        addChildCommand(jCommanderCreate, "exchange", new CreateExchangeCmd());
+        addChildCommand(jCommanderCreate, CMD_EXCHANGE, new CreateExchangeCmd());
 
         // add delete sub-commands
-        addChildCommand(jCommanderDelete, "exchange", new DeleteExchangeCmd());
+        addChildCommand(jCommanderDelete, CMD_EXCHANGE, new DeleteExchangeCmd());
 
+        return jCommanderRoot;
+    }
+
+    /**
+     * Process the given input through the parser tree.
+     * <p>
+     * This can throw runtime exceptions through {@link BrokerClientException} when an error occurs in parsing the
+     * input.
+     *
+     * @param jCommanderRoot root node of the tree.
+     * @param argv           input as a array of Strings.
+     */
+    private static void parseInput(JCommander jCommanderRoot, String... argv) {
         try {
-            // 2. Parse
+            // Parse
             jCommanderRoot.parse(argv);
         } catch (MissingCommandException e) {
             String errorMsg = "unknown command '" + e.getUnknownCommand() + "'";
             throw createUsageException(errorMsg);
         } catch (ParameterException e) {
-            String msg = e.getMessage();
-            if (msg == null) {
-                throw createUsageException("internal error occurred");
-
-            } else if (msg.startsWith(JC_UNKNOWN_OPTION_PREFIX)) {
-                String flag = msg.substring(JC_UNKNOWN_OPTION_PREFIX.length());
-                throw createUsageException("unknown flag '" + flag.trim() + "'");
-
-            } else if (msg.startsWith(JC_EXPECTED_A_VALUE_AFTER_PARAMETER_PREFIX)) {
-                String flag = msg.substring(JC_EXPECTED_A_VALUE_AFTER_PARAMETER_PREFIX.length());
-                throw createUsageException("flag '" + flag.trim() + "' needs an argument");
-            } else if (msg.contains(JC_WAS_PASSED_MAIN_PARAMETER_PREFIX)) {
-                String flag = msg.substring(JC_WAS_PASSED_MAIN_PARAMETER_PREFIX.length());
-                flag = flag.substring(0, flag.length() - JC_NO_MAIN_PARAM_IS_DEFINED.length());
-                throw createUsageException("parameter '" + flag.trim() + "' is invalid");
-            } else {
-                // Make the first character of the error message lower case
-                throw createUsageException(msg);
-            }
+            // todo: consider whether we can make the error logs more specific
+            throw createUsageException(e.getMessage());
         }
-
-        // 3. Traverse, find the matching command and execute
-        findLeafCommand(jCommanderRoot).execute();
     }
 
+    /**
+     * When it needs to find matching command, traversing is done through a recursive algorithm.
+     * <p>
+     * This can throw runtime exceptions through {@link BrokerClientException} when an error occurs while executing
+     * the command.
+     *
+     * @param jCommander commander in current level.
+     * @return matched command instance.
+     */
     private static MBClientCmd findLeafCommand(JCommander jCommander) {
         String commandText = jCommander.getParsedCommand();
         if (Objects.isNull(commandText)) {
@@ -127,10 +147,23 @@ public class Main {
         return findLeafCommand(jCommander.getCommands().get(commandText));
     }
 
-
-    private static JCommander addChildCommand(JCommander parentCmd, String commandName, MBClientCmd commandObject) {
-        parentCmd.addCommand(commandName, commandObject);
-        JCommander childCommander =  parentCmd.getCommands().get(commandName);
+    /**
+     * Add a subCommand to its parent commander.
+     * <p>
+     * Adding a command to a JCommander instance will create a new JCommander instance for the new command, and it
+     * will be added into the parents command map. This method will extract the child commander and keep it for
+     * future reference (to add another layer of sub-commands) and the new command will also get added into the
+     * commandMap to refer at traversing stage.
+     *
+     * @param parentCommander parent commander instance.
+     * @param commandName     name of this command.
+     * @param commandObject   annotated command instance.
+     * @return jCommander instance created for the new command.
+     */
+    private static JCommander addChildCommand(JCommander parentCommander, String commandName,
+            MBClientCmd commandObject) {
+        parentCommander.addCommand(commandName, commandObject);
+        JCommander childCommander = parentCommander.getCommands().get(commandName);
         commandsMap.put(childCommander, commandObject);
         return childCommander;
     }

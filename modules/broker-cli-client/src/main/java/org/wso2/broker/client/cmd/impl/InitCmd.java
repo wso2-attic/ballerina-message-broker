@@ -24,6 +24,8 @@ import org.wso2.broker.client.resources.Configuration;
 import org.wso2.broker.client.utils.Constants;
 import org.wso2.broker.client.utils.Utils;
 
+import static org.wso2.broker.client.utils.Constants.CMD_INIT;
+
 /**
  * Representation of the broker client initialization command.
  */
@@ -61,7 +63,7 @@ public class InitCmd extends AbstractCmd {
 
     @Override
     public String getName() {
-        return "init";
+        return CMD_INIT;
     }
 
     @Override

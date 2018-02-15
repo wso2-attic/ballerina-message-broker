@@ -28,6 +28,8 @@ import org.wso2.broker.client.resources.Configuration;
 import org.wso2.broker.client.utils.BrokerClientException;
 import org.wso2.broker.client.utils.Utils;
 
+import static org.wso2.broker.client.utils.Constants.CMD_EXCHANGE;
+
 /**
  * Command representing MB exchange deletion.
  */
@@ -36,11 +38,11 @@ public class DeleteExchangeCmd extends DeleteCmd {
 
     @Parameter(description = "name of the exchange",
                required = true)
-    String exchangeName;
+    private String exchangeName;
 
     @Parameter(names = { "--unused", "-u" },
                description = "delete only if the exchange is not in use")
-    boolean ifUnused = false;
+    private boolean ifUnused = false;
 
     @Override
     public void execute() {
@@ -75,7 +77,7 @@ public class DeleteExchangeCmd extends DeleteCmd {
 
     @Override
     public String getName() {
-        return "exchange";
+        return CMD_EXCHANGE;
     }
 
     @Override

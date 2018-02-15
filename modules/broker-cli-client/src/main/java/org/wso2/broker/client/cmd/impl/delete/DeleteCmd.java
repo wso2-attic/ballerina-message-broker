@@ -1,5 +1,3 @@
-package org.wso2.broker.client.cmd.impl.delete;
-
 /*
  * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -17,9 +15,12 @@ package org.wso2.broker.client.cmd.impl.delete;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.wso2.broker.client.cmd.impl.delete;
+
 import com.beust.jcommander.Parameters;
 import org.wso2.broker.client.cmd.AbstractCmd;
 
+import static org.wso2.broker.client.utils.Constants.CMD_DELETE;
 import static org.wso2.broker.client.utils.Utils.createUsageException;
 
 /**
@@ -38,7 +39,7 @@ public class DeleteCmd extends AbstractCmd {
 
     @Override
     public String getName() {
-        return "delete";
+        return CMD_DELETE;
     }
 
     @Override

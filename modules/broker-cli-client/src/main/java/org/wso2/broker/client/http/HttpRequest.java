@@ -28,7 +28,7 @@ public class HttpRequest {
 
     private String payload;
 
-    public  HttpRequest(String suffix) {
+    public HttpRequest(String suffix) {
         this.suffix = suffix;
     }
 
@@ -37,12 +37,12 @@ public class HttpRequest {
         this.payload = payload;
     }
 
-    public void setQueryParameters(String queryParameters) {
-        this.queryParameters = queryParameters;
-    }
-
     public String getQueryParameters() {
         return queryParameters;
+    }
+
+    public void setQueryParameters(String queryParameters) {
+        this.queryParameters = queryParameters;
     }
 
     public String getSuffix() {

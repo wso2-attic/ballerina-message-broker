@@ -20,6 +20,7 @@ package org.wso2.broker.client.cmd.impl.list;
 import com.beust.jcommander.Parameters;
 import org.wso2.broker.client.cmd.AbstractCmd;
 
+import static org.wso2.broker.client.utils.Constants.CMD_LIST;
 import static org.wso2.broker.client.utils.Utils.createUsageException;
 
 /**
@@ -38,7 +39,7 @@ public class ListCmd extends AbstractCmd {
 
     @Override
     public String getName() {
-        return "list";
+        return CMD_LIST;
     }
 
     @Override

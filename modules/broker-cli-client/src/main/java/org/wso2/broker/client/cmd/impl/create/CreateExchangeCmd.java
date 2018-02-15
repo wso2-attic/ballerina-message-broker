@@ -29,6 +29,8 @@ import org.wso2.broker.client.resources.Exchange;
 import org.wso2.broker.client.utils.BrokerClientException;
 import org.wso2.broker.client.utils.Utils;
 
+import static org.wso2.broker.client.utils.Constants.CMD_EXCHANGE;
+
 /**
  * Command representing MB exchange creation.
  */
@@ -36,15 +38,15 @@ import org.wso2.broker.client.utils.Utils;
 public class CreateExchangeCmd extends CreateCmd {
 
     @Parameter(description = "name of the exchange")
-    String exchangeName;
+    private String exchangeName;
 
     @Parameter(names = { "--type", "-t" },
                description = "type of the exchange")
-    String type = "direct";
+    private String type = "direct";
 
     @Parameter(names = { "--durable", "-d" },
                description = "durability of the exchange")
-    boolean durable = false;
+    private boolean durable = false;
 
     @Override
     public void execute() {
@@ -72,12 +74,11 @@ public class CreateExchangeCmd extends CreateCmd {
             parseException.addMessage("error while parsing broker response for exchange creation" + e.getMessage());
             throw parseException;
         }
-
     }
 
     @Override
     public String getName() {
-        return "exchange";
+        return CMD_EXCHANGE;
     }
 
     @Override
@@ -93,5 +94,4 @@ public class CreateExchangeCmd extends CreateCmd {
         out.append("* Create a durable direct Exchange in MB.\n");
         out.append("  mb create exchange myExchange -t direct -d\n");
     }
-
 }

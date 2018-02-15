@@ -40,7 +40,6 @@ public class Utils {
      * Create {@link BrokerClientException} instance including the error message.
      *
      * @param errorMsg error message.
-     *
      * @return new {@link BrokerClientException} instance with error message
      */
     public static BrokerClientException createUsageException(String errorMsg) {

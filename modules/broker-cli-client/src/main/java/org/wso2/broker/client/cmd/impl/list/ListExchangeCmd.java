@@ -28,6 +28,8 @@ import org.wso2.broker.client.resources.Configuration;
 import org.wso2.broker.client.utils.BrokerClientException;
 import org.wso2.broker.client.utils.Utils;
 
+import static org.wso2.broker.client.utils.Constants.CMD_EXCHANGE;
+
 /**
  * Command representing MB exchange information retrieval.
  */
@@ -36,10 +38,10 @@ public class ListExchangeCmd extends ListCmd {
 
     @Parameter(names = { "--all", "-a" },
                description = "return info on all exchanges of the broker")
-    boolean all;
+    private boolean all;
 
     @Parameter(description = "name of the exchange which info needs to be retrieved")
-    String exchangeName = "";
+    private String exchangeName = "";
 
     @Override
     public void execute() {
@@ -73,7 +75,7 @@ public class ListExchangeCmd extends ListCmd {
 
     @Override
     public String getName() {
-        return "exchange";
+        return CMD_EXCHANGE;
     }
 
     @Override
