@@ -25,6 +25,7 @@ import org.wso2.broker.core.store.DbOperation;
 import org.wso2.broker.core.store.dao.MessageDao;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Implements functionality required to manage messages in persistence storage.
@@ -63,5 +64,9 @@ class MessageDaoImpl implements MessageDao {
                                                  "retrieving messages for queue " + queueName);
     }
 
-
+    @Override
+    public Collection<Message> read(Map<Long, Message> readList) throws BrokerException {
+        return crudOperationsDao.selectOperation(connection -> crudOperationsDao.read(connection, readList),
+                                                 "retrieving messages for delivery");
+    }
 }

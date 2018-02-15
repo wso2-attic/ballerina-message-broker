@@ -77,7 +77,7 @@ public class AmqpConsumer extends Consumer {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Adding message to AMQP Netty outbound; messageId: {}, consumerTag: {}, queueName: {}",
-                         message.getMetadata().getInternalId(),
+                         message.getInternalId(),
                          consumerTag,
                          queueName);
         }

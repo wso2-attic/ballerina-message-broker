@@ -59,8 +59,8 @@ public class DbEventMatcherTest {
             operationsList.add(DbOperation.getFactory().newInstance());
             TestOperationRequest request = testOperationsArray[i];
             if (request.beforeType == INSERT_MESSAGE) {
-                operationsList.get(i).insertMessage(new Message(
-                        new Metadata(request.messageId, "queue1", "amq.direct", 0)));
+                operationsList.get(i).insertMessage(new Message(request.messageId,
+                        new Metadata("queue1", "amq.direct", 0)));
             } else if (request.beforeType == DELETE_MESSAGE) {
                 operationsList.get(i).deleteMessage(request.messageId);
             } else {

@@ -34,9 +34,9 @@ import java.util.Map;
 /**
  * This class initiates database operations through disruptor
  */
-public class DbWriter implements EventHandler<DbOperation> {
+public class DbAccessHandler implements EventHandler<DbOperation> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DbWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbAccessHandler.class);
 
     private final MessageDao messageDao;
 
@@ -48,12 +48,15 @@ public class DbWriter implements EventHandler<DbOperation> {
 
     private final Map<Long, DbOperation> detachMap;
 
-    public DbWriter(MessageDao messageDao, int maxBatchSize) {
+    private final Map<Long, Message> readList;
+
+    public DbAccessHandler(MessageDao messageDao, int maxBatchSize) {
         this.messageDao = messageDao;
         this.maxBatchSize = maxBatchSize;
         insertMap = new HashMap<>(maxBatchSize);
         deleteList = new ArrayList<>(maxBatchSize);
         detachMap = new HashMap<>(maxBatchSize);
+        readList = new HashMap<>(maxBatchSize);
     }
 
     @Override
@@ -70,13 +73,16 @@ public class DbWriter implements EventHandler<DbOperation> {
 
         switch (event.getType()) {
             case INSERT_MESSAGE:
-                insertMap.put(event.getMessage().getMetadata().getInternalId(), event.getMessage());
+                insertMap.put(event.getMessage().getInternalId(), event.getMessage());
                 break;
             case DELETE_MESSAGE:
                 deleteList.add(event.getMessageId());
                 break;
             case DETACH_MSG_FROM_QUEUE:
                 detachMap.put(event.getMessageId(), event);
+                break;
+            case READ_MSG_DATA:
+                readList.put(event.getBareMessage().getInternalId(), event.getBareMessage());
                 break;
             case NO_OP:
                 break;
@@ -99,6 +105,11 @@ public class DbWriter implements EventHandler<DbOperation> {
         if (isBatchReady(endOfBatch, detachMap.values())) {
             messageDao.detachFromQueue(detachMap.values());
             detachMap.clear();
+        }
+
+        if (isBatchReady(endOfBatch, readList.values())) {
+            messageDao.read(readList);
+            readList.clear();
         }
     }
 

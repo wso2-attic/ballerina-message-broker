@@ -79,22 +79,22 @@ public class InMemoryMessageAggregator {
      */
     public void headerFrameReceived(FieldTable headers, FieldTable properties, long payloadSize) {
         long messageId = broker.getNextMessageId();
-        Metadata metadata = new Metadata(messageId, routingKey, exchangeName, payloadSize);
+        Metadata metadata = new Metadata(routingKey, exchangeName, payloadSize);
         metadata.setProperties(properties);
         metadata.setHeaders(headers);
-        message = new Message(metadata);
-        trace(metadata);
+        message = new Message(messageId, metadata);
+        trace(message);
     }
 
-    private void trace(Metadata metadata) {
+    private void trace(Message message) {
         if (MessageTracer.isTraceEnabled()) {
             List<TraceField> traceFields = new ArrayList<>();
-            FieldValue fieldValue = metadata.getProperty(Metadata.CORRELATION_ID);
+            FieldValue fieldValue = message.getMetadata().getProperty(Metadata.CORRELATION_ID);
             if (Objects.nonNull(fieldValue)) {
                 TraceField field = new TraceField(CORRELATION_ID_FIELD_NAME, fieldValue.getValue());
                 traceFields.add(field);
             }
-            MessageTracer.trace(metadata, INCOMING_MESSAGE_MAPPED, traceFields);
+            MessageTracer.trace(message, INCOMING_MESSAGE_MAPPED, traceFields);
         }
     }
 

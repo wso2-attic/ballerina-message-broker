@@ -37,10 +37,31 @@ import javax.naming.InitialContext;
 
 public class QueueConsumerTest {
 
-    @Parameters({ "broker-port"})
+    /**
+     * Basic test to verify queue consumer producer functionality.
+     *
+     * @param port port of the broker
+     * @throws Exception if error
+     */
+    @Parameters({ "broker-port" })
     @Test
-    public void testConsumerProducerWithAutoAck(String port) throws Exception {
-        String queueName = "testConsumerProducerWithAutoAck";
+    public void testConsumerProducerWithAutoAckWith100(String port) throws Exception {
+        testConsumerProducerWithAutoAck(port, "testConsumerProducerWithAutoAck100", 100);
+    }
+
+    /**
+     * This will go beyond the configured in-memory queue limit.
+     *
+     * @param port port of the broker
+     * @throws Exception if error
+     */
+    @Parameters({ "broker-port" })
+    @Test
+    public void testConsumerProducerWithAutoAckWith1100(String port) throws Exception {
+        testConsumerProducerWithAutoAck(port, "testConsumerProducerWithAutoAck1100", 1100);
+    }
+
+    private void testConsumerProducerWithAutoAck(String port, String queueName, int numberOfMessages) throws Exception {
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin", "localhost", port)
                 .withQueue(queueName)
@@ -56,7 +77,6 @@ public class QueueConsumerTest {
         Queue queue = producerSession.createQueue(queueName);
         MessageProducer producer = producerSession.createProducer(queue);
 
-        int numberOfMessages = 100;
         for (int i = 0; i < numberOfMessages; i++) {
             producer.send(producerSession.createTextMessage("Test message " + i));
         }
