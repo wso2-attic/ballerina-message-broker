@@ -26,7 +26,8 @@ import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 /**
  * AMQP frame for dtx.start-ok
  * Parameters:
- *      1. xa-result (short) - transaction branch status
+ *      1. xa-result (short) - Confirm distributed transaction start
+ *                             The result could be either xa-ok or xa-rbrollback
  */
 public class DtxStartOk extends MethodFrame {
 

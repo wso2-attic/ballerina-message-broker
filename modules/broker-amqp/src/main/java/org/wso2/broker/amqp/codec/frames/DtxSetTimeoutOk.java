@@ -26,7 +26,7 @@ import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 /**
  * AMQP frame for dtx.set-timeout-ok
  * Parameter Summary:
- *      1. xa-result (short) - transaction branch status
+ *      1. xa-result (short) - Confirm timeout set
  */
 public class DtxSetTimeoutOk extends MethodFrame {
 

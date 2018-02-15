@@ -26,7 +26,8 @@ import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 /**
  * AMQP frame for dtx.prepare-ok
  * Parameter Summary:
- *      1. xa-result (short) - transaction branch status
+ *      1. xa-result (short) - Confirm distributed transaction prepare
+ *                             The result could be either xa-ok, xa-rdonly, xa-rbrollback, xa-rbtimeout
  */
 public class DtxPrepareOk extends MethodFrame {
 

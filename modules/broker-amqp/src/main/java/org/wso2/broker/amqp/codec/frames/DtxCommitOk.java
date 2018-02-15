@@ -26,7 +26,9 @@ import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 /**
  * AMQP frame for dtx.commit-ok
  * Parameter Summary:
- *      1. xa-result (short) - transaction branch status
+ *      1. xa-result (short) - Confirm distributed transaction commit
+ *                             The result could be either xa-ok, xa-heurhaz, xa-heurcom, xa-heurrb, xa-heurmix,
+ *                             xa-rbrollback
  */
 public class DtxCommitOk extends MethodFrame {
 
