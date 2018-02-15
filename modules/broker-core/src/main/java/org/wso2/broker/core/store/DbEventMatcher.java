@@ -61,7 +61,7 @@ public class DbEventMatcher implements EventHandler<DbOperation> {
 
         switch (event.getType()) {
             case INSERT_MESSAGE:
-                insertMap.put(event.getMessage().getMetadata().getInternalId(), event);
+                insertMap.put(event.getMessage().getInternalId(), event);
                 break;
             case DELETE_MESSAGE:
                 long internalId = event.getMessageId();
@@ -72,6 +72,7 @@ public class DbEventMatcher implements EventHandler<DbOperation> {
                 detachMap.computeIfAbsent(event.getMessageId(), k -> new ArrayList<>())
                          .add(event);
                 break;
+            case READ_MSG_DATA:
             case NO_OP:
                 break;
             default:

@@ -19,9 +19,11 @@
 
 package org.wso2.broker.core;
 
+import org.wso2.broker.core.configuration.BrokerConfiguration;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
 import org.wso2.broker.core.queue.DbBackedQueueImpl;
 import org.wso2.broker.core.queue.MemQueueImpl;
+import org.wso2.broker.core.queue.QueueBufferFactory;
 import org.wso2.broker.core.store.SharedMessageStore;
 
 /**
@@ -30,10 +32,13 @@ import org.wso2.broker.core.store.SharedMessageStore;
 public class QueueHandlerFactory {
     private final SharedMessageStore sharedMessageStore;
     private final BrokerMetricManager metricManager;
+    private QueueBufferFactory queueBufferFactory;
 
-    public QueueHandlerFactory(SharedMessageStore sharedMessageStore, BrokerMetricManager metricManager) {
+    public QueueHandlerFactory(SharedMessageStore sharedMessageStore, BrokerMetricManager metricManager,
+            BrokerConfiguration configuration) {
         this.sharedMessageStore = sharedMessageStore;
         this.metricManager = metricManager;
+        queueBufferFactory = new QueueBufferFactory(configuration);
     }
 
     /**
@@ -45,7 +50,7 @@ public class QueueHandlerFactory {
      * @throws BrokerException if cannot create queue handler
      */
     QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete) throws BrokerException {
-        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, sharedMessageStore);
+        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, sharedMessageStore, queueBufferFactory);
         return new QueueHandler(queue, metricManager);
     }
 

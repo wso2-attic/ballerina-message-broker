@@ -5,6 +5,7 @@ import org.wso2.broker.core.Message;
 import org.wso2.broker.core.store.DbOperation;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Defines a functionality required for manipulating messages in persistent storage.
@@ -35,8 +36,15 @@ public interface MessageDao {
 
     /**
      * Retrieve all messages from a given queue.
+     *
      * @param queueName name of the queue.
      */
     Collection<Message> readAll(String queueName) throws BrokerException;
 
+    /**
+     * Read message data for given messages.
+     *
+     * @param readList list of messages.
+     */
+    Collection<Message> read(Map<Long, Message> readList) throws BrokerException;
 }

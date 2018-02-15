@@ -21,6 +21,7 @@ package org.wso2.broker.core.store;
 
 import com.lmax.disruptor.EventFactory;
 import org.wso2.broker.core.Message;
+import org.wso2.broker.core.queue.QueueBuffer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,6 +39,7 @@ public class DbOperation {
         INSERT_MESSAGE,
         DETACH_MSG_FROM_QUEUE,
         DELETE_MESSAGE,
+        READ_MSG_DATA,
         NO_OP;
     }
 
@@ -59,7 +61,7 @@ public class DbOperation {
 
     private static final int PROCESSED = 2;
     /**
-     * Event is processed by either {@link DbEventMatcher} or {@link DbWriter}.
+     * Event is processed by either {@link DbEventMatcher} or {@link DbAccessHandler}.
      */
     private static final int PERSIST = 3;
 
@@ -71,6 +73,10 @@ public class DbOperation {
 
     private Message message;
 
+    private QueueBuffer queueBuffer;
+
+    private Message bareMessage;
+
     private DbOperation() {
         type = DbOpType.NO_OP;
         this.state = new AtomicInteger(AVAILABLE);
@@ -79,7 +85,7 @@ public class DbOperation {
     public void insertMessage(Message message) {
         type = DbOpType.INSERT_MESSAGE;
         this.message = message;
-        this.messageId = message.getMetadata().getInternalId();
+        this.messageId = message.getInternalId();
     }
 
     public boolean acquireToProcess() {
@@ -105,6 +111,26 @@ public class DbOperation {
         this.queueName = queueName;
     }
 
+    public void readMessageData(QueueBuffer queueBuffer, Message message) {
+        type = DbOpType.READ_MSG_DATA;
+        this.bareMessage = message;
+        this.queueBuffer = queueBuffer;
+    }
+
+    /**
+     * Getter for bareMessage
+     */
+    public Message getBareMessage() {
+        return bareMessage;
+    }
+
+    /**
+     * Getter for queueBuffer
+     */
+    public QueueBuffer getQueueBuffer() {
+        return queueBuffer;
+    }
+
     public DbOpType getType() {
         return type;
     }
@@ -126,6 +152,8 @@ public class DbOperation {
             message.release();
             message = null;
         }
+        bareMessage = null;
+        queueBuffer = null;
         messageId = -1;
         queueName = null;
         type = DbOpType.NO_OP;

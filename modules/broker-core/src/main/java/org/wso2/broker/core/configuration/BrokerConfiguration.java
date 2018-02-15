@@ -38,7 +38,20 @@ public class BrokerConfiguration {
      */
     public static final String SYSTEM_PARAM_BROKER_CONFIG_FILE = "broker.config";
 
+    private String queueInMemoryCacheLimit = "10000";
+
     private DataSourceConfiguration dataSource;
+
+    /**
+     * Getter for queueInMemoryCacheLimit.
+     */
+    public String getQueueInMemoryCacheLimit() {
+        return queueInMemoryCacheLimit;
+    }
+
+    public void setQueueInMemoryCacheLimit(String queueInMemoryCacheLimit) {
+        this.queueInMemoryCacheLimit = queueInMemoryCacheLimit;
+    }
 
     public DataSourceConfiguration getDataSource() {
         return dataSource;

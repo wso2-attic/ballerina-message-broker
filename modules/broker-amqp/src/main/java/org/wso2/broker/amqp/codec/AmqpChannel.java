@@ -292,7 +292,7 @@ public class AmqpChannel {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Redelivery count is {} for message {}",
                          redeliveryCount,
-                         message.getMetadata().getInternalId());
+                         message.getInternalId());
         }
         if (redeliveryCount <= maxRedeliveryCount) {
             broker.requeue(queueName, message);
