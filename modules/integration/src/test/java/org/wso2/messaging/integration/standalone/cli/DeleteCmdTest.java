@@ -18,31 +18,12 @@
 package org.wso2.messaging.integration.standalone.cli;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import static org.wso2.messaging.integration.util.TestConstants.CLI_CONFIG_LOCATION;
-import static org.wso2.messaging.integration.util.TestConstants.CLI_CONFIG_SYSTEM_PROPERTY;
 
 /**
  * Test class containing tests of 'delete' command.
  */
-public class DeleteCmdTest {
-
-    @BeforeClass
-    private void init() {
-        // set the config file path
-        System.setProperty(CLI_CONFIG_SYSTEM_PROPERTY, CLI_CONFIG_LOCATION);
-    }
-
-    @AfterMethod
-    private void resetStream() {
-        // reset the print stream after each test
-        PrintStreamHandler.resetStream();
-        // clear commands map
-        org.wso2.broker.client.Main.clearCommandsMap();
-    }
+public class DeleteCmdTest extends CliTestParent {
 
     @Test(groups = "StreamReading",
           description = "test command 'delete'")

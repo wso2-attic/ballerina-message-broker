@@ -22,9 +22,9 @@ package org.wso2.broker.client.resources;
  */
 public class Exchange {
 
-    public static final String NAME = "name";
-    public static final String TYPE = "type";
-    public static final String DURABLE = "durable";
+    private static final String NAME = "name";
+    private static final String TYPE = "type";
+    private static final String DURABLE = "durable";
 
     private String name;
 
@@ -39,13 +39,7 @@ public class Exchange {
     }
 
     public String getAsJsonString() {
-        StringBuilder jsonString = new StringBuilder();
-        jsonString.append("{");
-        jsonString.append(NAME + ":" + name + ",");
-        jsonString.append(TYPE + ":" + type + ",");
-        jsonString.append(DURABLE + ":" + durable);
-        jsonString.append("}");
-        return jsonString.toString();
+        return "{" + NAME + ":" + name + "," + TYPE + ":" + type + "," + DURABLE + ":" + durable + "}";
     }
 
 }

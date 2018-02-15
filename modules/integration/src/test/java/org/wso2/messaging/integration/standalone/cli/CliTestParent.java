@@ -17,24 +17,28 @@
  */
 package org.wso2.messaging.integration.standalone.cli;
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+
+import static org.wso2.messaging.integration.util.TestConstants.CLI_CONFIG_LOCATION;
+import static org.wso2.messaging.integration.util.TestConstants.CLI_CONFIG_SYSTEM_PROPERTY;
 
 /**
- * Test class containing tests of 'root' command.
+ * Parent class for the CLI test classes
  */
-public class RootCmdTest extends CliTestParent {
+public class CliTestParent {
 
-    @Test(description = "test command '--help'",
-          groups = "StreamReading")
-    public void testRootCmdHelp() {
-        String[] cmd = { "--help" };
-        String expectedLog = "Welcome to Ballerina Message Broker Command Line Interface";
-        String errorMessage = "error when executing root '--help' command";
-
-        org.wso2.broker.client.Main.main(cmd);
-
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+    @BeforeClass
+    public void init() {
+        // set the config file path
+        System.setProperty(CLI_CONFIG_SYSTEM_PROPERTY, CLI_CONFIG_LOCATION);
     }
 
+    @AfterMethod
+    public void resetStream() {
+        // reset the print stream after each test
+        PrintStreamHandler.resetStream();
+        // clear commands map
+        org.wso2.broker.client.Main.clearCommandsMap();
+    }
 }

@@ -118,7 +118,7 @@ public class HttpClient {
             int responseCode = con.getResponseCode();
 
             BufferedReader in = null;
-            StringBuffer response = new StringBuffer();
+            StringBuilder response = new StringBuilder();
             try {
                 // if an error code is returned retrieve the errorStream otherwise inputStream
                 if (responseCode / 100 == 4 || responseCode / 100 == 5) {
