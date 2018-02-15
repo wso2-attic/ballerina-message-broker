@@ -27,12 +27,6 @@ public interface MBClientCmd {
      */
     void execute();
 
-    /**
-     * Get the name of this command.
-     *
-     * @return command.
-     */
-    String getName();
 
     /**
      * Append long description of this command to the passed string builder.

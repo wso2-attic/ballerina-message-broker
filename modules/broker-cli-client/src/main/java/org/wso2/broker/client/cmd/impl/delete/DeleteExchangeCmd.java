@@ -28,8 +28,6 @@ import org.wso2.broker.client.resources.Configuration;
 import org.wso2.broker.client.utils.BrokerClientException;
 import org.wso2.broker.client.utils.Utils;
 
-import static org.wso2.broker.client.utils.Constants.CMD_EXCHANGE;
-
 /**
  * Command representing MB exchange deletion.
  */
@@ -73,11 +71,6 @@ public class DeleteExchangeCmd extends DeleteCmd {
             throw parseException;
         }
 
-    }
-
-    @Override
-    public String getName() {
-        return CMD_EXCHANGE;
     }
 
     @Override

@@ -29,7 +29,7 @@ public class RootCmdTest extends CliTestParent {
           groups = "StreamReading")
     public void testRootCmdHelp() {
         String[] cmd = { "--help" };
-        String expectedLog = "Welcome to Ballerina Message Broker Command Line Interface";
+        String expectedLog = "Welcome to Broker Command Line Interface";
         String errorMessage = "error when executing root '--help' command";
 
         org.wso2.broker.client.Main.main(cmd);

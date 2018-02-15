@@ -20,7 +20,6 @@ package org.wso2.broker.client.cmd.impl.delete;
 import com.beust.jcommander.Parameters;
 import org.wso2.broker.client.cmd.AbstractCmd;
 
-import static org.wso2.broker.client.utils.Constants.CMD_DELETE;
 import static org.wso2.broker.client.utils.Utils.createUsageException;
 
 /**
@@ -35,11 +34,6 @@ public class DeleteCmd extends AbstractCmd {
             throw createUsageException("a command is expected after 'delete'");
         }
         processHelpLogs();
-    }
-
-    @Override
-    public String getName() {
-        return CMD_DELETE;
     }
 
     @Override

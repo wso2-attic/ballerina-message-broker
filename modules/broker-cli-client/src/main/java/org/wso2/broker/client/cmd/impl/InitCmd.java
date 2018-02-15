@@ -24,8 +24,6 @@ import org.wso2.broker.client.resources.Configuration;
 import org.wso2.broker.client.utils.Constants;
 import org.wso2.broker.client.utils.Utils;
 
-import static org.wso2.broker.client.utils.Constants.CMD_INIT;
-
 /**
  * Representation of the broker client initialization command.
  */
@@ -59,11 +57,6 @@ public class InitCmd extends AbstractCmd {
         }
         Configuration configuration = new Configuration(hostname, port, username, password);
         Utils.createConfigurationFile(configuration);
-    }
-
-    @Override
-    public String getName() {
-        return CMD_INIT;
     }
 
     @Override

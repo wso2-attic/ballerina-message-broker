@@ -20,7 +20,6 @@ package org.wso2.broker.client.cmd.impl.create;
 import com.beust.jcommander.Parameters;
 import org.wso2.broker.client.cmd.AbstractCmd;
 
-import static org.wso2.broker.client.utils.Constants.CMD_CREATE;
 import static org.wso2.broker.client.utils.Utils.createUsageException;
 
 /**
@@ -35,11 +34,6 @@ public class CreateCmd extends AbstractCmd {
             throw createUsageException("a command is expected after 'create'");
         }
         processHelpLogs();
-    }
-
-    @Override
-    public String getName() {
-        return CMD_CREATE;
     }
 
     @Override

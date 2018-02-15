@@ -29,8 +29,6 @@ import org.wso2.broker.client.resources.Exchange;
 import org.wso2.broker.client.utils.BrokerClientException;
 import org.wso2.broker.client.utils.Utils;
 
-import static org.wso2.broker.client.utils.Constants.CMD_EXCHANGE;
-
 /**
  * Command representing MB exchange creation.
  */
@@ -74,11 +72,6 @@ public class CreateExchangeCmd extends CreateCmd {
             parseException.addMessage("error while parsing broker response for exchange creation" + e.getMessage());
             throw parseException;
         }
-    }
-
-    @Override
-    public String getName() {
-        return CMD_EXCHANGE;
     }
 
     @Override

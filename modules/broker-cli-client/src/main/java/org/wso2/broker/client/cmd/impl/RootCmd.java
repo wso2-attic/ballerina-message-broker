@@ -35,13 +35,8 @@ public class RootCmd extends AbstractCmd {
     }
 
     @Override
-    public String getName() {
-        return "root-cmd";
-    }
-
-    @Override
     public void printLongDesc(StringBuilder out) {
-        out.append("Welcome to Ballerina Message Broker Command Line Interface\n");
+        out.append("Welcome to Broker Command Line Interface\n");
     }
 
     @Override
