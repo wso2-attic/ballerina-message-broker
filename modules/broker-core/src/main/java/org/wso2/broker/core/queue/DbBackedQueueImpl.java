@@ -19,6 +19,8 @@
 
 package org.wso2.broker.core.queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
@@ -31,6 +33,11 @@ import java.util.Collection;
  * Database backed queue implementation.
  */
 public class DbBackedQueueImpl extends Queue {
+    /**
+     * Class logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbBackedQueueImpl.class);
+
     private final SharedMessageStore sharedMessageStore;
 
     private final QueueBuffer buffer;
@@ -40,8 +47,15 @@ public class DbBackedQueueImpl extends Queue {
         super(queueName, true, autoDelete);
         this.sharedMessageStore = sharedMessageStore;
         buffer = queueBufferFactory.createBuffer(sharedMessageStore::readData);
+
+        LOGGER.debug("Recovering messages for queue {}", queueName);
+
         Collection<Message> messages = sharedMessageStore.readStoredMessages(queueName);
-        buffer.addAll(messages);
+        buffer.addAllBareMessages(messages);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{} messages recovered for queue {}", messages.size(), queueName);
+        }
     }
 
     @Override
