@@ -46,7 +46,7 @@ import static org.wso2.broker.client.utils.Utils.createUsageException;
 
 /**
  * Main Class of the Broker CLI Client.
- * <p>
+ *
  * Main method of this class should run with required arguments to execute a command.
  */
 public class Main {
@@ -110,7 +110,7 @@ public class Main {
 
     /**
      * Process the given input through the parser tree.
-     * <p>
+     *
      * This can throw runtime exceptions through {@link BrokerClientException} when an error occurs in parsing the
      * input.
      *
@@ -132,7 +132,7 @@ public class Main {
 
     /**
      * When it needs to find matching command, traversing is done through a recursive algorithm.
-     * <p>
+     *
      * This can throw runtime exceptions through {@link BrokerClientException} when an error occurs while executing
      * the command.
      *
@@ -149,7 +149,7 @@ public class Main {
 
     /**
      * Add a subCommand to its parent commander.
-     * <p>
+     *
      * Adding a command to a JCommander instance will create a new JCommander instance for the new command, and it
      * will be added into the parents command map. This method will extract the child commander and keep it for
      * future reference (to add another layer of sub-commands) and the new command will also get added into the

@@ -41,7 +41,7 @@ import static org.wso2.broker.client.utils.Constants.BROKER_CONNECTION_URL_SUFFI
 
 /**
  * Http Client to invoke the REST service of the MB.
- * <p/>
+ *
  * This wil provide interface to invoke a Http backend using {@link HttpRequest} and response will be returned through
  * a {@link HttpResponse}.
  */
