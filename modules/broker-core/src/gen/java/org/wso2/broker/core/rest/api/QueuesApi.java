@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.rest.BindingsApiDelegate;
 import org.wso2.broker.core.rest.BrokerAdminService;
@@ -53,7 +54,7 @@ import javax.ws.rs.core.Response;
 @Path(BrokerAdminService.API_BASE_PATH + "/queues")
 @Api(description = "the queues API")
 @Produces({ "application/json" })
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2018-01-30T10:20:21.038+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2018-02-16T16:43:30.881+05:30")
 public class QueuesApi {
 
     private final QueuesApiDelegate queuesApiDelegate;
@@ -72,12 +73,15 @@ public class QueuesApi {
     @Path("/{name}/bindings")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @ApiOperation(value = "Create a binding", notes = "Create a binding for a queue", response = BindingCreateResponse.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 201, message = "Binding created", response = BindingCreateResponse.class),
-        @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
-        @ApiResponse(code = 404, message = "Exchange not found", response = Error.class),
-        @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    @ApiOperation(value = "Create a binding", notes = "Create a binding for a queue", response = BindingCreateResponse.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Binding created", response = BindingCreateResponse.class),
+            @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Exchange not found", response = Error.class),
+            @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
     public Response createBinding(@PathParam("name") @ApiParam("Name of the queue to bind to") String name,@Valid BindingCreateRequest body) {
         return bindingsApiDelegate.createBinding(name, body);
     }
@@ -85,11 +89,14 @@ public class QueuesApi {
     @POST
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @ApiOperation(value = "Creates a queue", notes = "", response = QueueCreateResponse.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 201, message = "Queue created.", response = QueueCreateResponse.class),
-        @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
-        @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    @ApiOperation(value = "Creates a queue", notes = "", response = QueueCreateResponse.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Queue created.", response = QueueCreateResponse.class),
+            @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
     public Response createQueue(@Valid QueueCreateRequest body) {
         return queuesApiDelegate.createQueue(body);
     }
@@ -97,11 +104,14 @@ public class QueuesApi {
     @DELETE
     @Path("/{name}/bindings/{bindingPattern}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Unbind a queue", notes = "Delete a specific binding", response = Void.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Binding deleted", response = Void.class),
-        @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
-        @ApiResponse(code = 404, message = "Binding not found", response = Error.class) })
+    @ApiOperation(value = "Unbind a queue", notes = "Delete a specific binding", response = Void.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Binding deleted", response = Void.class),
+            @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Binding not found", response = Error.class) })
     public Response deleteBinding(@PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("bindingPattern") @ApiParam("Binding pattern for the bindings") String bindingPattern,@QueryParam("filterExpression")   @ApiParam("JMS selector relater message filter pattern")  String filterExpression) {
         return bindingsApiDelegate.deleteBinding(name, bindingPattern, filterExpression);
     }
@@ -109,10 +119,13 @@ public class QueuesApi {
     @DELETE
     @Path("/{name}/consumers/{consumerId}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "delete a consumer", notes = "Delete a specific consumer from a queue", response = Void.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Consumer deleted", response = Void.class),
-        @ApiResponse(code = 404, message = "Queue/Consumer not found", response = Error.class) })
+    @ApiOperation(value = "delete a consumer", notes = "Delete a specific consumer from a queue", response = Void.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Consumer deleted", response = Void.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Queue/Consumer not found", response = Error.class) })
     public Response deleteConsumer(@PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("consumerId") @ApiParam("Unique consumer identifier") Integer consumerId) {
         return consumersApiDelegate.deleteConsumer(name, consumerId);
     }
@@ -120,31 +133,40 @@ public class QueuesApi {
     @DELETE
     @Path("/{name}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Delete the specified queue.", notes = "Delete the specified queue if the queue exists in the broker and the query param properties ifUnused and ifEmpty are satisfied.", response = Void.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Queue deleted", response = Void.class),
-        @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
-        @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
-    public Response deleteQueue(@PathParam("name") @ApiParam("Name of the queue") String name,@DefaultValue("true") @QueryParam("ifUnused")    @ApiParam("If set to true, queue will be deleted only if the queue has no active consumers.")  Boolean ifUnused,@DefaultValue("true") @QueryParam("ifEmpty") @ApiParam("If set to true, queue will be deleted only if the queue is empty.")  Boolean ifEmpty) {
+    @ApiOperation(value = "Delete the specified queue.", notes = "Delete the specified queue if the queue exists in the broker and the query param properties ifUnused and ifEmpty are satisfied.", response = Void.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Queue deleted", response = Void.class),
+            @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
+    public Response deleteQueue(@PathParam("name") @ApiParam("Name of the queue") String name, @DefaultValue("true")  @QueryParam("ifUnused")  @ApiParam("If set to true, queue will be deleted only if the queue has no active consumers.")  Boolean ifUnused,  @DefaultValue("true") @QueryParam("ifEmpty") @ApiParam("If set to true, queue will be deleted only if the queue is empty.")  Boolean ifEmpty) {
         return queuesApiDelegate.deleteQueue(name, ifUnused, ifEmpty);
     }
 
     @GET
     @Path("/{name}/consumers")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Get all consumers of a queue", notes = "Retrieves all the consumers for the queue", response = ConsumerMetadata.class, responseContainer = "List", tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Consumers of the queue", response = ConsumerMetadata.class, responseContainer = "List"),
-        @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
+    @ApiOperation(value = "Get all consumers of a queue", notes = "Retrieves all the consumers for the queue", response = ConsumerMetadata.class, responseContainer = "List", authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Consumers of the queue", response = ConsumerMetadata.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
     public Response getAllConsumersForQueue(@PathParam("name") @ApiParam("Name of the queue") String name) {
         return consumersApiDelegate.getAllConsumers(name);
     }
 
     @GET
     @Produces({ "application/json" })
-    @ApiOperation(value = "Get all queues", notes = "Gets metadata of all the queues in the broker. This includes durable and non durable queues. ", response = QueueMetadata.class, responseContainer = "List", tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "List of queues", response = QueueMetadata.class, responseContainer = "List") })
+    @ApiOperation(value = "Get all queues", notes = "Gets metadata of all the queues in the broker. This includes durable and non durable queues. ", response = QueueMetadata.class, responseContainer = "List", authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "List of queues", response = QueueMetadata.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class) })
     public Response getAllQueues(@QueryParam("durable")   @ApiParam("filter queues by durability")  Boolean durable) {
         return queuesApiDelegate.getAllQueues(durable);
     }
@@ -152,10 +174,13 @@ public class QueuesApi {
     @GET
     @Path("/{name}/bindings/{bindingPattern}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Retrieve bindings for a queue with specific binding pattern", notes = "", response = BindingInfo.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Binding info", response = BindingInfo.class),
-        @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
+    @ApiOperation(value = "Retrieve bindings for a queue with specific binding pattern", notes = "", response = BindingInfo.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Binding info", response = BindingInfo.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
     public Response getBinding(@PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("bindingPattern") @ApiParam("Binding pattern for the bindings") String bindingPattern,@QueryParam("filterExpression")   @ApiParam("JMS selector relater message filter pattern")  String filterExpression) {
         return bindingsApiDelegate.getBinding(name, bindingPattern, filterExpression);
     }
@@ -163,10 +188,13 @@ public class QueuesApi {
     @GET
     @Path("/{name}/consumers/{consumerId}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Get a specific consumer", notes = "Retrieves a specific consumer for a given queue", response = ConsumerMetadata.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Consumers of the queue", response = ConsumerMetadata.class),
-        @ApiResponse(code = 404, message = "Queue/Consumer not found", response = Error.class) })
+    @ApiOperation(value = "Get a specific consumer", notes = "Retrieves a specific consumer for a given queue", response = ConsumerMetadata.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Consumers of the queue", response = ConsumerMetadata.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Queue/Consumer not found", response = Error.class) })
     public Response getConsumer(@PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("consumerId") @ApiParam("Unique consumer identifier") Integer consumerId) {
         return consumersApiDelegate.getConsumer(name, consumerId);
     }
@@ -174,10 +202,13 @@ public class QueuesApi {
     @GET
     @Path("/{name}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Get a specific queue", notes = "Gets metadata of the specified queue.", response = QueueMetadata.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Metadata of the queue", response = QueueMetadata.class),
-        @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
+    @ApiOperation(value = "Get a specific queue", notes = "Gets metadata of the specified queue.", response = QueueMetadata.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Metadata of the queue", response = QueueMetadata.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
     public Response getQueue(@PathParam("name") @ApiParam("Name of the queue") String name) {
         return queuesApiDelegate.getQueue(name);
     }
