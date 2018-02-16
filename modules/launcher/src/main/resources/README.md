@@ -39,7 +39,7 @@ Please follow the steps below to build message broker from source code.
 - **conf/broker.yaml** - main configuration file
 - **conf/log4j.properties** - logging configuration file
 - **lib** - contains all the required jars
-- **database** - contains files related to the embedded Derby database
+- **database** - contains files related to the embedded H2 database
 - **dbscripts** - database schemas related to supported databases
 - **logs/broker.log** - main logging file
 - **resources/security** - contains both the keystore and the truststore used to create the SSL engine

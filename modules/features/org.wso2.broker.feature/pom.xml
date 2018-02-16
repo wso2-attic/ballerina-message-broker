@@ -159,17 +159,12 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <target>
-                                <path id="h2.classpath">
-                                    <path refid="maven.compile.classpath" />
-                                </path>
                                 <!-- Drop database if it exists -->
                                 <delete dir="${db.directory}" quiet="true" />
                                 <!-- Create database schema -->
                                 <echo message="########### Creating MB Database ##############" />
-                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url};create=true;MV_STORE=TRUE" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
-                                    <classpath>
-                                        <path refid="h2.classpath" />
-                                    </classpath>
+                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url}" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
+                                    <classpath refid="maven.compile.classpath" />
                                     <!-- Create database schema -->
                                     <transaction src="${sql.directory}/h2-mb.sql" />
                                 </sql>

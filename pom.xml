@@ -209,9 +209,9 @@
                 <version>${jaxrs.api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.derby</groupId>
-                <artifactId>derby</artifactId>
-                <version>${derby.version}</version>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
@@ -256,6 +256,10 @@
                     <exclusion>
                         <groupId>org.wso2.eclipse.osgi</groupId>
                         <artifactId>org.eclipse.osgi.services</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -343,7 +347,7 @@
         <carbon.config.version>2.1.5</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
         <hikari.version>2.7.4</hikari.version>
-        <derby.version>10.14.1.0</derby.version>
+        <h2.version>1.4.196</h2.version>
         <msf4j.version>2.5.2</msf4j.version>
         <msf4j.package.import.version.range>[2.5.0, 2.6.0)</msf4j.package.import.version.range>
         <com.ibatis.version>2.1.7.597</com.ibatis.version>

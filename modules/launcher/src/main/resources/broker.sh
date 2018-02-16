@@ -115,7 +115,7 @@ $JAVACMD \
     $JAVA_OPTS \
     -classpath "$MESSAGE_BROKER_CLASSPATH" \
     -Dfile.encoding=UTF8 \
-    -Dderby.system.home="$MESSAGE_BROKER_HOME" \
+    -Dh2.baseDir="$MESSAGE_BROKER_HOME" \
     -Dmessage.broker.home="$MESSAGE_BROKER_HOME" \
     -Dlog4j.configuration="file:$MESSAGE_BROKER_HOME/conf/log4j.properties" \
     -Dbroker.config="$MESSAGE_BROKER_HOME/conf/broker.yaml" \
