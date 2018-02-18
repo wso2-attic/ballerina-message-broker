@@ -19,25 +19,63 @@
 
 package org.wso2.broker.core.transaction;
 
+import org.wso2.broker.core.Broker;
+import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
+import org.wso2.broker.core.QueueHandler;
+import org.wso2.broker.core.store.SharedMessageStore;
+
+import java.util.HashSet;
+import java.util.Set;
+import javax.transaction.xa.Xid;
 
 /**
  * XA transaction information hold within the broker
  */
 public class Branch {
 
-    public Branch() {
+    private Xid xid;
+
+    private final SharedMessageStore sharedMessageStore;
+
+    private final Set<QueueHandler> affectedQueueHandlers;
+
+    private final Broker broker;
+
+    public Branch(Xid xid, SharedMessageStore sharedMessageStore, Broker broker) {
+        this.xid = xid;
+        this.sharedMessageStore = sharedMessageStore;
+        this.broker = broker;
+        sharedMessageStore.branch(xid);
+        this.affectedQueueHandlers = new HashSet<>();
     }
 
-    public void enqueue(Message message) {
+    public void enqueue(Message message) throws BrokerException {
+        sharedMessageStore.addShallowCopy(xid, message);
+        Set<QueueHandler> queueHandlers = broker.prepareEnqueue(xid, message);
+        affectedQueueHandlers.addAll(queueHandlers);
     }
 
-    public void dequeue(String queueName, Message message) {
+    public void dequeue(String queueName, Message message) throws BrokerException {
+        QueueHandler queueHandler = broker.prepareDequeue(xid, queueName, message);
+        affectedQueueHandlers.add(queueHandler);
     }
 
-    public void commit() {
+    public void commit() throws BrokerException {
+        sharedMessageStore.flush(xid);
+        for (QueueHandler queueHandler: affectedQueueHandlers) {
+            queueHandler.commit(xid);
+        }
     }
 
     public void rollback() {
+        sharedMessageStore.clear(xid);
+        for (QueueHandler queueHandler: affectedQueueHandlers) {
+            queueHandler.rollback(xid);
+        }
+    }
+
+    public Xid getXid() {
+        return xid;
     }
 }

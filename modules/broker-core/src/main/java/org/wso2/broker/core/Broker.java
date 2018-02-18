@@ -36,13 +36,19 @@ import org.wso2.broker.core.metrics.NullBrokerMetricManager;
 import org.wso2.broker.core.rest.api.ExchangesApi;
 import org.wso2.broker.core.rest.api.QueuesApi;
 import org.wso2.broker.core.store.StoreFactory;
+import org.wso2.broker.core.transaction.BranchFactory;
+import org.wso2.broker.core.transaction.BrokerTransactionFactory;
+import org.wso2.broker.core.transaction.LocalTransaction;
+import org.wso2.broker.core.transaction.Registry;
 import org.wso2.broker.rest.BrokerServiceRunner;
 import org.wso2.carbon.metrics.core.MetricService;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.sql.DataSource;
+import javax.transaction.xa.Xid;
 
 /**
  * Broker API class.
@@ -64,6 +70,10 @@ public final class Broker {
 
     private BrokerHelper brokerHelper;
 
+    private final Registry transactionRegistry;
+
+    private final BrokerTransactionFactory brokerTransactionFactory;
+
     public Broker(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
         if (Objects.nonNull(metrics)) {
@@ -74,10 +84,14 @@ public final class Broker {
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
-                                                                                        BrokerConfiguration.class);
+                                                                                  BrokerConfiguration.class);
         DataSource dataSource = startupContext.getService(DataSource.class);
         StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
         this.messagingEngine = new MessagingEngine(storeFactory, metricManager);
+
+        transactionRegistry = new Registry();
+        this.brokerTransactionFactory =
+                new BrokerTransactionFactory(new BranchFactory(this, storeFactory), transactionRegistry);
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new QueuesApi(this), new ExchangesApi(this));
         startupContext.registerService(Broker.class, this);
@@ -103,6 +117,14 @@ public final class Broker {
     public void acknowledge(String queueName, Message message) throws BrokerException {
         messagingEngine.acknowledge(queueName, message);
         metricManager.markAcknowledge();
+    }
+
+    public Set<QueueHandler> prepareEnqueue(Xid xid, Message message) throws BrokerException {
+        return messagingEngine.prepareEnqueue(xid, message);
+    }
+
+    public QueueHandler prepareDequeue(Xid xid, String queueName, Message message) throws BrokerException {
+        return messagingEngine.prepareDequeue(xid, queueName, message);
     }
 
     /**
@@ -202,8 +224,8 @@ public final class Broker {
     /**
      * Start local transaction flow
      */
-    public void newLocalTransaction() {
-        //this should return message store or relevant implementation to start transaction flow
+    public LocalTransaction newLocalTransaction() {
+        return brokerTransactionFactory.createLocalTransaction();
     }
 
     private class BrokerHelper {

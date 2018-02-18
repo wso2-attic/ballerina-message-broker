@@ -19,9 +19,12 @@
 
 package org.wso2.broker.core.queue;
 
+import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Queue;
 import org.wso2.broker.core.QueueHandler;
+
+import javax.transaction.xa.Xid;
 
 /**
  * Queue representation which is unmodifiable. Used to return a view of the underlying queue to the outside.
@@ -56,12 +59,32 @@ public class UnmodifiableQueueWrapper extends Queue {
     }
 
     @Override
+    public void prepareEnqueue(Xid xid, Message message) {
+        throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
+    }
+
+    @Override
+    public void commit(Xid xid) {
+        throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
+    }
+
+    @Override
+    public void rollback(Xid xid) {
+        throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
+    }
+
+    @Override
     public Message dequeue() {
         throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
     }
 
     @Override
     public void detach(Message message) {
+        throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
+    }
+
+    @Override
+    public void prepareDetach(Xid xid, Message message) throws BrokerException {
         throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
     }
 }

@@ -28,7 +28,6 @@ import org.wso2.broker.core.ContentChunk;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.Metadata;
 import org.wso2.broker.core.metrics.BrokerMetricManager;
-import org.wso2.broker.core.store.DbOperation;
 import org.wso2.carbon.metrics.core.Timer.Context;
 
 import java.sql.Connection;
@@ -134,14 +133,18 @@ class MessageCrudOperationsDao extends BaseDao {
     }
 
     public void detachFromQueue(Connection connection,
-                                Collection<DbOperation> dbOperations) throws BrokerException {
+                                Map<String, List<Long>> detachableMessageMap) throws BrokerException {
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement(RDBMSConstants.PS_DELETE_FROM_QUEUE);
-            for (DbOperation dbOperation : dbOperations) {
-                statement.setLong(1, dbOperation.getMessageId());
-                statement.setString(2, dbOperation.getQueueName());
-                statement.addBatch();
+            for (Map.Entry<String, List<Long>> entry : detachableMessageMap.entrySet()) {
+                String queueName = entry.getKey();
+                List<Long> messageIds = entry.getValue();
+                for (long internalMessageId : messageIds) {
+                    statement.setLong(1, internalMessageId);
+                    statement.setString(2, queueName);
+                    statement.addBatch();
+                }
             }
 
             statement.executeBatch();

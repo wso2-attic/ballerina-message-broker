@@ -22,6 +22,7 @@ package org.wso2.broker.amqp.codec.frames;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.wso2.broker.amqp.codec.AmqpChannel;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 
 /**
@@ -43,14 +44,17 @@ public class TxSelect extends MethodFrame {
 
     @Override
     protected void writeMethod(ByteBuf buf) {
+        // Nothing to write
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         int channelId = getChannel();
         AmqpChannel channel = connectionHandler.getChannel(channelId);
-        channel.setLocalTransactional();
-        ctx.writeAndFlush(new TxSelectOk(channelId));
+        ctx.fireChannelRead((BlockingTask) () -> {
+            channel.setLocalTransactional();
+            ctx.writeAndFlush(new TxSelectOk(channelId));
+        });
     }
 
     public static AmqMethodBodyFactory getFactory() {

@@ -21,7 +21,7 @@ package org.wso2.broker.core.store.dao.impl;
 
 import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
-import org.wso2.broker.core.store.DbOperation;
+import org.wso2.broker.core.store.TransactionData;
 import org.wso2.broker.core.store.dao.MessageDao;
 
 import java.util.Collection;
@@ -39,23 +39,12 @@ class MessageDaoImpl implements MessageDao {
     }
 
     @Override
-    public void persist(Collection<Message> messageList) throws BrokerException {
-
-        crudOperationsDao.transaction(connection -> crudOperationsDao.persist(connection, messageList),
-                                      "persisting messages.");
-    }
-
-    @Override
-    public void detachFromQueue(Collection<DbOperation> dbOperations) throws BrokerException {
-        crudOperationsDao.transaction(connection -> crudOperationsDao.detachFromQueue(connection, dbOperations),
-                                      "detaching message from queue");
-    }
-
-    @Override
-    public void delete(Collection<Long> messageId) throws BrokerException {
-        crudOperationsDao.transaction(connection -> crudOperationsDao.delete(connection, messageId),
-                                      "deleting messages."
-                                     );
+    public void persist(TransactionData transactionData) throws BrokerException {
+        crudOperationsDao.transaction(connection -> {
+            crudOperationsDao.persist(connection, transactionData.getEnqueueMessages());
+            crudOperationsDao.detachFromQueue(connection, transactionData.getDetachMessageMap());
+            crudOperationsDao.delete(connection, transactionData.getDeletableMessage());
+        });
     }
 
     @Override

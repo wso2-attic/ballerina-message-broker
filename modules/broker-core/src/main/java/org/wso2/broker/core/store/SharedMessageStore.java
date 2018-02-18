@@ -32,13 +32,15 @@ import org.wso2.broker.core.store.disruptor.SleepingBlockingWaitStrategy;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import javax.annotation.concurrent.ThreadSafe;
+import javax.transaction.xa.Xid;
 
 /**
  * Message store class that is used by all the durable queues to persist messages
- *
+ * <p>
  * Note: This class is thread safe
  */
 @ThreadSafe
@@ -62,15 +64,18 @@ public class SharedMessageStore {
 
     private final MessageDao messageDao;
 
-    @SuppressWarnings("unchecked")
-    SharedMessageStore(MessageDao messageDao, int bufferSize, int maxDbBatchSize) {
+    private final Map<Xid, TransactionData> transactionMap;
+
+    @SuppressWarnings("unchecked") SharedMessageStore(MessageDao messageDao, int bufferSize, int maxDbBatchSize) {
 
         pendingMessages = new ConcurrentHashMap<>();
+        transactionMap = new ConcurrentHashMap<>();
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("DisruptorMessageStoreThread-%d").build();
 
         disruptor = new Disruptor<>(DbOperation.getFactory(),
-                bufferSize, namedThreadFactory, ProducerType.MULTI, new SleepingBlockingWaitStrategy());
+                                    bufferSize, namedThreadFactory, ProducerType.MULTI, new
+                                            SleepingBlockingWaitStrategy());
 
         disruptor.setDefaultExceptionHandler(new LogExceptionHandler());
 
@@ -81,8 +86,13 @@ public class SharedMessageStore {
         this.messageDao = messageDao;
     }
 
-    public void add(Message message) {
+    public void addShallowCopy(Message message) {
         pendingMessages.put(message.getInternalId(), message.shallowCopy());
+    }
+
+    public void addShallowCopy(Xid xid, Message message) throws BrokerException {
+        TransactionData transactionData = getTransactionData(xid);
+        transactionData.addEnqueueMessage(message.shallowCopy());
     }
 
     public void attach(String queueName, long messageInternalId) throws BrokerException {
@@ -94,16 +104,39 @@ public class SharedMessageStore {
         message.addOwnedQueue(queueName);
     }
 
+    public void attach(Xid xid, String queueName, long messageInternalId) throws BrokerException {
+        TransactionData transactionData = getTransactionData(xid);
+        transactionData.attach(queueName, messageInternalId);
+    }
+
+    private TransactionData getTransactionData(Xid xid) throws BrokerException {
+        TransactionData transactionData = transactionMap.get(xid);
+        if (Objects.isNull(transactionData)) {
+            throw new BrokerException("Unknown Xid " + xid + ". Create a branch with Xid before attaching to a queue");
+        }
+        return transactionData;
+    }
+
     private void delete(long messageId) {
         disruptor.publishEvent(DELETE_MESSAGE, messageId);
     }
 
-    public void detach(String queueName, Message message) {
+    public synchronized void detach(String queueName, final Message message) {
         message.removeAttachedQueue(queueName);
         if (!message.hasAttachedQueues()) {
             delete(message.getInternalId());
         } else {
             disruptor.publishEvent(DETACH_FROM_QUEUE, queueName, message.getInternalId());
+        }
+    }
+
+    public synchronized void detach(Xid xid, String queueName, Message message) throws BrokerException {
+        TransactionData transactionData = getTransactionData(xid);
+        message.removeAttachedQueue(queueName);
+        if (message.hasAttachedQueues()) {
+            transactionData.detach(queueName, message.getInternalId());
+        } else {
+            transactionData.addDeletableMessage(message.getInternalId());
         }
     }
 
@@ -123,6 +156,14 @@ public class SharedMessageStore {
         }
     }
 
+    public void flush(Xid xid) throws BrokerException {
+        messageDao.persist(getTransactionData(xid));
+    }
+
+    public void branch(Xid xid) {
+        transactionMap.putIfAbsent(xid, new TransactionData());
+    }
+
     public Collection<Message> readStoredMessages(String queueName) throws BrokerException {
         return messageDao.readAll(queueName);
     }
@@ -134,4 +175,7 @@ public class SharedMessageStore {
         pendingMessages.clear();
     }
 
+    public void clear(Xid xid) {
+        transactionMap.remove(xid);
+    }
 }

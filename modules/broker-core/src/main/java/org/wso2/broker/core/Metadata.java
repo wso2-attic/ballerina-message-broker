@@ -91,8 +91,7 @@ public class Metadata {
     }
 
     public Metadata shallowCopy() {
-        Metadata metadata = shallowCopyWith(routingKey, exchangeName);
-        return metadata;
+        return shallowCopyWith(routingKey, exchangeName);
     }
 
     public Metadata shallowCopyWith(String routingKey, String exchangeName) {
@@ -108,9 +107,10 @@ public class Metadata {
         return "Metadata{"
                 + "routingKey='" + routingKey + '\''
                 + ", exchangeName='" + exchangeName + '\''
-                + ", contentLength=" + contentLength
-                + ", messageId= " + properties.getValue(MESSAGE_ID) + '\''
-                + ", deliveryMode=" + properties.getValue(DELIVERY_MODE) + '\''
+                + ", correlationId='" + properties.getValue(CORRELATION_ID) + '\''
+                + ", contentLength='" + contentLength + '\''
+                + ", messageId='" + properties.getValue(MESSAGE_ID) + '\''
+                + ", deliveryMode='" + properties.getValue(DELIVERY_MODE) + '\''
                 + "'}";
     }
 
@@ -129,6 +129,10 @@ public class Metadata {
     public byte getByteProperty(ShortString propertyName) {
         FieldValue fieldValue = properties.getValue(propertyName);
         return ((ShortShortInt) fieldValue.getValue()).getByte();
+    }
+
+    public boolean isPersistent() {
+        return getByteProperty(Metadata.DELIVERY_MODE) == Metadata.PERSISTENT_MESSAGE;
     }
 
     public FieldValue getHeader(ShortString headerName) {

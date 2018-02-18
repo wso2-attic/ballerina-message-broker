@@ -45,8 +45,8 @@ public interface BrokerTransaction {
          * Execute actions after rollback operation
          */
         void onRollback();
-    }
 
+    }
     /**
      * Dequeue a message from queue
      *
@@ -65,7 +65,7 @@ public interface BrokerTransaction {
     /**
      * Commit the transaction represent by this object
      */
-    void commit() throws ValidationException;
+    void commit() throws ValidationException, BrokerException;
 
     /**
      * Rollback the transaction represent by this object
@@ -85,6 +85,11 @@ public interface BrokerTransaction {
      * @return local transactional or not
      */
     boolean isTransactional();
+
+    /**
+     * Actions to be performed on a transaction close
+     */
+    void onClose();
 
     /**
      * Start a transaction branch

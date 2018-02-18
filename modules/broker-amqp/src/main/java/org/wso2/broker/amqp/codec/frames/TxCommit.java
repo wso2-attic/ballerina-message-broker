@@ -24,10 +24,13 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ChannelException;
+import org.wso2.broker.amqp.codec.ConnectionException;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.common.ValidationException;
 import org.wso2.broker.common.data.types.ShortString;
+import org.wso2.broker.core.BrokerException;
 
 /**
  * AMQP frame for tx.commit
@@ -55,16 +58,24 @@ public class TxCommit extends MethodFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         int channelId = getChannel();
         AmqpChannel channel = connectionHandler.getChannel(channelId);
-        try {
-            channel.commit();
-            ctx.writeAndFlush(new TxCommitOk(channelId));
-        } catch (ValidationException e) {
-            LOGGER.error("Error while commit transaction", e);
-            ctx.writeAndFlush(new ChannelClose(channelId, ChannelException.PRECONDITION_FAILED,
-                    ShortString.parseString(e.getMessage()),
-                    CLASS_ID,
-                    METHOD_ID));
-        }
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.commit();
+                ctx.writeAndFlush(new TxCommitOk(channelId));
+            } catch (ValidationException e) {
+                LOGGER.warn("User input error while commit transaction", e);
+                ctx.writeAndFlush(new ChannelClose(channelId, ChannelException.PRECONDITION_FAILED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            } catch (BrokerException e) {
+                LOGGER.error("Error occurred while committing transaction", e);
+                ctx.writeAndFlush(new ConnectionClose(ConnectionException.INTERNAL_ERROR,
+                                                      ShortString.parseString(e.getMessage()),
+                                                      CLASS_ID,
+                                                      METHOD_ID));
+            }
+        });
     }
 
     public static AmqMethodBodyFactory getFactory() {
