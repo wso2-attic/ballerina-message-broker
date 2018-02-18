@@ -18,7 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain.jaas;
 
-import io.ballerina.messaging.broker.auth.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 
 import java.io.IOException;
 import java.util.Arrays;

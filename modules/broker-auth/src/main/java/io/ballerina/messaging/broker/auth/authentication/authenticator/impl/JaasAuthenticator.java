@@ -20,9 +20,9 @@ package io.ballerina.messaging.broker.auth.authentication.authenticator.impl;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
-import io.ballerina.messaging.broker.auth.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.authentication.authenticator.Authenticator;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.PlainSaslCallbackHandler;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.user.UserStoreManager;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;

@@ -20,7 +20,7 @@ package io.ballerina.messaging.broker.auth.authentication.jaas;
 
 import com.sun.security.auth.UserPrincipal;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
-import io.ballerina.messaging.broker.auth.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
 
 import java.io.IOException;
