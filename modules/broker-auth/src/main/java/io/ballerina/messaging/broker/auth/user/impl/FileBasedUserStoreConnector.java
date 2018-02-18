@@ -19,9 +19,9 @@
 package io.ballerina.messaging.broker.auth.user.impl;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
-import io.ballerina.messaging.broker.auth.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.user.config.UserConfig;
 import io.ballerina.messaging.broker.auth.user.config.UsersFile;
 import io.ballerina.messaging.broker.auth.user.dto.User;

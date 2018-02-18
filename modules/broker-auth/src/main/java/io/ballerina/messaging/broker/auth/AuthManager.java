@@ -23,6 +23,10 @@ import io.ballerina.messaging.broker.auth.authentication.AuthenticatorFactory;
 import io.ballerina.messaging.broker.auth.authentication.sasl.BrokerSecurityProvider;
 import io.ballerina.messaging.broker.auth.authentication.sasl.SaslServerBuilder;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.PlainSaslServerBuilder;
+import io.ballerina.messaging.broker.auth.authorization.AuthProvider;
+import io.ballerina.messaging.broker.auth.authorization.AuthProviderFactory;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.AuthorizerFactory;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
@@ -60,6 +64,8 @@ public class AuthManager {
      */
     private Authenticator authenticator;
 
+    private Authorizer authorizer;
+
     public AuthManager(StartupContext startupContext) throws Exception {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         brokerAuthConfiguration = configProvider
@@ -67,6 +73,8 @@ public class AuthManager {
         startupContext.registerService(AuthManager.class, this);
         authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
                                                                     brokerAuthConfiguration.getAuthentication());
+        AuthProvider authProvider = new AuthProviderFactory().getAuthorizer(brokerAuthConfiguration, startupContext);
+        authorizer = new AuthorizerFactory().getAutStore(authProvider, brokerAuthConfiguration, startupContext);
     }
 
     public void start() {
@@ -137,5 +145,14 @@ public class AuthManager {
      */
     public Authenticator getAuthenticator() {
         return authenticator;
+    }
+
+    /**
+     * Provides authorizer which will be used to authorize users for broker resources.
+     *
+     * @return broker authorizer
+     */
+    public Authorizer getAuthorizer() {
+        return authorizer;
     }
 }

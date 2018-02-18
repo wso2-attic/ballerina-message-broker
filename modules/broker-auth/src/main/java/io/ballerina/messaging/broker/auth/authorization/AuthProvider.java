@@ -16,36 +16,33 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authentication;
+package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Interface represents the authenticator.
- * This provides ability to extend different authentication strategies for broker auth.
- * <p>
- * {@link #authenticate(String, char[])} is used to authenticate user on given username and credentials.
+ * Interface represents auth provider for broker users which provide authorization groups..
  */
-public interface Authenticator {
+public interface AuthProvider {
 
     /**
-     * Initiate authenticator with startup context.
+     * Initialize authorization strategy based on given auth configuration, user store manager and data source.
      *
-     * @param startupContext the startup context provides registered services for authenticator functionality.
+     * @param startupContext the startup context provides registered services for authorizer
      * @param properties     set of properties
      */
     void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception;
 
     /**
-     * Authenticate given user based on defined authentication strategy.
+     * Get set of user Groups for the user
      *
-     * @param username an username
-     * @param password the password of the user
-     * @return authentication result with user information
-     * @throws BrokerAuthException if error occurred while authenticating user.
+     * @param userId user id
+     * @return set of user groups
+     * @throws BrokerAuthException throws if error occurs while authorizing user
      */
-    AuthResult authenticate(String username, char[] password) throws BrokerAuthException;
+    Set<String> getUserGroupsList(String userId) throws BrokerAuthException;
 }

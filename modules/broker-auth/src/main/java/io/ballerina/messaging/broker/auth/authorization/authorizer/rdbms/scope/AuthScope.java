@@ -16,23 +16,30 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth;
+package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope;
 
-import javax.security.auth.login.LoginException;
+import java.util.Set;
 
 /**
- * This Exception class represents login failures.
+ * Representation for auth scope.
  */
-public class BrokerAuthException extends LoginException {
+public class AuthScope {
 
-    private static final long serialVersionUID = 1414511165553802816L;
+    private final String scopeName;
 
-    public BrokerAuthException(String message) {
-        super(message);
+    private Set<String> authorizedUserGroups;
+
+    public AuthScope(String scopeName, Set<String> authorizedUserGroups) {
+        this.scopeName = scopeName;
+        this.authorizedUserGroups = authorizedUserGroups;
     }
 
-    public BrokerAuthException(String message, Throwable throwable) {
-        super(message);
-        initCause(throwable);
+    public String getScopeName() {
+        return scopeName;
+    }
+
+    public Set<String> getAuthorizedUserGroups() {
+        return authorizedUserGroups;
     }
 }
+
