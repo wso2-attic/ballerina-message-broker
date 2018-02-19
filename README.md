@@ -1,4 +1,4 @@
-[![Build Status](https://wso2.org/jenkins/buildStatus/icon?job=forked-dependencies/message-broker)](https://wso2.org/jenkins/job/forked-dependencies/job/message-broker/)
+[![Build Status](https://wso2.org/jenkins/buildStatus/icon?job=ballerina-platform/ballerina-message-broker)](https://wso2.org/jenkins/job/ballerina-platform/job/ballerina-message-broker/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # WSO2 Message Broker 4
@@ -10,7 +10,7 @@ as the messaging protocol.
 
 Please follow the steps below to build message broker from source code.
 
-1. Clone or download the source code from this repository (https://github.com/wso2/message-broker)
+1. Clone or download the source code from this repository (https://github.com/ballerina-platform/ballerina-message-broker)
 2. Run the Maven command `mvn clean install` from the root directory of the repository
 3. Extract the message broker distribution created at 
 `message-broker/modules/launcher/target/message-broker-<version>.zip`
