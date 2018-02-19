@@ -45,7 +45,7 @@ Please follow the steps below to build message broker from source code.
 - **conf/broker.yaml** - main configuration file
 - **conf/log4j.properties** - logging configuration file
 - **lib** - contains all the required jars
-- **database** - contains files related to the embedded Derby database
+- **database** - contains files related to the embedded H2 database
 - **dbscripts** - database schemas related to supported databases
 - **logs/broker.log** - main logging file
 - **logs/broker-trace.log** - message trace log file

@@ -35,11 +35,11 @@ import javax.sql.DataSource;
 
 public class DbUtil {
 
-    private static final String DATABASE_URL = "jdbc:derby:memory:mbDB";
+    private static final String DATABASE_URL = "jdbc:h2:mem:mbDB;DB_CLOSE_DELAY=-1";
 
-    private static final String DRIVER_CLASS_NAME = "org.apache.derby.jdbc.EmbeddedDriver";
+    private static final String DRIVER_CLASS_NAME = "org.h2.Driver";
 
-    private static final String path = "../launcher/src/main/resources/dbscripts/derby-mb.sql";
+    private static final String path = "../launcher/src/main/resources/dbscripts/h2-mb.sql";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DbUtil.class);
 

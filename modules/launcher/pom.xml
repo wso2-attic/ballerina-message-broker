@@ -83,8 +83,8 @@
             <artifactId>broker-auth</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derby</artifactId>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -125,14 +125,10 @@
                                 <!-- Drop database if it exists -->
                                 <delete dir="${db.directory}" quiet="true" />
                                 <!-- Create database schema -->
-                                <sql userid="root" password="root" url="${db.url};create=true" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
+                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url}" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
                                     <classpath refid="maven.compile.classpath" />
-                                    <!-- Override default location (inside the database directory) -->
-                                    <connectionProperty name="derby.storage.tempDirectory" value="${java.io.tmpdir}" />
-                                    <!-- Do not create derby.log -->
-                                    <connectionProperty name="derby.stream.error.file" value="${java.io.tmpdir}/derby.log" />
                                     <!-- Create database schema -->
-                                    <transaction src="${sql.directory}/derby-mb.sql" />
+                                    <transaction src="${sql.directory}/h2-mb.sql" />
                                 </sql>
                                 <!-- Shutdown database -->
                                 <sql classpath="maven.compile.classpath" userid="" password="" url="${db.url};shutdown=true" driver="${db.driver}" onerror="continue" failonconnectionerror="false">
@@ -203,10 +199,10 @@
         </plugins>
     </build>
     <properties>
-        <db.driver>org.apache.derby.jdbc.EmbeddedDriver</db.driver>
+        <db.driver>org.h2.Driver</db.driver>
         <db.delimiter>;</db.delimiter>
-        <db.directory>${project.build.directory}/database/</db.directory>
-        <db.url>jdbc:derby:${db.directory}</db.url>
+        <db.directory>${project.build.directory}/database/MB_DB</db.directory>
+        <db.url>jdbc:h2:${db.directory}</db.url>
         <sql.directory>src/main/resources/dbscripts</sql.directory>
     </properties>
 </project>

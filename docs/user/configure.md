@@ -16,7 +16,7 @@ These configurations are defined under the namespace `wso2.broker`.
 | Config                      | Default Value                          | Description                                   |
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
 | queueInMemoryCacheLimit     | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. | 
-| datasource:url              | jdbc:derby:database                    | Database URL.                                 |
+| datasource:url              | jdbc:h2:./database/MB_DB               | Database URL.                                 |
 | database:user               | root                                   | Database username                             |
 | database:password           | root                                   | Database password.                            |
 | authenticator:loginModule   | org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule          | JAAS login module used to authenticate users. |
