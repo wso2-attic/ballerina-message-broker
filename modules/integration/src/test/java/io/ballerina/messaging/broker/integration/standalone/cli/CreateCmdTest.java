@@ -43,7 +43,7 @@ public class CreateCmdTest extends CliTestParent {
           description = "test command 'create --help'")
     public void testCreateHelp() {
         String[] cmd = { "create", "--help" };
-        String expectedLog = "Create a resource in MB";
+        String expectedLog = "Create a resource in the Broker with parameters";
         String errorMessage = "error when executing 'create --help' command";
 
         Main.main(cmd);

@@ -29,10 +29,12 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
+import static org.wso2.broker.client.utils.Constants.ROOT_COMMAND;
+
 /**
  * Command representing MB exchange deletion.
  */
-@Parameters(commandDescription = "Delete MB exchange")
+@Parameters(commandDescription = "Delete an exchange in the Broker")
 public class DeleteExchangeCmd extends DeleteCmd {
 
     @Parameter(description = "name of the exchange",
@@ -75,16 +77,8 @@ public class DeleteExchangeCmd extends DeleteCmd {
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("Delete an exchange in MB\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb delete exchange [exchange-name] [flag]*\n");
-        out.append("Example:\n");
-        out.append("* Delete exchange named 'myExchange' in MB, only if unused.\n");
-        out.append("  mb delete exchange myExchange -u\n");
+        out.append("  " + ROOT_COMMAND + " delete exchange [exchange-name] [flag]*\n");
     }
 }

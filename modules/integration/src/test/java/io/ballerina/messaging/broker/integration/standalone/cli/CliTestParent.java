@@ -38,7 +38,5 @@ public class CliTestParent {
     public void resetStream() {
         // reset the print stream after each test
         PrintStreamHandler.resetStream();
-        // clear commands map
-        Main.clearCommandsMap();
     }
 }

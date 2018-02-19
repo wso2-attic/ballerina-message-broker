@@ -22,10 +22,12 @@ import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
+import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
+
 /**
  * Command representing the resource creation.
  */
-@Parameters(commandDescription = "Create MB resources")
+@Parameters(commandDescription = "Create a resource in the Broker with parameters")
 public class CreateCmd extends AbstractCmd {
 
     @Override
@@ -37,14 +39,8 @@ public class CreateCmd extends AbstractCmd {
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("Create a resource in MB with parameters\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb create exchange [exchange-name] [options]*\n");
-        out.append("  mb create queue [queue-name] [options]*\n");
+        out.append("  " + ROOT_COMMAND + " create [command]\n");
     }
 }

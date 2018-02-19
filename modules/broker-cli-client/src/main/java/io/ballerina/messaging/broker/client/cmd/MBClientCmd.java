@@ -18,6 +18,8 @@
  */
 package io.ballerina.messaging.broker.client.cmd;
 
+import com.beust.jcommander.JCommander;
+
 /**
  * Interface to represent API for any command to be declared.
  */
@@ -28,18 +30,12 @@ public interface MBClientCmd {
      */
     void execute();
 
-
-    /**
-     * Append long description of this command to the passed string builder.
-     *
-     * @param out StringBuilder instance, which messages should be appended to.
-     */
-    void printLongDesc(StringBuilder out);
-
     /**
      * Append usage description of this command to the passed string builder.
      *
      * @param out StringBuilder instance, which messages should be appended to.
      */
-    void printUsage(StringBuilder out);
+    void appendUsage(StringBuilder out);
+
+    void setSelfJCommander(JCommander jCommander);
 }

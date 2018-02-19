@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.SYSTEM_PARAM_CLI_CLIENT_CONFIG_FILE;
+import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
 
 /**
  * Container class for common static methods of Broker CLI Client.
@@ -45,8 +46,8 @@ public class Utils {
      */
     public static BrokerClientException createUsageException(String errorMsg) {
         BrokerClientException brokerClientException = new BrokerClientException();
-        brokerClientException.addMessage("mb: " + errorMsg);
-        brokerClientException.addMessage("Run 'mb --help' for usage.");
+        brokerClientException.addMessage(ROOT_COMMAND + ": " + errorMsg);
+        brokerClientException.addMessage("Run '" + ROOT_COMMAND + " --help' for usage.");
         return brokerClientException;
     }
 

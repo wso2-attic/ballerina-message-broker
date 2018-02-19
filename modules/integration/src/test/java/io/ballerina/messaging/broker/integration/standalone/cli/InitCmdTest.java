@@ -49,8 +49,6 @@ public class InitCmdTest {
     public void reset() throws IOException {
         // delete the temp directory
         FileUtils.deleteDir(new File(TEMP_CONFIG_DIR));
-        // clear commands map
-        Main.clearCommandsMap();
     }
 
 
@@ -58,7 +56,8 @@ public class InitCmdTest {
           groups = "StreamReading")
     public void testInitCmdHelp() {
         String[] cmd = { "init", "--help" };
-        String expectedLog = "Initialize MB admin client with connection details and user credentials.";
+        String expectedLog = "Initialize the Broker CLI Client by providing HTTP connection details and user "
+                + "credentials";
         String errorMessage = "error when executing 'init --help' command";
 
         Main.main(cmd);

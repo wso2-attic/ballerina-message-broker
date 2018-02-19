@@ -25,10 +25,12 @@ import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
+import static org.wso2.broker.client.utils.Constants.ROOT_COMMAND;
+
 /**
  * Representation of the broker client initialization command.
  */
-@Parameters(commandDescription = "Initialize the MB CLI Client by providing "
+@Parameters(commandDescription = "Initialize the Broker CLI Client by providing "
         + "HTTP connection details and user credentials")
 public class InitCmd extends AbstractCmd {
 
@@ -51,26 +53,17 @@ public class InitCmd extends AbstractCmd {
             processHelpLogs();
             return;
         }
-        if (verbose) {
-            String message = "Initialize MB CLI client with hostname: " + hostname + ", port: " + port + ", username: "
-                    + username;
-            OUT_STREAM.println(message);
-        }
         Configuration configuration = new Configuration(hostname, port, username, password);
         Utils.createConfigurationFile(configuration);
+
+        String message = "Initialized Broker CLI client with hostname: " + hostname + ", port: " + port + ", username: "
+                + username;
+        OUT_STREAM.println(message);
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("Initialize MB admin client with connection details and user credentials.\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb init [options]*\n");
-        out.append("Example:\n");
-        out.append("* Enter MB REST service connection details and user credentials.\n");
-        out.append("  mb init -H localhost -P 9000 -u admin -p admin123\n");
+        out.append("  " + ROOT_COMMAND + " init [flag]*\n");
     }
 }

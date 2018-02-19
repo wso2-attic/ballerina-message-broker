@@ -29,10 +29,12 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
+import static org.wso2.broker.client.utils.Constants.ROOT_COMMAND;
+
 /**
  * Command representing MB exchange information retrieval.
  */
-@Parameters(commandDescription = "List MB exchange(s)")
+@Parameters(commandDescription = "List exchange(s) in the Broker")
 public class ListExchangeCmd extends ListCmd {
 
     @Parameter(names = { "--all", "-a" },
@@ -73,19 +75,9 @@ public class ListExchangeCmd extends ListCmd {
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("List exchange(s) in MB\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb list exchange [exchange-name]? [flag]*\n");
-        out.append("Example:\n");
-        out.append("* list exchange named 'myExchange' in MB.\n");
-        out.append("  mb list exchange myExchange\n");
-        out.append("* list all exchanges in MB.\n");
-        out.append("  mb list exchange\n");
+        out.append("  " + ROOT_COMMAND + " list exchange [exchange-name]? [flag]*\n");
     }
 
 }

@@ -18,43 +18,27 @@
  */
 package io.ballerina.messaging.broker.client.cmd.impl;
 
+import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
 /**
  * Representation of the root command of the CLI client.
  */
+@Parameters(commandDescription = "Welcome to Broker Command Line Interface")
 public class RootCmd extends AbstractCmd {
 
     @Override
     public void execute() {
         if (!help) {
-            throw Utils.createUsageException("a command is expected after 'mb'");
+            throw createUsageException("a command is expected after " + ROOT_COMMAND);
         }
         processHelpLogs();
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("Welcome to Broker Command Line Interface\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
-        // todo: make the descriptions more detailed and retrieve it from each command implementation,
-        // todo: add flags information
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb [CMD] [TYPE] [NAME]? [OPTION]*\n");
-        out.append("* Available commands\n");
-        out.append("  create\n");
-        out.append("  list\n");
-        out.append("  delete\n");
-        out.append("* Available resource types\n");
-        out.append("  exchange\n");
-        out.append("* For more information about each command and each resource type\n");
-        out.append("  mb [CMD] --help\n");
-        out.append("  mb [CMD] [TYPE] --help\n");
-        out.append("* Initialization command\n");
-        out.append("  mb init --help\n");
+        out.append("  " + ROOT_COMMAND + " [command]\n");
     }
 }

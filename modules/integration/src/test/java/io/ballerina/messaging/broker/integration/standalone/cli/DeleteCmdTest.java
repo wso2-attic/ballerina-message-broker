@@ -43,7 +43,7 @@ public class DeleteCmdTest extends CliTestParent {
           description = "test command 'delete --help'")
     public void testDeleteHelp() {
         String[] cmd = { "delete", "--help" };
-        String expectedLog = "Delete a resource in MB";
+        String expectedLog = "Delete resources in the Broker";
         String errorMessage = "error when executing 'delete --help' command";
 
         Main.main(cmd);

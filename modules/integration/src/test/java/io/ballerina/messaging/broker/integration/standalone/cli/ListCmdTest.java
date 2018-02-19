@@ -43,7 +43,7 @@ public class ListCmdTest extends CliTestParent {
           description = "test command 'list --help'")
     public void testListHelp() {
         String[] cmd = { "list", "--help" };
-        String expectedLog = "List resource(s) in MB";
+        String expectedLog = "Retrieve information on resource(s) in the Broker";
         String errorMessage = "error when executing 'list --help' command";
 
         Main.main(cmd);

@@ -22,10 +22,12 @@ import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
+import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
+
 /**
  * Command representing the resource information retrieval.
  */
-@Parameters(commandDescription = "List MB resources")
+@Parameters(commandDescription = "Retrieve information on resource(s) in the Broker")
 public class ListCmd extends AbstractCmd {
 
     @Override
@@ -37,14 +39,8 @@ public class ListCmd extends AbstractCmd {
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("List resource(s) in MB\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb list exchange [exchange-name]? [flag]*\n");
-        out.append("  mb list queue [queue-name]? [flag]*\n");
+        out.append("  " + ROOT_COMMAND + " list [command]\n");
     }
 }

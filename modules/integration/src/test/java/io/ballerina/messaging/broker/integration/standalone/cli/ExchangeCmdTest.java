@@ -88,7 +88,7 @@ public class ExchangeCmdTest extends CliTestParent {
           description = "test command 'list exchange --help'")
     public void testListExchangeHelp() {
         String[] cmd = { "list", "exchange", "--help" };
-        String expectedLog = "List exchange(s) in MB";
+        String expectedLog = "List exchange(s) in the Broker";
         String errorMessage = "error when executing 'list exchange --help' command";
 
         Main.main(cmd);
@@ -100,7 +100,7 @@ public class ExchangeCmdTest extends CliTestParent {
           description = "test command 'delete exchange --help'")
     public void testCreateExchangeHelp() {
         String[] cmd = { "create", "exchange", "--help" };
-        String expectedLog = "Create an exchange in MB";
+        String expectedLog = "Create an exchange in the Broker with parameters";
         String errorMessage = "error when executing 'create exchange --help' command";
 
         Main.main(cmd);
@@ -112,7 +112,7 @@ public class ExchangeCmdTest extends CliTestParent {
           description = "test command 'delete exchange --help'")
     public void testDeleteExchangeHelp() {
         String[] cmd = { "delete", "exchange", "--help" };
-        String expectedLog = "Delete an exchange in MB";
+        String expectedLog = "Delete an exchange in the Broker";
         String errorMessage = "error when executing 'delete exchange --help' command";
 
         Main.main(cmd);

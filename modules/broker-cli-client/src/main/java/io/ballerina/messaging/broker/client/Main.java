@@ -35,9 +35,7 @@ import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -48,12 +46,6 @@ import java.util.Objects;
 public class Main {
 
     private static PrintStream outStream = System.err;
-
-    /**
-     * This map will contain each Command instance against its JCommander instance.
-     * Map will get populated at the time of building the parser tree and will be referred at the traversal.
-     */
-    private static Map<JCommander, MBClientCmd> commandsMap = new HashMap<>();
 
     public static void main(String... argv) {
 
@@ -75,6 +67,8 @@ public class Main {
     /**
      * Build the parser tree with JCommander instance for each command.
      *
+     * Make sure to add 'one and only one' MBClientCmd instance for each JCommander instance.
+     *
      * @return root JCommander of the tree.
      */
     private static JCommander buildCommanderTree() {
@@ -82,8 +76,7 @@ public class Main {
         // root command
         RootCmd rootCmd = new RootCmd();
         JCommander jCommanderRoot = new JCommander(rootCmd);
-
-        commandsMap.put(jCommanderRoot, rootCmd);
+        rootCmd.setSelfJCommander(jCommanderRoot);
 
         // add to root jCommander
         addChildCommand(jCommanderRoot, Constants.CMD_INIT, new InitCmd());
@@ -138,7 +131,7 @@ public class Main {
     private static MBClientCmd findLeafCommand(JCommander jCommander) {
         String commandText = jCommander.getParsedCommand();
         if (Objects.isNull(commandText)) {
-            return commandsMap.get(jCommander);
+            return (MBClientCmd) jCommander.getObjects().get(0);
         }
         return findLeafCommand(jCommander.getCommands().get(commandText));
     }
@@ -160,20 +153,12 @@ public class Main {
             MBClientCmd commandObject) {
         parentCommander.addCommand(commandName, commandObject);
         JCommander childCommander = parentCommander.getCommands().get(commandName);
-        commandsMap.put(childCommander, commandObject);
+        commandObject.setSelfJCommander(childCommander);
         return childCommander;
     }
 
     private static void printBrokerClientException(BrokerClientException e, PrintStream outStream) {
         List<String> errorMessages = e.getMessages();
         errorMessages.forEach(outStream::println);
-    }
-
-    /**
-     * Added for the testing purposes.
-     * Since the commandsMap is static, before each test it should be cleared.
-     */
-    public static void clearCommandsMap() {
-        commandsMap.clear();
     }
 }
