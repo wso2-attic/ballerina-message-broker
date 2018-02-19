@@ -222,6 +222,6 @@ public class FieldValue implements EncodableData {
 
     @Override
     public String toString() {
-        return type + " " + value.toString();
+        return value.toString();
     }
 }

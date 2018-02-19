@@ -66,4 +66,8 @@ public class LongLongInt implements EncodableData {
         }
         return (obj instanceof LongLongInt) && (value == ((LongLongInt) obj).value);
     }
+
+    @Override public String toString() {
+        return String.valueOf(value);
+    }
 }

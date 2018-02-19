@@ -60,4 +60,9 @@ public class Boolean implements EncodableData {
     public static Boolean parse(ByteBuf buf) {
         return new Boolean(buf.readByte());
     }
+
+    @Override
+    public String toString() {
+        return (value == 0) ? "false" : "true";
+    }
 }

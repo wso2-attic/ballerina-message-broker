@@ -70,4 +70,9 @@ public class ShortShortInt implements EncodableData {
         }
         return (obj instanceof ShortShortInt) && (value == ((ShortShortInt) obj).value);
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
 }
