@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
 import org.wso2.broker.core.Broker;
 import org.wso2.broker.core.rest.BindingsApiDelegate;
 import org.wso2.broker.core.rest.BrokerAdminService;
@@ -49,7 +50,7 @@ import javax.ws.rs.core.Response;
 @Path(BrokerAdminService.API_BASE_PATH + "/exchanges")
 @Api(description = "the exchanges API")
 @Produces({ "application/json" })
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2018-01-30T10:20:21.038+05:30")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2018-02-16T16:43:30.881+05:30")
 public class ExchangesApi {
 
     private final ExchangesApiDelegate exchangesApiDelegate;
@@ -63,11 +64,14 @@ public class ExchangesApi {
     @POST
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @ApiOperation(value = "Create an exchange", notes = "", response = ExchangeCreateResponse.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 201, message = "Exchange created", response = ExchangeCreateResponse.class),
-        @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
-        @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    @ApiOperation(value = "Create an exchange", notes = "", response = ExchangeCreateResponse.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Exchange created", response = ExchangeCreateResponse.class),
+            @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
     public Response createExchange(@Valid ExchangeCreateRequest body) {
         return exchangesApiDelegate.createExchange(body);
     }
@@ -75,32 +79,40 @@ public class ExchangesApi {
     @DELETE
     @Path("/{name}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Delete exchnage", notes = "Delete the exchange with the specified exchange name", response = Void.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Exchange deleted", response = Void.class),
-        @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
-        @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
-    public Response deleteExchange(@PathParam("name") @ApiParam("Name of the exchange.") String name,
-                                   @DefaultValue("true") @QueryParam("ifUnused")    @ApiParam("Delete if the exchange has no bindings.")  Boolean ifUnused) {
+    @ApiOperation(value = "Delete exchnage", notes = "Delete the exchange with the specified exchange name", response = Void.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Exchange deleted", response = Void.class),
+            @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
+    public Response deleteExchange(@PathParam("name") @ApiParam("Name of the exchange.") String name, @DefaultValue("true") @QueryParam("ifUnused")  @ApiParam("Delete if the exchange has no bindings.")  Boolean ifUnused) {
         return exchangesApiDelegate.deleteExchange(name, ifUnused);
     }
 
     @GET
     @Path("/{name}/bindings")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Get bindings of a exchange", notes = "Retrieves the bindings set of the exchange", response = BindingSetInfo.class, responseContainer = "List", tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "List of Bindings", response = BindingSetInfo.class, responseContainer = "List"),
-        @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
+    @ApiOperation(value = "Get bindings of a exchange", notes = "Retrieves the bindings set of the exchange", response = BindingSetInfo.class, responseContainer = "List", authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "List of Bindings", response = BindingSetInfo.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
     public Response getAllBindingsForExchange(@PathParam("name") @ApiParam("Name of the exchange.") String name) {
         return bindingsApiDelegate.getAllBindingsForExchange(name);
     }
 
     @GET
     @Produces({ "application/json" })
-    @ApiOperation(value = "Get all exchanges", notes = "Retrieves all the exchanges in the broker", response = ExchangeMetadata.class, responseContainer = "List", tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "List of exchanges", response = ExchangeMetadata.class, responseContainer = "List") })
+    @ApiOperation(value = "Get all exchanges", notes = "Retrieves all the exchanges in the broker", response = ExchangeMetadata.class, responseContainer = "List", authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "List of exchanges", response = ExchangeMetadata.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class) })
     public Response getAllExchanges() {
         return exchangesApiDelegate.getAllExchanges();
     }
@@ -108,10 +120,13 @@ public class ExchangesApi {
     @GET
     @Path("/{name}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Get a specific exchange", notes = "Retrieves the exchange metadata for the specific exchange", response = ExchangeMetadata.class, tags={  })
-    @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Metadata of the exchange", response = ExchangeMetadata.class),
-        @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
+    @ApiOperation(value = "Get a specific exchange", notes = "Retrieves the exchange metadata for the specific exchange", response = ExchangeMetadata.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Metadata of the exchange", response = ExchangeMetadata.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
     public Response getExchange(@PathParam("name") @ApiParam("Name of the exchange.") String name) {
         return exchangesApiDelegate.getExchange(name);
     }
