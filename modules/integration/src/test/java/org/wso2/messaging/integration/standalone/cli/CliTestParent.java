@@ -18,18 +18,18 @@
 package org.wso2.messaging.integration.standalone.cli;
 
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 
 import static org.wso2.messaging.integration.util.TestConstants.CLI_CONFIG_LOCATION;
 import static org.wso2.messaging.integration.util.TestConstants.CLI_CONFIG_SYSTEM_PROPERTY;
 
 /**
- * Parent class for the CLI test classes
+ * Parent class for the CLI test classes.
  */
 public class CliTestParent {
 
-    @BeforeClass
-    public void init() {
+    @BeforeMethod
+    public void setConfigPath() {
         // set the config file path
         System.setProperty(CLI_CONFIG_SYSTEM_PROPERTY, CLI_CONFIG_LOCATION);
     }
