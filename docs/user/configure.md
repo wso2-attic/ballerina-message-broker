@@ -19,7 +19,7 @@ These configurations are defined under the namespace `wso2.broker`.
 | datasource:url              | jdbc:h2:./database/MB_DB               | Database URL.                                 |
 | database:user               | root                                   | Database username                             |
 | database:password           | root                                   | Database password.                            |
-| authenticator:loginModule   | io.ballerina.messaging.broker.core.security.authentication.jaas.BrokerLoginModule          | JAAS login module used to authenticate users. |
+| authenticator:loginModule   | io.ballerina.messaging.broker.core .security.authentication.jaas.BrokerLoginModule | JAAS login module used to authenticate users. |
 
 ### AMQP transport configurations
 
