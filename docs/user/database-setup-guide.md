@@ -1,7 +1,7 @@
 # Changing the Default Database
 
 WSO2 Message Broker uses JDBC based persistence to store messages of durable queues.
-By default the broker is using file based Derby database as the persistence storage. 
+By default the broker is using file based H2 database as the persistence storage. 
 
 ## Supported Databases
 

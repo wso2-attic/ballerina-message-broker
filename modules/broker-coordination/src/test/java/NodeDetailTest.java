@@ -16,11 +16,11 @@
  * under the License.
  */
 
+import io.ballerina.messaging.broker.coordination.node.NodeDetail;
+import io.ballerina.messaging.broker.coordination.node.NodeHeartbeatData;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.wso2.broker.coordination.node.NodeDetail;
-import org.wso2.broker.coordination.node.NodeHeartbeatData;
 
 /**
  * Test the initialization and retrieval of node details.

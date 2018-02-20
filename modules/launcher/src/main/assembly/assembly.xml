@@ -56,6 +56,7 @@
             <includes>
                 <include>broker.sh</include>
                 <include>broker.bat</include>
+                <include>broker-admin.sh</include>
             </includes>
             <fileMode>755</fileMode>
         </fileSet>
@@ -86,14 +87,15 @@
     <dependencySets>
         <dependencySet>
             <includes>
-                <include>org.wso2.messaging:broker-metrics:jar</include>
-                <include>org.wso2.messaging:broker-rest-runner:jar</include>
-                <include>org.wso2.messaging:broker-amqp:jar</include>
-                <include>org.wso2.messaging:broker-core:jar</include>
-                <include>org.wso2.messaging:broker-common:jar</include>
-                <include>org.wso2.messaging:broker-auth:jar</include>
-                <include>org.wso2.messaging:broker-coordination:jar</include>
-                <include>org.wso2.messaging:broker-launcher:jar</include>
+                <include>io.ballerina.messaging:broker-metrics:jar</include>
+                <include>io.ballerina.messaging:broker-rest-runner:jar</include>
+                <include>io.ballerina.messaging:broker-amqp:jar</include>
+                <include>io.ballerina.messaging:broker-core:jar</include>
+                <include>io.ballerina.messaging:broker-common:jar</include>
+                <include>io.ballerina.messaging:broker-auth:jar</include>
+                <include>io.ballerina.messaging:broker-coordination:jar</include>
+                <include>io.ballerina.messaging:broker-cli-client:jar</include>
+                <include>io.ballerina.messaging:broker-launcher:jar</include>
             </includes>
             <outputDirectory>lib</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>

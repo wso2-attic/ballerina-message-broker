@@ -9,7 +9,14 @@ info:
 schemes:
   - https
   - http
-basePath: /broker/v.1.0
+securityDefinitions:
+  basicAuth:
+    type: basic
+
+# Apply to the whole API
+security:
+  - basicAuth: []
+basePath: /broker/v1.0
 produces:
   - application/json
 paths:
@@ -35,6 +42,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/QueueMetadata'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
     post:
       operationId: createQueue
       summary: Creates a queue
@@ -62,6 +76,13 @@ paths:
             supported format.
           schema:
             $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
   /queues/{name}:
     parameters:
       - in: path
@@ -80,6 +101,13 @@ paths:
             $ref: '#/definitions/QueueMetadata'
         '404':
           description: Queue not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
           schema:
             $ref: '#/definitions/Error'
     delete:
@@ -116,6 +144,13 @@ paths:
           description: Queue not found
           schema:
             $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
   /queues/{name}/consumers:
     get:
       operationId: getAllConsumersForQueue
@@ -138,6 +173,13 @@ paths:
               $ref: '#/definitions/ConsumerMetadata'
         '404':
           description: Queue not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
           schema:
             $ref: '#/definitions/Error'
 
@@ -168,6 +210,13 @@ paths:
           description: Queue/Consumer not found
           schema:
             $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
     delete:
       operationId: deleteConsumer
       summary: delete a consumer
@@ -177,6 +226,13 @@ paths:
           description: Consumer deleted
         '404':
           description: Queue/Consumer not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
           schema:
             $ref: '#/definitions/Error'
   /queues/{name}/bindings:
@@ -217,6 +273,13 @@ paths:
           description: Exchange not found
           schema:
             $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
 
   /queues/{name}/bindings/{bindingPattern}:
     parameters:
@@ -252,6 +315,13 @@ paths:
           description: Binding not found
           schema:
             $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
     get:
       operationId: getBinding
       summary: Retrieve bindings for a queue with specific binding pattern
@@ -264,6 +334,13 @@ paths:
             $ref: '#/definitions/BindingInfo'
         '404':
           description: Exchange not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
           schema:
             $ref: '#/definitions/Error'
   /exchanges:
@@ -280,6 +357,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ExchangeMetadata'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
     post:
       operationId: createExchange
       summary: Create an exchange
@@ -307,6 +391,13 @@ paths:
             supported format.
           schema:
             $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
   /exchanges/{name}:
     parameters:
       - in: path
@@ -327,6 +418,13 @@ paths:
             $ref: '#/definitions/ExchangeMetadata'
         '404':
           description: Exchange not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
           schema:
             $ref: '#/definitions/Error'
     delete:
@@ -351,6 +449,13 @@ paths:
           description: Exchange not found
           schema:
             $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
   '/exchanges/{name}/bindings':
     parameters:
       - in: path
@@ -373,6 +478,13 @@ paths:
               $ref: '#/definitions/BindingSetInfo'
         '404':
           description: Exchange not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
           schema:
             $ref: '#/definitions/Error'
 

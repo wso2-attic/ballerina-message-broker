@@ -20,9 +20,9 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>message-broker</artifactId>
-        <groupId>org.wso2.messaging</groupId>
-        <version>4.0.35-SNAPSHOT</version>
+        <groupId>io.ballerina.messaging</groupId>
+        <artifactId>broker-parent</artifactId>
+        <version>0.1.1-SNAPSHOT</version>
         <relativePath>../..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -32,7 +32,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-amqp</artifactId>
         </dependency>
         <dependency>
@@ -40,7 +40,7 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-core</artifactId>
         </dependency>
         <dependency>
@@ -58,7 +58,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-coordination</artifactId>
         </dependency>
         <dependency>
@@ -71,24 +71,28 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-rest-runner</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-metrics</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-auth</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derby</artifactId>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.ballerina.messaging</groupId>
+            <artifactId>broker-cli-client</artifactId>
         </dependency>
     </dependencies>
 
@@ -99,7 +103,7 @@
                 <artifactId>really-executable-jar-maven-plugin</artifactId>
                 <version>1.5.0</version>
                 <configuration>
-                    <programFile>${project.parent.artifactId}</programFile>
+                    <programFile>${product.package.name}</programFile>
                 </configuration>
                 <executions>
                     <execution>
@@ -121,14 +125,10 @@
                                 <!-- Drop database if it exists -->
                                 <delete dir="${db.directory}" quiet="true" />
                                 <!-- Create database schema -->
-                                <sql userid="root" password="root" url="${db.url};create=true" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
+                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url}" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
                                     <classpath refid="maven.compile.classpath" />
-                                    <!-- Override default location (inside the database directory) -->
-                                    <connectionProperty name="derby.storage.tempDirectory" value="${java.io.tmpdir}" />
-                                    <!-- Do not create derby.log -->
-                                    <connectionProperty name="derby.stream.error.file" value="${java.io.tmpdir}/derby.log" />
                                     <!-- Create database schema -->
-                                    <transaction src="${sql.directory}/derby-mb.sql" />
+                                    <transaction src="${sql.directory}/h2-mb.sql" />
                                 </sql>
                                 <!-- Shutdown database -->
                                 <sql classpath="maven.compile.classpath" userid="" password="" url="${db.url};shutdown=true" driver="${db.driver}" onerror="continue" failonconnectionerror="false">
@@ -157,7 +157,7 @@
                                 <descriptor>src/main/assembly/assembly.xml</descriptor>
                             </descriptors>
                             <appendAssemblyId>false</appendAssemblyId>
-                            <finalName>${project.parent.artifactId}-${project.version}</finalName>
+                            <finalName>${product.package.name}-${project.version}</finalName>
                         </configuration>
                     </execution>
                 </executions>
@@ -191,7 +191,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>org.wso2.broker.Main</mainClass>
+                            <mainClass>io.ballerina.messaging.broker.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -199,10 +199,11 @@
         </plugins>
     </build>
     <properties>
-        <db.driver>org.apache.derby.jdbc.EmbeddedDriver</db.driver>
+        <db.driver>org.h2.Driver</db.driver>
         <db.delimiter>;</db.delimiter>
-        <db.directory>${project.build.directory}/database/</db.directory>
-        <db.url>jdbc:derby:${db.directory}</db.url>
+        <db.directory>${project.build.directory}/database/MB_DB</db.directory>
+        <db.url>jdbc:h2:${db.directory}</db.url>
         <sql.directory>src/main/resources/dbscripts</sql.directory>
+        <product.package.name>message-broker</product.package.name>
     </properties>
 </project>

@@ -16,18 +16,18 @@
  * under the License.
  */
 
+import io.ballerina.messaging.broker.common.BrokerConfigProvider;
+import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.coordination.BrokerHaConfiguration;
+import io.ballerina.messaging.broker.coordination.HaStrategyFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.wso2.broker.common.BrokerConfigProvider;
-import org.wso2.broker.common.StartupContext;
-import org.wso2.broker.coordination.BrokerHaConfiguration;
-import org.wso2.broker.coordination.HaStrategyFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Test class for {@link org.wso2.broker.coordination.HaStrategyFactory}.
+ * Test class for {@link HaStrategyFactory}.
  */
 public class HaStrategyFactoryTest {
 
