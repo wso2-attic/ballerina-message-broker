@@ -31,7 +31,7 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
-import static org.wso2.broker.client.utils.Constants.ROOT_COMMAND;
+import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
 
 /**
  * Command representing MB exchange creation.

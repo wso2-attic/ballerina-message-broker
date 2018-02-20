@@ -18,7 +18,6 @@
  */
 package io.ballerina.messaging.broker.integration.standalone.cli;
 
-import io.ballerina.messaging.broker.client.Main;
 import io.ballerina.messaging.broker.integration.util.TestConstants;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;

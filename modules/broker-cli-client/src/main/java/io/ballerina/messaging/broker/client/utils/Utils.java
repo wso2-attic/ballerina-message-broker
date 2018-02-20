@@ -30,8 +30,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.SYSTEM_PARAM_CLI_CLIENT_CONFIG_FILE;
 import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
+import static io.ballerina.messaging.broker.client.utils.Constants.SYSTEM_PARAM_CLI_CLIENT_CONFIG_FILE;
 
 /**
  * Container class for common static methods of Broker CLI Client.

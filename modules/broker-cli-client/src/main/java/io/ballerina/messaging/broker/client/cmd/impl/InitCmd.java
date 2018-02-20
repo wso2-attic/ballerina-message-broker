@@ -25,7 +25,7 @@ import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
-import static org.wso2.broker.client.utils.Constants.ROOT_COMMAND;
+import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
 
 /**
  * Representation of the broker client initialization command.

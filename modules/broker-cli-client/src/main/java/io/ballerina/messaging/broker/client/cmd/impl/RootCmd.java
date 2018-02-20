@@ -20,7 +20,9 @@ package io.ballerina.messaging.broker.client.cmd.impl;
 
 import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
-import io.ballerina.messaging.broker.client.utils.Utils;
+
+import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
+import static io.ballerina.messaging.broker.client.utils.Utils.createUsageException;
 
 /**
  * Representation of the root command of the CLI client.
