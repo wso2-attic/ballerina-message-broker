@@ -44,6 +44,7 @@ import javax.security.sasl.SaslServer;
 public class AuthManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthManager.class);
+
     /**
      * Map of SASL Server mechanisms.
      */
