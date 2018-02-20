@@ -15,7 +15,7 @@ could be overridden by specifying the values as options in the broker.yaml file.
 ```yaml
 failover:
  enabled: true
- strategy: org.wso2.broker.coordination.rdbms.RdbmsHaStrategy
+ strategy: RdbmsHaStrategy
  options:
   heartbeatInterval: 5000
   coordinatorEntryCreationWaitTime: 3000

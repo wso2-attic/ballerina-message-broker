@@ -98,10 +98,10 @@
                         <Import-Package>
                             com.google.common.*;version="${guava.package.import.version.range}",
                             org.slf4j.*;version="${slf4j.logging.package.import.version.range}",
-                            org.wso2.broker.common.*;version="${broker.package.import.range.version}"
+                            io.ballerina.messaging.broker.common.*;version="${broker.package.import.range.version}"
                         </Import-Package>
                         <Export-Package>
-                            org.wso2.broker.auth.*;version=${project.version},
+                            io.ballerina.messaging.broker.auth.*;version=${project.version},
                         </Export-Package>
                     </instructions>
                 </configuration>

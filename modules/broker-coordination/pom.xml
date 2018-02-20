@@ -97,7 +97,7 @@
                             com.google.common.*;version="${guava.package.import.version.range}",
                         </Import-Package>
                         <Export-Package>
-                            org.wso2.broker.coordination.*;version=${project.version},
+                            io.ballerina.messaging.broker.coordination.*;version=${project.version},
                         </Export-Package>
                         <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>

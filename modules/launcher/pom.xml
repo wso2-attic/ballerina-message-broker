@@ -191,7 +191,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>org.wso2.broker.Main</mainClass>
+                            <mainClass>io.ballerina.messaging.broker.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

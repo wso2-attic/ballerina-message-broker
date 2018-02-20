@@ -121,4 +121,4 @@ $JAVACMD \
     -Dbroker.config="$MESSAGE_BROKER_HOME/conf/broker.yaml" \
     -Dbroker.users.config="$MESSAGE_BROKER_HOME/conf/security/users.yaml" \
     -Dtransports.netty.conf="$MESSAGE_BROKER_HOME/conf/admin-service-transports.yaml" \
-    org.wso2.broker.Main
+    io.ballerina.messaging.broker.Main

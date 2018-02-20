@@ -28,7 +28,7 @@ wso2.broker:
  # Broker authentication related configurations.
  authenticator:
   # JAAS login module used to authenticate users.
-  loginModule: org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule
+  loginModule: io.ballerina.messaging.broker.core.security.authentication.jaas.BrokerLoginModule
 
 # AMQP transport related configurations.
 wso2.broker.transport.amqp:
@@ -86,7 +86,7 @@ wso2.broker.failover:
  # Whether or not failover is enabled
  enabled: true
  # The strategy to use in providing failover
- strategy: org.wso2.broker.coordination.rdbms.RdbmsHaStrategy
+ strategy: io.ballerina.messaging.broker.coordination.rdbms.RdbmsHaStrategy
  # Properties/options required by the strategy
  options:
   heartbeatInterval: 5000

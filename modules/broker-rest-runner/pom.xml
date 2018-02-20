@@ -97,16 +97,16 @@
                         </Private-Package>
                         <Import-Package>
                             io.netty.*; version="${netty.import.package.range.version}",
-                            org.wso2.broker.core.*; version="${broker.package.import.range.version}",
-                            org.wso2.broker.coordination.*; version="${broker.package.import.range.version}",
-                            org.wso2.broker.common.*; version="${broker.package.import.range.version}",
-                            org.wso2.broker.auth.*; version="${broker.package.import.range.version}",
+                            io.ballerina.messaging.broker.core.*; version="${broker.package.import.range.version}",
+                            io.ballerina.messaging.broker.coordination.*; version="${broker.package.import.range.version}",
+                            io.ballerina.messaging.broker.common.*; version="${broker.package.import.range.version}",
+                            io.ballerina.messaging.broker.auth.*; version="${broker.package.import.range.version}",
                             org.slf4j.*; version="${slf4j.logging.package.import.version.range}",
                             org.wso2.msf4j.*; version="${msf4j.package.import.version.range}",
                             javax.ws.rs.*; version="${jaxrs.api.package.import.version.range}"
                         </Import-Package>
                         <Export-Package>
-                            org.wso2.broker.rest.*; version=${project.version},
+                            io.ballerina.messaging.broker.rest.*; version=${project.version},
                         </Export-Package>
                     </instructions>
                 </configuration>
