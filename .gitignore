@@ -30,6 +30,6 @@ target
 # mac
 .DS_Store
 
-/modules/features/org.wso2.broker.feature/src/main/resources/database
-/modules/features/org.wso2.broker.feature/src/main/resources/dbscripts
+/modules/features/io.ballerina.messaging.broker.feature/src/main/resources/database
+/modules/features/io.ballerina.messaging.broker.feature/src/main/resources/dbscripts
 /modules/broker-core/.swagger-codegen/

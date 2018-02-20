@@ -19,6 +19,6 @@
   -->
 <FindBugsFilter>
     <Match>
-        <Package name="org.wso2.broker.core.selector.generated"/>
+        <Package name="io.ballerina.messaging.broker.core.selector.generated"/>
     </Match>
 </FindBugsFilter>

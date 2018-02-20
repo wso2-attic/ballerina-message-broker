@@ -1,0 +1,5 @@
+metaRequirements.0.namespace = org.eclipse.equinox.p2.iu
+metaRequirements.0.name = org.wso2.carbon.extensions.touchpoint
+instructions.configure = \
+org.wso2.carbon.extensions.touchpoint.copy(source:${installFolder}/../lib/features/io.ballerina.messaging.broker_${feature.version}/dbscripts/,target:${installFolder}/../{runtime}/dbscripts,overwrite:true);\
+org.wso2.carbon.extensions.touchpoint.copy(source:${installFolder}/../lib/features/io.ballerina.messaging.broker_${feature.version}/database/,target:${installFolder}/../{runtime}/database,overwrite:true);\

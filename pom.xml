@@ -27,17 +27,17 @@
         <version>5</version>
     </parent>
 
-    <groupId>org.wso2.messaging</groupId>
-    <artifactId>message-broker</artifactId>
+    <groupId>io.ballerina.messaging</groupId>
+    <artifactId>broker-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.48-SNAPSHOT</version>
-    <name>Message Broker</name>
+    <version>0.1.0-SNAPSHOT</version>
+    <name>Ballerina Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
     <scm>
-        <connection>scm:https://github.com/wso2/message-broker.git</connection>
-        <developerConnection>scm:git:https://github.com/wso2/message-broker.git</developerConnection>
-        <url>https://github.com/wso2/message-broker.git</url>
+        <connection>scm:https://github.com/ballerina-platform/ballerina-message-broker.git</connection>
+        <developerConnection>scm:git:https://github.com/ballerina-platform/ballerina-message-broker.git</developerConnection>
+        <url>https://github.com/ballerina-platform/ballerina-message-broker.git</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -59,47 +59,47 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-amqp</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-coordination</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-rest-runner</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-metrics</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-auth</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-cli-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
