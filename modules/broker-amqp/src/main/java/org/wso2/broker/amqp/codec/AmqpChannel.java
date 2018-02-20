@@ -381,6 +381,13 @@ public class AmqpChannel {
     }
 
     /**
+     * Start distributed transaction on the channel
+     */
+    public void setDistributedTransactional() {
+
+    }
+
+    /**
      * Commit the transaction on the channel
      */
     public void commit() throws ValidationException {

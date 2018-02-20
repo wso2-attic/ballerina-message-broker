@@ -19,6 +19,8 @@
 
 package org.wso2.broker.core.transaction;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.util.Arrays;
 import java.util.Objects;
 import javax.transaction.xa.Xid;
@@ -34,6 +36,8 @@ public class XidImpl implements Xid {
 
     private final byte[] globalTransactionId;
 
+    @SuppressFBWarnings(value = {"EI_EXPOSE_REP2", "EI_EXPOSE_REP2"},
+            justification = "Data holder of global transaction identifier and branch qualifier")
     public XidImpl(int formatId, byte[] branchQualifier, byte[] globalTransactionId) {
         this.branchQualifier = branchQualifier;
         this.formatId = formatId;
@@ -45,11 +49,13 @@ public class XidImpl implements Xid {
         return formatId;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Data holder of global transaction identifier")
     @Override
     public byte[] getGlobalTransactionId() {
         return globalTransactionId;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Data holder of branch qualifier")
     @Override
     public byte[] getBranchQualifier() {
         return branchQualifier;

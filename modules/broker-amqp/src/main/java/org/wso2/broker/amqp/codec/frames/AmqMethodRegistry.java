@@ -85,6 +85,26 @@ public class AmqMethodRegistry {
         factories[90][21] = TxCommitOk.getFactory();
         factories[90][30] = TxRollback.getFactory();
         factories[90][31] = TxRollbackOk.getFactory();
+
+        factories[100] = new AmqMethodBodyFactory[102];
+        factories[100][10] = DtxSelect.getFactory();
+        factories[100][20] = DtxStart.getFactory();
+        factories[100][21] = DtxStartOk.getFactory();
+        factories[100][30] = DtxEnd.getFactory();
+        factories[100][31] = DtxEndOk.getFactory();
+        factories[100][40] = DtxCommit.getFactory();
+        factories[100][41] = DtxCommitOk.getFactory();
+        factories[100][50] = DtxForget.getFactory();
+        factories[100][51] = DtxForgetOk.getFactory();
+        factories[100][70] = DtxPrepare.getFactory();
+        factories[100][71] = DtxPrepareOk.getFactory();
+        factories[100][80] = DtxRecover.getFactory();
+        factories[100][81] = DtxRecoverOk.getFactory();
+        factories[100][90] = DtxRollback.getFactory();
+        factories[100][91] = DtxRollbackOk.getFactory();
+        factories[100][100] = DtxSetTimeout.getFactory();
+        factories[100][101] = DtxSetTimeoutOk.getFactory();
+
     }
 
     public AmqMethodBodyFactory getFactory(short classId, short methodId) throws AmqFrameDecodingException {
