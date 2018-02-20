@@ -50,7 +50,7 @@ public class BrokerHaConfigurationTest {
     public void testHaConfigurationCreationFromYamlFile() {
         Assert.assertTrue(brokerHaConfiguration.isEnabled(), "\"enabled\" value not set correctly.");
         Assert.assertEquals(brokerHaConfiguration.getStrategy(),
-                            "RdbmsHaStrategy",
+                            "io.ballerina.messaging.broker.coordination.rdbms.RdbmsHaStrategy",
                             "HA strategy not set correctly");
     }
 
