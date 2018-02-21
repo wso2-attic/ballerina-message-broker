@@ -48,6 +48,11 @@ public class QueueBuffer {
     private AtomicInteger size = new AtomicInteger(0);
 
     /**
+     * Number of messages that are retrieved for delivery but not yet removed.
+     */
+    private AtomicInteger messagesInFlight = new AtomicInteger(0);
+
+    /**
      * Number of in memory messages.
      */
     private AtomicInteger deliverableMessageCount = new AtomicInteger(0);
@@ -200,6 +205,7 @@ public class QueueBuffer {
         node.item = null;
         size.decrementAndGet();
         deliverableMessageCount.decrementAndGet();
+        messagesInFlight.decrementAndGet();
         submitMessageReads();
     }
 
@@ -210,6 +216,10 @@ public class QueueBuffer {
      */
     public int size() {
         return size.get();
+    }
+
+    public int getNumberOfInflightMessages() {
+        return messagesInFlight.get();
     }
 
     /**
@@ -229,12 +239,15 @@ public class QueueBuffer {
             }
 
             firstDeliverableCandidate = deliverableCandidate.next;
+
+            messagesInFlight.incrementAndGet();
             return deliverableCandidate.item;
         } else if (firstUndeliverable != null && firstUndeliverable.state.get() == Node.FULL_MESSAGE) {
             Node newDeliverable = firstUndeliverable;
             firstDeliverableCandidate = firstUndeliverable.next;
             pushFirstUndeliverableCursor();
 
+            messagesInFlight.incrementAndGet();
             return newDeliverable.item;
         } else {
             return null;

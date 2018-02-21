@@ -180,7 +180,7 @@ public final class QueueHandler {
      * @return True if the queue doesn't contain any {@link Message} objects
      */
     boolean isEmpty() {
-        return (queue.size()) == 0;
+        return size() == 0;
     }
 
     /**
@@ -189,7 +189,7 @@ public final class QueueHandler {
      * @return Number of {@link Message} objects in the queue.
      */
     public int size() {
-        return queue.size();
+        return queue.size() + redeliveryQueue.size();
     }
 
     /**
