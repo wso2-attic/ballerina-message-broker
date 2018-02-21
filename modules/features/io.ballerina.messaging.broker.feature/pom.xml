@@ -137,6 +137,26 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>prefilter-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>src/main/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>resources</directory>
+                                    <includes>
+                                        <include>dbscripts/**</include>
+                                        <include>database/**</include>
+                                        <include>p2.inf</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -176,31 +196,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>prefilter-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>src/main/resources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>resources</directory>
-                                    <includes>
-                                        <include>dbscripts/**</include>
-                                        <include>database/**</include>
-                                        <include>p2.inf</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+
         </plugins>
     </build>
     <properties>
