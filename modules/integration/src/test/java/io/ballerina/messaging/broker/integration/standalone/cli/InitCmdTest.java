@@ -31,6 +31,8 @@ import org.wso2.carbon.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
 
+import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
+
 /**
  * Test class containing tests of 'init' command.
  */
@@ -55,7 +57,7 @@ public class InitCmdTest {
     @Test(description = "test command 'init --help'",
           groups = "StreamReading")
     public void testInitCmdHelp() {
-        String[] cmd = { "init", "--help" };
+        String[] cmd = { CLI_ROOT_COMMAND, "init", "--help" };
         String expectedLog = "Initialize the Broker CLI Client by providing HTTP connection details and user "
                 + "credentials";
         String errorMessage = "error when executing 'init --help' command";
@@ -70,7 +72,7 @@ public class InitCmdTest {
     public void testCorruptedConfig() {
         System.setProperty(TestConstants.CLI_CONFIG_SYSTEM_PROPERTY, INVALID_CONFIG_PATH);
 
-        String[] cmd = { "list", "exchange" };
+        String[] cmd = { CLI_ROOT_COMMAND, "list", "exchange" };
         String expectedLog = "Error in the CLI client configuration";
         String errorMessage = "configuration file validation test failed";
 
@@ -83,7 +85,7 @@ public class InitCmdTest {
     public void testInitCmdNoParam() {
         System.setProperty(TestConstants.CLI_CONFIG_SYSTEM_PROPERTY, TEMP_CONFIG_DIR + "cli-config1.yaml");
 
-        String[] cmd = { "init" };
+        String[] cmd = { CLI_ROOT_COMMAND, "init" };
 
         Main.main(cmd);
         Configuration configuration = Utils.readConfigurationFile();
@@ -102,8 +104,8 @@ public class InitCmdTest {
         System.setProperty(TestConstants.CLI_CONFIG_SYSTEM_PROPERTY, TEMP_CONFIG_DIR + "cli-config2.yaml");
 
         String[] cmd = {
-                "init", "--host", "192.168.100.1", "--port", "9090", "--username", "admin_user", "--password",
-                "admin123"
+                CLI_ROOT_COMMAND, "init", "--host", "192.168.100.1", "--port", "9090", "--username", "admin_user",
+                "--password", "admin123"
         };
 
         Main.main(cmd);

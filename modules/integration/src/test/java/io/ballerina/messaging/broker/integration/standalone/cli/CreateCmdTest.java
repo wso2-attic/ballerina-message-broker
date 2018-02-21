@@ -22,6 +22,8 @@ import io.ballerina.messaging.broker.client.Main;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
+
 /**
  * Test class containing tests of 'create' command.
  */
@@ -30,7 +32,7 @@ public class CreateCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'create'")
     public void testCreate() {
-        String[] cmd = { "create" };
+        String[] cmd = { CLI_ROOT_COMMAND, "create" };
         String expectedLog = "a command is expected after 'create'";
         String errorMessage = "error when executing 'create' command";
 
@@ -42,7 +44,7 @@ public class CreateCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'create --help'")
     public void testCreateHelp() {
-        String[] cmd = { "create", "--help" };
+        String[] cmd = { CLI_ROOT_COMMAND, "create", "--help" };
         String expectedLog = "Create a resource in the Broker with parameters";
         String errorMessage = "error when executing 'create --help' command";
 

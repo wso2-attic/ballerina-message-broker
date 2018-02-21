@@ -29,8 +29,6 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
-
 /**
  * Command representing MB exchange deletion.
  */
@@ -44,6 +42,10 @@ public class DeleteExchangeCmd extends DeleteCmd {
     @Parameter(names = { "--unused", "-u" },
                description = "delete only if the exchange is not in use")
     private boolean ifUnused = false;
+
+    public DeleteExchangeCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
@@ -79,6 +81,6 @@ public class DeleteExchangeCmd extends DeleteCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + ROOT_COMMAND + " delete exchange [exchange-name] [flag]*\n");
+        out.append("  " + rootCommand + " delete exchange [exchange-name] [flag]*\n");
     }
 }

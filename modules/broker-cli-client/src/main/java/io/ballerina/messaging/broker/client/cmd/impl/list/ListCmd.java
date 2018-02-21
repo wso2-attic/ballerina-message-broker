@@ -22,18 +22,20 @@ import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
-
 /**
  * Command representing the resource information retrieval.
  */
 @Parameters(commandDescription = "Retrieve information on resource(s) in the Broker")
 public class ListCmd extends AbstractCmd {
 
+    public ListCmd(String rootCommand) {
+        super(rootCommand);
+    }
+
     @Override
     public void execute() {
         if (!help) {
-            throw Utils.createUsageException("a command is expected after 'list'");
+            throw Utils.createUsageException("a command is expected after 'list'", rootCommand);
         }
         processHelpLogs();
     }
@@ -41,6 +43,6 @@ public class ListCmd extends AbstractCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + ROOT_COMMAND + " list [command]\n");
+        out.append("  " + rootCommand + " list [command]\n");
     }
 }

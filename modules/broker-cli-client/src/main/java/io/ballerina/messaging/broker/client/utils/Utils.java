@@ -30,7 +30,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
 import static io.ballerina.messaging.broker.client.utils.Constants.SYSTEM_PARAM_CLI_CLIENT_CONFIG_FILE;
 
 /**
@@ -42,12 +41,13 @@ public class Utils {
      * Create {@link BrokerClientException} instance including the error message.
      *
      * @param errorMsg error message.
+     * @param rootCommand root command used in the script.
      * @return new {@link BrokerClientException} instance with error message
      */
-    public static BrokerClientException createUsageException(String errorMsg) {
+    public static BrokerClientException createUsageException(String errorMsg, String rootCommand) {
         BrokerClientException brokerClientException = new BrokerClientException();
-        brokerClientException.addMessage(ROOT_COMMAND + ": " + errorMsg);
-        brokerClientException.addMessage("Run '" + ROOT_COMMAND + " --help' for usage.");
+        brokerClientException.addMessage(rootCommand + ": " + errorMsg);
+        brokerClientException.addMessage("Run '" + rootCommand + " --help' for usage.");
         return brokerClientException;
     }
 

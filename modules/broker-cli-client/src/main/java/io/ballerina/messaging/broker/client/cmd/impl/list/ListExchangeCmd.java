@@ -29,8 +29,6 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
-
 /**
  * Command representing MB exchange information retrieval.
  */
@@ -43,6 +41,10 @@ public class ListExchangeCmd extends ListCmd {
 
     @Parameter(description = "name of the exchange which info needs to be retrieved")
     private String exchangeName = "";
+
+    public ListExchangeCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
@@ -77,7 +79,7 @@ public class ListExchangeCmd extends ListCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + ROOT_COMMAND + " list exchange [exchange-name]? [flag]*\n");
+        out.append("  " + rootCommand + " list exchange [exchange-name]? [flag]*\n");
     }
 
 }

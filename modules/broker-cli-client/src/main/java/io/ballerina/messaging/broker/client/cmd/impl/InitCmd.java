@@ -25,8 +25,6 @@ import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
-
 /**
  * Representation of the broker client initialization command.
  */
@@ -47,6 +45,10 @@ public class InitCmd extends AbstractCmd {
                password = true)
     private String password = Constants.DEFAULT_PASSWORD;
 
+    public InitCmd(String rootCommand) {
+        super(rootCommand);
+    }
+
     @Override
     public void execute() {
         if (help) {
@@ -64,6 +66,6 @@ public class InitCmd extends AbstractCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + ROOT_COMMAND + " init [flag]*\n");
+        out.append("  " + rootCommand + " init [flag]*\n");
     }
 }

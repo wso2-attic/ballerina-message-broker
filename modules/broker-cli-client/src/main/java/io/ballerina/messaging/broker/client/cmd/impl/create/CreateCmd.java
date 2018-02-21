@@ -22,18 +22,20 @@ import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
-
 /**
  * Command representing the resource creation.
  */
 @Parameters(commandDescription = "Create a resource in the Broker with parameters")
 public class CreateCmd extends AbstractCmd {
 
+    public CreateCmd(String rootCommand) {
+        super(rootCommand);
+    }
+
     @Override
     public void execute() {
         if (!help) {
-            throw Utils.createUsageException("a command is expected after 'create'");
+            throw Utils.createUsageException("a command is expected after 'create'", rootCommand);
         }
         processHelpLogs();
     }
@@ -41,6 +43,6 @@ public class CreateCmd extends AbstractCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + ROOT_COMMAND + " create [command]\n");
+        out.append("  " + rootCommand + " create [command]\n");
     }
 }

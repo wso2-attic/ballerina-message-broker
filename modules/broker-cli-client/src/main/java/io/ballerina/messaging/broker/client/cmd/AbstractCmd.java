@@ -32,6 +32,8 @@ public abstract class AbstractCmd implements MBClientCmd {
 
     protected static final PrintStream OUT_STREAM = System.err;
 
+    protected String rootCommand;
+
     /**
      * Holds the reference of the JCommander runtime instance associated with this command instance.
      */
@@ -43,6 +45,15 @@ public abstract class AbstractCmd implements MBClientCmd {
 
     @Parameter(names = { "--verbose", "-v" }, hidden = true)
     protected boolean verbose;
+
+    /**
+     * Constructor, set the root command when creation.
+     *
+     * @param rootCommand root command loaded from the script.
+     */
+    protected AbstractCmd(String rootCommand) {
+        this.rootCommand = rootCommand;
+    }
 
     public void setSelfJCommander(JCommander selfJCommander) {
         this.selfJCommander = selfJCommander;

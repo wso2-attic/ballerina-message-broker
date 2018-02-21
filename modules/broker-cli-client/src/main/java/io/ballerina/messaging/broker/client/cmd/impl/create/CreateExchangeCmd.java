@@ -31,8 +31,6 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
-
 /**
  * Command representing MB exchange creation.
  */
@@ -49,6 +47,10 @@ public class CreateExchangeCmd extends CreateCmd {
     @Parameter(names = { "--durable", "-d" },
                description = "durability of the exchange")
     private boolean durable = false;
+
+    public CreateExchangeCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
@@ -81,6 +83,6 @@ public class CreateExchangeCmd extends CreateCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + ROOT_COMMAND + " create exchange [exchange-name] [flag]*\n");
+        out.append("  " + rootCommand + " create exchange [exchange-name] [flag]*\n");
     }
 }

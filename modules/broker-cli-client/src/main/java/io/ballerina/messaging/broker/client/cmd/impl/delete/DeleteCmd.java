@@ -22,18 +22,20 @@ import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
-
 /**
  * Command representing the resource deletion.
  */
 @Parameters(commandDescription = "Delete resources in the Broker")
 public class DeleteCmd extends AbstractCmd {
 
+    public DeleteCmd(String rootCommand) {
+        super(rootCommand);
+    }
+
     @Override
     public void execute() {
         if (!help) {
-            throw Utils.createUsageException("a command is expected after 'delete'");
+            throw Utils.createUsageException("a command is expected after 'delete'", rootCommand);
         }
         processHelpLogs();
     }
@@ -41,6 +43,6 @@ public class DeleteCmd extends AbstractCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + ROOT_COMMAND + " delete [command]\n");
+        out.append("  " + rootCommand + " delete [command]\n");
     }
 }

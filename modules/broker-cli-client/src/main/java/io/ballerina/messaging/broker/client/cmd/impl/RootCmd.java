@@ -21,7 +21,6 @@ package io.ballerina.messaging.broker.client.cmd.impl;
 import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
 
-import static io.ballerina.messaging.broker.client.utils.Constants.ROOT_COMMAND;
 import static io.ballerina.messaging.broker.client.utils.Utils.createUsageException;
 
 /**
@@ -30,10 +29,14 @@ import static io.ballerina.messaging.broker.client.utils.Utils.createUsageExcept
 @Parameters(commandDescription = "Welcome to Broker Command Line Interface")
 public class RootCmd extends AbstractCmd {
 
+    public RootCmd(String rootCommand) {
+        super(rootCommand);
+    }
+
     @Override
     public void execute() {
         if (!help) {
-            throw createUsageException("a command is expected after " + ROOT_COMMAND);
+            throw createUsageException("a command is expected after " + rootCommand, rootCommand);
         }
         processHelpLogs();
     }
@@ -41,6 +44,6 @@ public class RootCmd extends AbstractCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + ROOT_COMMAND + " [command]\n");
+        out.append("  " + rootCommand + " [command]\n");
     }
 }
