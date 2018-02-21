@@ -19,6 +19,8 @@
 
 package org.wso2.broker.core;
 
+import javax.transaction.xa.Xid;
+
 /**
  * Abstract class to represent an underlying queue for the broker
  */
@@ -37,21 +39,21 @@ public abstract class Queue {
 
     private QueueHandler queueHandler;
 
-    public Queue(String name, boolean durable, boolean autoDelete) {
-        this.name = name;
+    public Queue(String queueName, boolean durable, boolean autoDelete) {
+        this.name = queueName;
         this.durable = durable;
         this.autoDelete = autoDelete;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public boolean isDurable() {
+    public final boolean isDurable() {
         return durable;
     }
 
-    public boolean isAutoDelete() {
+    public final boolean isAutoDelete() {
         return autoDelete;
     }
 
@@ -59,12 +61,12 @@ public abstract class Queue {
         return queueHandler;
     }
 
-    void setQueueHandler(QueueHandler queueHandler) {
+    final void setQueueHandler(QueueHandler queueHandler) {
         this.queueHandler = queueHandler;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -86,7 +88,7 @@ public abstract class Queue {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return name.hashCode();
     }
 
@@ -96,7 +98,15 @@ public abstract class Queue {
 
     public abstract boolean enqueue(Message message) throws BrokerException;
 
+    public abstract void prepareEnqueue(Xid xid, Message message) throws BrokerException;
+
+    public abstract void commit(Xid xid);
+
+    public abstract void rollback(Xid xid);
+
     public abstract Message dequeue();
 
     public abstract void detach(Message message) throws BrokerException;
+
+    public abstract void prepareDetach(Xid xid, Message message) throws BrokerException;
 }

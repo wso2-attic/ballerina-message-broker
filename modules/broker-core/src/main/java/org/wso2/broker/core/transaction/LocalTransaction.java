@@ -22,11 +22,12 @@ package org.wso2.broker.core.transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.common.ValidationException;
-import org.wso2.broker.core.Broker;
+import org.wso2.broker.core.BrokerException;
 import org.wso2.broker.core.Message;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.transaction.xa.Xid;
 
 /**
@@ -36,46 +37,84 @@ import javax.transaction.xa.Xid;
 public class LocalTransaction implements BrokerTransaction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalTransaction.class);
-    private final List<Action> postTransactionActions = new ArrayList<>();
-    private final Broker broker;
 
-    public LocalTransaction(Broker broker) {
-        this.broker = broker;
+    private final List<Action> postTransactionActions = new ArrayList<>();
+
+    private final Registry transactionRegistry;
+
+    private Branch branch;
+
+    private boolean preConditionFailed;
+
+    private StringBuilder errorMessageBuilder;
+
+    private final BranchFactory branchFactory;
+
+    public LocalTransaction(Registry registry, BranchFactory branchFactory) {
+        this.transactionRegistry = registry;
+        preConditionFailed = false;
+        this.branchFactory = branchFactory;
+        errorMessageBuilder = new StringBuilder();
+        branch = null;
     }
 
-
     @Override
-    public void dequeue(String queue, Message message) {
-        broker.newLocalTransaction();
-        //get database connection
-        //delete messages from the table
+    public void dequeue(String queueName, Message message) {
+
+        try {
+            createBranchIfNeeded();
+            branch.dequeue(queueName, message);
+        } catch (BrokerException e) {
+            preConditionFailed = true;
+            errorMessageBuilder.append(e.getMessage()).append('\n');
+        }
     }
 
     @Override
     public void enqueue(Message message) {
-        //get database connection
-        //insert message into the table
+        try {
+            createBranchIfNeeded();
+            branch.enqueue(message);
+        } catch (BrokerException e) {
+            preConditionFailed = true;
+            errorMessageBuilder.append(e.getMessage()).append('\n');
+        }
     }
 
     @Override
-    public void commit() {
-        //get database connection
-        //commit transaction
-        //do the post commit if any
+    public void commit() throws BrokerException, ValidationException {
+        if (preConditionFailed) {
+            throw new ValidationException("Pre conditions failed for commit. Errors " + errorMessageBuilder.toString());
+        }
+        if (Objects.isNull(branch)) {
+            LOGGER.debug("Nothing to commit. Transaction branch is null");
+            return;
+        }
+
+        branch.commit();
         doPostCommit();
+        clear();
     }
 
     @Override
     public void rollback() {
-        //get database connection
-        //rollback transaction
-        //od the on rollback if any
+        if (Objects.isNull(branch)) {
+            LOGGER.debug("Nothing to commit. Transaction branch is null");
+            return;
+        }
+        branch.rollback();
         doOnRollback();
+        clear();
     }
 
     @Override
     public boolean isTransactional() {
         return true;
+    }
+
+    @Override
+    public void onClose() {
+        rollback();
     }
 
     @Override
@@ -118,7 +157,6 @@ public class LocalTransaction implements BrokerTransaction {
         postTransactionActions.add(postTransactionAction);
     }
 
-
     /**
      * Execute post transaction action after commit
      */
@@ -128,12 +166,33 @@ public class LocalTransaction implements BrokerTransaction {
         }
     }
 
+    private void clear() {
+        preConditionFailed = false;
+        errorMessageBuilder.setLength(0);
+        transactionRegistry.unregister(branch.getXid());
+        branch = null;
+    }
+
     /**
      * Execute post transaction action after rollback
      */
     private void doOnRollback() {
         for (Action postTransactionAction : postTransactionActions) {
             postTransactionAction.onRollback();
+        }
+    }
+
+    private void createBranchIfNeeded() throws BrokerException {
+        if (Objects.nonNull(branch)) {
+            return;
+        }
+
+        try {
+            branch = branchFactory.createBranch();
+            transactionRegistry.register(branch);
+        } catch (ValidationException e) {
+            // Throws BrokerException since this doesn't depend on user input
+            throw new BrokerException("Error occurred while registering branch.", e);
         }
     }
 }

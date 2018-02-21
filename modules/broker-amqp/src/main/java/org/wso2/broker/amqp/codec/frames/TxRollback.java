@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.broker.amqp.codec.AmqpChannel;
+import org.wso2.broker.amqp.codec.BlockingTask;
 import org.wso2.broker.amqp.codec.ChannelException;
 import org.wso2.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import org.wso2.broker.common.ValidationException;
@@ -49,22 +50,25 @@ public class TxRollback extends MethodFrame {
 
     @Override
     protected void writeMethod(ByteBuf buf) {
+        //ignore
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         int channelId = getChannel();
         AmqpChannel channel = connectionHandler.getChannel(channelId);
-        try {
-            channel.rollback();
-            ctx.writeAndFlush(new TxRollbackOk(channelId));
-        } catch (ValidationException e) {
-            LOGGER.error("Error while rollback transaction", e);
-            ctx.writeAndFlush(new ChannelClose(channelId, ChannelException.PRECONDITION_FAILED,
-                    ShortString.parseString(e.getMessage()),
-                    CLASS_ID,
-                    METHOD_ID));
-        }
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.rollback();
+                ctx.writeAndFlush(new TxRollbackOk(channelId));
+            } catch (ValidationException e) {
+                LOGGER.error("Error while rollback transaction", e);
+                ctx.writeAndFlush(new ChannelClose(channelId, ChannelException.PRECONDITION_FAILED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            }
+        });
     }
 
     public static AmqMethodBodyFactory getFactory() {

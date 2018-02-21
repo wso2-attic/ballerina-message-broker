@@ -81,7 +81,6 @@ public class AmqpConsumer extends Consumer {
                          consumerTag,
                          queueName);
         }
-
         AmqpDeliverMessage deliverMessage = channel.createDeliverMessage(message, consumerTag, queueName);
 
         ChannelFutureListener channelListener;

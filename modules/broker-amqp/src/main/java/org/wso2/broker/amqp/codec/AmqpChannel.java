@@ -37,7 +37,6 @@ import org.wso2.broker.core.Consumer;
 import org.wso2.broker.core.Message;
 import org.wso2.broker.core.transaction.AutoCommitTransaction;
 import org.wso2.broker.core.transaction.BrokerTransaction;
-import org.wso2.broker.core.transaction.LocalTransaction;
 import org.wso2.broker.core.util.MessageTracer;
 import org.wso2.broker.core.util.TraceField;
 
@@ -190,7 +189,7 @@ public class AmqpChannel {
         for (Consumer consumer : consumerMap.values()) {
             closeConsumer(consumer);
         }
-
+        transaction.onClose();
         consumerMap.clear();
         requeueUnackedMessages();
     }
@@ -376,7 +375,7 @@ public class AmqpChannel {
      * Start local transaction on the channel
      */
     public void setLocalTransactional() {
-        transaction = new LocalTransaction(broker);
+        transaction = broker.newLocalTransaction();
         messageAggregator.setTransaction(transaction);
     }
 
@@ -390,7 +389,7 @@ public class AmqpChannel {
     /**
      * Commit the transaction on the channel
      */
-    public void commit() throws ValidationException {
+    public void commit() throws ValidationException, BrokerException {
         transaction.commit();
     }
 

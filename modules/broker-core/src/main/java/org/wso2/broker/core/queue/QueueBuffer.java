@@ -119,8 +119,6 @@ public class QueueBuffer {
         }
     }
 
-
-
     /**
      * Remove a message from the buffer.
      *
@@ -131,6 +129,12 @@ public class QueueBuffer {
         Node node = keyMap.remove(messageId);
         if (Objects.nonNull(node)) {
             unlink(node);
+        }
+    }
+
+    public synchronized void removeAll(Collection<Message> messages) {
+        for (Message message : messages) {
+            remove(message);
         }
     }
 
@@ -232,8 +236,8 @@ public class QueueBuffer {
     public void markMessageFilled(Message message) {
         Node node = keyMap.get(message.getInternalId());
         if (Objects.nonNull(node)) {
-           node.state.set(Node.FULL_MESSAGE);
-           deliverableMessageCount.incrementAndGet();
+            node.state.set(Node.FULL_MESSAGE);
+            deliverableMessageCount.incrementAndGet();
         }
     }
 
@@ -252,7 +256,6 @@ public class QueueBuffer {
             this.prev = prev;
         }
     }
-
 
     /**
      * Interface used to fill message date.

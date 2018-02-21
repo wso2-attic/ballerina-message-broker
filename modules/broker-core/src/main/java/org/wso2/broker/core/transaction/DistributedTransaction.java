@@ -60,6 +60,10 @@ public class DistributedTransaction implements BrokerTransaction {
         return false;
     }
 
+    @Override public void onClose() {
+
+    }
+
     @Override
     public void start(Xid xid, boolean join, boolean resume) {
 

@@ -75,6 +75,11 @@ public class AutoCommitTransaction implements BrokerTransaction {
     }
 
     @Override
+    public void onClose() {
+        // ignore
+    }
+
+    @Override
     public void start(Xid xid, boolean join, boolean resume) throws ValidationException {
         throw new ValidationException("dtx.start called on non-transactional channel");
     }

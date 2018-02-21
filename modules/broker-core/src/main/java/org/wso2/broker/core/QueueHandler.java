@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.transaction.xa.Xid;
 
 /**
  * Represents the queue of the broker. Contains a bounded queue to store messages. Subscriptions for the queue
@@ -129,12 +130,28 @@ public final class QueueHandler {
         }
     }
 
+    void prepareForEnqueue(Xid xid, Message message) throws BrokerException {
+        queue.prepareEnqueue(xid, message);
+    }
+
+    void prepareForDetach(Xid xid, Message message) throws BrokerException {
+        queue.prepareDetach(xid, message);
+    }
+
+    public void commit(Xid xid) {
+        queue.commit(xid);
+    }
+
+    public void rollback(Xid xid) {
+        queue.rollback(xid);
+    }
+
     /**
-     * Retrieves and removes the head of this queue, or returns null if this queue is empty.
+     * Retrieves next available message for delivery. If the queue is empty, null is returned.
      *
      * @return Message
      */
-    Message dequeue() {
+    Message takeForDelivery() {
         Message message = redeliveryQueue.dequeue();
         if (message == null) {
             message = queue.dequeue();
@@ -146,7 +163,13 @@ public final class QueueHandler {
         return message;
     }
 
-    void acknowledge(Message message) throws BrokerException {
+    /**
+     * Removes the message from the queue.
+     *
+     * @param message message to be removed.
+     * @throws BrokerException
+     */
+    void dequeue(Message message) throws BrokerException {
         queue.detach(message);
         metricManager.removeInMemoryMessage();
         MessageTracer.trace(message, this, MessageTracer.ACKNOWLEDGE);
