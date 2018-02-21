@@ -19,14 +19,14 @@ Following are the instructions in detail for the above steps
         $ java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
         -i <path-to-swagger.yaml>  \ 
         -l jaxrs-spec -o <output-directory-path> \
-        --model-package org.wso2.broker.core.rest.model \ 
-        --api-package org.wso2.broker.core.rest.api
+        --model-package io.ballerina.messaging.broker.core.rest.model \ 
+        --api-package io.ballerina.messaging.broker.core.rest.api
         ```
     3. Copy the created content into a src/gen directory on the relevant module.
        > NOTE: Since we are editing the generated classes we need to have
        them inside the src directory. This doesn't get generated every time we compile. 
 3. Use a separate delegate class to handle the relevant logic of the REST API resources. Invoke the methods
    of the delegate class from the generated API classes.
-4. Deploy the service using the `org.wso2.broker.rest.BrokerServiceRunner#deploy` method.
+4. Deploy the service using the `BrokerServiceRunner#deploy` method.
 5. Copy the original swagger definition into the resources directory of the relevant module. 
     

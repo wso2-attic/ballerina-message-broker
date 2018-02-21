@@ -51,6 +51,10 @@ route messages.
 Message queue is a data storage where we keep messages in a FIFO order. A queue can have more than one consumer at a 
 time. But for a topic it is more common to have a single consumer for each queue.
 
+## Message persistence
+
+Broker supports JDBC based message persistence. Details of the message persistence architecture is
+explained in [Message Persistence Layer](../dev/message-persistence-layer.md) documentation
 ## Netty pipeline used in AMQP transport
 
 ![Netty Pipeline for AMQP Transport](../images/netty-pipeline-for-amqp-transport.png)

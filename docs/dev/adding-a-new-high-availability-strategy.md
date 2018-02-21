@@ -2,8 +2,8 @@
 
 Introducing a new High Availability (HA) strategy to provide HA support with the Message Broker can be done by adopting 
 either of the following approaches:
- * implementing the [org.wso2.broker.coordination.HaStrategy](../../modules/broker-coordination/src/main/java/org/wso2/broker/coordination/HaStrategy.java) interface 
- * extending the [org.wso2.broker.coordination.AbstractHaStrategy](../../modules/broker-coordination/src/main/java/org/wso2/broker/coordination/AbstractHaStrategy.java) class
+ * implementing the [io.ballerina.messaging.broker.coordination.HaStrategy](../../modules/broker-coordination/src/main/java/io/ballerina/messaging/broker/coordination/HaStrategy.java) interface 
+ * extending the [io.ballerina.broker.coordination.AbstractHaStrategy](../../modules/broker-coordination/src/main/java/io/ballerina/messaging/broker/coordination/AbstractHaStrategy.java) class
 
 
 ### Requirements
@@ -15,7 +15,7 @@ active and active to passive, respectively.
 HA strategies introduced by extending the AbstractHaStrategy class can notify the listeners registered by calling the 
 `notifyBecameActiveNode()` and `notifyBecamePassiveNode()` methods in AbstractHaStrategy.
 
-The default HA strategy, [org.wso2.broker.coordination.RdbmsHaStrategy](../../modules/broker-coordination/src/main/java/org/wso2/broker/coordination/rdbms/RdbmsHaStrategy.java), 
+The default HA strategy, [io.ballerina.messaging.broker.coordination.RdbmsHaStrategy](../../modules/broker-coordination/src/main/java/io/ballerina/messaging/broker/coordination/rdbms/RdbmsHaStrategy.java), 
 extends the AbstractHaStrategy class to provide HA support.
 
 ### Using the new HA Strategy

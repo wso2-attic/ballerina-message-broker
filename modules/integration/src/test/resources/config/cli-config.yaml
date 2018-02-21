@@ -1,0 +1,5 @@
+!!io.ballerina.messaging.broker.client.resources.Configuration
+hostname: 127.0.0.1
+password: admin
+port: 9200
+username: admin

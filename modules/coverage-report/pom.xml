@@ -20,9 +20,9 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <artifactId>message-broker</artifactId>
-        <groupId>org.wso2.messaging</groupId>
-        <version>4.0.45-SNAPSHOT</version>
+        <groupId>io.ballerina.messaging</groupId>
+        <artifactId>broker-parent</artifactId>
+        <version>0.1.5-SNAPSHOT</version>
         <relativePath>../..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -52,9 +52,9 @@
                             <outputDirectory>${basedir}/target/coverage-reports/site</outputDirectory>
                             <excludes>
                                 <exclude>
-                                    **/*org/wso2/broker/core/selector/generated/**/*,
-                                    **/*org/wso2/broker/core/rest/api/*,
-                                    **/*org/wso2/broker/core/rest/model/*,
+                                    **/*io/ballerina/messaging/broker/core/selector/generated/**/*,
+                                    **/*io/ballerina/messaging/broker/core/rest/api/*,
+                                    **/*io/ballerina/messaging/broker/core/rest/model/*,
                                 </exclude>
                             </excludes>
                         </configuration>
@@ -65,36 +65,40 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-amqp</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-coordination</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>integration</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-rest-runner</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-metrics</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.ballerina.messaging</groupId>
+            <artifactId>broker-cli-client</artifactId>
         </dependency>
     </dependencies>
 </project>
