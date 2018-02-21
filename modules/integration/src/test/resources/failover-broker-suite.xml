@@ -35,7 +35,7 @@
 
     <test name="multi-broker-integration-tests" verbose="2">
         <packages>
-            <package name="org.wso2.messaging.integration.failover"/>
+            <package name="io.ballerina.messaging.broker.integration.failover"/>
         </packages>
     </test>
 
