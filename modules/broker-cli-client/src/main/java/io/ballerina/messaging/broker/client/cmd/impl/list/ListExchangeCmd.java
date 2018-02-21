@@ -32,7 +32,7 @@ import net.minidev.json.parser.ParseException;
 /**
  * Command representing MB exchange information retrieval.
  */
-@Parameters(commandDescription = "List MB exchange(s)")
+@Parameters(commandDescription = "List exchange(s) in the Broker")
 public class ListExchangeCmd extends ListCmd {
 
     @Parameter(names = { "--all", "-a" },
@@ -41,6 +41,10 @@ public class ListExchangeCmd extends ListCmd {
 
     @Parameter(description = "name of the exchange which info needs to be retrieved")
     private String exchangeName = "";
+
+    public ListExchangeCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
@@ -73,19 +77,9 @@ public class ListExchangeCmd extends ListCmd {
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("List exchange(s) in MB\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb list exchange [exchange-name]? [flag]*\n");
-        out.append("Example:\n");
-        out.append("* list exchange named 'myExchange' in MB.\n");
-        out.append("  mb list exchange myExchange\n");
-        out.append("* list all exchanges in MB.\n");
-        out.append("  mb list exchange\n");
+        out.append("  " + rootCommand + " list exchange [exchange-name]? [flag]*\n");
     }
 
 }

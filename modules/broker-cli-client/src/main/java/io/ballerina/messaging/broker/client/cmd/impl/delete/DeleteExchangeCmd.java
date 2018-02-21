@@ -32,7 +32,7 @@ import net.minidev.json.parser.ParseException;
 /**
  * Command representing MB exchange deletion.
  */
-@Parameters(commandDescription = "Delete MB exchange")
+@Parameters(commandDescription = "Delete an exchange in the Broker")
 public class DeleteExchangeCmd extends DeleteCmd {
 
     @Parameter(description = "name of the exchange",
@@ -42,6 +42,10 @@ public class DeleteExchangeCmd extends DeleteCmd {
     @Parameter(names = { "--unused", "-u" },
                description = "delete only if the exchange is not in use")
     private boolean ifUnused = false;
+
+    public DeleteExchangeCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
@@ -75,16 +79,8 @@ public class DeleteExchangeCmd extends DeleteCmd {
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("Delete an exchange in MB\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb delete exchange [exchange-name] [flag]*\n");
-        out.append("Example:\n");
-        out.append("* Delete exchange named 'myExchange' in MB, only if unused.\n");
-        out.append("  mb delete exchange myExchange -u\n");
+        out.append("  " + rootCommand + " delete exchange [exchange-name] [flag]*\n");
     }
 }

@@ -25,26 +25,24 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 /**
  * Command representing the resource deletion.
  */
-@Parameters(commandDescription = "Delete MB resources")
+@Parameters(commandDescription = "Delete resources in the Broker")
 public class DeleteCmd extends AbstractCmd {
+
+    public DeleteCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
         if (!help) {
-            throw Utils.createUsageException("a command is expected after 'delete'");
+            throw Utils.createUsageException("a command is expected after 'delete'", rootCommand);
         }
         processHelpLogs();
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("Delete a resource in MB\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb create exchange [exchange-name] [flag]*\n");
-        out.append("  mb create queue [queue-name] [flag]*\n");
+        out.append("  " + rootCommand + " delete [command]\n");
     }
 }

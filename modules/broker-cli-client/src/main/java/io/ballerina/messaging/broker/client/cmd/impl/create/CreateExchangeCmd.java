@@ -34,7 +34,7 @@ import net.minidev.json.parser.ParseException;
 /**
  * Command representing MB exchange creation.
  */
-@Parameters(commandDescription = "Create MB exchange")
+@Parameters(commandDescription = "Create an exchange in the Broker with parameters")
 public class CreateExchangeCmd extends CreateCmd {
 
     @Parameter(description = "name of the exchange")
@@ -47,6 +47,10 @@ public class CreateExchangeCmd extends CreateCmd {
     @Parameter(names = { "--durable", "-d" },
                description = "durability of the exchange")
     private boolean durable = false;
+
+    public CreateExchangeCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
@@ -77,16 +81,8 @@ public class CreateExchangeCmd extends CreateCmd {
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("Create an exchange in MB with parameters\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb create exchange [exchange-name] [options]*\n");
-        out.append("Example:\n");
-        out.append("* Create a durable direct Exchange in MB.\n");
-        out.append("  mb create exchange myExchange -t direct -d\n");
+        out.append("  " + rootCommand + " create exchange [exchange-name] [flag]*\n");
     }
 }
