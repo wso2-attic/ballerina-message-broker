@@ -30,16 +30,17 @@
     <parameter name="test-password" value="a1D-M*i2+n"/>
 
     <listeners>
-        <listener class-name="org.wso2.messaging.integration.util.TestExecutionListener"/>
+        <listener class-name="io.ballerina.messaging.broker.integration.util.TestExecutionListener"/>
     </listeners>
 
     <!--<parameter name="useDefaultListeners" value="false"/>-->
 
     <test name="broker-integration-tests" verbose="2">
         <packages>
-            <package name="org.wso2.messaging.integration.standalone"/>
-            <package name="org.wso2.messaging.integration.standalone.rest"/>
-            <package name="org.wso2.messaging.integration.standalone.amqp"/>
+            <package name="io.ballerina.messaging.broker.integration.standalone"/>
+            <package name="io.ballerina.messaging.broker.integration.standalone.rest"/>
+            <package name="io.ballerina.messaging.broker.integration.standalone.amqp"/>
+            <package name="io.ballerina.messaging.broker.integration.standalone.cli"/>
         </packages>
     </test>
 </suite>

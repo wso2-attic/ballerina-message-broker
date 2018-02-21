@@ -20,9 +20,9 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>message-broker</artifactId>
-        <groupId>org.wso2.messaging</groupId>
-        <version>4.0.45-SNAPSHOT</version>
+        <groupId>io.ballerina.messaging</groupId>
+        <artifactId>broker-parent</artifactId>
+        <version>0.1.5-SNAPSHOT</version>
         <relativePath>../..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -32,23 +32,23 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-auth</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-coordination</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-rest-runner</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-metrics</artifactId>
         </dependency>
         <dependency>
@@ -92,8 +92,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derby</artifactId>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -194,15 +194,15 @@
                             javax.sql.*;version="0.0.0",
                             javax.ws.rs.*;version="${jaxrs.api.package.import.version.range}",
                             org.slf4j.*;version="${slf4j.logging.package.import.version.range}",
-                            org.wso2.broker.common.*;version="${broker.package.import.range.version}",
-                            org.wso2.broker.common.data.types.*;version="${broker.package.import.range.version}",
-                            org.wso2.broker.coordination.*; version="${broker.package.import.range.version}",
-                            org.wso2.broker.rest.*;version="${broker.package.import.range.version}",
-                            org.wso2.broker.auth.*;version="${broker.package.import.range.version}",
+                            io.ballerina.messaging.broker.common.*;version="${broker.package.import.range.version}",
+                            io.ballerina.messaging.broker.common.data.types.*;version="${broker.package.import.range.version}",
+                            io.ballerina.messaging.broker.coordination.*; version="${broker.package.import.range.version}",
+                            io.ballerina.messaging.broker.rest.*;version="${broker.package.import.range.version}",
+                            io.ballerina.messaging.broker.auth.*;version="${broker.package.import.range.version}",
                             org.wso2.msf4j.*;version="${msf4j.package.import.version.range}"
                         </Import-Package>
                         <Export-Package>
-                            org.wso2.broker.core.*;version=${project.version},
+                            io.ballerina.messaging.broker.core.*;version=${project.version},
                         </Export-Package>
                     </instructions>
                 </configuration>

@@ -16,13 +16,13 @@
  * under the License.
  */
 
+import io.ballerina.messaging.broker.coordination.CoordinationException;
+import io.ballerina.messaging.broker.coordination.rdbms.RdbmsCoordinationDaoImpl;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.broker.coordination.CoordinationException;
-import org.wso2.broker.coordination.rdbms.RdbmsCoordinationDaoImpl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

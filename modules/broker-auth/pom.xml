@@ -20,9 +20,9 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>message-broker</artifactId>
-        <groupId>org.wso2.messaging</groupId>
-        <version>4.0.45-SNAPSHOT</version>
+        <groupId>io.ballerina.messaging</groupId>
+        <artifactId>broker-parent</artifactId>
+        <version>0.1.5-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -32,7 +32,7 @@
     <name>Broker - Auth</name>
     <dependencies>
         <dependency>
-            <groupId>org.wso2.messaging</groupId>
+            <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-common</artifactId>
         </dependency>
         <dependency>
@@ -98,10 +98,10 @@
                         <Import-Package>
                             com.google.common.*;version="${guava.package.import.version.range}",
                             org.slf4j.*;version="${slf4j.logging.package.import.version.range}",
-                            org.wso2.broker.common.*;version="${broker.package.import.range.version}"
+                            io.ballerina.messaging.broker.common.*;version="${broker.package.import.range.version}"
                         </Import-Package>
                         <Export-Package>
-                            org.wso2.broker.auth.*;version=${project.version},
+                            io.ballerina.messaging.broker.auth.*;version=${project.version},
                         </Export-Package>
                     </instructions>
                 </configuration>

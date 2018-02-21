@@ -16,12 +16,12 @@
  * under the License.
  */
 
+import io.ballerina.messaging.broker.coordination.BrokerHaConfiguration;
+import io.ballerina.messaging.broker.coordination.rdbms.RdbmsCoordinationConstants;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.wso2.broker.coordination.BrokerHaConfiguration;
-import org.wso2.broker.coordination.rdbms.RdbmsCoordinationConstants;
 import org.wso2.carbon.config.ConfigProviderFactory;
 
 import java.io.File;
@@ -50,7 +50,7 @@ public class BrokerHaConfigurationTest {
     public void testHaConfigurationCreationFromYamlFile() {
         Assert.assertTrue(brokerHaConfiguration.isEnabled(), "\"enabled\" value not set correctly.");
         Assert.assertEquals(brokerHaConfiguration.getStrategy(),
-                            "org.wso2.broker.coordination.rdbms.RdbmsHaStrategy",
+                            "io.ballerina.messaging.broker.coordination.rdbms.RdbmsHaStrategy",
                             "HA strategy not set correctly");
     }
 
@@ -79,8 +79,8 @@ public class BrokerHaConfigurationTest {
     @DataProvider(name = "haConfigs")
     public Object[][] haConfigs() {
         return new Object[][] {
-                { true, "org.wso2.broker.coordination.HaStrategyOne", "nodeIdOne", "5000", "7000" },
-                { false, "org.wso2.broker.coordination.HaStrategyTwo", "nodeIdTwo", "10000", "8000" }
+                { true, "io.ballerina.messaging.broker.coordination.HaStrategyOne", "nodeIdOne", "5000", "7000" },
+                { false, "io.ballerina.messaging.broker.coordination.HaStrategyTwo", "nodeIdTwo", "10000", "8000" }
         };
     }
 

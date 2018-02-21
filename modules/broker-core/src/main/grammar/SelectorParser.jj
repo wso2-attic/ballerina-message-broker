@@ -46,14 +46,14 @@ PARSER_BEGIN(MessageFilter)
  *
  */
 
-package org.wso2.broker.core.selector.generated;
+package io.ballerina.messaging.broker.core.selector.generated;
 
 import java.io.StringReader;
-import org.wso2.broker.core.selector.BooleanExpression;
-import org.wso2.broker.core.selector.EqualityExpression;
-import org.wso2.broker.core.selector.ConstantExpression;
-import org.wso2.broker.core.selector.Expression;
-import org.wso2.broker.core.selector.JmsPropertyExpression;
+import io.ballerina.messaging.broker.core.selector.BooleanExpression;
+import io.ballerina.messaging.broker.core.selector.EqualityExpression;
+import io.ballerina.messaging.broker.core.selector.ConstantExpression;
+import io.ballerina.messaging.broker.core.selector.Expression;
+import io.ballerina.messaging.broker.core.selector.JmsPropertyExpression;
 
 public class MessageFilter {
 
