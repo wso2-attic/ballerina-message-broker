@@ -27,7 +27,7 @@ public class QueueBufferFactory {
     private int inMemoryCacheLimit;
 
     public QueueBufferFactory(BrokerConfiguration configuration) {
-        inMemoryCacheLimit = Integer.parseInt(configuration.getQueueInMemoryCacheLimit());
+        inMemoryCacheLimit = Integer.parseInt(configuration.getDurableQueueInMemoryCacheLimit());
     }
 
     public QueueBuffer createBuffer(QueueBuffer.MessageReader messageReader) {
