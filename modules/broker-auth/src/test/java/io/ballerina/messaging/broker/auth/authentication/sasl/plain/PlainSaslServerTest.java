@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain;
 
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
-import io.ballerina.messaging.broker.auth.authentication.authenticator.impl.JaasAuthenticator;
+import io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator;
 import io.ballerina.messaging.broker.auth.authentication.jaas.PlainSaslCallbackHandler;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.jaas.TestLoginModule;
 import org.mockito.Mockito;

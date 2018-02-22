@@ -16,7 +16,7 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authentication.authenticator.impl;
+package io.ballerina.messaging.broker.auth.authentication.authenticator;
 
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;

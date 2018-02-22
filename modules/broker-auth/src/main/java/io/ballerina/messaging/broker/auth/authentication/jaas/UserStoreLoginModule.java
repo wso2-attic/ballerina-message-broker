@@ -45,8 +45,10 @@ import javax.security.auth.spi.LoginModule;
 public class UserStoreLoginModule implements LoginModule {
 
     private String userName;
+    private String authenticationId;
     private char[] password;
     private boolean success = false;
+    private UserPrincipal userPrincipal;
     private Subject subject;
     private CallbackHandler callbackHandler;
     private UserStoreConnector userStoreConnector;
@@ -74,41 +76,47 @@ public class UserStoreLoginModule implements LoginModule {
         userName = userNameCallback.getName();
         password = passwordCallback.getPassword();
         AuthResult authResult = userStoreConnector.authenticate(userName, password);
-        if (authResult.isAuthenticated()) {
-            UserPrincipal userPrincipal = new UserPrincipal(authResult.getUserId());
-            if (!subject.getPrincipals().contains(userPrincipal)) {
-                subject.getPrincipals().add(userPrincipal);
-            }
-        }
         success = authResult.isAuthenticated();
+        if (success) {
+            authenticationId = authResult.getUserId();
+        }
         return success;
     }
 
     @Override
     public boolean commit() throws LoginException {
         if (success) {
-            userName = null;
-            if (password != null) {
-                for (int i = 0; i < password.length; i++) {
-                    password[i] = ' ';
-                }
-                password = null;
+            userPrincipal = new UserPrincipal(authenticationId);
+            if (!subject.getPrincipals().contains(userPrincipal)) {
+                subject.getPrincipals().add(userPrincipal);
             }
-            return true;
-        } else {
-            return false;
         }
+        cleanAuthInputData();
+        return success;
     }
 
     @Override
     public boolean abort() throws LoginException {
-        logout();
+        if (success) {
+            logout();
+        } else {
+            success = false;
+            cleanAuthInputData();
+        }
         return true;
     }
 
     @Override
     public boolean logout() throws LoginException {
+        subject.getPrincipals().remove(userPrincipal);
         success = false;
+        authenticationId = null;
+        userPrincipal = null;
+        cleanAuthInputData();
+        return true;
+    }
+
+    private void cleanAuthInputData() {
         userName = null;
         if (password != null) {
             for (int i = 0; i < password.length; i++) {
@@ -116,6 +124,5 @@ public class UserStoreLoginModule implements LoginModule {
             }
             password = null;
         }
-        return true;
     }
 }

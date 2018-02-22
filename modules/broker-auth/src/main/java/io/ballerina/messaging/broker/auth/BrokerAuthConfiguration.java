@@ -18,7 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth;
 
-import io.ballerina.messaging.broker.auth.authentication.authenticator.impl.DefaultAuthenticator;
+import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
 
 import java.util.HashMap;
 import java.util.Map;

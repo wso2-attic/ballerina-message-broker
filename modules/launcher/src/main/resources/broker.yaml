@@ -56,7 +56,7 @@ ballerina.broker.auth:
   enabled: true
   authenticator:
     # Authenticator implemetation
-    className: io.ballerina.messaging.broker.auth.authentication.authenticator.impl.JaasAuthenticator
+    className: io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator
     # Optional properties
     properties:
      loginModule: io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule

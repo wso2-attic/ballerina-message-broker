@@ -29,7 +29,6 @@ import java.util.Set;
  */
 public interface UserStoreConnector {
 
-
     /**
      * Initiate user store connector with startup context.
      *

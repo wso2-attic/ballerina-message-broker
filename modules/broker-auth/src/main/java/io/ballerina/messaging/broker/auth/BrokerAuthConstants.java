@@ -36,8 +36,6 @@ public final class BrokerAuthConstants {
     public static final double BROKER_SECURITY_PROVIDER_VERSION = 1.0;
     // broker authenticator instance
     public static final String PROPERTY_AUTHENTICATOR_INSTANCE = "broker.authenticator";
-    // jaas login module property name
-    public static final String CONFIG_PROPERTY_USER_STORE_CONNECTOR = "userStoreConnector";
     // user store connector property name
     public static final String CONFIG_PROPERTY_JAAS_LOGIN_MODULE = "loginModule";
     // System property to specify the path of the JaaS config file.

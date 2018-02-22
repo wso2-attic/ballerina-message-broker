@@ -16,14 +16,16 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authentication.authenticator.impl;
+package io.ballerina.messaging.broker.auth.authentication.authenticator;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 import io.ballerina.messaging.broker.auth.authentication.jaas.PlainSaslCallbackHandler;
+import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
 import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
+import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.security.Principal;
@@ -45,21 +47,14 @@ public class JaasAuthenticator implements Authenticator {
     public void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception {
 
         String jaasConfigPath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_JAAS_CONFIG);
+        UserStoreConnector userStoreConnector = new FileBasedUserStoreConnector();
+        userStoreConnector.initialize(startupContext);
+        startupContext.registerService(UserStoreConnector.class, userStoreConnector);
         if (jaasConfigPath == null || jaasConfigPath.trim().isEmpty()) {
             Object jaasLoginModule = properties.get(BrokerAuthConstants.CONFIG_PROPERTY_JAAS_LOGIN_MODULE);
-            Object userStoreConnectorClass =
-                    properties.get(BrokerAuthConstants.CONFIG_PROPERTY_USER_STORE_CONNECTOR);
             if (Objects.nonNull(jaasLoginModule)) {
-                // initialize user store from configuration property
-                if (Objects.nonNull(userStoreConnectorClass) &&
-                        !userStoreConnectorClass.toString().trim().isEmpty()) {
-                    // Set user store connector if user store connector property available.
-                    UserStoreConnector userStoreConnector =
-                            (UserStoreConnector) ClassLoader.getSystemClassLoader()
-                                                            .loadClass(userStoreConnectorClass.toString())
-                                                            .newInstance();
-                    userStoreConnector.initialize(startupContext);
-                    startupContext.registerService(UserStoreConnector.class, userStoreConnector);
+                // Add user store for default login module
+                if (jaasLoginModule.toString().equals(UserStoreLoginModule.class.getCanonicalName())) {
                     properties.put(BrokerAuthConstants.PROPERTY_USER_STORE_CONNECTOR,
                                    userStoreConnector);
                 }
