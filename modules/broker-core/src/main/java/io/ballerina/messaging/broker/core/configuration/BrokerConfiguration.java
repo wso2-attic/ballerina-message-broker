@@ -38,21 +38,21 @@ public class BrokerConfiguration {
      */
     public static final String SYSTEM_PARAM_BROKER_CONFIG_FILE = "broker.config";
 
-    private String queueInMemoryCacheLimit = "10000";
+    private String durableQueueInMemoryCacheLimit = "10000";
 
     private DeliveryTask deliveryTask = new DeliveryTask();
 
     private DataSourceConfiguration dataSource;
 
     /**
-     * Getter for queueInMemoryCacheLimit.
+     * Getter for durableQueueInMemoryCacheLimit.
      */
-    public String getQueueInMemoryCacheLimit() {
-        return queueInMemoryCacheLimit;
+    public String getDurableQueueInMemoryCacheLimit() {
+        return durableQueueInMemoryCacheLimit;
     }
 
-    public void setQueueInMemoryCacheLimit(String queueInMemoryCacheLimit) {
-        this.queueInMemoryCacheLimit = queueInMemoryCacheLimit;
+    public void setDurableQueueInMemoryCacheLimit(String durableQueueInMemoryCacheLimit) {
+        this.durableQueueInMemoryCacheLimit = durableQueueInMemoryCacheLimit;
     }
 
     /**

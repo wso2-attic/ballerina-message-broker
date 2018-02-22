@@ -15,7 +15,7 @@ These configurations are defined under the namespace `wso2.broker`.
 
 | Config                      | Default Value                          | Description                                   |
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
-| queueInMemoryCacheLimit     | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. | 
+| durableQueueInMemoryCacheLimit | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. | 
 | deliveryTask:workerCount    | 5                                      | Number of concurrent workers used to process the delivery tasks. |
 | deliveryTask:idleTaskDelay  | 50                                     | The time that the delivery task will wait when the queue is empty or no consumers are available for message delivery in milliseconds.  |
 | datasource:url              | jdbc:h2:./database/MB_DB               | Database URL.                                 |

@@ -68,7 +68,7 @@ public class SuiteInitializer {
         TestConfigProvider configProvider = new TestConfigProvider();
 
         BrokerConfiguration brokerConfiguration = new BrokerConfiguration();
-        brokerConfiguration.setQueueInMemoryCacheLimit("1000");
+        brokerConfiguration.setDurableQueueInMemoryCacheLimit("1000");
         configProvider.registerConfigurationObject(BrokerConfiguration.NAMESPACE, brokerConfiguration);
 
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
