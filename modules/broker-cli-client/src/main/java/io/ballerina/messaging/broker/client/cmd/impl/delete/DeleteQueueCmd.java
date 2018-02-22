@@ -1,0 +1,89 @@
+/*
+ * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+package io.ballerina.messaging.broker.client.cmd.impl.delete;
+
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
+import io.ballerina.messaging.broker.client.http.HttpClient;
+import io.ballerina.messaging.broker.client.http.HttpRequest;
+import io.ballerina.messaging.broker.client.http.HttpResponse;
+import io.ballerina.messaging.broker.client.output.ResponseFormatter;
+import io.ballerina.messaging.broker.client.resources.Configuration;
+import io.ballerina.messaging.broker.client.resources.Message;
+import io.ballerina.messaging.broker.client.utils.Utils;
+
+import java.net.HttpURLConnection;
+
+import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
+
+/**
+ * Command representing MB queue deletion.
+ */
+@Parameters(commandDescription = "Delete a queue in the Broker")
+public class DeleteQueueCmd extends DeleteCmd {
+
+    @Parameter(description = "name of the queue",
+               required = true)
+    private String queueName;
+
+    @Parameter(names = { "--unused", "-u" },
+               description = "delete only if the queue is not in use")
+    private boolean ifUnused = false;
+
+    @Parameter(names = { "--empty", "-e" },
+               description = "delete only if the queue is empty")
+    private boolean ifEmpty = false;
+
+    public DeleteQueueCmd(String rootCommand) {
+        super(rootCommand);
+    }
+
+    @Override
+    public void execute() {
+        if (help) {
+            processHelpLogs();
+            return;
+        }
+
+        Configuration configuration = Utils.readConfigurationFile();
+        HttpClient httpClient = new HttpClient(configuration);
+        String urlSuffix = "queues/";
+        HttpRequest httpRequest = new HttpRequest(urlSuffix + queueName);
+
+        httpRequest.setQueryParameters("?ifUnused=" + String.valueOf(ifUnused) + "&ifEmpty=" + String.valueOf(ifEmpty));
+
+        // do DELETE
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "DELETE");
+
+        // handle response
+        if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
+            Message message = buildResponseMessage(response, "Queue deleted successfully");
+            ResponseFormatter.printMessage(message);
+        } else {
+            ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
+        }
+
+    }
+
+    @Override
+    public void appendUsage(StringBuilder out) {
+        out.append("Usage:\n");
+        out.append("  " + rootCommand + " delete queue [queue-name] [flag]*\n");
+    }
+}

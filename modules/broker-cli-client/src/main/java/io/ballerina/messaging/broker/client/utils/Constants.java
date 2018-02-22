@@ -38,6 +38,7 @@ public class Constants {
     public static final String CMD_DELETE = "delete";
 
     public static final String CMD_EXCHANGE = "exchange";
+    public static final String CMD_QUEUE = "queue";
 
     public static final String BROKER_ERROR_MSG = "Error while invoking Brokers admin services";
 }
