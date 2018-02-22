@@ -1,4 +1,4 @@
-!!org.wso2.broker.client.resources.Configuration
+!!io.ballerina.messaging.broker.client.resources.Configuration
 hostname: 127.0.0.1
 password: admin
 port: 9200

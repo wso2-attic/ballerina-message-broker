@@ -6,3 +6,4 @@
   - [Changing the Default Security Settings](user/security-settings-guide.md)
 - [Messaging Metrics](user/messaging-metrics.md)
 - [Using JMS selectors](user/jms-selector-guide.md)
+- [Local Transaction](user/local-transaction.md)

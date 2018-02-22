@@ -27,17 +27,17 @@
         <version>5</version>
     </parent>
 
-    <groupId>org.wso2.messaging</groupId>
-    <artifactId>message-broker</artifactId>
+    <groupId>io.ballerina.messaging</groupId>
+    <artifactId>broker-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.48-SNAPSHOT</version>
-    <name>Message Broker</name>
+    <version>0.1.12-SNAPSHOT</version>
+    <name>Ballerina Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
     <scm>
-        <connection>scm:https://github.com/wso2/message-broker.git</connection>
-        <developerConnection>scm:git:https://github.com/wso2/message-broker.git</developerConnection>
-        <url>https://github.com/wso2/message-broker.git</url>
+        <connection>scm:https://github.com/ballerina-platform/ballerina-message-broker.git</connection>
+        <developerConnection>scm:git:https://github.com/ballerina-platform/ballerina-message-broker.git</developerConnection>
+        <url>https://github.com/ballerina-platform/ballerina-message-broker.git</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -59,47 +59,47 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-amqp</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-coordination</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-rest-runner</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-metrics</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-auth</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.messaging</groupId>
+                <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-cli-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -215,9 +215,9 @@
                 <version>${jaxrs.api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.derby</groupId>
-                <artifactId>derby</artifactId>
-                <version>${derby.version}</version>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
@@ -263,12 +263,11 @@
                         <groupId>org.wso2.eclipse.osgi</groupId>
                         <artifactId>org.eclipse.osgi.services</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${h2.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.swagger</groupId>
@@ -310,10 +309,11 @@
                 <version>${jcommander.version}</version>
             </dependency>
             <dependency>
-                <groupId>net.minidev</groupId>
-                <artifactId>json-smart</artifactId>
-                <version>${json.smart.version}</version>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -353,13 +353,13 @@
         <geronimo-jms_1.1_spec.version>1.1.0.wso2v1</geronimo-jms_1.1_spec.version>
         <javacc.plugin.version>2.6</javacc.plugin.version>
         <maven.checkstyleplugin.excludes>
-            **org/wso2/broker/core/selector/generated/*,
+            **io/ballerina/messaging/broker/core/selector/generated/*,
             **/gen/**/*
         </maven.checkstyleplugin.excludes>
         <carbon.config.version>2.1.5</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
         <hikari.version>2.7.4</hikari.version>
-        <derby.version>10.14.1.0</derby.version>
+        <h2.version>1.4.196</h2.version>
         <msf4j.version>2.5.2</msf4j.version>
         <msf4j.package.import.version.range>[2.5.0, 2.6.0)</msf4j.package.import.version.range>
         <com.ibatis.version>2.1.7.597</com.ibatis.version>
@@ -374,12 +374,11 @@
         <json.jackson.version>2.26</json.jackson.version>
         <build.helper.maven.plugin.version>3.0.0</build.helper.maven.plugin.version>
         <carbon.feature.plugin.version>3.1.3</carbon.feature.plugin.version>
-        <h2.version>1.4.192</h2.version>
         <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
         <guava.package.import.version.range>[20.0,30.0)</guava.package.import.version.range>
         <carbon.metrics.version>2.3.7</carbon.metrics.version>
         <rabbitmq.client.version>5.1.2</rabbitmq.client.version>
         <jcommander.version>1.72</jcommander.version>
-        <json.smart.version>1.1.1</json.smart.version>
+        <gson.version>2.2.4</gson.version>
     </properties>
 </project>

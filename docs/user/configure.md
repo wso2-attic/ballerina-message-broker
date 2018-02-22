@@ -15,11 +15,14 @@ These configurations are defined under the namespace `wso2.broker`.
 
 | Config                      | Default Value                          | Description                                   |
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
-| queueInMemoryCacheLimit     | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. | 
-| datasource:url              | jdbc:derby:database                    | Database URL.                                 |
+| nonDurableQueueMaxDepth     | 10000                                  | Maximum number of messages kept in a non-durable queue. Increasing this number can increase the memory consumption. | 
+| durableQueueInMemoryCacheLimit | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. | 
+| deliveryTask:workerCount    | 5                                      | Number of concurrent workers used to process the delivery tasks. |
+| deliveryTask:idleTaskDelay  | 50                                     | The time that the delivery task will wait when the queue is empty or no consumers are available for message delivery in milliseconds.  |
+| datasource:url              | jdbc:h2:./database/MB_DB               | Database URL.                                 |
 | database:user               | root                                   | Database username                             |
 | database:password           | root                                   | Database password.                            |
-| authenticator:loginModule   | org.wso2.broker.core.security.authentication.jaas.BrokerLoginModule          | JAAS login module used to authenticate users. |
+| authenticator:loginModule   | io.ballerina.messaging.broker.core .security.authentication.jaas.BrokerLoginModule | JAAS login module used to authenticate users. |
 
 ### AMQP transport configurations
 
@@ -51,7 +54,7 @@ These configurations are defined under the namespace `wso2.broker.failover`.
 | Config                                   | Default Value                 | Description                                                                              |
 |------------------------------------------|-------------------------------|------------------------------------------------------------------------------------------|
 | enabled                                  | false                         | Whether or not fail-over is enabled                                                      |
-| strategy                                 | org.wso2.broker.coordination. rdbms.RdbmsHaStrategy | The high availability strategy to use to provide fail-over functionality                 |
+| strategy                                 | io.ballerina.messaging.broker.coordination. rdbms.RdbmsHaStrategy | The high availability strategy to use to provide fail-over functionality                 |
 | options:heartbeatInterval                | 5000                          | The interval, in milliseconds, at which nodes in the fail-over group update the database (for RdbmsHaStrategy) |
 | options:coordinatorEntryCreationWaitTime | 3000                          | The interval, in milliseconds, to wait prior to confirming election as coordinator (for RdbmsHaStrategy) |
 
