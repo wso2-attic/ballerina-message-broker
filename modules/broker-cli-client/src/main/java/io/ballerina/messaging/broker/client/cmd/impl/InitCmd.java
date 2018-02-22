@@ -25,6 +25,8 @@ import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
+import java.util.Objects;
+
 /**
  * Representation of the broker client initialization command.
  */
@@ -41,9 +43,8 @@ public class InitCmd extends AbstractCmd {
     @Parameter(names = { "--username", "-u" })
     private String username = Constants.DEFAULT_USERNAME;
 
-    @Parameter(names = { "--password", "-p" },
-               password = true)
-    private String password = Constants.DEFAULT_PASSWORD;
+    @Parameter(names = { "--password", "-p" }, description = "Password", password = true)
+    private String password = null;
 
     public InitCmd(String rootCommand) {
         super(rootCommand);
@@ -55,6 +56,11 @@ public class InitCmd extends AbstractCmd {
             processHelpLogs();
             return;
         }
+        if (Objects.isNull(password)) {
+            ERR_STREAM.println("Password is not provided, using the default password (admin)");
+            password = Constants.DEFAULT_PASSWORD;
+        }
+
         Configuration configuration = new Configuration(hostname, port, username, password);
         Utils.createConfigurationFile(configuration);
 
