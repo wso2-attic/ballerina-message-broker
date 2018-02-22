@@ -28,7 +28,7 @@ import java.io.PrintStream;
  */
 public interface ResponseFormatter {
 
-    PrintStream OUT_STREAM = System.err;
+    PrintStream OUT_STREAM = System.out;
 
     /**
      * Handle error messages, create {@link BrokerClientException} and throw it.

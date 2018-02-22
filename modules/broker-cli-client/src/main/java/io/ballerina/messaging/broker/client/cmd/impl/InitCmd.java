@@ -60,7 +60,7 @@ public class InitCmd extends AbstractCmd {
 
         String message = "Initialized Broker CLI client with hostname: " + hostname + ", port: " + port + ", username: "
                 + username;
-        OUT_STREAM.println(message);
+        ERR_STREAM.println(message);
     }
 
     @Override

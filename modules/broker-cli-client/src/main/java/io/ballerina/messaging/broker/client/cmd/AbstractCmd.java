@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public abstract class AbstractCmd implements MBClientCmd {
 
-    protected static final PrintStream OUT_STREAM = System.err;
+    protected static final PrintStream ERR_STREAM = System.err;
 
     protected String rootCommand;
 
@@ -70,7 +70,7 @@ public abstract class AbstractCmd implements MBClientCmd {
         appendChildCommandsInfo(selfJCommander, sb);
         appendFlagsInfo(selfJCommander, sb);
         appendGlobalFlagsInfo(sb);
-        OUT_STREAM.println(sb.toString());
+        ERR_STREAM.println(sb.toString());
     }
 
     /**

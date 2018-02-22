@@ -38,7 +38,7 @@ public class ListCmdTest extends CliTestParent {
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
     }
 
     @Test(groups = "StreamReading",
@@ -50,6 +50,6 @@ public class ListCmdTest extends CliTestParent {
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
     }
 }
