@@ -23,11 +23,14 @@ import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.http.HttpClient;
 import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
+import io.ballerina.messaging.broker.client.output.ResponseFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
-import io.ballerina.messaging.broker.client.utils.BrokerClientException;
+import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.utils.Utils;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
+
+import java.net.HttpURLConnection;
+
+import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
  * Command representing MB exchange deletion.
@@ -67,13 +70,11 @@ public class DeleteExchangeCmd extends DeleteCmd {
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, "DELETE");
 
         // handle response
-        try {
-            JSONParser jsonParser = new JSONParser(JSONParser.MODE_PERMISSIVE);
-            OUT_STREAM.println(jsonParser.parse(response.getPayload()).toString());
-        } catch (ParseException e) {
-            BrokerClientException parseException = new BrokerClientException();
-            parseException.addMessage("error while parsing broker response for exchange deletion" + e.getMessage());
-            throw parseException;
+        if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
+            Message message = buildResponseMessage(response, "Exchange deleted successfully");
+            ResponseFormatter.printMessage(message);
+        } else {
+            ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
         }
 
     }

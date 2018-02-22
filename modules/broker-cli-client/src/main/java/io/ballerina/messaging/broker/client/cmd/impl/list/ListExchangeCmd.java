@@ -20,14 +20,19 @@ package io.ballerina.messaging.broker.client.cmd.impl.list;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.google.gson.Gson;
 import io.ballerina.messaging.broker.client.http.HttpClient;
 import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
+import io.ballerina.messaging.broker.client.output.ResponseFormatter;
+import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
-import io.ballerina.messaging.broker.client.utils.BrokerClientException;
+import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.utils.Utils;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
+
+import java.net.HttpURLConnection;
+
+import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
  * Command representing MB exchange information retrieval.
@@ -65,13 +70,19 @@ public class ListExchangeCmd extends ListCmd {
         HttpResponse response = httpClient.sendHttpRequest(new HttpRequest(urlSuffix + exchangeName), "GET");
 
         // handle data processing
-        try {
-            JSONParser jsonParser = new JSONParser(JSONParser.MODE_PERMISSIVE);
-            OUT_STREAM.println(jsonParser.parse(response.getPayload()).toString());
-        } catch (ParseException e) {
-            BrokerClientException parseException = new BrokerClientException();
-            parseException.addMessage("error while parsing broker response " + e.getMessage());
-            throw parseException;
+        ResponseFormatter responseFormatter = new TableFormatter();
+
+        if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
+            Gson gson = new Gson();
+            Exchange[] exchanges;
+            if (exchangeName.isEmpty()) {
+                exchanges = gson.fromJson(response.getPayload(), Exchange[].class);
+            } else {
+                exchanges = new Exchange[] { gson.fromJson(response.getPayload(), Exchange.class) };
+            }
+            responseFormatter.printExchanges(exchanges);
+        } else {
+            ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
         }
 
     }

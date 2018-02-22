@@ -73,4 +73,4 @@ $JAVACMD \
     $JAVA_OPTS \
     -classpath "$MESSAGE_BROKER_CLASSPATH" \
     -Dclient.cli.conf="$MESSAGE_BROKER_HOME/conf/cli-config.yaml" \
-    io.ballerina.messaging.broker.client.Main "$@"
+    io.ballerina.messaging.broker.client.Main "$0" "$@"
