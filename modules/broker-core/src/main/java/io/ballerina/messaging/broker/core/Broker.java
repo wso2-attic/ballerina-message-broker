@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -34,6 +35,7 @@ import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
 import io.ballerina.messaging.broker.core.rest.api.ExchangesApi;
 import io.ballerina.messaging.broker.core.rest.api.QueuesApi;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
+import io.ballerina.messaging.broker.core.task.TaskExecutorService;
 import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,7 @@ import org.wso2.carbon.metrics.core.MetricService;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ThreadFactory;
 import javax.sql.DataSource;
 
 /**
@@ -72,12 +75,8 @@ public final class Broker {
             metricManager = new NullBrokerMetricManager();
         }
 
-        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
-                                                                                  BrokerConfiguration.class);
-        DataSource dataSource = startupContext.getService(DataSource.class);
-        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
-        this.messagingEngine = new MessagingEngine(storeFactory, metricManager);
+        this.messagingEngine = createMessagingEngine(startupContext);
+
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new QueuesApi(this), new ExchangesApi(this));
         startupContext.registerService(Broker.class, this);
@@ -89,6 +88,25 @@ public final class Broker {
             brokerHelper = new HaEnabledBrokerHelper();
         }
     }
+
+    private MessagingEngine createMessagingEngine(StartupContext startupContext) throws Exception {
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
+                                                                                  BrokerConfiguration.class);
+
+        DataSource dataSource = startupContext.getService(DataSource.class);
+        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
+        return new MessagingEngine(storeFactory, metricManager, createTaskExecutorService(configuration));
+    }
+
+    private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerConfiguration configuration) {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageDeliveryTaskThreadPool-%d")
+                                                                .build();
+        int workerCount = Integer.parseInt(configuration.getDeliveryTask().getWorkerCount());
+        int idleTaskDelay = Integer.parseInt(configuration.getDeliveryTask().getIdleTaskDelay());
+        return new TaskExecutorService<>(workerCount, idleTaskDelay, threadFactory);
+    }
+
 
     public void publish(Message message) throws BrokerException {
         messagingEngine.publish(message);
