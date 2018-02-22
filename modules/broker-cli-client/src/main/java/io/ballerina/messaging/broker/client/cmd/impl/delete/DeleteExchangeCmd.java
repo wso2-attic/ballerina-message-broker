@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.resources.Message;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
 import java.net.HttpURLConnection;
@@ -59,8 +60,7 @@ public class DeleteExchangeCmd extends DeleteCmd {
 
         Configuration configuration = Utils.readConfigurationFile();
         HttpClient httpClient = new HttpClient(configuration);
-        String urlSuffix = "exchanges/";
-        HttpRequest httpRequest = new HttpRequest(urlSuffix + exchangeName);
+        HttpRequest httpRequest = new HttpRequest(Constants.EXCHANGES_URL_PARAM + exchangeName);
 
         if (ifUnused) {
             httpRequest.setQueryParameters("?ifUnused=true");

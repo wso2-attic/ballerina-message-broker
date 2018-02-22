@@ -27,6 +27,7 @@ import io.ballerina.messaging.broker.client.output.ResponseFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.resources.Queue;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
 import java.net.HttpURLConnection;
@@ -63,12 +64,12 @@ public class CreateQueueCmd extends CreateCmd {
 
         Configuration configuration = Utils.readConfigurationFile();
         HttpClient httpClient = new HttpClient(configuration);
-        String urlSuffix = "queues/";
 
         Queue queue = new Queue(queueName, autoDelete, durable);
 
         // do POST
-        HttpResponse response = httpClient.sendHttpRequest(new HttpRequest(urlSuffix, queue.getAsJsonString()), "POST");
+        HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM, queue.getAsJsonString());
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "POST");
 
         // handle response
         if (response.getStatusCode() == HttpURLConnection.HTTP_CREATED) {

@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.resources.Message;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
 import java.net.HttpURLConnection;
@@ -63,8 +64,7 @@ public class DeleteQueueCmd extends DeleteCmd {
 
         Configuration configuration = Utils.readConfigurationFile();
         HttpClient httpClient = new HttpClient(configuration);
-        String urlSuffix = "queues/";
-        HttpRequest httpRequest = new HttpRequest(urlSuffix + queueName);
+        HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName);
 
         httpRequest.setQueryParameters("?ifUnused=" + String.valueOf(ifUnused) + "&ifEmpty=" + String.valueOf(ifEmpty));
 
