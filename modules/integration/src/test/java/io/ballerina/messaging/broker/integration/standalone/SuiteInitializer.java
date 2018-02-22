@@ -45,6 +45,9 @@ import org.testng.annotations.Parameters;
 import java.net.URL;
 import javax.sql.DataSource;
 
+/**
+ * class Suite Initializer.
+ */
 public class SuiteInitializer {
     /**
      * Class logger.

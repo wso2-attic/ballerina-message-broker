@@ -19,6 +19,9 @@
 
 package io.ballerina.messaging.broker.integration.util;
 
+/**
+ * Test Constants class.
+ */
 public class TestConstants {
     public static final String KEYSTORE_LOCATION = "src/test/resources/security/keystore.jks";
     public static final String TRUST_STORE_LOCATION = "src/test/resources/security/client-truststore.jks";

@@ -24,7 +24,7 @@ package io.ballerina.messaging.broker.amqp;
  */
 public class AmqpServerConfiguration {
     /**
-     * Namespace used in config file
+     * Namespace used in config file.
      */
     public static final String NAMESPACE = "wso2.broker.transport.amqp";
 
@@ -39,7 +39,7 @@ public class AmqpServerConfiguration {
     private SslServerDetails ssl = new SslServerDetails();
 
     /**
-     * Getter for maxRedeliveryCount
+     * Getter for maxRedeliveryCount.
      */
     public String getHostName() {
         return hostName;
@@ -50,7 +50,7 @@ public class AmqpServerConfiguration {
     }
 
     /**
-     * Getter for maxRedeliveryCount
+     * Getter for maxRedeliveryCount.
      */
     public String getMaxRedeliveryCount() {
         return maxRedeliveryCount;
@@ -61,7 +61,7 @@ public class AmqpServerConfiguration {
     }
 
     /**
-     * Getter for channelFlow
+     * Getter for channelFlow.
      */
     public FlowDetails getChannelFlow() {
         return channelFlow;
@@ -102,7 +102,7 @@ public class AmqpServerConfiguration {
         private int highLimit = 1000;
 
         /**
-         * Getter for lowLimit
+         * Getter for lowLimit.
          */
         public int getLowLimit() {
             return lowLimit;
@@ -113,7 +113,7 @@ public class AmqpServerConfiguration {
         }
 
         /**
-         * Getter for highLimit
+         * Getter for highLimit.
          */
         public int getHighLimit() {
             return highLimit;
@@ -174,7 +174,7 @@ public class AmqpServerConfiguration {
         }
 
         /**
-         * Getter for protocol
+         * Getter for protocol.
          */
         public String getProtocol() {
             return protocol;
@@ -220,7 +220,7 @@ public class AmqpServerConfiguration {
         private String certType = "SunX509";
 
         /**
-         * Getter for type
+         * Getter for type.
          */
         public String getType() {
             return type;
@@ -277,7 +277,7 @@ public class AmqpServerConfiguration {
         private String certType = "SunX509";
 
         /**
-         * Getter for type
+         * Getter for type.
          */
         public String getType() {
             return type;

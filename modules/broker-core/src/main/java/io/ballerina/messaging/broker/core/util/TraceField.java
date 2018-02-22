@@ -20,7 +20,7 @@
 package io.ballerina.messaging.broker.core.util;
 
 /**
- * Custom tracing field object
+ * Custom tracing field object.
  */
 public class TraceField {
 

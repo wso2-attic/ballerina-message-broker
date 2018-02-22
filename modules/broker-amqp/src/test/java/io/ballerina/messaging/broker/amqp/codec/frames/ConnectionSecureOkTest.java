@@ -24,6 +24,9 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+/**
+ * Test class for Connection Secure Ok.
+ */
 public class ConnectionSecureOkTest {
 
     @Test

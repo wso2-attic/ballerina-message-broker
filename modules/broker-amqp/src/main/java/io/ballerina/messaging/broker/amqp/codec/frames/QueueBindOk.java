@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AMQP frame for queue.bind-ok
+ * AMQP frame for queue.bind-ok.
  * Parameter Summary:
  *     No parameters
  */

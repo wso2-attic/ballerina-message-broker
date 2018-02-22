@@ -30,6 +30,9 @@ import org.testng.annotations.Test;
 
 import java.util.stream.IntStream;
 
+/**
+ * Test class for Channel Flow Manager.
+ */
 public class ChannelFlowManagerTest {
 
     private ChannelFlowManager channelFlowManager;

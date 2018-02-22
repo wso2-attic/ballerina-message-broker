@@ -34,6 +34,9 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 
+/**
+ * Test Topic Subscriber.
+ */
 public class TopicSubscriberTest {
 
     @Parameters({ "broker-port"})

@@ -29,7 +29,7 @@ import javax.jms.TopicConnectionFactory;
 import javax.naming.InitialContext;
 
 /**
- * Class for testing client connection authentication
+ * Class for testing client connection authentication.
  */
 public class AuthenticationTest {
 

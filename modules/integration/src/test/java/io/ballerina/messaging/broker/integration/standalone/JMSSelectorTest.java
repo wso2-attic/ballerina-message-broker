@@ -36,6 +36,9 @@ import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+/**
+ * Test class for JMS Selector.
+ */
 public class JMSSelectorTest {
 
     @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})

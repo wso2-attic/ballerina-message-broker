@@ -57,7 +57,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Test queues admin service api
+ * Test queues admin service api.
  */
 public class QueuesRestApiTest {
 

@@ -119,7 +119,7 @@ public class AmqpChannel {
     private final TraceField traceChannelIdField;
 
     /**
-     * Max window size
+     * Max window size.
      */
     private int prefetchCount;
 
@@ -323,7 +323,7 @@ public class AmqpChannel {
     }
 
     /**
-     * Indicate if the channel is closed by client
+     * Indicate if the channel is closed by client.
      * @return true if channel is closed, false otherwise
      */
     public boolean isClosed() {
@@ -331,7 +331,7 @@ public class AmqpChannel {
     }
 
     /**
-     * Indicate if client enforced flow control is enabled
+     * Indicate if client enforced flow control is enabled.
      *
      * @return true if flow is enabled. false otherwise
      */
@@ -340,7 +340,7 @@ public class AmqpChannel {
     }
 
     /**
-     * Getter for flowManager
+     * Getter for flowManager.
      */
     public ChannelFlowManager getFlowManager() {
         return flowManager;

@@ -50,7 +50,7 @@ public final class QueueHandler {
     private final Queue redeliveryQueue;
 
     /**
-     * Used to send metric signals related to queue handler
+     * Used to send metric signals related to queue handler.
      */
     private final BrokerMetricManager metricManager;
 

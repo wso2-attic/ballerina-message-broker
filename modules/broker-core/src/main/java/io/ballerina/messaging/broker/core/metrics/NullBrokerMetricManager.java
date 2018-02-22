@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.core.metrics;
 import org.wso2.carbon.metrics.core.Timer.Context;
 
 /**
- * Null object implementation for {@link BrokerMetricManager}
+ * Null object implementation for {@link BrokerMetricManager}.
  */
 public class NullBrokerMetricManager implements BrokerMetricManager {
     private static NullContext nullContext = new NullContext();
@@ -63,7 +63,7 @@ public class NullBrokerMetricManager implements BrokerMetricManager {
     }
 
     /**
-     * Null object representation for Timer context
+     * Null object representation for Timer context.
      */
     private static class NullContext implements Context {
 

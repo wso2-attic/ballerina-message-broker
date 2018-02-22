@@ -20,7 +20,7 @@
 package io.ballerina.messaging.broker.core;
 
 /**
- * Abstract class to represent an underlying queue for the broker
+ * Abstract class to represent an underlying queue for the broker.
  */
 public abstract class Queue {
 

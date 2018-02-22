@@ -49,7 +49,7 @@ public class UserStoreManagerImpl implements UserStoreManager {
             LoggerFactory.getLogger(UserStoreManagerImpl.class);
 
     /**
-     * Store the map of userRegistry
+     * Store the map of userRegistry.
      */
     private static Map<String, User> userRegistry = new ConcurrentHashMap<>();
 

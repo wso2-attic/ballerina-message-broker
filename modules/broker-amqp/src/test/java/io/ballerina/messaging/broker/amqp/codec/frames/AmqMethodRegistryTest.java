@@ -25,6 +25,9 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+/**
+ * Test class for AMQ Method Registry.
+ */
 public class AmqMethodRegistryTest {
 
     AuthenticationStrategy authenticationStrategy;

@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Registry object which contains all the queues of the broker
+ * Registry object which contains all the queues of the broker.
  */
 public final class QueueRegistry {
 

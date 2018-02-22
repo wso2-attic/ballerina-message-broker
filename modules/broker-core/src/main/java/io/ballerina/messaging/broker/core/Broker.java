@@ -56,7 +56,7 @@ public final class Broker {
 
     private final MessagingEngine messagingEngine;
     /**
-     * Used to manage metrics related to broker
+     * Used to manage metrics related to broker.
      */
     private final BrokerMetricManager metricManager;
 

@@ -26,6 +26,9 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+/**
+ * Test class for Exchange Declare.
+ */
 public class ExchangeDeclareTest {
     @Test
     public void testEncodeDecode() throws Exception {

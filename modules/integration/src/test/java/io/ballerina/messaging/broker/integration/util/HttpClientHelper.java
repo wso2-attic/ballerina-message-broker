@@ -27,6 +27,9 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+/**
+ * HTTP Client Helper class.
+ */
 public class HttpClientHelper {
 
     public static String getRestApiBasePath(String brokerHost, String port) throws URISyntaxException {

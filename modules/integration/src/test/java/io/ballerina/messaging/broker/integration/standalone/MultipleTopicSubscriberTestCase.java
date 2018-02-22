@@ -40,6 +40,9 @@ import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+/**
+ * Test class for Multiple Topic Subscribe.
+ */
 public class MultipleTopicSubscriberTestCase {
     private static final Logger LOGGER = LoggerFactory.getLogger(MultipleTopicSubscriberTestCase.class);
 

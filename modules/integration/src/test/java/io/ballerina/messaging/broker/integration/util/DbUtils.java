@@ -31,6 +31,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
+/**
+ * Db Utils Class.
+ */
 public class DbUtils {
 
     private static final String DATABASE_URL = "jdbc:h2:mem:mbDB;DB_CLOSE_DELAY=-1";

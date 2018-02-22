@@ -36,6 +36,9 @@ import org.testng.annotations.Test;
 import java.util.concurrent.ThreadFactory;
 import javax.sql.DataSource;
 
+/**
+ * Test class for Messaging Engine.
+ */
 public class MessagingEngineTest {
 
     private MessagingEngine messagingEngine;

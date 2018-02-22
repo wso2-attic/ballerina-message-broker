@@ -45,7 +45,7 @@ public class StoreFactory {
     }
 
     /**
-     * Create exchange registry
+     * Create exchange registry.
      * @return ExchangeRegistry object
      */
     public ExchangeRegistry getExchangeRegistry() {
@@ -53,7 +53,7 @@ public class StoreFactory {
     }
 
     /**
-     * Create message registry
+     * Create message registry.
      * @return SharedMessageStore object
      */
     public SharedMessageStore getSharedMessageStore(int bufferSize, int maxDbBatchSize) {
@@ -61,7 +61,7 @@ public class StoreFactory {
     }
 
     /**
-     * Create queue registry
+     * Create queue registry.
      * @return QueueRegistry object
      */
     public QueueRegistry getQueueRegistry(SharedMessageStore messageStore) throws BrokerException {

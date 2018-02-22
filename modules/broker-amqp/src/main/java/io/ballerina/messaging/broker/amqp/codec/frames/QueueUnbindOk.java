@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP frame for queue.unbind-ok
+ * AMQP frame for queue.unbind-ok.
  * Parameter Summary:
  *     No parameters
  */

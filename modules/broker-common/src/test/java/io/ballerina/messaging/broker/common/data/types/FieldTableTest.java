@@ -29,6 +29,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Tests for AMQP FieldTable data.
+ */
 public class FieldTableTest {
 
     private ShortString testKey = ShortString.parseString("key");

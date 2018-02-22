@@ -32,11 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AMQP content frame
+ * AMQP content frame.
  */
 public class ContentFrame extends GeneralFrame {
     /**
-     * Class logger
+     * Class logger.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ContentFrame.class);
 

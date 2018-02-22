@@ -36,6 +36,9 @@ import static io.ballerina.messaging.broker.core.store.DbOperation.DbOpType.DETA
 import static io.ballerina.messaging.broker.core.store.DbOperation.DbOpType.INSERT_MESSAGE;
 import static io.ballerina.messaging.broker.core.store.DbOperation.DbOpType.NO_OP;
 
+/**
+ * Test class for Db Event Matcher.
+ */
 public class DbEventMatcherTest {
 
     /**

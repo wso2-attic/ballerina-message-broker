@@ -34,6 +34,9 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
+/**
+ * Test class for Dead Letter Channel.
+ */
 public class DeadLetterChannelTest {
 
     @Parameters({ "broker-hostname", "broker-port", "admin-username", "admin-password" })

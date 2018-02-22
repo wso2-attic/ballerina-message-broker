@@ -24,7 +24,7 @@ import org.wso2.carbon.config.ConfigurationException;
 import org.wso2.carbon.config.provider.ConfigProvider;
 
 /**
- * Adapter class to handle Carbon Config provider
+ * Adapter class to handle Carbon Config provider.
  */
 class CarbonConfigAdapter implements ConfigProvider {
     private BrokerConfigProvider configProvider;

@@ -26,6 +26,9 @@ hs_err_pid*
 # generated files
 target
 /gen
+.project
+.classpath
+.settings
 
 # mac
 .DS_Store

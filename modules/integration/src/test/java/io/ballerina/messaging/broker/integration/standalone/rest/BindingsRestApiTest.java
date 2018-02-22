@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Tests related to bindings api
+ * Tests related to bindings api.
  */
 public class BindingsRestApiTest {
 
