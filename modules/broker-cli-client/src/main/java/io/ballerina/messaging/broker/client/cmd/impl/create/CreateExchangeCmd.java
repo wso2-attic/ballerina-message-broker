@@ -29,6 +29,8 @@ import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
+import java.net.HttpURLConnection;
+
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
@@ -70,7 +72,7 @@ public class CreateExchangeCmd extends CreateCmd {
                 .sendHttpRequest(new HttpRequest(urlSuffix, exchange.getAsJsonString()), "POST");
 
         // handle response
-        if (response.getStatusCode() == 201) {
+        if (response.getStatusCode() == HttpURLConnection.HTTP_CREATED) {
             Message message = buildResponseMessage(response, "Exchange created successfully");
             ResponseFormatter.printMessage(message);
         } else {

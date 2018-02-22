@@ -28,6 +28,8 @@ import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
+import java.net.HttpURLConnection;
+
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
@@ -68,7 +70,7 @@ public class DeleteExchangeCmd extends DeleteCmd {
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, "DELETE");
 
         // handle response
-        if (response.getStatusCode() == 200) {
+        if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             Message message = buildResponseMessage(response, "Exchange deleted successfully");
             ResponseFormatter.printMessage(message);
         } else {

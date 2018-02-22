@@ -30,6 +30,8 @@ import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
+import java.net.HttpURLConnection;
+
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
@@ -70,7 +72,7 @@ public class ListExchangeCmd extends ListCmd {
         // handle data processing
         ResponseFormatter responseFormatter = new TableFormatter();
 
-        if (response.getStatusCode() == 200) {
+        if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             Gson gson = new Gson();
             Exchange[] exchanges;
             if (exchangeName.isEmpty()) {
