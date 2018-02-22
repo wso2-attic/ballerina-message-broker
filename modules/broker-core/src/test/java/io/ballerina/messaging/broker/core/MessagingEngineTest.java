@@ -19,18 +19,21 @@
 
 package io.ballerina.messaging.broker.core;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
 import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
+import io.ballerina.messaging.broker.core.task.TaskExecutorService;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.ThreadFactory;
 import javax.sql.DataSource;
 
 public class MessagingEngineTest {
@@ -48,7 +51,11 @@ public class MessagingEngineTest {
         DataSource dataSource = DbUtil.getDataSource();
         NullBrokerMetricManager metricManager = new NullBrokerMetricManager();
         StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, new BrokerConfiguration());
-        messagingEngine = new MessagingEngine(storeFactory, metricManager);
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageDeliveryTaskThreadPool-%d")
+                                                                .build();
+        messagingEngine = new MessagingEngine(storeFactory, metricManager, new TaskExecutorService<>(5,
+                                                                                                     100,
+                                                                                                     threadFactory));
     }
 
     @BeforeMethod

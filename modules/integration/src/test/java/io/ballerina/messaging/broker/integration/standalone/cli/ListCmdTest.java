@@ -22,6 +22,8 @@ import io.ballerina.messaging.broker.client.Main;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
+
 /**
  * Test class containing tests of 'list' command.
  */
@@ -30,7 +32,7 @@ public class ListCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'list'")
     public void testList() {
-        String[] cmd = { "list" };
+        String[] cmd = { CLI_ROOT_COMMAND, "list" };
         String expectedLog = "a command is expected after 'list'";
         String errorMessage = "error when executing 'list' command";
 
@@ -42,8 +44,8 @@ public class ListCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'list --help'")
     public void testListHelp() {
-        String[] cmd = { "list", "--help" };
-        String expectedLog = "List resource(s) in MB";
+        String[] cmd = { CLI_ROOT_COMMAND, "list", "--help" };
+        String expectedLog = "Retrieve information on resource(s) in the Broker";
         String errorMessage = "error when executing 'list --help' command";
 
         Main.main(cmd);

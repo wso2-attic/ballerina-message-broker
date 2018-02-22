@@ -21,7 +21,8 @@ Please follow the steps below to build message broker from source code.
 .
 ├── bin
 │   ├── broker.sh
-│   └── broker.bat
+│   ├── broker.bat
+│   └── broker-admin.sh
 ├── conf
 │   ├── admin-service-transports.yaml
 │   ├── broker.yaml
@@ -41,6 +42,7 @@ Please follow the steps below to build message broker from source code.
 
 - **bin/broker.sh** - executable used to run message broker
 - **bin/broker.bat** - windows executable used to run message broker
+- **bin/broker-admin.sh** - executable used to start message brokers cli client
 - **conf/admin-service-transports.yaml** - admin rest service related configuration file
 - **conf/broker.yaml** - main configuration file
 - **conf/log4j.properties** - logging configuration file

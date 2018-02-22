@@ -25,26 +25,24 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 /**
  * Command representing the resource creation.
  */
-@Parameters(commandDescription = "Create MB resources")
+@Parameters(commandDescription = "Create a resource in the Broker with parameters")
 public class CreateCmd extends AbstractCmd {
+
+    public CreateCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
         if (!help) {
-            throw Utils.createUsageException("a command is expected after 'create'");
+            throw Utils.createUsageException("a command is expected after 'create'", rootCommand);
         }
         processHelpLogs();
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("Create a resource in MB with parameters\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb create exchange [exchange-name] [options]*\n");
-        out.append("  mb create queue [queue-name] [options]*\n");
+        out.append("  " + rootCommand + " create [command]\n");
     }
 }

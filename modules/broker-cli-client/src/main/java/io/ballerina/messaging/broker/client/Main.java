@@ -21,23 +21,16 @@ package io.ballerina.messaging.broker.client;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.MissingCommandException;
 import com.beust.jcommander.ParameterException;
+import io.ballerina.messaging.broker.client.cmd.CommandFactory;
 import io.ballerina.messaging.broker.client.cmd.MBClientCmd;
-import io.ballerina.messaging.broker.client.cmd.impl.InitCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.RootCmd;
-import io.ballerina.messaging.broker.client.cmd.impl.create.CreateCmd;
-import io.ballerina.messaging.broker.client.cmd.impl.create.CreateExchangeCmd;
-import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteCmd;
-import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteExchangeCmd;
-import io.ballerina.messaging.broker.client.cmd.impl.list.ListCmd;
-import io.ballerina.messaging.broker.client.cmd.impl.list.ListExchangeCmd;
 import io.ballerina.messaging.broker.client.utils.BrokerClientException;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
 import java.io.PrintStream;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -49,20 +42,32 @@ public class Main {
 
     private static PrintStream outStream = System.err;
 
-    /**
-     * This map will contain each Command instance against its JCommander instance.
-     * Map will get populated at the time of building the parser tree and will be referred at the traversal.
-     */
-    private static Map<JCommander, MBClientCmd> commandsMap = new HashMap<>();
 
     public static void main(String... argv) {
 
+        // exit if no args
+        if (argv.length == 0) {
+            return;
+        }
+        String rootCommand = argv[0];
+
+
+        // if no command is given, display root level help
+        if (argv.length == 1) {
+            argv[0] = "--help";
+        }
+
+        // remove the root command and pass following arguments forward
+        if (argv.length > 1) {
+            argv = Arrays.copyOfRange(argv, 1, argv.length);
+        }
+
         // 1. Build the parse tree
-        JCommander parserTreeRoot = buildCommanderTree();
+        JCommander parserTreeRoot = buildCommanderTree(rootCommand);
 
         try {
             // 2. Parse the input
-            parseInput(parserTreeRoot, argv);
+            parseInput(parserTreeRoot, rootCommand, argv);
 
             // 3. Traverse the parse tree and execute the matched command
             findLeafCommand(parserTreeRoot).execute();
@@ -75,31 +80,37 @@ public class Main {
     /**
      * Build the parser tree with JCommander instance for each command.
      *
+     * Make sure to add 'one and only one' MBClientCmd instance for each JCommander instance.
+     *
+     * @param rootCommand root command used in the script.
      * @return root JCommander of the tree.
      */
-    private static JCommander buildCommanderTree() {
+    private static JCommander buildCommanderTree(String rootCommand) {
         // Building the parser tree
+        CommandFactory commandFactory = new CommandFactory(rootCommand);
         // root command
-        RootCmd rootCmd = new RootCmd();
+        RootCmd rootCmd = commandFactory.createRootCommand();
         JCommander jCommanderRoot = new JCommander(rootCmd);
-
-        commandsMap.put(jCommanderRoot, rootCmd);
+        rootCmd.setSelfJCommander(jCommanderRoot);
 
         // add to root jCommander
-        addChildCommand(jCommanderRoot, Constants.CMD_INIT, new InitCmd());
-        JCommander jCommanderList = addChildCommand(jCommanderRoot, Constants.CMD_LIST, new ListCmd());
-        JCommander jCommanderCreate = addChildCommand(jCommanderRoot, Constants.CMD_CREATE, new CreateCmd());
-        JCommander jCommanderDelete = addChildCommand(jCommanderRoot, Constants.CMD_DELETE, new DeleteCmd());
+        addChildCommand(jCommanderRoot, Constants.CMD_INIT, commandFactory.createInitCommand());
+        JCommander jCommanderList = addChildCommand(jCommanderRoot, Constants.CMD_LIST,
+                commandFactory.createListCommand());
+        JCommander jCommanderCreate = addChildCommand(jCommanderRoot, Constants.CMD_CREATE,
+                commandFactory.createCreateCommand());
+        JCommander jCommanderDelete = addChildCommand(jCommanderRoot, Constants.CMD_DELETE,
+                commandFactory.createDeleteCommand());
 
         // secondary level commands
         // add list sub-commands
-        addChildCommand(jCommanderList, Constants.CMD_EXCHANGE, new ListExchangeCmd());
+        addChildCommand(jCommanderList, Constants.CMD_EXCHANGE, commandFactory.createListExchangeCommand());
 
         // add create sub-commands
-        addChildCommand(jCommanderCreate, Constants.CMD_EXCHANGE, new CreateExchangeCmd());
+        addChildCommand(jCommanderCreate, Constants.CMD_EXCHANGE, commandFactory.createCreateExchangeCommand());
 
         // add delete sub-commands
-        addChildCommand(jCommanderDelete, Constants.CMD_EXCHANGE, new DeleteExchangeCmd());
+        addChildCommand(jCommanderDelete, Constants.CMD_EXCHANGE, commandFactory.createDeleteExchangeCommand());
 
         return jCommanderRoot;
     }
@@ -111,18 +122,19 @@ public class Main {
      * input.
      *
      * @param jCommanderRoot root node of the tree.
+     * @param rootCommand root command used in the script.
      * @param argv           input as a array of Strings.
      */
-    private static void parseInput(JCommander jCommanderRoot, String... argv) {
+    private static void parseInput(JCommander jCommanderRoot, String rootCommand, String... argv) {
         try {
             // Parse
             jCommanderRoot.parse(argv);
         } catch (MissingCommandException e) {
             String errorMsg = "unknown command '" + e.getUnknownCommand() + "'";
-            throw Utils.createUsageException(errorMsg);
+            throw Utils.createUsageException(errorMsg, rootCommand);
         } catch (ParameterException e) {
             // todo: consider whether we can make the error logs more specific
-            throw Utils.createUsageException(e.getMessage());
+            throw Utils.createUsageException(e.getMessage(), rootCommand);
         }
     }
 
@@ -138,7 +150,7 @@ public class Main {
     private static MBClientCmd findLeafCommand(JCommander jCommander) {
         String commandText = jCommander.getParsedCommand();
         if (Objects.isNull(commandText)) {
-            return commandsMap.get(jCommander);
+            return (MBClientCmd) jCommander.getObjects().get(0);
         }
         return findLeafCommand(jCommander.getCommands().get(commandText));
     }
@@ -160,20 +172,12 @@ public class Main {
             MBClientCmd commandObject) {
         parentCommander.addCommand(commandName, commandObject);
         JCommander childCommander = parentCommander.getCommands().get(commandName);
-        commandsMap.put(childCommander, commandObject);
+        commandObject.setSelfJCommander(childCommander);
         return childCommander;
     }
 
     private static void printBrokerClientException(BrokerClientException e, PrintStream outStream) {
         List<String> errorMessages = e.getMessages();
         errorMessages.forEach(outStream::println);
-    }
-
-    /**
-     * Added for the testing purposes.
-     * Since the commandsMap is static, before each test it should be cleared.
-     */
-    public static void clearCommandsMap() {
-        commandsMap.clear();
     }
 }

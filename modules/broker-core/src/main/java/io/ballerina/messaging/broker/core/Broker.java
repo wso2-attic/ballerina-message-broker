@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -34,10 +35,10 @@ import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
 import io.ballerina.messaging.broker.core.rest.api.ExchangesApi;
 import io.ballerina.messaging.broker.core.rest.api.QueuesApi;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
+import io.ballerina.messaging.broker.core.task.TaskExecutorService;
 import io.ballerina.messaging.broker.core.transaction.BranchFactory;
 import io.ballerina.messaging.broker.core.transaction.BrokerTransactionFactory;
 import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
-import io.ballerina.messaging.broker.core.transaction.Registry;
 import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ThreadFactory;
 import javax.sql.DataSource;
 import javax.transaction.xa.Xid;
 
@@ -70,28 +72,22 @@ public final class Broker {
 
     private BrokerHelper brokerHelper;
 
-    private final Registry transactionRegistry;
-
     private final BrokerTransactionFactory brokerTransactionFactory;
 
     public Broker(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
-        if (Objects.nonNull(metrics)) {
-            metricManager = new DefaultBrokerMetricManager(metrics);
-        } else {
-            metricManager = new NullBrokerMetricManager();
-        }
+        metricManager = getMetricManager(metrics);
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
                                                                                   BrokerConfiguration.class);
         DataSource dataSource = startupContext.getService(DataSource.class);
         StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
-        this.messagingEngine = new MessagingEngine(storeFactory, metricManager);
-
-        transactionRegistry = new Registry();
+        this.messagingEngine = new MessagingEngine(storeFactory, metricManager,
+                                                   createTaskExecutorService(configuration));
         this.brokerTransactionFactory =
-                new BrokerTransactionFactory(new BranchFactory(this, storeFactory), transactionRegistry);
+                new BrokerTransactionFactory(new BranchFactory(this, storeFactory));
+
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new QueuesApi(this), new ExchangesApi(this));
         startupContext.registerService(Broker.class, this);
@@ -103,6 +99,23 @@ public final class Broker {
             brokerHelper = new HaEnabledBrokerHelper();
         }
     }
+
+    private BrokerMetricManager getMetricManager(MetricService metrics) {
+        if (Objects.nonNull(metrics)) {
+            return new DefaultBrokerMetricManager(metrics);
+        } else {
+            return new NullBrokerMetricManager();
+        }
+    }
+
+    private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerConfiguration configuration) {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageDeliveryTaskThreadPool-%d")
+                                                                .build();
+        int workerCount = Integer.parseInt(configuration.getDeliveryTask().getWorkerCount());
+        int idleTaskDelay = Integer.parseInt(configuration.getDeliveryTask().getIdleTaskDelay());
+        return new TaskExecutorService<>(workerCount, idleTaskDelay, threadFactory);
+    }
+
 
     public void publish(Message message) throws BrokerException {
         messagingEngine.publish(message);

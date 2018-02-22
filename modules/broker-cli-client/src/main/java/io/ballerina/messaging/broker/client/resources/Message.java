@@ -11,29 +11,31 @@
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
+ * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
-
-package io.ballerina.messaging.broker.core.transaction;
+package io.ballerina.messaging.broker.client.resources;
 
 /**
- * Factory class to create transaction related objects.
+ * Class to represent the message type responses coming from the Broker REST service.
  */
-public class BrokerTransactionFactory {
+public class Message {
 
-    private final BranchFactory branchFactory;
+    /**
+     * Content (payload) of the message.
+     */
+    private String message;
 
-    private final Registry registry;
-
-    public BrokerTransactionFactory(BranchFactory branchFactory) {
-        this.branchFactory = branchFactory;
-        this.registry = new Registry();
+    public Message(String message) {
+        this.message = message;
     }
 
-    public LocalTransaction createLocalTransaction() {
-        return new LocalTransaction(registry, branchFactory);
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
