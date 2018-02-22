@@ -27,6 +27,8 @@ import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModu
 import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
 import io.ballerina.messaging.broker.common.StartupContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.Principal;
 import java.util.Map;
@@ -43,18 +45,19 @@ import javax.security.auth.login.LoginException;
  */
 public class JaasAuthenticator implements Authenticator {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JaasAuthenticator.class);
+
     @Override
     public void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception {
 
         String jaasConfigPath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_JAAS_CONFIG);
-        UserStoreConnector userStoreConnector = new FileBasedUserStoreConnector();
-        userStoreConnector.initialize(startupContext);
-        startupContext.registerService(UserStoreConnector.class, userStoreConnector);
         if (jaasConfigPath == null || jaasConfigPath.trim().isEmpty()) {
             Object jaasLoginModule = properties.get(BrokerAuthConstants.CONFIG_PROPERTY_JAAS_LOGIN_MODULE);
             if (Objects.nonNull(jaasLoginModule)) {
                 // Add user store for default login module
                 if (jaasLoginModule.toString().equals(UserStoreLoginModule.class.getCanonicalName())) {
+                    UserStoreConnector userStoreConnector = new FileBasedUserStoreConnector();
+                    userStoreConnector.initialize(startupContext);
                     properties.put(BrokerAuthConstants.PROPERTY_USER_STORE_CONNECTOR,
                                    userStoreConnector);
                 }
@@ -68,12 +71,13 @@ public class JaasAuthenticator implements Authenticator {
 
     @Override
     public AuthResult authenticate(String username, char[] password) throws BrokerAuthException {
+        LoginContext loginContext = null;
         try {
             PlainSaslCallbackHandler plainCallbackHandler = new PlainSaslCallbackHandler();
             plainCallbackHandler.setUsername(username);
             plainCallbackHandler.setPassword(password);
-            LoginContext loginContext = new LoginContext(BrokerAuthConstants.BROKER_SECURITY_CONFIG,
-                                                         plainCallbackHandler);
+            loginContext = new LoginContext(BrokerAuthConstants.BROKER_SECURITY_CONFIG,
+                                            plainCallbackHandler);
             loginContext.login();
             String userId = username;
             Set<Principal> principals;
@@ -88,6 +92,14 @@ public class JaasAuthenticator implements Authenticator {
             return new AuthResult(true, userId);
         } catch (LoginException e) {
             throw new BrokerAuthException("Error while authenticating user with login module", e);
+        } finally {
+            if (Objects.nonNull(loginContext)) {
+                try {
+                    loginContext.logout();
+                } catch (LoginException e) {
+                    LOGGER.error("Error while logout from login module", e);
+                }
+            }
         }
     }
 

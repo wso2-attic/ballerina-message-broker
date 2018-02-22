@@ -100,7 +100,6 @@ public class UserStoreLoginModule implements LoginModule {
         if (success) {
             logout();
         } else {
-            success = false;
             cleanAuthInputData();
         }
         return true;

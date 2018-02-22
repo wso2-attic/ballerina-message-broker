@@ -45,8 +45,9 @@ public class AuthManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthManager.class);
 
     private static final String AMQP_PROTOCOL_IDENTIFIER = "AMQP";
-
-    // The name for the amq Java Cryptography Architecture (JCA) provider. This will be used to register Sasl servers
+    /**
+     *  The name for the amq Java Cryptography Architecture (JCA) provider. This will be used to register Sasl servers.
+     */
     private static final String PROVIDER_NAME = "AMQSASLProvider";
     /**
      * Map of SASL Server mechanisms

@@ -32,10 +32,10 @@ import javax.security.sasl.SaslServerFactory;
  */
 public class PlainSaslServerBuilder implements SaslServerBuilder {
 
-    private Authenticator authenticator;
+    private final Map<String, Object> properties = new HashMap<>();
 
     public PlainSaslServerBuilder(Authenticator authenticator) {
-        this.authenticator = authenticator;
+        properties.put(BrokerAuthConstants.PROPERTY_AUTHENTICATOR_INSTANCE, authenticator);
     }
 
     public String getMechanismName() {
@@ -49,8 +49,6 @@ public class PlainSaslServerBuilder implements SaslServerBuilder {
 
     @Override
     public Map<String, ?> getProperties() {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(BrokerAuthConstants.PROPERTY_AUTHENTICATOR_INSTANCE, authenticator);
         return properties;
     }
 

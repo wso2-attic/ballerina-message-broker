@@ -38,7 +38,6 @@ public class PlainSaslServerFactory implements SaslServerFactory {
     public SaslServer createSaslServer(String mechanism, String protocol, String serverName, Map<String, ?> props,
             CallbackHandler cbh) throws SaslException {
         Authenticator authenticator = (Authenticator) props.get(BrokerAuthConstants.PROPERTY_AUTHENTICATOR_INSTANCE);
-
         return (PlainSaslServer.PLAIN_MECHANISM.equals(mechanism)) ?
                 new PlainSaslServer(authenticator) :
                 null;
