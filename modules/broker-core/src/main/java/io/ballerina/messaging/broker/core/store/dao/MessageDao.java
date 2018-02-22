@@ -21,7 +21,7 @@ package io.ballerina.messaging.broker.core.store.dao;
 
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
-import io.ballerina.messaging.broker.core.store.DbOperation;
+import io.ballerina.messaging.broker.core.store.TransactionData;
 
 import java.util.Collection;
 import java.util.Map;
@@ -32,26 +32,12 @@ import java.util.Map;
 public interface MessageDao {
 
     /**
-     * Storage a message in the persistent storage.
-     * 
-     * @param messageList the messages to persist.
-     */
-    void persist(Collection<Message> messageList) throws BrokerException;
-
-    /**
-     * Removes the linkage a messages has with given queue. after the removal if there are links to any other queues
-     * this message should be deleted automatically.
-     * 
-     * @param dbOperations {@link DbOperation} objects which contain the queue names and the message ids to detach.
-     */
-    void detachFromQueue(Collection<DbOperation> dbOperations) throws BrokerException;
-
-    /**
-     * Deletes a given message and its associations to a queues.
+     * Update database with message storing, deleting and detaching from queue operations.
+     * All operations are done in a single transaction.
      *
-     * @param messageId internal message ids
+     * @param transactionData {@link TransactionData} object which transactional operations list
      */
-    void delete(Collection<Long> messageId) throws BrokerException;
+    void persist(TransactionData transactionData) throws BrokerException;
 
     /**
      * Retrieve all messages from a given queue.

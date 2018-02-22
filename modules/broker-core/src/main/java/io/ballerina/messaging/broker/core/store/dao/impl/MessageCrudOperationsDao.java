@@ -26,7 +26,6 @@ import io.ballerina.messaging.broker.core.ContentChunk;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
-import io.ballerina.messaging.broker.core.store.DbOperation;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.wso2.carbon.metrics.core.Timer.Context;
@@ -37,6 +36,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.sql.DataSource;
@@ -132,14 +132,18 @@ class MessageCrudOperationsDao extends BaseDao {
     }
 
     public void detachFromQueue(Connection connection,
-                                Collection<DbOperation> dbOperations) throws BrokerException {
+                                Map<String, List<Long>> detachableMessageMap) throws BrokerException {
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement(RDBMSConstants.PS_DELETE_FROM_QUEUE);
-            for (DbOperation dbOperation : dbOperations) {
-                statement.setLong(1, dbOperation.getMessageId());
-                statement.setString(2, dbOperation.getQueueName());
-                statement.addBatch();
+            for (Map.Entry<String, List<Long>> entry : detachableMessageMap.entrySet()) {
+                String queueName = entry.getKey();
+                List<Long> messageIds = entry.getValue();
+                for (long internalMessageId : messageIds) {
+                    statement.setLong(1, internalMessageId);
+                    statement.setString(2, queueName);
+                    statement.addBatch();
+                }
             }
 
             statement.executeBatch();

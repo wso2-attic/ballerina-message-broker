@@ -36,6 +36,9 @@ import io.ballerina.messaging.broker.core.rest.api.ExchangesApi;
 import io.ballerina.messaging.broker.core.rest.api.QueuesApi;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
 import io.ballerina.messaging.broker.core.task.TaskExecutorService;
+import io.ballerina.messaging.broker.core.transaction.BranchFactory;
+import io.ballerina.messaging.broker.core.transaction.BrokerTransactionFactory;
+import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
 import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +47,10 @@ import org.wso2.carbon.metrics.core.MetricService;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import javax.sql.DataSource;
+import javax.transaction.xa.Xid;
 
 /**
  * Broker API class.
@@ -67,15 +72,21 @@ public final class Broker {
 
     private BrokerHelper brokerHelper;
 
+    private final BrokerTransactionFactory brokerTransactionFactory;
+
     public Broker(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
-        if (Objects.nonNull(metrics)) {
-            metricManager = new DefaultBrokerMetricManager(metrics);
-        } else {
-            metricManager = new NullBrokerMetricManager();
-        }
+        metricManager = getMetricManager(metrics);
 
-        this.messagingEngine = createMessagingEngine(startupContext);
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
+                                                                                  BrokerConfiguration.class);
+        DataSource dataSource = startupContext.getService(DataSource.class);
+        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
+        this.messagingEngine = new MessagingEngine(storeFactory, metricManager,
+                                                   createTaskExecutorService(configuration));
+        this.brokerTransactionFactory =
+                new BrokerTransactionFactory(new BranchFactory(this, storeFactory));
 
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         serviceRunner.deploy(new QueuesApi(this), new ExchangesApi(this));
@@ -89,14 +100,12 @@ public final class Broker {
         }
     }
 
-    private MessagingEngine createMessagingEngine(StartupContext startupContext) throws Exception {
-        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
-                                                                                  BrokerConfiguration.class);
-
-        DataSource dataSource = startupContext.getService(DataSource.class);
-        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
-        return new MessagingEngine(storeFactory, metricManager, createTaskExecutorService(configuration));
+    private BrokerMetricManager getMetricManager(MetricService metrics) {
+        if (Objects.nonNull(metrics)) {
+            return new DefaultBrokerMetricManager(metrics);
+        } else {
+            return new NullBrokerMetricManager();
+        }
     }
 
     private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerConfiguration configuration) {
@@ -121,6 +130,14 @@ public final class Broker {
     public void acknowledge(String queueName, Message message) throws BrokerException {
         messagingEngine.acknowledge(queueName, message);
         metricManager.markAcknowledge();
+    }
+
+    public Set<QueueHandler> prepareEnqueue(Xid xid, Message message) throws BrokerException {
+        return messagingEngine.prepareEnqueue(xid, message);
+    }
+
+    public QueueHandler prepareDequeue(Xid xid, String queueName, Message message) throws BrokerException {
+        return messagingEngine.prepareDequeue(xid, queueName, message);
     }
 
     /**
@@ -215,6 +232,13 @@ public final class Broker {
 
     public Exchange getExchange(String exchangeName) {
         return messagingEngine.getExchange(exchangeName);
+    }
+
+    /**
+     * Start local transaction flow
+     */
+    public LocalTransaction newLocalTransaction() {
+        return brokerTransactionFactory.createLocalTransaction();
     }
 
     private class BrokerHelper {

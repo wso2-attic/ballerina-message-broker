@@ -38,10 +38,13 @@ public class StoreFactory {
     private final BrokerMetricManager metricManager;
     private final BrokerConfiguration configuration;
 
+    private SharedMessageStore sharedMessageStore;
+
     public StoreFactory(DataSource dataSource, BrokerMetricManager metricManager, BrokerConfiguration configuration) {
         daoFactory = new DaoFactory(dataSource, metricManager);
         this.metricManager = metricManager;
         this.configuration = configuration;
+        sharedMessageStore = new SharedMessageStore(daoFactory.createMessageDao(), 32768, 1024);
     }
 
     /**
@@ -56,8 +59,8 @@ public class StoreFactory {
      * Create message registry
      * @return SharedMessageStore object
      */
-    public SharedMessageStore getSharedMessageStore(int bufferSize, int maxDbBatchSize) {
-        return new SharedMessageStore(daoFactory.createMessageDao(), bufferSize, maxDbBatchSize);
+    public SharedMessageStore getSharedMessageStore() {
+        return sharedMessageStore;
     }
 
     /**

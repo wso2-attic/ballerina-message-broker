@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import javax.transaction.xa.Xid;
 
 /**
  * Broker's messaging core which handles message publishing, create and delete queue operations.
@@ -83,8 +84,7 @@ final class MessagingEngine {
             throws BrokerException, ValidationException {
         this.metricManager = metricManager;
         exchangeRegistry = storeFactory.getExchangeRegistry();
-        // TODO: get the buffer sizes from configs
-        sharedMessageStore = storeFactory.getSharedMessageStore(32768, 1024);
+        this.sharedMessageStore = storeFactory.getSharedMessageStore();
         queueRegistry = storeFactory.getQueueRegistry(sharedMessageStore);
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
@@ -171,28 +171,19 @@ final class MessagingEngine {
                 BindingSet bindingSet = exchange.getBindingsForRoute(routingKey);
 
                 if (bindingSet.isEmpty()) {
-                    LOGGER.info("Dropping message since no queues found for routing key " + routingKey + " in "
-                                        + exchange);
+                    LOGGER.info("Dropping message since no queues found for routing key {} in {}",
+                                routingKey, exchange);
                     message.release();
                     MessageTracer.trace(message, MessageTracer.NO_ROUTES);
                 } else {
                     try {
-                        sharedMessageStore.add(message);
-                        Set<String> uniqueQueues = new HashSet<>();
-                        for (Binding binding : bindingSet.getUnfilteredBindings()) {
-                            uniqueQueues.add(binding.getQueue().getName());
-                        }
-
-                        for (Binding binding : bindingSet.getFilteredBindings()) {
-                            if (binding.getFilterExpression().evaluate(metadata)) {
-                                uniqueQueues.add(binding.getQueue().getName());
-                            }
-                        }
+                        sharedMessageStore.addShallowCopy(message);
+                        Set<QueueHandler> uniqueQueues = getUniqueQueueHandlersForBinding(metadata, bindingSet);
                         publishToQueues(message, uniqueQueues);
                     } finally {
                         sharedMessageStore.flush(message.getInternalId());
                         // Release the original message. Shallow copies are distributed
-                        message.release(); // TODO: avoid shallow copying when there is only one binding
+                        message.release();
                     }
                 }
             } else {
@@ -205,19 +196,32 @@ final class MessagingEngine {
         }
     }
 
-    private void publishToQueues(Message message, Set<String> uniqueQueues) throws BrokerException {
+    private Set<QueueHandler> getUniqueQueueHandlersForBinding(Metadata metadata, BindingSet bindingSet) {
+        Set<QueueHandler> uniqueQueues = new HashSet<>();
+        for (Binding binding : bindingSet.getUnfilteredBindings()) {
+            uniqueQueues.add(binding.getQueue().getQueueHandler());
+        }
+
+        for (Binding binding : bindingSet.getFilteredBindings()) {
+            if (binding.getFilterExpression().evaluate(metadata)) {
+                uniqueQueues.add(binding.getQueue().getQueueHandler());
+            }
+        }
+        return uniqueQueues;
+    }
+
+    private void publishToQueues(Message message, Set<QueueHandler> uniqueQueueHandlers) throws BrokerException {
         // Unique queues can be empty due to un-matching selectors.
-        if (uniqueQueues.isEmpty()) {
+        if (uniqueQueueHandlers.isEmpty()) {
             LOGGER.info("Dropping message since message didn't have any routes to {}",
                         message.getMetadata().getRoutingKey());
             MessageTracer.trace(message, MessageTracer.NO_ROUTES);
             return;
         }
 
-        for (String queueName : uniqueQueues) {
-            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+        for (QueueHandler handler : uniqueQueueHandlers) {
             Message copiedMessage = message.shallowCopy();
-            queueHandler.enqueue(copiedMessage);
+            handler.enqueue(copiedMessage);
         }
     }
 
@@ -229,7 +233,7 @@ final class MessagingEngine {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
-            queueHandler.acknowledge(message);
+            queueHandler.dequeue(message);
         } finally {
             lock.readLock().unlock();
         }
@@ -261,7 +265,7 @@ final class MessagingEngine {
                 }
             } else {
                 throw new BrokerException("Cannot add consumer. Queue [ " + consumer.getQueueName() + " ] "
-                                          + "not found. Create the queue before attempting to consume.");
+                                                  + "not found. Create the queue before attempting to consume.");
             }
         } finally {
             lock.readLock().unlock();
@@ -319,6 +323,33 @@ final class MessagingEngine {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    public Set<QueueHandler> prepareEnqueue(Xid xid, Message message) throws BrokerException {
+        Metadata metadata = message.getMetadata();
+        Exchange exchange = exchangeRegistry.getExchange(metadata.getExchangeName());
+        if (Objects.nonNull(exchange)) {
+            BindingSet bindingsForRoute = exchange.getBindingsForRoute(metadata.getRoutingKey());
+            Set<QueueHandler> uniqueQueueHandlers = getUniqueQueueHandlersForBinding(metadata, bindingsForRoute);
+            if (uniqueQueueHandlers.isEmpty()) {
+                message.release();
+                return uniqueQueueHandlers;
+            }
+
+            for (QueueHandler handler : uniqueQueueHandlers) {
+                handler.prepareForEnqueue(xid, message);
+            }
+            return uniqueQueueHandlers;
+        } else {
+            message.release();
+            throw new BrokerException("Message published to unknown exchange " + metadata.getExchangeName());
+        }
+    }
+
+    public QueueHandler prepareDequeue(Xid xid, String queueName, Message message) throws BrokerException {
+        QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+        queueHandler.prepareForDetach(xid, message);
+        return queueHandler;
     }
 
     long getNextMessageId() {

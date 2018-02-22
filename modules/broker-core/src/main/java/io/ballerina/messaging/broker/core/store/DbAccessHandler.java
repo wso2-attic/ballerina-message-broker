@@ -25,10 +25,8 @@ import io.ballerina.messaging.broker.core.store.dao.MessageDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,21 +40,15 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
 
     private final int maxBatchSize;
 
-    private final Map<Long, Message> insertMap;
-
-    private final List<Long> deleteList;
-
-    private final Map<Long, DbOperation> detachMap;
-
     private final Map<Long, Message> readList;
+
+    private final TransactionData transactionData;
 
     public DbAccessHandler(MessageDao messageDao, int maxBatchSize) {
         this.messageDao = messageDao;
         this.maxBatchSize = maxBatchSize;
-        insertMap = new HashMap<>(maxBatchSize);
-        deleteList = new ArrayList<>(maxBatchSize);
-        detachMap = new HashMap<>(maxBatchSize);
         readList = new HashMap<>(maxBatchSize);
+        transactionData = new TransactionData();
     }
 
     @Override
@@ -73,13 +65,13 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
 
         switch (event.getType()) {
             case INSERT_MESSAGE:
-                insertMap.put(event.getMessage().getInternalId(), event.getMessage());
+                transactionData.addEnqueueMessage(event.getMessage());
                 break;
             case DELETE_MESSAGE:
-                deleteList.add(event.getMessageId());
+                transactionData.addDeletableMessage(event.getMessageId());
                 break;
             case DETACH_MSG_FROM_QUEUE:
-                detachMap.put(event.getMessageId(), event);
+                transactionData.detach(event.getQueueName(), event.getMessageId());
                 break;
             case READ_MSG_DATA:
                 readList.put(event.getBareMessage().getInternalId(), event.getBareMessage());
@@ -92,19 +84,9 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
                 }
         }
 
-        if (isBatchReady(endOfBatch, insertMap.values())) {
-            messageDao.persist(insertMap.values());
-            insertMap.clear();
-        }
-
-        if (isBatchReady(endOfBatch, deleteList)) {
-            messageDao.delete(deleteList);
-            deleteList.clear();
-        }
-
-        if (isBatchReady(endOfBatch, detachMap.values())) {
-            messageDao.detachFromQueue(detachMap.values());
-            detachMap.clear();
+        if (isBatchReady(endOfBatch, transactionData)) {
+            messageDao.persist(transactionData);
+            transactionData.clear();
         }
 
         if (isBatchReady(endOfBatch, readList.values())) {
@@ -115,5 +97,9 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
 
     private boolean isBatchReady(boolean endOfBatch, Collection collection) {
         return !collection.isEmpty() && (collection.size() >= maxBatchSize || endOfBatch);
+    }
+
+    private boolean isBatchReady(boolean endOfBatch, TransactionData transactionData) {
+        return !transactionData.isEmpty() && (transactionData.size() >= maxBatchSize || endOfBatch);
     }
 }

@@ -72,6 +72,7 @@ public class HeaderFrame extends GeneralFrame {
         this.classId = classId;
         this.bodySize = bodySize;
         properties = new FieldTable(new HashMap<>());
+        headers = FieldTable.EMPTY_TABLE;
     }
 
     @Override

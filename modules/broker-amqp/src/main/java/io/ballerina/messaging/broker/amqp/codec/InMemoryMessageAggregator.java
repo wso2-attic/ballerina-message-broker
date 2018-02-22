@@ -28,6 +28,7 @@ import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.ContentChunk;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
+import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
 import io.ballerina.messaging.broker.core.util.TraceField;
 import io.netty.buffer.ByteBuf;
@@ -51,14 +52,17 @@ public class InMemoryMessageAggregator {
 
     private final Broker broker;
 
+    private BrokerTransaction transaction;
+
     private String routingKey;
 
     private String exchangeName;
 
     private long receivedPayloadSize;
 
-    InMemoryMessageAggregator(Broker broker) {
+    InMemoryMessageAggregator(Broker broker, BrokerTransaction transaction) {
         this.broker = broker;
+        this.transaction = transaction;
     }
 
     public void basicPublishReceived(ShortString routingKey, ShortString exchangeName) {
@@ -102,8 +106,10 @@ public class InMemoryMessageAggregator {
     }
 
     public void publish(Message message) throws BrokerException {
-        MessageTracer.trace(message, PUBLISH_MESSAGE);
-        broker.publish(message);
+        if (MessageTracer.isTraceEnabled()) {
+            MessageTracer.trace(message, PUBLISH_MESSAGE);
+        }
+        transaction.enqueue(message);
     }
 
     public boolean contentBodyReceived(long length, ByteBuf payload) throws AmqpException {
@@ -128,5 +134,9 @@ public class InMemoryMessageAggregator {
         clear();
 
         return message;
+    }
+
+    public void setTransaction(BrokerTransaction transaction) {
+        this.transaction = transaction;
     }
 }

@@ -79,8 +79,7 @@ final class MessageDeliveryTask extends Task {
                 }
             } else {
                 // TODO: handle send errors
-                Message message = queueHandler.dequeue();
-
+                Message message = queueHandler.takeForDelivery();
                 if (message != null) {
                     LOGGER.debug("Sending message {} to {}", message, consumer);
                     MessageTracer.trace(message, queueHandler, MessageTracer.DELIVER);

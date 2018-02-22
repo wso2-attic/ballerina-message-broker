@@ -32,6 +32,8 @@ import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Consumer;
 import io.ballerina.messaging.broker.core.Message;
+import io.ballerina.messaging.broker.core.transaction.AutoCommitTransaction;
+import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
 import io.ballerina.messaging.broker.core.util.TraceField;
 import io.netty.channel.ChannelHandlerContext;
@@ -119,6 +121,11 @@ public class AmqpChannel {
     private final TraceField traceChannelIdField;
 
     /**
+     * Represent the underlying transaction implementation
+     */
+    private BrokerTransaction transaction;
+
+    /**
      * Max window size
      */
     private int prefetchCount;
@@ -131,7 +138,8 @@ public class AmqpChannel {
         this.channelId = channelId;
         this.metricManager = metricManager;
         this.consumerMap = new HashMap<>();
-        this.messageAggregator = new InMemoryMessageAggregator(broker);
+        this.transaction = new AutoCommitTransaction(broker);
+        this.messageAggregator = new InMemoryMessageAggregator(broker, transaction);
         this.flowManager = new ChannelFlowManager(this,
                                                   configuration.getChannelFlow().getLowLimit(),
                                                   configuration.getChannelFlow().getHighLimit());
@@ -181,7 +189,7 @@ public class AmqpChannel {
         for (Consumer consumer : consumerMap.values()) {
             closeConsumer(consumer);
         }
-
+        transaction.onClose();
         consumerMap.clear();
         requeueUnackedMessages();
     }
@@ -230,8 +238,7 @@ public class AmqpChannel {
             MessageTracer.trace(description, traceChannelIdField, new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag));
         }
         if (ackData != null) {
-            ackData.getMessage().release();
-            broker.acknowledge(ackData.getQueueName(), ackData.getMessage());
+            transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
         } else {
             LOGGER.warn("Could not find a matching ack data for acking the delivery tag " + deliveryTag);
         }
@@ -362,6 +369,44 @@ public class AmqpChannel {
 
     public AmqpDeliverMessage createDeliverMessage(Message message, ShortString consumerTag, String queueName) {
         return new AmqpDeliverMessage(message, consumerTag, this, queueName, broker);
+    }
+
+    /**
+     * Start local transaction on the channel
+     */
+    public void setLocalTransactional() {
+        transaction = broker.newLocalTransaction();
+        messageAggregator.setTransaction(transaction);
+    }
+
+    /**
+     * Start distributed transaction on the channel
+     */
+    public void setDistributedTransactional() {
+
+    }
+
+    /**
+     * Commit the transaction on the channel
+     */
+    public void commit() throws ValidationException, BrokerException {
+        transaction.commit();
+    }
+
+    /**
+     * Rollback the transaction on the channel
+     */
+    public void rollback() throws ValidationException {
+        transaction.rollback();
+    }
+
+    /**
+     * Check whether the channel start local transaction
+     *
+     * @return transaction started or not
+     */
+    public boolean isTransactional () {
+        return transaction.isTransactional();
     }
 
     /**

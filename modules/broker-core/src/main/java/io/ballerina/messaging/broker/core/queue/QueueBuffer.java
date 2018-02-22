@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.core.queue;
 import io.ballerina.messaging.broker.core.Message;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -181,6 +182,12 @@ public class QueueBuffer {
         }
     }
 
+    public synchronized void removeAll(Collection<Message> messages) {
+        for (Message message : messages) {
+            remove(message);
+        }
+    }
+
     /**
      * Unlinks a non-null node.
      */
@@ -281,8 +288,14 @@ public class QueueBuffer {
     public void markMessageFilled(Message message) {
         Node node = keyMap.get(message.getInternalId());
         if (Objects.nonNull(node)) {
-           node.state.set(Node.FULL_MESSAGE);
-           deliverableMessageCount.incrementAndGet();
+            node.state.set(Node.FULL_MESSAGE);
+            deliverableMessageCount.incrementAndGet();
+        }
+    }
+
+    public synchronized void addAll(List<Message> messages) {
+        for (Message message: messages) {
+            add(message);
         }
     }
 
@@ -301,7 +314,6 @@ public class QueueBuffer {
             this.prev = prev;
         }
     }
-
 
     /**
      * Interface used to fill message date.

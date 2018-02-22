@@ -22,7 +22,13 @@ package io.ballerina.messaging.broker.core.queue;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Queue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
+import javax.transaction.xa.Xid;
 
 /**
  * In memory queue implementation for non durable queues.
@@ -33,10 +39,16 @@ public class MemQueueImpl extends Queue {
 
     private final java.util.Queue<Message> queue;
 
-    public MemQueueImpl(String name, int capacity, boolean autoDelete) {
-        super(name, false, autoDelete);
+    private final Map<Xid, List<Message>> pendingEnqueueMessages;
+
+    private final Map<Xid, List<Message>> pendingDequeueMessages;
+
+    public MemQueueImpl(String queueName, int capacity, boolean autoDelete) {
+        super(queueName, false, autoDelete);
         this.capacity = capacity;
         queue = new LinkedBlockingDeque<>(capacity);
+        pendingEnqueueMessages = new ConcurrentHashMap<>();
+        pendingDequeueMessages = new ConcurrentHashMap<>();
     }
 
     /**
@@ -65,6 +77,31 @@ public class MemQueueImpl extends Queue {
     }
 
     @Override
+    public void prepareEnqueue(Xid xid, Message message) {
+        List<Message> transactionalMessages = pendingEnqueueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
+        transactionalMessages.add(message);
+    }
+
+    @Override
+    public void commit(Xid xid) {
+        List<Message> dequeueMessages = pendingDequeueMessages.get(xid);
+        if (Objects.nonNull(dequeueMessages)) {
+            queue.removeAll(dequeueMessages);
+        }
+
+        List<Message> messages = pendingEnqueueMessages.get(xid);
+        if (Objects.nonNull(messages)) {
+            queue.addAll(messages);
+        }
+    }
+
+    @Override
+    public void rollback(Xid xid) {
+        pendingDequeueMessages.remove(xid);
+        pendingEnqueueMessages.remove(xid);
+    }
+
+    @Override
     public Message dequeue() {
         return queue.poll();
     }
@@ -72,5 +109,11 @@ public class MemQueueImpl extends Queue {
     @Override
     public void detach(Message message) {
         // nothing to do
+    }
+
+    @Override
+    public void prepareDetach(Xid xid, Message message) {
+        List<Message> dequeueMessages = pendingDequeueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
+        dequeueMessages.add(message);
     }
 }

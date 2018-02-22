@@ -98,8 +98,7 @@ abstract class BaseDao {
         }
     }
 
-    void transaction(ThrowingConsumer<Connection, Exception> command,
-                     String message) throws BrokerException {
+    void transaction(ThrowingConsumer<Connection, Exception> command) throws BrokerException {
 
         Connection connection = null;
         try {
@@ -107,6 +106,7 @@ abstract class BaseDao {
             command.accept(connection);
             connection.commit();
         } catch (Exception e) {
+            String message = "transaction operation";
             rollback(connection, message);
             throw new BrokerException("Error occurred while " + message, e);
         } finally {

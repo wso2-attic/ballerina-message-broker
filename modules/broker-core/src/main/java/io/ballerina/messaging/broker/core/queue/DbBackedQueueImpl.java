@@ -21,18 +21,24 @@ package io.ballerina.messaging.broker.core.queue;
 
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
-import io.ballerina.messaging.broker.core.Metadata;
 import io.ballerina.messaging.broker.core.Queue;
 import io.ballerina.messaging.broker.core.store.SharedMessageStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.transaction.xa.Xid;
 
 /**
  * Database backed queue implementation.
  */
 public class DbBackedQueueImpl extends Queue {
+
     /**
      * Class logger.
      */
@@ -42,8 +48,13 @@ public class DbBackedQueueImpl extends Queue {
 
     private final QueueBuffer buffer;
 
+    private final Map<Xid, List<Message>> pendingEnqueueMessages;
+
+    private final Map<Xid, List<Message>> pendingDequeueMessages;
+
     public DbBackedQueueImpl(String queueName, boolean autoDelete,
-            SharedMessageStore sharedMessageStore, QueueBufferFactory queueBufferFactory) throws BrokerException {
+                             SharedMessageStore sharedMessageStore, QueueBufferFactory queueBufferFactory)
+            throws BrokerException {
         super(queueName, true, autoDelete);
         this.sharedMessageStore = sharedMessageStore;
         buffer = queueBufferFactory.createBuffer(sharedMessageStore::readData);
@@ -51,6 +62,9 @@ public class DbBackedQueueImpl extends Queue {
         LOGGER.debug("Recovering messages for queue {}", queueName);
 
         Collection<Message> messages = sharedMessageStore.readStoredMessages(queueName);
+
+        pendingEnqueueMessages = new ConcurrentHashMap<>();
+        pendingDequeueMessages = new ConcurrentHashMap<>();
         buffer.addAllBareMessages(messages);
 
         if (LOGGER.isDebugEnabled()) {
@@ -70,11 +84,40 @@ public class DbBackedQueueImpl extends Queue {
 
     @Override
     public boolean enqueue(Message message) throws BrokerException {
-        if (message.getMetadata().getByteProperty(Metadata.DELIVERY_MODE) == Metadata.PERSISTENT_MESSAGE) {
+        if (message.getMetadata().isPersistent()) {
             sharedMessageStore.attach(getName(), message.getInternalId());
         }
         buffer.add(message);
         return true;
+    }
+
+    @Override
+    public void prepareEnqueue(Xid xid, Message message) throws BrokerException {
+        if (message.getMetadata().isPersistent()) {
+            sharedMessageStore.attach(xid, getName(), message.getInternalId());
+        }
+        List<Message> messages = pendingEnqueueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
+        messages.add(message);
+    }
+
+    @Override
+    public void commit(Xid xid) {
+
+        List<Message> dequeueMessages = pendingDequeueMessages.get(xid);
+        if (Objects.nonNull(dequeueMessages)) {
+            buffer.removeAll(dequeueMessages);
+        }
+
+        List<Message> messages = pendingEnqueueMessages.get(xid);
+        if (Objects.nonNull(messages)) {
+            buffer.addAll(messages);
+        }
+    }
+
+    @Override
+    public void rollback(Xid xid) {
+        pendingDequeueMessages.remove(xid);
+        pendingEnqueueMessages.remove(xid);
     }
 
     @Override
@@ -84,7 +127,14 @@ public class DbBackedQueueImpl extends Queue {
 
     @Override
     public void detach(Message message) {
-        buffer.remove(message);
         sharedMessageStore.detach(getName(), message);
+        buffer.remove(message);
+    }
+
+    @Override
+    public void prepareDetach(Xid xid, Message message) throws BrokerException {
+        sharedMessageStore.detach(xid, getName(), message);
+        List<Message> dequeueMessages = pendingDequeueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
+        dequeueMessages.add(message);
     }
 }
