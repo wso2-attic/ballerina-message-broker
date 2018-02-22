@@ -25,26 +25,24 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 /**
  * Command representing the resource information retrieval.
  */
-@Parameters(commandDescription = "List MB resources")
+@Parameters(commandDescription = "Retrieve information on resource(s) in the Broker")
 public class ListCmd extends AbstractCmd {
+
+    public ListCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
         if (!help) {
-            throw Utils.createUsageException("a command is expected after 'list'");
+            throw Utils.createUsageException("a command is expected after 'list'", rootCommand);
         }
         processHelpLogs();
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("List resource(s) in MB\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb list exchange [exchange-name]? [flag]*\n");
-        out.append("  mb list queue [queue-name]? [flag]*\n");
+        out.append("  " + rootCommand + " list [command]\n");
     }
 }

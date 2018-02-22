@@ -41,12 +41,13 @@ public class Utils {
      * Create {@link BrokerClientException} instance including the error message.
      *
      * @param errorMsg error message.
+     * @param rootCommand root command used in the script.
      * @return new {@link BrokerClientException} instance with error message
      */
-    public static BrokerClientException createUsageException(String errorMsg) {
+    public static BrokerClientException createUsageException(String errorMsg, String rootCommand) {
         BrokerClientException brokerClientException = new BrokerClientException();
-        brokerClientException.addMessage("mb: " + errorMsg);
-        brokerClientException.addMessage("Run 'mb --help' for usage.");
+        brokerClientException.addMessage(rootCommand + ": " + errorMsg);
+        brokerClientException.addMessage("Run '" + rootCommand + " --help' for usage.");
         return brokerClientException;
     }
 

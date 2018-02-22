@@ -22,6 +22,8 @@ import io.ballerina.messaging.broker.client.Main;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
+
 /**
  * Test class containing tests of invalid commands.
  */
@@ -30,7 +32,7 @@ public class NegativeCommandTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'list abc'")
     public void testListInvalidResource() {
-        String[] cmd = { "list", "abc" };
+        String[] cmd = { CLI_ROOT_COMMAND, "list", "abc" };
         String expectedLog = "unknown command 'abc'";
         String errorMessage = "error message on, list unknown resource type is invalid";
 
@@ -42,7 +44,7 @@ public class NegativeCommandTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'create abc'")
     public void testCreateInvalidResource() {
-        String[] cmd = { "create", "abc" };
+        String[] cmd = { CLI_ROOT_COMMAND, "create", "abc" };
         String expectedLog = "unknown command 'abc'";
         String errorMessage = "error message on, create unknown resource type is invalid";
 
@@ -54,7 +56,7 @@ public class NegativeCommandTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'delete abc'")
     public void testDeleteInvalidResource() {
-        String[] cmd = { "delete", "abc" };
+        String[] cmd = { CLI_ROOT_COMMAND, "delete", "abc" };
         String expectedLog = "unknown command 'abc'";
         String errorMessage = "error message on, delete unknown resource is type invalid";
 
@@ -66,7 +68,7 @@ public class NegativeCommandTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'list exchange ex1 ex2'")
     public void testMultipleMainValues() {
-        String[] cmd = { "list", "exchange", "ex1", "ex2" };
+        String[] cmd = { CLI_ROOT_COMMAND, "list", "exchange", "ex1", "ex2" };
         String expectedLog = "Only one main parameter allowed but found several: \"ex1\" and \"ex2\"";
         String errorMessage = "error message on, multiple main parameters provided";
 

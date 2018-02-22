@@ -22,6 +22,8 @@ import io.ballerina.messaging.broker.client.Main;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
+
 /**
  * Test class containing tests of 'delete' command.
  */
@@ -30,7 +32,7 @@ public class DeleteCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'delete'")
     public void testDelete() {
-        String[] cmd = { "delete" };
+        String[] cmd = { CLI_ROOT_COMMAND, "delete" };
         String expectedLog = "a command is expected after 'delete'";
         String errorMessage = "error when executing 'delete' command";
 
@@ -42,8 +44,8 @@ public class DeleteCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'delete --help'")
     public void testDeleteHelp() {
-        String[] cmd = { "delete", "--help" };
-        String expectedLog = "Delete a resource in MB";
+        String[] cmd = { CLI_ROOT_COMMAND, "delete", "--help" };
+        String expectedLog = "Delete resources in the Broker";
         String errorMessage = "error when executing 'delete --help' command";
 
         Main.main(cmd);

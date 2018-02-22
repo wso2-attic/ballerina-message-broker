@@ -23,16 +23,19 @@ import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.http.HttpClient;
 import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
+import io.ballerina.messaging.broker.client.output.ResponseFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
-import io.ballerina.messaging.broker.client.utils.BrokerClientException;
+import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.utils.Utils;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
+
+import java.net.HttpURLConnection;
+
+import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
  * Command representing MB exchange deletion.
  */
-@Parameters(commandDescription = "Delete MB exchange")
+@Parameters(commandDescription = "Delete an exchange in the Broker")
 public class DeleteExchangeCmd extends DeleteCmd {
 
     @Parameter(description = "name of the exchange",
@@ -42,6 +45,10 @@ public class DeleteExchangeCmd extends DeleteCmd {
     @Parameter(names = { "--unused", "-u" },
                description = "delete only if the exchange is not in use")
     private boolean ifUnused = false;
+
+    public DeleteExchangeCmd(String rootCommand) {
+        super(rootCommand);
+    }
 
     @Override
     public void execute() {
@@ -63,28 +70,18 @@ public class DeleteExchangeCmd extends DeleteCmd {
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, "DELETE");
 
         // handle response
-        try {
-            JSONParser jsonParser = new JSONParser(JSONParser.MODE_PERMISSIVE);
-            OUT_STREAM.println(jsonParser.parse(response.getPayload()).toString());
-        } catch (ParseException e) {
-            BrokerClientException parseException = new BrokerClientException();
-            parseException.addMessage("error while parsing broker response for exchange deletion" + e.getMessage());
-            throw parseException;
+        if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
+            Message message = buildResponseMessage(response, "Exchange deleted successfully");
+            ResponseFormatter.printMessage(message);
+        } else {
+            ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
         }
 
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-        out.append("Delete an exchange in MB\n");
-    }
-
-    @Override
-    public void printUsage(StringBuilder out) {
+    public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  mb delete exchange [exchange-name] [flag]*\n");
-        out.append("Example:\n");
-        out.append("* Delete exchange named 'myExchange' in MB, only if unused.\n");
-        out.append("  mb delete exchange myExchange -u\n");
+        out.append("  " + rootCommand + " delete exchange [exchange-name] [flag]*\n");
     }
 }

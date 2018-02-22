@@ -40,6 +40,8 @@ public class BrokerConfiguration {
 
     private String queueInMemoryCacheLimit = "10000";
 
+    private DeliveryTask deliveryTask = new DeliveryTask();
+
     private DataSourceConfiguration dataSource;
 
     /**
@@ -53,6 +55,17 @@ public class BrokerConfiguration {
         this.queueInMemoryCacheLimit = queueInMemoryCacheLimit;
     }
 
+    /**
+     * Getter for deliveryTask
+     */
+    public DeliveryTask getDeliveryTask() {
+        return deliveryTask;
+    }
+
+    public void setDeliveryTask(DeliveryTask deliveryTask) {
+        this.deliveryTask = deliveryTask;
+    }
+
     public DataSourceConfiguration getDataSource() {
         return dataSource;
     }
@@ -62,7 +75,38 @@ public class BrokerConfiguration {
     }
 
     /**
-     * Represents a dataSource configuration for broker ( e.g. database)
+     * Represent delivery task related configurations.
+     */
+    public static class DeliveryTask {
+        private String workerCount = "5";
+
+        private String idleTaskDelay = "50";
+
+        /**
+         * Getter for workerCount
+         */
+        public String getWorkerCount() {
+            return workerCount;
+        }
+
+        public void setWorkerCount(String workerCount) {
+            this.workerCount = workerCount;
+        }
+
+        /**
+         * Getter for idleTaskDelay
+         */
+        public String getIdleTaskDelay() {
+            return idleTaskDelay;
+        }
+
+        public void setIdleTaskDelay(String idleTaskDelay) {
+            this.idleTaskDelay = idleTaskDelay;
+        }
+    }
+
+    /**
+     * Represents a dataSource configuration for broker ( e.g. database).
      */
     public static class DataSourceConfiguration {
 

@@ -26,4 +26,5 @@ public class TestConstants {
     public static final String TRUST_STORE_PASSWORD = "wso2carbon";
     public static final String CLI_CONFIG_SYSTEM_PROPERTY = "client.cli.conf";
     public static final String CLI_CONFIG_LOCATION = "src/test/resources/config/cli-config.yaml";
+    public static final String CLI_ROOT_COMMAND = "broker-admin";
 }

@@ -30,7 +30,7 @@
     <groupId>io.ballerina.messaging</groupId>
     <artifactId>broker-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.5-SNAPSHOT</version>
+    <version>0.1.8-SNAPSHOT</version>
     <name>Ballerina Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
@@ -309,10 +309,11 @@
                 <version>${jcommander.version}</version>
             </dependency>
             <dependency>
-                <groupId>net.minidev</groupId>
-                <artifactId>json-smart</artifactId>
-                <version>${json.smart.version}</version>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -378,6 +379,6 @@
         <carbon.metrics.version>2.3.7</carbon.metrics.version>
         <rabbitmq.client.version>5.1.2</rabbitmq.client.version>
         <jcommander.version>1.72</jcommander.version>
-        <json.smart.version>1.1.1</json.smart.version>
+        <gson.version>2.2.4</gson.version>
     </properties>
 </project>

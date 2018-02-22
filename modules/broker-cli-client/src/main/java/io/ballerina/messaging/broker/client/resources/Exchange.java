@@ -23,9 +23,9 @@ package io.ballerina.messaging.broker.client.resources;
  */
 public class Exchange {
 
-    private static final String NAME = "name";
-    private static final String TYPE = "type";
-    private static final String DURABLE = "durable";
+    public static final String NAME = "name";
+    public static final String TYPE = "type";
+    public static final String DURABLE = "durable";
 
     private String name;
 
@@ -39,8 +39,19 @@ public class Exchange {
         this.durable = durable;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public boolean isDurable() {
+        return durable;
+    }
+
     public String getAsJsonString() {
         return "{" + NAME + ":" + name + "," + TYPE + ":" + type + "," + DURABLE + ":" + durable + "}";
     }
-
 }

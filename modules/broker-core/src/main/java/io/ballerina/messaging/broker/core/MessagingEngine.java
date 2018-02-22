@@ -19,7 +19,6 @@
 
 package io.ballerina.messaging.broker.core;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
@@ -36,7 +35,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.transaction.xa.Xid;
@@ -47,16 +45,6 @@ import javax.transaction.xa.Xid;
 final class MessagingEngine {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessagingEngine.class);
-
-    /**
-     * Delay for waiting for an idle task.
-     */
-    private static final long IDLE_TASK_DELAY_MILLIS = 100;
-
-    /**
-     * Number of worker.
-     */
-    private static final int WORKER_COUNT = 5;
 
     /**
      * Internal queue used to put unprocessable messages.
@@ -90,7 +78,9 @@ final class MessagingEngine {
      */
     private final BrokerMetricManager metricManager;
 
-    MessagingEngine(StoreFactory storeFactory, BrokerMetricManager metricManager)
+    MessagingEngine(StoreFactory storeFactory,
+                    BrokerMetricManager metricManager,
+                    TaskExecutorService<MessageDeliveryTask> deliveryTaskService)
             throws BrokerException, ValidationException {
         this.metricManager = metricManager;
         exchangeRegistry = storeFactory.getExchangeRegistry();
@@ -98,9 +88,7 @@ final class MessagingEngine {
         queueRegistry = storeFactory.getQueueRegistry(sharedMessageStore);
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("MessageDeliveryTaskThreadPool-%d").build();
-        deliveryTaskService = new TaskExecutorService<>(WORKER_COUNT, IDLE_TASK_DELAY_MILLIS, threadFactory);
+        this.deliveryTaskService = deliveryTaskService;
         messageIdGenerator = new MessageIdGenerator();
 
         initDefaultDeadLetterQueue();

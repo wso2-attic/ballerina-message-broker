@@ -20,6 +20,14 @@ wso2.broker:
  # performance while increasing the memory consumption.
  queueInMemoryCacheLimit: 10000
 
+ # Configuration related to message delivery task
+ deliveryTask:
+  # Number of concurrent workers used to process the delivery tasks.
+  workerCount: 5
+  # The time that the delivery task will wait when the queue is empty or no consumers are available for message
+  # delivery in milliseconds.
+  idleTaskDelay: 50
+
  # Datasource configurations used to communicate with the database.
  dataSource:
   # Database URL.
