@@ -16,6 +16,10 @@
 
 # Broker Configurations.
 wso2.broker:
+ # Maximum number of messages kept in a non-durable queue. Increasing this number can increase the memory consumption.
+ # Messages published to queue are dropped after this limit is reached.
+ nonDurableQueueMaxDepth: 10000
+
  # Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better
  # performance while increasing the memory consumption.
  durableQueueInMemoryCacheLimit: 10000
