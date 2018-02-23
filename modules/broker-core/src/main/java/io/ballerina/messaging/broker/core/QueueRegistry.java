@@ -66,7 +66,7 @@ public final class QueueRegistry {
                     queueHandler = queueHandlerFactory.createDurableQueueHandler(queueName, autoDelete);
                     queueDao.persist(queueHandler.getQueue());
                 } else {
-                    queueHandler = queueHandlerFactory.createNonDurableQueueHandler(queueName, 1000, autoDelete);
+                    queueHandler = queueHandlerFactory.createNonDurableQueueHandler(queueName, autoDelete);
                 }
                 queueHandlerMap.put(queueName, queueHandler);
                 return true;

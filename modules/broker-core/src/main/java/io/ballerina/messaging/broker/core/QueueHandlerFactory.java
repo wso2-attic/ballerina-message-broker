@@ -32,12 +32,14 @@ import io.ballerina.messaging.broker.core.store.SharedMessageStore;
 public class QueueHandlerFactory {
     private final SharedMessageStore sharedMessageStore;
     private final BrokerMetricManager metricManager;
+    private final int nonDurableQueueMaxDepth;
     private QueueBufferFactory queueBufferFactory;
 
     public QueueHandlerFactory(SharedMessageStore sharedMessageStore, BrokerMetricManager metricManager,
             BrokerConfiguration configuration) {
         this.sharedMessageStore = sharedMessageStore;
         this.metricManager = metricManager;
+        nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
         queueBufferFactory = new QueueBufferFactory(configuration);
     }
 
@@ -58,12 +60,11 @@ public class QueueHandlerFactory {
      * Create a non durable queue handler with the give arguments.
      *
      * @param queueName  name of the queue
-     * @param capacity   max capacity
      * @param autoDelete true if auto deletable
      * @return QueueHandler object
      */
-    QueueHandler createNonDurableQueueHandler(String queueName, int capacity, boolean autoDelete) {
-        Queue queue = new MemQueueImpl(queueName, capacity, autoDelete);
+    QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete) {
+        Queue queue = new MemQueueImpl(queueName, nonDurableQueueMaxDepth, autoDelete);
         return new QueueHandler(queue, metricManager);
     }
 

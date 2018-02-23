@@ -30,35 +30,52 @@ import java.io.PrintStream;
  */
 public class PrintStreamHandler {
 
-    private static ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    private static PrintStream printStream = new PrintStream(outputStream);
+    private static ByteArrayOutputStream errStream = new ByteArrayOutputStream();
+    private static PrintStream errPrintStream = new PrintStream(errStream);
     private static PrintStream originalErrorStream = System.err;
+
+    private static ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+    private static PrintStream outPrintStream = new PrintStream(outStream);
+    private static PrintStream originalOutStream = System.out;
 
     @BeforeGroups("StreamReading")
     public static void setPrintStream() {
-        System.setErr(printStream);
+        System.setErr(errPrintStream);
+        System.setOut(outPrintStream);
     }
 
     /**
-     * Clear the content of the stream. This needs to be done before each stream based test.
+     * Clear the content of the streams. This needs to be done before each stream based test.
      *
      */
-    static void resetStream() {
-        outputStream.reset();
+    static void resetStreams() {
+        errStream.reset();
+        outStream.reset();
     }
 
     /**
-     * Read the content of the stream.
+     * Read the content of the error stream.
      *
      * @return content of the stream as a {@link String}
      */
-    static String readStream() {
-        return outputStream.toString();
+    static String readErrStream() {
+        return errStream.toString();
+    }
+
+    /**
+     * Read the content of the out stream.
+     *
+     * @return content of the stream as a {@link String}
+     */
+    static String readOutStream() {
+        return outStream.toString();
     }
 
     @AfterGroups("StreamReading")
     public void closeStreams() throws IOException {
         System.setErr(originalErrorStream);
-        printStream.close();
+        System.setOut(originalOutStream);
+        errPrintStream.close();
+        outPrintStream.close();
     }
 }

@@ -62,7 +62,7 @@ public class TopicExchangeTest {
         QueueHandlerFactory factory = new QueueHandlerFactory(null,
                                                               new NullBrokerMetricManager(),
                                                               new BrokerConfiguration());
-        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, 10, false);
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);
 
         BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
@@ -80,7 +80,7 @@ public class TopicExchangeTest {
                                                 String publishedTopic) throws BrokerException, ValidationException {
         QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager(),
                                                               new BrokerConfiguration());
-        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, 10, false);
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);
 
         BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
@@ -93,7 +93,7 @@ public class TopicExchangeTest {
             throws BrokerException, ValidationException {
         QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager(),
                                                               new BrokerConfiguration());
-        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, 1000, false);
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
         Queue queue = handler.getQueue();
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);
         topicExchange.unbind(queue, subscribedPattern);

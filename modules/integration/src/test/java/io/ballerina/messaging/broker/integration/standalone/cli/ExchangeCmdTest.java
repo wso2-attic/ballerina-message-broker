@@ -38,7 +38,7 @@ public class ExchangeCmdTest extends CliTestParent {
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
     }
 
     @Test(dependsOnMethods = "testListExchange",
@@ -53,7 +53,7 @@ public class ExchangeCmdTest extends CliTestParent {
         Main.main(cmd);
         Main.main(checkCmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
     }
 
     @Test(dependsOnMethods = "testCreateExchange",
@@ -68,7 +68,7 @@ public class ExchangeCmdTest extends CliTestParent {
         Main.main(cmd);
         Main.main(checkCmd);
 
-        Assert.assertTrue(!PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(!PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
     }
 
     @Test(dependsOnMethods = "testListExchange",
@@ -83,7 +83,7 @@ public class ExchangeCmdTest extends CliTestParent {
         Main.main(cmd);
         Main.main(checkCmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
     }
 
     @Test(groups = "StreamReading",
@@ -95,7 +95,7 @@ public class ExchangeCmdTest extends CliTestParent {
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
     }
 
     @Test(groups = "StreamReading",
@@ -107,7 +107,7 @@ public class ExchangeCmdTest extends CliTestParent {
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
     }
 
     @Test(groups = "StreamReading",
@@ -119,6 +119,6 @@ public class ExchangeCmdTest extends CliTestParent {
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
     }
 }

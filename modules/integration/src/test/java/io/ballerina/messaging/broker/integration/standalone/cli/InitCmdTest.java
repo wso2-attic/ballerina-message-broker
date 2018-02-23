@@ -64,7 +64,7 @@ public class InitCmdTest {
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
     }
 
     @Test(description = "test corrupted configuration file",
@@ -78,7 +78,7 @@ public class InitCmdTest {
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readStream().contains(expectedLog), errorMessage);
+        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
     }
 
     @Test(description = "test command 'init'")

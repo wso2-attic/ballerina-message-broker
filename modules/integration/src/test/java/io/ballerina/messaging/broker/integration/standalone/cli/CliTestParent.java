@@ -36,6 +36,6 @@ public class CliTestParent {
     @AfterMethod
     public void resetStream() {
         // reset the print stream after each test
-        PrintStreamHandler.resetStream();
+        PrintStreamHandler.resetStreams();
     }
 }
