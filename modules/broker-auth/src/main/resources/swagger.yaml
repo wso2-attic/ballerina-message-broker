@@ -1,0 +1,450 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Broker Admin Auth API
+  description: Message Broker Auth API
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+schemes:
+  - https
+  - http
+securityDefinitions:
+  basicAuth:
+    type: basic
+# Apply to the whole API
+security:
+  - basicAuth: []
+basePath: /broker/v1.0/auth
+produces:
+  - application/json
+paths:
+  /queues:
+    get:
+      operationId: getAuthDataOfAllQueuesa
+      summary: Get all auth resources related to queues
+      description: |
+        Gets auth resources of queues in the broker.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: List of queues
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/QueueAuthData'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+  /queues/{name}:
+    get:
+      operationId: getQueueAuthData
+      summary: Get auth Data for given queue
+      description: Retrieves auth Data for given queue
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: Name of the auth resource
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Auth Data of queue
+          schema:
+            $ref: '#/definitions/QueueAuthData'
+        '404':
+          description: Queue not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      operationId: updateQueueAuthData
+      summary: Update queue auth data
+      description: Update queue auth data
+      consumes:
+        - application/json
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: Name of the auth resource
+        - in: body
+          name: body
+          required: true
+          description: Payload of update queue auth data request
+          schema:
+            $ref: '#/definitions/QueueUpdateRequest'
+      responses:
+        '201':
+          description: Queue auth data updated.
+          schema:
+            $ref: '#/definitions/QueueUpdateResponse'
+        '400':
+          description: Bad Request. Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: >-
+            Unsupported media type. The entity of the request was in a not
+            supported format.
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Duplicate resource
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+  /exchanges:
+    get:
+      operationId: getAuthDataOfAllExchangesa
+      summary: Get all auth resources related to exchanges
+      description: |
+        Gets auth resources of exchanges in the broker.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: List of exchanges
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ExchangeAuthData'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+  /exchanges/{name}:
+    get:
+      operationId: getExchangeAuthData
+      summary: Get auth Data for given exchange
+      description: Retrieves auth Data for given exchange
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: Name of the auth resource
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Auth Data of exchange
+          schema:
+            $ref: '#/definitions/ExchangeAuthData'
+        '404':
+          description: Resource not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      operationId: updateExchangeAuthData
+      summary: Update exchange auth data
+      description: Update exchange auth data
+      consumes:
+        - application/json
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: Name of the auth resource
+        - in: body
+          name: body
+          required: true
+          description: Payload of update exchange auth data request
+          schema:
+            $ref: '#/definitions/ExchangeUpdateRequest'
+      responses:
+        '201':
+          description: Exchange auth data updated.
+          schema:
+            $ref: '#/definitions/ExchangeUpdateResponse'
+        '400':
+          description: Bad Request. Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Exchange not found
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: >-
+            Unsupported media type. The entity of the request was in a not
+            supported format.
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+  /scopes:
+    get:
+      operationId: getAllScopes
+      summary: Get all scopes
+      description: Retrieves all the scopes
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: List of Scopes
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ScopeData'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+  /scopes/{name}:
+    get:
+      operationId: getScope
+      summary: Get scope
+      description: Retrieves scope for given scope name
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: Name of the scope
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Scope
+          schema:
+            $ref: '#/definitions/ScopeData'
+        '404':
+          description: Scope not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      operationId: updateScope
+      summary: Update scope
+      description: Update given scope
+      consumes:
+        - application/json
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: Name of the scope needs to update
+        - in: body
+          name: body
+          required: true
+          description: Payload of scope update request
+          schema:
+            $ref: '#/definitions/ScopeUpdateRequest'
+      responses:
+        '200':
+          description: Scope updated
+          schema:
+            $ref: '#/definitions/ScopeUpdateResponse'
+        '400':
+          description: Bad Request. Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Scope key not found
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: >-
+            Unsupported media type. The entity of the request was in a not
+            supported format.
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  QueueAuthData:
+    title: Queue Auth Data
+    type: object
+    required:
+      - name
+      - owner
+      - authorizedUserGroups
+    properties:
+      name:
+        type: string
+        description: Queue name
+      owner:
+        type: string
+        description: Queue owner
+      mappings:
+        type: array
+        description: Queue action User groups mappings
+        items:
+          $ref : '#/definitions/ActionUserGroupsMapping'
+  ExchangeAuthData:
+    title: Exchange Auth Data
+    type: object
+    required:
+      - name
+      - owner
+      - authorizedUserGroups
+    properties:
+      name:
+        type: string
+        description: Exchange name
+      owner:
+        type: string
+        description: Exchange owner
+      mappings:
+        type: array
+        description: Exchange action User groups mappings
+        items:
+          $ref : '#/definitions/ActionUserGroupsMapping'
+  ScopeData:
+    title: Scope
+    type: object
+    required:
+      - name
+      - userGroups
+    properties:
+      name:
+        type: string
+        description: Scope name
+      authoriedUserGroups:
+        type: array
+        description: User groups of the scope
+        items:
+           type: string
+           description: User group
+  ActionUserGroupsMapping:
+    title: Resource action user groups mapping
+    type: object
+    required:
+      - mapping
+    properties:
+      action:
+        type: string
+        description: Resource action
+      userGroups:
+        type: array
+        description: Set of user groups for a scope
+        items:
+          type: string
+          description: User group
+  QueueUpdateRequest:
+    title: Queue Auth Data Update Request
+    type: object
+    properties:
+      owner:
+        type: string
+        description: Owner of queue
+      authorizedUserGroups:
+        type: array
+        description: Queue action User groups mappings
+        items:
+          $ref : '#/definitions/ActionUserGroupsMapping'
+  QueueUpdateResponse:
+    title: Queue Auth Data Update Response
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        description: Response message with status of the queue auth data update operation.
+  ExchangeUpdateRequest:
+    title: Exchange Auth Data Update Request
+    type: object
+    properties:
+      owner:
+        type: string
+        description: Owner of exchange
+      authorizedUserGroups:
+        type: array
+        description: Exchange action User groups mappings
+        items:
+          $ref : '#/definitions/ActionUserGroupsMapping'
+  ExchangeUpdateResponse:
+    title: Exchange Auth Data Update Response
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        description: Response message with status of the Exchange auth data update operation.
+  ScopeUpdateRequest:
+    title: User Groups Delete Requet
+    type: object
+    required:
+      - userGroups
+    properties:
+      userGroups:
+        type: array
+        description: Set of user groups for a scope
+        items:
+          type: string
+          description: user group
+  ScopeUpdateResponse:
+    title: User Group Delete Response
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        description: Response message with status of the user groups delete operation.
+  Error:
+    title: Error Response
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+        description: Error message.
