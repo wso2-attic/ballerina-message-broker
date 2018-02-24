@@ -18,6 +18,7 @@
 package io.ballerina.messaging.broker.client.output;
 
 import io.ballerina.messaging.broker.client.resources.Exchange;
+import io.ballerina.messaging.broker.client.resources.Queue;
 
 /**
  * Print backend responses into tables. This is used for displaying results of 'list' commands.
@@ -43,6 +44,30 @@ public class TableFormatter implements ResponseFormatter {
         for (Exchange exchange : exchanges) {
             OUT_STREAM.printf(printTemplate, exchange.getName(), exchange.getType(),
                     String.valueOf(exchange.isDurable()));
+        }
+    }
+
+    @Override
+    public void printQueues(Queue[] queues) {
+        if (queues.length == 0) {
+            return;
+        }
+        int nameColumnSize = 10;
+
+        for (Queue queue : queues) {
+            if (queue.getName().length() > nameColumnSize - 2) {
+                nameColumnSize = queue.getName().length() + 2;
+            }
+        }
+
+        String printTemplate = "%-" + String.valueOf(nameColumnSize) + "s%-15s%-15s%-10s%-10s%-10s\n";
+
+        OUT_STREAM.printf(printTemplate, Queue.NAME, Queue.CONSUMER_COUNT, Queue.CAPACITY, Queue.SIZE, Queue.DURABLE,
+                Queue.AUTO_DELETE);
+        for (Queue queue : queues) {
+            OUT_STREAM.printf(printTemplate, queue.getName(), String.valueOf(queue.getConsumerCount()),
+                    String.valueOf(queue.getCapacity()), String.valueOf(queue.getSize()),
+                    String.valueOf(queue.isDurable()), String.valueOf(queue.isAutoDelete()));
         }
     }
 }

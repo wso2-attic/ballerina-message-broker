@@ -19,23 +19,36 @@
 package io.ballerina.messaging.broker.client.resources;
 
 /**
- * Representation of exchange in the broker.
+ * Representation of queue in the broker.
  */
-public class Exchange {
+public class Queue {
 
     public static final String NAME = "name";
-    public static final String TYPE = "type";
+    public static final String AUTO_DELETE = "autoDelete";
     public static final String DURABLE = "durable";
+    public static final String CONSUMER_COUNT = "consumerCount";
+    public static final String CAPACITY = "capacity";
+    public static final String SIZE = "size";
+
+    // required params
 
     private String name;
 
-    private String type;
+    private boolean autoDelete;
 
     private boolean durable;
 
-    public Exchange(String name, String type, boolean durable) {
+    // additional params (sets by the broker)
+
+    private int capacity;
+
+    private int consumerCount;
+
+    private int size;
+
+    public Queue(String name, boolean autoDelete, boolean durable) {
         this.name = name;
-        this.type = type;
+        this.autoDelete = autoDelete;
         this.durable = durable;
     }
 
@@ -43,15 +56,27 @@ public class Exchange {
         return name;
     }
 
-    public String getType() {
-        return type;
+    public boolean isAutoDelete() {
+        return autoDelete;
     }
 
     public boolean isDurable() {
         return durable;
     }
 
+    public int getConsumerCount() {
+        return consumerCount;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
     public String getAsJsonString() {
-        return "{" + NAME + ":" + name + "," + TYPE + ":" + type + "," + DURABLE + ":" + durable + "}";
+        return "{" + NAME + ":" + name + "," + AUTO_DELETE + ":" + autoDelete + "," + DURABLE + ":" + durable + "}";
     }
 }

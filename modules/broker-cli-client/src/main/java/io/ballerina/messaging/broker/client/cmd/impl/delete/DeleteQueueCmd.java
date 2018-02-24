@@ -16,7 +16,7 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.client.cmd.impl.create;
+package io.ballerina.messaging.broker.client.cmd.impl.delete;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -25,7 +25,6 @@ import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
-import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
@@ -35,23 +34,24 @@ import java.net.HttpURLConnection;
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
- * Command representing MB exchange creation.
+ * Command representing MB queue deletion.
  */
-@Parameters(commandDescription = "Create an exchange in the Broker with parameters")
-public class CreateExchangeCmd extends CreateCmd {
+@Parameters(commandDescription = "Delete a queue in the Broker")
+public class DeleteQueueCmd extends DeleteCmd {
 
-    @Parameter(description = "name of the exchange")
-    private String exchangeName;
+    @Parameter(description = "name of the queue",
+               required = true)
+    private String queueName;
 
-    @Parameter(names = { "--type", "-t" },
-               description = "type of the exchange")
-    private String type = "direct";
+    @Parameter(names = { "--unused", "-u" },
+               description = "delete only if the queue is not in use")
+    private boolean ifUnused = false;
 
-    @Parameter(names = { "--durable", "-d" },
-               description = "durability of the exchange")
-    private boolean durable = false;
+    @Parameter(names = { "--empty", "-e" },
+               description = "delete only if the queue is empty")
+    private boolean ifEmpty = false;
 
-    public CreateExchangeCmd(String rootCommand) {
+    public DeleteQueueCmd(String rootCommand) {
         super(rootCommand);
     }
 
@@ -64,25 +64,26 @@ public class CreateExchangeCmd extends CreateCmd {
 
         Configuration configuration = Utils.readConfigurationFile();
         HttpClient httpClient = new HttpClient(configuration);
+        HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName);
 
-        Exchange exchange = new Exchange(exchangeName, type, durable);
+        httpRequest.setQueryParameters("?ifUnused=" + String.valueOf(ifUnused) + "&ifEmpty=" + String.valueOf(ifEmpty));
 
-        // do POST
-        HttpRequest httpRequest = new HttpRequest(Constants.EXCHANGES_URL_PARAM, exchange.getAsJsonString());
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "POST");
+        // do DELETE
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "DELETE");
 
         // handle response
-        if (response.getStatusCode() == HttpURLConnection.HTTP_CREATED) {
-            Message message = buildResponseMessage(response, "Exchange created successfully");
+        if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
+            Message message = buildResponseMessage(response, "Queue deleted successfully");
             ResponseFormatter.printMessage(message);
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
         }
+
     }
 
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + rootCommand + " create exchange [exchange-name] [flag]*\n");
+        out.append("  " + rootCommand + " delete queue [queue-name] [flag]*\n");
     }
 }

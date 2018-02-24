@@ -16,17 +16,18 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.client.cmd.impl.create;
+package io.ballerina.messaging.broker.client.cmd.impl.list;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.google.gson.Gson;
 import io.ballerina.messaging.broker.client.http.HttpClient;
 import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
+import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
-import io.ballerina.messaging.broker.client.resources.Exchange;
-import io.ballerina.messaging.broker.client.resources.Message;
+import io.ballerina.messaging.broker.client.resources.Queue;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
@@ -35,23 +36,19 @@ import java.net.HttpURLConnection;
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
- * Command representing MB exchange creation.
+ * Command representing MB queue information retrieval.
  */
-@Parameters(commandDescription = "Create an exchange in the Broker with parameters")
-public class CreateExchangeCmd extends CreateCmd {
+@Parameters(commandDescription = "List queue(s) in the Broker")
+public class ListQueueCmd extends ListCmd {
 
-    @Parameter(description = "name of the exchange")
-    private String exchangeName;
+    @Parameter(names = { "--all", "-a" },
+               description = "return info on all queues of the broker")
+    private boolean all;
 
-    @Parameter(names = { "--type", "-t" },
-               description = "type of the exchange")
-    private String type = "direct";
+    @Parameter(description = "name of the queue which info needs to be retrieved")
+    private String queueName = "";
 
-    @Parameter(names = { "--durable", "-d" },
-               description = "durability of the exchange")
-    private boolean durable = false;
-
-    public CreateExchangeCmd(String rootCommand) {
+    public ListQueueCmd(String rootCommand) {
         super(rootCommand);
     }
 
@@ -65,24 +62,35 @@ public class CreateExchangeCmd extends CreateCmd {
         Configuration configuration = Utils.readConfigurationFile();
         HttpClient httpClient = new HttpClient(configuration);
 
-        Exchange exchange = new Exchange(exchangeName, type, durable);
+        if (all) {
+            queueName = "";
+        }
 
-        // do POST
-        HttpRequest httpRequest = new HttpRequest(Constants.EXCHANGES_URL_PARAM, exchange.getAsJsonString());
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "POST");
+        // do GET
+        HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName);
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "GET");
 
-        // handle response
-        if (response.getStatusCode() == HttpURLConnection.HTTP_CREATED) {
-            Message message = buildResponseMessage(response, "Exchange created successfully");
-            ResponseFormatter.printMessage(message);
+        // handle data processing
+        ResponseFormatter responseFormatter = new TableFormatter();
+
+        if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
+            Gson gson = new Gson();
+            Queue[] queues;
+            if (queueName.isEmpty()) {
+                queues = gson.fromJson(response.getPayload(), Queue[].class);
+            } else {
+                queues = new Queue[] { gson.fromJson(response.getPayload(), Queue.class) };
+            }
+            responseFormatter.printQueues(queues);
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
         }
+
     }
 
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + rootCommand + " create exchange [exchange-name] [flag]*\n");
+        out.append("  " + rootCommand + " list queue [queue-name]? [flag]*\n");
     }
 }

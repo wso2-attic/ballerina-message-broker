@@ -19,6 +19,7 @@ package io.ballerina.messaging.broker.client.output;
 
 import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Message;
+import io.ballerina.messaging.broker.client.resources.Queue;
 import io.ballerina.messaging.broker.client.utils.BrokerClientException;
 
 import java.io.PrintStream;
@@ -57,4 +58,11 @@ public interface ResponseFormatter {
      * @param exchanges array of exchanges
      */
     void printExchanges(Exchange[] exchanges);
+
+    /**
+     * Print an array of queues into a desired output format.
+     *
+     * @param queues array of exchanges
+     */
+    void printQueues(Queue[] queues);
 }
