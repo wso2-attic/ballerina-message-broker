@@ -39,14 +39,14 @@ import javax.naming.NamingException;
 
 
 /**
- * Class for testing local transactions commit and rollback operations in JMS
+ * Test cases written to verify queue consumer and producer behavior in local transaction commit operation
  */
-public class JmsLocalTransactionTest {
+public class QueueLocalTransactionCommitTest {
 
     @Parameters({"broker-port"})
     @Test
     public void testConsumerProducerCommitTransaction(String port) throws NamingException, JMSException {
-        String queueName = "testCommitConsumerAndPublisherTransaction";
+        String queueName = "testConsumerProducerCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin", "localhost", port)
                 .withQueue(queueName)
@@ -57,7 +57,7 @@ public class JmsLocalTransactionTest {
         Connection connection = connectionFactory.createConnection();
         connection.start();
 
-        // publish 100 messages
+        // send 100 messages
         Session producerSession = connection.createSession(true, Session.SESSION_TRANSACTED);
         Queue queue = producerSession.createQueue(queueName);
         MessageProducer producer = producerSession.createProducer(queue);
@@ -66,23 +66,23 @@ public class JmsLocalTransactionTest {
         for (int i = 0; i < numberOfMessages; i++) {
             producer.send(producerSession.createTextMessage("Test message " + i));
         }
-        //commit all sent messages
+        // commit all sent messages
         producerSession.commit();
         producerSession.close();
 
-        // Consume published messages
+        // consume messages
         Session subscriberSession = connection.createSession(true, Session.SESSION_TRANSACTED);
         Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
         MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
 
         for (int i = 0; i < numberOfMessages; i++) {
-            Message message = consumer.receive(5000);
+            Message message = consumer.receive(1000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
         }
-        //commit all received messages
+        // commit all received messages
         subscriberSession.commit();
-        Message message = consumer.receive(5000);
-        Assert.assertNull(message, "Messages should not receive after commit all");
+        Message message = consumer.receive(1000);
+        Assert.assertNull(message, "Messages should not receive after commit");
 
         subscriberSession.close();
         connection.close();
@@ -90,8 +90,9 @@ public class JmsLocalTransactionTest {
 
     @Parameters({"broker-port"})
     @Test
-    public void testConsumerRollbackTransaction(String port) throws NamingException, JMSException {
-        String queueName = "testConsumerRollbackTransaction";
+    public void testTwoConsumersOneProducerCommitTransaction(String port) throws NamingException, JMSException {
+        System.setProperty("STRICT_AMQP", "true");
+        String queueName = "testTwoConsumersOneProducerCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin", "localhost", port)
                 .withQueue(queueName)
@@ -102,82 +103,130 @@ public class JmsLocalTransactionTest {
         Connection connection = connectionFactory.createConnection();
         connection.start();
 
-        // publish 100 messages
+        int numberOfMessages = 100;
+
+        // create consumer1 and consumer2
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        Session subscriberSession1 = connection.createSession(true, Session.SESSION_TRANSACTED);
+        MessageConsumer consumer1 = subscriberSession1.createConsumer(subscriberDestination);
+
+        Session subscriberSession2 = connection.createSession(true, Session.SESSION_TRANSACTED);
+        MessageConsumer consumer2 = subscriberSession2.createConsumer(subscriberDestination);
+
+        // send 100 messages
         Session producerSession = connection.createSession(true, Session.SESSION_TRANSACTED);
         Queue queue = producerSession.createQueue(queueName);
         MessageProducer producer = producerSession.createProducer(queue);
 
-        int numberOfMessages = 100;
         for (int i = 0; i < numberOfMessages; i++) {
             producer.send(producerSession.createTextMessage("Test message " + i));
         }
-        //commit all sent messages
+        // commit all sent messages
         producerSession.commit();
         producerSession.close();
 
-        // Consume published messages
-        Session subscriberSession = connection.createSession(true, Session.SESSION_TRANSACTED);
-        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
-        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
-
-        for (int i = 0; i < numberOfMessages; i++) {
-            Message message = consumer.receive(5000);
+        for (int i = 0; i < (numberOfMessages / 2); i++) {
+            Message message = consumer1.receive(1000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
         }
-        //rollback all received messages
-        subscriberSession.rollback();
+        // consumer1 commit all received messages
+        subscriberSession1.commit();
 
-        int numberOfMessagesAfterRollback = 0;
+        for (int i = 0; i < (numberOfMessages / 2); i++) {
+            Message message = consumer2.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+        // consumer2 commit all received messages
+        subscriberSession2.commit();
+
+        // consumer1 check remain messages after commit
+        Message consumer1RemainingMessage = consumer1.receive(1000);
+        Assert.assertNull(consumer1RemainingMessage, "Messages should not receive by consumer1 after commit");
+
+        // consumer2 check remain messages after commit
+        Message consumer2RemainingMessage = consumer2.receive(1000);
+        Assert.assertNull(consumer2RemainingMessage, "Messages should not receive by consumer2 after commit");
+
+        subscriberSession1.close();
+        subscriberSession2.close();
+        connection.close();
+        System.setProperty("STRICT_AMQP", "false");
+    }
+
+    @Parameters({"broker-port"})
+    @Test
+    public void testOneConsumerCommitOneConsumerRollbackOneProducerCommitTransaction(String port)
+            throws NamingException, JMSException {
+        System.setProperty("STRICT_AMQP", "true");
+        String queueName = "testOneConsumerCommitOneConsumerRollbackOneProducerCommitTransaction";
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .withQueue(queueName)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        int numberOfMessages = 100;
+
+        // create consumer1 and consumer2
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        Session subscriberSession1 = connection.createSession(true, Session.SESSION_TRANSACTED);
+        MessageConsumer consumer1 = subscriberSession1.createConsumer(subscriberDestination);
+
+        Session subscriberSession2 = connection.createSession(true, Session.SESSION_TRANSACTED);
+        MessageConsumer consumer2 = subscriberSession2.createConsumer(subscriberDestination);
+
+        // send 100 messages
+        Session producerSession = connection.createSession(true, Session.SESSION_TRANSACTED);
+        Queue queue = producerSession.createQueue(queueName);
+        MessageProducer producer = producerSession.createProducer(queue);
+
         for (int i = 0; i < numberOfMessages; i++) {
-            Message message = consumer.receive(5000);
+            producer.send(producerSession.createTextMessage("Test message " + i));
+        }
+        // commit all sent messages
+        producerSession.commit();
+        producerSession.close();
+
+        for (int i = 0; i < (numberOfMessages / 2); i++) {
+            Message message = consumer1.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+        // consumer1 commit all received messages and close
+        subscriberSession1.commit();
+        consumer1.close();
+
+        for (int i = 0; i < (numberOfMessages / 2); i++) {
+            Message message = consumer2.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+        // consumer2 rollback all received messages
+        subscriberSession2.rollback();
+
+        // consumer2 receive all messages again after rollback
+        int numberOfMessagesAfterRollback = 0;
+        for (int i = 0; i < (numberOfMessages / 2); i++) {
+            Message message = consumer2.receive(1000);
             Assert.assertNotNull(message, "Message #" + i + " was not received after rollback");
             numberOfMessagesAfterRollback++;
         }
-        Assert.assertEquals(numberOfMessages, numberOfMessagesAfterRollback, "Only "
-                + numberOfMessagesAfterRollback + " messages received" + " after rollback but expect "
-                + numberOfMessages + " messages");
+        Assert.assertEquals((numberOfMessages / 2), numberOfMessagesAfterRollback, "Only "
+                + numberOfMessagesAfterRollback + " messages received after rollback but expect "
+                + (numberOfMessages / 2) + " messages");
 
-        subscriberSession.close();
+        subscriberSession2.commit();
+
+        // consumer2 check remain messages after commit
+        Message consumer2RemainingMessage = consumer2.receive(1000);
+        Assert.assertNull(consumer2RemainingMessage, "Messages should not receive by consumer2 after commit");
+
+        subscriberSession1.close();
+        subscriberSession2.close();
         connection.close();
-    }
-
-    @Parameters({"broker-port"})
-    @Test
-    public void testProducerRollbackTransaction(String port) throws NamingException, JMSException {
-        String queueName = "testProducerRollbackTransaction";
-        InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
-                .withQueue(queueName)
-                .build();
-
-        ConnectionFactory connectionFactory
-                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
-        Connection connection = connectionFactory.createConnection();
-        connection.start();
-
-        // publish 100 messages
-        Session producerSession = connection.createSession(true, Session.SESSION_TRANSACTED);
-        Queue queue = producerSession.createQueue(queueName);
-        MessageProducer producer = producerSession.createProducer(queue);
-
-        int numberOfMessages = 100;
-        for (int i = 0; i < numberOfMessages; i++) {
-            producer.send(producerSession.createTextMessage("Test message " + i));
-        }
-        //commit all sent messages
-        producerSession.rollback();
-        producerSession.close();
-
-        // Consume published messages
-        Session subscriberSession = connection.createSession(true, Session.SESSION_TRANSACTED);
-        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
-        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
-
-        Message message = consumer.receive(5000);
-        Assert.assertNull(message, "Messages should not receive upon publisher rollback");
-
-        subscriberSession.close();
-        connection.close();
+        System.setProperty("STRICT_AMQP", "false");
     }
 
     @Parameters({"broker-port"})
@@ -194,7 +243,7 @@ public class JmsLocalTransactionTest {
         Connection connection = connectionFactory.createConnection();
         connection.start();
 
-        // publish 100 messages
+        // send 100 messages
         Session producerSession = connection.createSession(true, Session.SESSION_TRANSACTED);
         Queue queue = producerSession.createQueue(queueName);
         MessageProducer producer = producerSession.createProducer(queue);
@@ -204,27 +253,29 @@ public class JmsLocalTransactionTest {
             producer.send(producerSession.createTextMessage("Test message " + i));
         }
 
-        // Consume published messages
+        // consume messages
         Session subscriberSession = connection.createSession(true, Session.SESSION_TRANSACTED);
         Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
         MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
 
-        Message messageBeforeCommit = consumer.receive(5000);
+        Message messageBeforeCommit = consumer.receive(1000);
         Assert.assertNull(messageBeforeCommit, "Messages should not receive because publisher not committed");
 
-        //commit all sent messages
+        // commit all sent messages
         producerSession.commit();
         producerSession.close();
 
         for (int i = 0; i < numberOfMessages; i++) {
-            Message message = consumer.receive(5000);
+            Message message = consumer.receive(1000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
         }
 
-        //commit all received messages
+        // commit all received messages
         subscriberSession.commit();
-        Message message = consumer.receive(5000);
-        Assert.assertNull(message, "Messages should not receive after commit all");
+
+        // check messages receive after commit
+        Message message = consumer.receive(1000);
+        Assert.assertNull(message, "Messages should not receive after commit");
 
         subscriberSession.close();
         connection.close();
@@ -234,7 +285,7 @@ public class JmsLocalTransactionTest {
     @Test(expectedExceptions = javax.jms.IllegalStateException.class,
             expectedExceptionsMessageRegExp = ".*Session is not transacted")
     public void testCommitOnNonTransactionSession(String port) throws NamingException, JMSException {
-        String queueName = "testCommitOnNonTransactionalChannel";
+        String queueName = "testCommitOnNonTransactionSession";
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin", "localhost", port)
                 .withQueue(queueName)
@@ -245,7 +296,7 @@ public class JmsLocalTransactionTest {
         Connection connection = connectionFactory.createConnection();
         connection.start();
 
-        // publish 100 messages
+        // send 100 messages
         Session producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         Queue queue = producerSession.createQueue(queueName);
         MessageProducer producer = producerSession.createProducer(queue);
@@ -254,39 +305,11 @@ public class JmsLocalTransactionTest {
         for (int i = 0; i < numberOfMessages; i++) {
             producer.send(producerSession.createTextMessage("Test message " + i));
         }
-        //commit all sent messages
+        // commit all sent messages on non transactional session
         producerSession.commit();
         producerSession.close();
         connection.close();
     }
 
-    @Parameters({"broker-port"})
-    @Test(expectedExceptions = javax.jms.IllegalStateException.class,
-            expectedExceptionsMessageRegExp = ".*Session is not transacted")
-    public void testRollbackOnNonTransactionSession(String port) throws NamingException, JMSException {
-        String queueName = "testRollbackOnNonTransactionSession";
-        InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
-                .withQueue(queueName)
-                .build();
 
-        ConnectionFactory connectionFactory
-                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
-        Connection connection = connectionFactory.createConnection();
-        connection.start();
-
-        // publish 100 messages
-        Session producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        Queue queue = producerSession.createQueue(queueName);
-        MessageProducer producer = producerSession.createProducer(queue);
-
-        int numberOfMessages = 100;
-        for (int i = 0; i < numberOfMessages; i++) {
-            producer.send(producerSession.createTextMessage("Test message " + i));
-        }
-        //commit all sent messages
-        producerSession.rollback();
-        producerSession.close();
-        connection.close();
-    }
 }
