@@ -51,7 +51,6 @@ public class Branch {
     }
 
     public void enqueue(Message message) throws BrokerException {
-        sharedMessageStore.addShallowCopy(xid, message);
         Set<QueueHandler> queueHandlers = broker.prepareEnqueue(xid, message);
         affectedQueueHandlers.addAll(queueHandlers);
     }
