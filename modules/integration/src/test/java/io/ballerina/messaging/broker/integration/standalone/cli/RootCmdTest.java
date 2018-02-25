@@ -19,7 +19,6 @@
 package io.ballerina.messaging.broker.integration.standalone.cli;
 
 import io.ballerina.messaging.broker.client.Main;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
@@ -34,11 +33,10 @@ public class RootCmdTest extends CliTestParent {
     public void testRootCmdHelp() {
         String[] cmd = { CLI_ROOT_COMMAND, "--help" };
         String expectedLog = "Welcome to Broker Command Line Interface";
-        String errorMessage = "error when executing root '--help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
 }
