@@ -40,7 +40,7 @@ import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_
 @Parameters(commandDescription = "Create a queue in the Broker with parameters")
 public class CreateQueueCmd extends CreateCmd {
 
-    @Parameter(description = "name of the queue")
+    @Parameter(description = "name of the queue", required = true)
     private String queueName;
 
     @Parameter(names = { "--autoDelete", "-a" },

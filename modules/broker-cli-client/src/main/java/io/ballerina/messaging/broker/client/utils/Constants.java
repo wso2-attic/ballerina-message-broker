@@ -30,6 +30,7 @@ public class Constants {
     public static final String DEFAULT_PASSWORD = "admin";
     public static final String BROKER_CONNECTION_URL_SUFFIX = "/broker/v1.0/";
     public static final String QUEUES_URL_PARAM = "queues/";
+    public static final String BINDINGS_URL_PARAM = "/bindings/";
     public static final String EXCHANGES_URL_PARAM = "exchanges/";
     public static final String DEFAULT_CONFIG_FILE_PATH = "cli-config.yml";
 
@@ -41,6 +42,7 @@ public class Constants {
 
     public static final String CMD_EXCHANGE = "exchange";
     public static final String CMD_QUEUE = "queue";
+    public static final String CMD_BINDING = "binding";
 
     public static final String BROKER_ERROR_MSG = "Error while invoking Brokers admin services";
 }

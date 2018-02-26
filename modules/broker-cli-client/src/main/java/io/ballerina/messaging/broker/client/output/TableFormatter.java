@@ -17,6 +17,7 @@
  */
 package io.ballerina.messaging.broker.client.output;
 
+import io.ballerina.messaging.broker.client.resources.Binding;
 import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
@@ -68,6 +69,32 @@ public class TableFormatter implements ResponseFormatter {
             OUT_STREAM.printf(printTemplate, queue.getName(), String.valueOf(queue.getConsumerCount()),
                     String.valueOf(queue.getCapacity()), String.valueOf(queue.getSize()),
                     String.valueOf(queue.isDurable()), String.valueOf(queue.isAutoDelete()));
+        }
+    }
+
+    @Override
+    public void printBindingsExchange(Binding[] bindings) {
+        if (bindings.length == 0) {
+            return;
+        }
+        int queueColumnSize = 10;
+        int patternColumnSize = 10;
+
+        for (Binding binding : bindings) {
+            if (binding.getQueueName().length() > queueColumnSize - 2) {
+                queueColumnSize = binding.getQueueName().length() + 2;
+            }
+            if (binding.getBindingPattern().length() > patternColumnSize - 2) {
+                patternColumnSize = binding.getBindingPattern().length() + 2;
+            }
+        }
+
+        String printTemplate =
+                "%-" + String.valueOf(queueColumnSize) + "s%-" + String.valueOf(patternColumnSize) + "s\n";
+
+        OUT_STREAM.printf(printTemplate, Binding.QUEUE_NAME, Binding.BINDING_PATTERN);
+        for (Binding binding : bindings) {
+            OUT_STREAM.printf(printTemplate, binding.getQueueName(), binding.getBindingPattern());
         }
     }
 }
