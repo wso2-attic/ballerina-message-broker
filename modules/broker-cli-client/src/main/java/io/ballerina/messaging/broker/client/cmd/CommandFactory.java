@@ -22,10 +22,13 @@ import io.ballerina.messaging.broker.client.cmd.impl.InitCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.RootCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.create.CreateCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.create.CreateExchangeCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.create.CreateQueueCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteExchangeCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteQueueCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListExchangeCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.list.ListQueueCmd;
 
 /**
  * Factory class to generate different command instances.
@@ -71,5 +74,17 @@ public class CommandFactory {
 
     public ListExchangeCmd createListExchangeCommand() {
         return new ListExchangeCmd(rootCommand);
+    }
+
+    public CreateQueueCmd createCreateQueueCommand() {
+        return new CreateQueueCmd(rootCommand);
+    }
+
+    public DeleteQueueCmd createDeleteQueueCommand() {
+        return new DeleteQueueCmd(rootCommand);
+    }
+
+    public ListQueueCmd createListQueueCommand() {
+        return new ListQueueCmd(rootCommand);
     }
 }

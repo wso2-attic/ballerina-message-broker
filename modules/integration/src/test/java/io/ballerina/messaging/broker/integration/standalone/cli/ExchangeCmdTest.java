@@ -43,7 +43,7 @@ public class ExchangeCmdTest extends CliTestParent {
 
     @Test(dependsOnMethods = "testListExchange",
           groups = "StreamReading",
-          description = "test command 'list exchange sampleEx1'")
+          description = "test command 'create exchange sampleEx1'")
     public void testCreateExchange() {
         String[] cmd = { CLI_ROOT_COMMAND, "create", "exchange", "sampleEx1" };
         String[] checkCmd = { CLI_ROOT_COMMAND, "list", "exchange", "sampleEx1" };
@@ -58,7 +58,7 @@ public class ExchangeCmdTest extends CliTestParent {
 
     @Test(dependsOnMethods = "testCreateExchange",
           groups = "StreamReading",
-          description = "test command 'list exchange sampleEx1'")
+          description = "test command 'delete exchange sampleEx1'")
     public void testDeleteExchange() {
         String[] cmd = { CLI_ROOT_COMMAND, "delete", "exchange", "sampleEx1" };
         String[] checkCmd = { CLI_ROOT_COMMAND, "list", "exchange" };
@@ -73,7 +73,7 @@ public class ExchangeCmdTest extends CliTestParent {
 
     @Test(dependsOnMethods = "testListExchange",
           groups = "StreamReading",
-          description = "test command 'list exchange sampleEx2 -d -t topic'")
+          description = "test command 'create exchange sampleEx2 -d -t topic'")
     public void testCreateExchangeWithFlags() {
         String[] cmd = { CLI_ROOT_COMMAND, "create", "exchange", "sampleEx2", "-d", "-t", "topic" };
         String[] checkCmd = { CLI_ROOT_COMMAND, "list", "exchange", "sampleEx2" };
@@ -99,7 +99,7 @@ public class ExchangeCmdTest extends CliTestParent {
     }
 
     @Test(groups = "StreamReading",
-          description = "test command 'delete exchange --help'")
+          description = "test command 'create exchange --help'")
     public void testCreateExchangeHelp() {
         String[] cmd = { CLI_ROOT_COMMAND, "create", "exchange", "--help" };
         String expectedLog = "Create an exchange in the Broker with parameters";
