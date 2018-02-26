@@ -257,4 +257,111 @@ public class QueueLocalTransactionRollbackTest {
         producerSession.close();
         connection.close();
     }
+
+    @Parameters({"broker-port"})
+    @Test
+    public void testConsumerCloseBeforeRollbackTransaction(String port) throws NamingException, JMSException {
+        String queueName = "testConsumerCloseBeforeRollbackTransaction";
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .withQueue(queueName)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // send 100 messages
+        Session producerSession = connection.createSession(true, Session.SESSION_TRANSACTED);
+        Queue queue = producerSession.createQueue(queueName);
+        MessageProducer producer = producerSession.createProducer(queue);
+
+        int numberOfMessages = 100;
+        for (int i = 0; i < numberOfMessages; i++) {
+            producer.send(producerSession.createTextMessage("Test message " + i));
+        }
+        // commit all sent messages
+        producerSession.commit();
+        producerSession.close();
+
+        // consume messages
+        Session subscriberSession = connection.createSession(true, Session.SESSION_TRANSACTED);
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        MessageConsumer consumer1 = subscriberSession.createConsumer(subscriberDestination);
+
+        for (int i = 0; i < numberOfMessages; i++) {
+            Message message = consumer1.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+        // close consumer before rollback
+        consumer1.close();
+
+        // rollback all received messages
+        subscriberSession.rollback();
+
+        // create another consumer and receive all messages
+        int numberOfMessagesAfterRollback = 0;
+        MessageConsumer consumer2 = subscriberSession.createConsumer(subscriberDestination);
+        for (int i = 0; i < numberOfMessages; i++) {
+            Message message = consumer2.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+            numberOfMessagesAfterRollback++;
+        }
+        Assert.assertEquals(numberOfMessages, numberOfMessagesAfterRollback, "Only "
+                + numberOfMessagesAfterRollback + " messages received after rollback but expect "
+                + numberOfMessages + " messages");
+
+        subscriberSession.commit();
+
+        Message message = consumer2.receive(1000);
+        Assert.assertNull(message, "Messages should not receive after commit");
+
+        subscriberSession.close();
+        connection.close();
+    }
+
+    @Parameters({"broker-port"})
+    @Test
+    public void testProducerCloseBeforeRollbackTransaction(String port) throws NamingException, JMSException {
+        String queueName = "testPublisherCloseBeforeRollbackTransaction";
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .withQueue(queueName)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // send 100 messages
+        Session producerSession = connection.createSession(true, Session.SESSION_TRANSACTED);
+        Queue queue = producerSession.createQueue(queueName);
+        MessageProducer producer = producerSession.createProducer(queue);
+
+        int numberOfMessages = 100;
+        for (int i = 0; i < numberOfMessages; i++) {
+            producer.send(producerSession.createTextMessage("Test message " + i));
+        }
+        // close publisher before rollback
+        producer.close();
+
+        // rollback all sent messages
+        producerSession.rollback();
+
+        // consume messages
+        Session subscriberSession = connection.createSession(true, Session.SESSION_TRANSACTED);
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
+
+        // none of messages should receive after publisher rollback
+        Message message = consumer.receive(1000);
+        Assert.assertNull(message, "Messages should not receive upon publisher rollback");
+
+        producerSession.close();
+        subscriberSession.close();
+        connection.close();
+
+    }
 }

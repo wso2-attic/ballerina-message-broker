@@ -311,5 +311,104 @@ public class QueueLocalTransactionCommitTest {
         connection.close();
     }
 
+    @Parameters({"broker-port"})
+    @Test
+    public void testConsumerCloseBeforeCommitTransaction(String port) throws NamingException, JMSException {
+        String queueName = "testConsumerCloseBeforeCommitTransaction";
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .withQueue(queueName)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // send 100 messages
+        Session producerSession = connection.createSession(true, Session.SESSION_TRANSACTED);
+        Queue queue = producerSession.createQueue(queueName);
+        MessageProducer producer = producerSession.createProducer(queue);
+
+        int numberOfMessages = 100;
+        for (int i = 0; i < numberOfMessages; i++) {
+            producer.send(producerSession.createTextMessage("Test message " + i));
+        }
+        // commit all sent messages
+        producerSession.commit();
+        producerSession.close();
+
+        // consume messages
+        Session subscriberSession = connection.createSession(true, Session.SESSION_TRANSACTED);
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        MessageConsumer consumer1 = subscriberSession.createConsumer(subscriberDestination);
+
+        for (int i = 0; i < numberOfMessages; i++) {
+            Message message = consumer1.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+        // close consumer before commit
+        consumer1.close();
+
+        // commit all received messages
+        subscriberSession.commit();
+
+        // create another consumer and check there are no messages after commit
+        MessageConsumer consumer2 = subscriberSession.createConsumer(subscriberDestination);
+        Message message = consumer2.receive(1000);
+        Assert.assertNull(message, "Messages should not receive after commit");
+
+        subscriberSession.close();
+        connection.close();
+    }
+
+    @Parameters({"broker-port"})
+    @Test
+    public void testProducerCloseBeforeCommitTransaction(String port) throws NamingException, JMSException {
+        String queueName = "testPublisherCloseBeforeCommitTransaction";
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .withQueue(queueName)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // send 100 messages
+        Session producerSession = connection.createSession(true, Session.SESSION_TRANSACTED);
+        Queue queue = producerSession.createQueue(queueName);
+        MessageProducer producer = producerSession.createProducer(queue);
+
+        int numberOfMessages = 100;
+        for (int i = 0; i < numberOfMessages; i++) {
+            producer.send(producerSession.createTextMessage("Test message " + i));
+        }
+        // close publisher before commit
+        producer.close();
+
+        // commit all sent messages
+        producerSession.commit();
+        producerSession.close();
+
+        // consume messages
+        Session subscriberSession = connection.createSession(true, Session.SESSION_TRANSACTED);
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
+
+        for (int i = 0; i < numberOfMessages; i++) {
+            Message message = consumer.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+        // commit all received messages
+        subscriberSession.commit();
+
+        Message message = consumer.receive(1000);
+        Assert.assertNull(message, "Messages should not receive after commit");
+
+        subscriberSession.close();
+        connection.close();
+    }
 
 }

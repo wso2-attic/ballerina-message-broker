@@ -81,9 +81,7 @@ final class MessageDeliveryTask extends Task {
                 // TODO: handle send errors
                 Message message = queueHandler.takeForDelivery();
                 if (message != null) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Sending message {} to {}", message, consumer);
-                    }
+                    LOGGER.debug("Sending message {} to {}", message, consumer);
                     MessageTracer.trace(message, queueHandler, MessageTracer.DELIVER);
                     consumer.send(message);
                     deliveredCount++;

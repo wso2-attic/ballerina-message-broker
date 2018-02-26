@@ -313,4 +313,108 @@ public class TopicLocalTransactionCommitTest {
         subscriberSession.close();
         connection.close();
     }
+
+    @Parameters({"broker-port"})
+    @Test
+    public void testSubscriberCloseBeforeCommitTransaction(String port) throws NamingException, JMSException {
+        String topicName = "testSubscriberCloseBeforeCommitTransaction";
+        int numberOfMessages = 100;
+
+        InitialContext initialContext = ClientHelper
+                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .withTopic(topicName)
+                .build();
+
+        TopicConnectionFactory connectionFactory
+                = (TopicConnectionFactory) initialContext.lookup(ClientHelper.CONNECTION_FACTORY);
+        TopicConnection connection = connectionFactory.createTopicConnection();
+        connection.start();
+
+        // initialize subscriber
+        TopicSession subscriberSession = connection.createTopicSession(true, Session.SESSION_TRANSACTED);
+        Topic subscriberDestination = (Topic) initialContext.lookup(topicName);
+        TopicSubscriber subscriber1 = subscriberSession.createSubscriber(subscriberDestination);
+
+        // publish 100 messages
+        TopicSession producerSession = connection.createTopicSession(true, Session.SESSION_TRANSACTED);
+        TopicPublisher producer = producerSession.createPublisher(subscriberDestination);
+
+        for (int i = 0; i < numberOfMessages; i++) {
+            producer.publish(producerSession.createTextMessage("Test message " + i));
+        }
+        // commit all publish messages
+        producerSession.commit();
+        producerSession.close();
+
+        for (int i = 0; i < numberOfMessages; i++) {
+            Message message = subscriber1.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+
+        // close subscriber before commit
+        subscriber1.close();
+
+        // commit all subscribe messages
+        subscriberSession.commit();
+
+        // create another subscriber and check there are no messages after commit
+        TopicSubscriber subscriber2 = subscriberSession.createSubscriber(subscriberDestination);
+        Message message = subscriber2.receive(1000);
+        Assert.assertNull(message, "Messages should not receive after commit");
+
+        subscriberSession.close();
+        connection.close();
+
+    }
+
+    @Parameters({"broker-port"})
+    @Test
+    public void testPublisherCloseBeforeCommitTransaction(String port) throws NamingException, JMSException {
+        String topicName = "testPublisherCloseBeforeCommitTransaction";
+        int numberOfMessages = 100;
+
+        InitialContext initialContext = ClientHelper
+                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .withTopic(topicName)
+                .build();
+
+        TopicConnectionFactory connectionFactory
+                = (TopicConnectionFactory) initialContext.lookup(ClientHelper.CONNECTION_FACTORY);
+        TopicConnection connection = connectionFactory.createTopicConnection();
+        connection.start();
+
+        // initialize subscriber
+        TopicSession subscriberSession = connection.createTopicSession(true, Session.SESSION_TRANSACTED);
+        Topic subscriberDestination = (Topic) initialContext.lookup(topicName);
+        TopicSubscriber subscriber = subscriberSession.createSubscriber(subscriberDestination);
+
+        // publish 100 messages
+        TopicSession producerSession = connection.createTopicSession(true, Session.SESSION_TRANSACTED);
+        TopicPublisher producer = producerSession.createPublisher(subscriberDestination);
+
+        for (int i = 0; i < numberOfMessages; i++) {
+            producer.publish(producerSession.createTextMessage("Test message " + i));
+        }
+
+        // close publisher before commit
+        producer.close();
+
+        // commit all publish messages
+        producerSession.commit();
+        producerSession.close();
+
+        for (int i = 0; i < numberOfMessages; i++) {
+            Message message = subscriber.receive(1000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+
+        // commit all subscribe messages
+        subscriberSession.commit();
+
+        Message message = subscriber.receive(1000);
+        Assert.assertNull(message, "Messages should not receive after commit");
+
+        subscriberSession.close();
+        connection.close();
+    }
 }
