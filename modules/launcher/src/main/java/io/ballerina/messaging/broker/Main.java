@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.user.UserStoreManager;
 import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.CoordinationException;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
@@ -61,9 +62,9 @@ public class Main {
 
             initConfigProvider(startupContext);
             BrokerConfigProvider service = startupContext.getService(BrokerConfigProvider.class);
-            BrokerCoreConfiguration brokerCoreConfiguration =
-                    service.getConfigurationObject(BrokerCoreConfiguration.NAMESPACE, BrokerCoreConfiguration.class);
-            DataSource dataSource = getDataSource(brokerCoreConfiguration.getDataSource());
+            BrokerCommonConfiguration commonConfig = service.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
+                                                                                    BrokerCommonConfiguration.class);
+            DataSource dataSource = getDataSource(commonConfig.getDataSource());
             startupContext.registerService(UserStoreManager.class, new UserStoreManagerImpl());
             startupContext.registerService(DataSource.class, dataSource);
             HaStrategy haStrategy;
@@ -106,7 +107,7 @@ public class Main {
         }
     }
 
-    private static DataSource getDataSource(BrokerCoreConfiguration.DataSourceConfiguration dataSourceConfiguration) {
+    private static DataSource getDataSource(BrokerCommonConfiguration.DataSourceConfiguration dataSourceConfiguration) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(dataSourceConfiguration.getUrl());
         config.setUsername(dataSourceConfiguration.getUser());

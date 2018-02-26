@@ -44,8 +44,6 @@ public class BrokerCoreConfiguration {
 
     private DeliveryTask deliveryTask = new DeliveryTask();
 
-    private DataSourceConfiguration dataSource;
-
     /**
      * Getter for nonDurableQueueMaxDepth
      */
@@ -79,14 +77,6 @@ public class BrokerCoreConfiguration {
         this.deliveryTask = deliveryTask;
     }
 
-    public DataSourceConfiguration getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(DataSourceConfiguration dataSource) {
-        this.dataSource = dataSource;
-    }
-
     /**
      * Represent delivery task related configurations.
      */
@@ -116,58 +106,5 @@ public class BrokerCoreConfiguration {
         public void setIdleTaskDelay(String idleTaskDelay) {
             this.idleTaskDelay = idleTaskDelay;
         }
-    }
-
-    /**
-     * Represents a dataSource configuration for broker ( e.g. database).
-     */
-    public static class DataSourceConfiguration {
-
-        private String url;
-
-        private String databaseDriver;
-
-        private String user;
-
-        private String password;
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public String getDatabaseDriver() {
-            return databaseDriver;
-        }
-
-        public void setDatabaseDriver(String databaseDriver) {
-            this.databaseDriver = databaseDriver;
-        }
-
-        public String getUser() {
-            return user;
-        }
-
-        public void setUser(String user) {
-            this.user = user;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        @Override
-        public String toString() {
-            return "DataSourceConfigurations [url=" + url + ", databaseDriver=" + databaseDriver + ", user=" + user
-                    + ", password=" + password + "]";
-        }
-
     }
 }

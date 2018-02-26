@@ -9,9 +9,20 @@ The main configuration file of the broker can be located at ${message.broker.hom
 values are sufficient to run the message broker in some environments (e.g. development, QA). This guide can be use to
  assist you in configuring the broker for other use cases.
 
+### Broker common configurations
+
+These configurations are defined under the namespace `ballerina.broke`.
+
+| Config                      | Default Value                          | Description                                   |
+|-----------------------------| ---------------------------------------|-----------------------------------------------|
+| enableInMemoryMode          | false                                  | When the in-memory mode is enabled all message and context data including durable entities are held in memory. lease note that this can increase memory usage of the broker. Therefore it is advised to allocate more memory in the JVM which run the broker. | 
+| datasource:url              | jdbc:h2:./database/MB_DB               | Database URL.                                 |
+| database:user               | wso2carbon                             | Database username                             |
+| database:password           | wso2carbon                             | Database password.                            |
+
 ### Broker-core configurations
 
-These configurations are defined under the namespace `ballerina.broke.corer`. 
+These configurations are defined under the namespace `ballerina.broke.core`. 
 
 | Config                      | Default Value                          | Description                                   |
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
@@ -19,9 +30,6 @@ These configurations are defined under the namespace `ballerina.broke.corer`.
 | durableQueueInMemoryCacheLimit | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. | 
 | deliveryTask:workerCount    | 5                                      | Number of concurrent workers used to process the delivery tasks. |
 | deliveryTask:idleTaskDelay  | 50                                     | The time that the delivery task will wait when the queue is empty or no consumers are available for message delivery in milliseconds.  |
-| datasource:url              | jdbc:h2:./database/MB_DB               | Database URL.                                 |
-| database:user               | root                                   | Database username                             |
-| database:password           | root                                   | Database password.                            |
 | authenticator:loginModule   | io.ballerina.messaging.broker.core .security.authentication.jaas.BrokerLoginModule | JAAS login module used to authenticate users. |
 
 ### AMQP transport configurations
