@@ -28,6 +28,7 @@ import io.ballerina.messaging.broker.client.output.ResponseFormatter;
 import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.resources.Exchange;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
 import java.net.HttpURLConnection;
@@ -60,14 +61,14 @@ public class ListExchangeCmd extends ListCmd {
 
         Configuration configuration = Utils.readConfigurationFile();
         HttpClient httpClient = new HttpClient(configuration);
-        String urlSuffix = "exchanges/";
 
         if (all) {
             exchangeName = "";
         }
 
         // do GET
-        HttpResponse response = httpClient.sendHttpRequest(new HttpRequest(urlSuffix + exchangeName), "GET");
+        HttpRequest httpRequest = new HttpRequest(Constants.EXCHANGES_URL_PARAM + exchangeName);
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "GET");
 
         // handle data processing
         ResponseFormatter responseFormatter = new TableFormatter();
