@@ -59,6 +59,11 @@ public class QueueBuffer {
     private AtomicInteger deliverableMessageCount = new AtomicInteger(0);
 
     /**
+     * Total Number of undelivered messages in the buffer.
+     */
+    private AtomicInteger undeliveredMessageCount = new AtomicInteger(0);
+
+    /**
      * Pointer to first deliverable candidate node.
      */
     private Node firstDeliverableCandidate;
@@ -121,6 +126,7 @@ public class QueueBuffer {
      */
     private void linkLast(Message newMessage) {
         size.incrementAndGet();
+        undeliveredMessageCount.incrementAndGet();
 
         final Node previousLast = last;
         final Node newNode = new Node(previousLast, newMessage, null);
@@ -225,8 +231,22 @@ public class QueueBuffer {
         return size.get();
     }
 
+    /**
+     * Total number of messages given out for delivery but has not removed from the buffer yet.
+     *
+     * @return number of messages in flight
+     */
     public int getNumberOfInflightMessages() {
         return messagesInFlight.get();
+    }
+
+    /**
+     * Total number of messages that are yet to be retrieved for delivery.
+     *
+     * @return number of undelivered messages
+     */
+    public int getNumberOfUndeliveredMessages() {
+        return undeliveredMessageCount.get();
     }
 
     /**
@@ -247,18 +267,26 @@ public class QueueBuffer {
 
             firstDeliverableCandidate = deliverableCandidate.next;
 
-            messagesInFlight.incrementAndGet();
+            recordRemovingMessageForDelivery();
             return deliverableCandidate.item;
         } else if (firstUndeliverable != null && firstUndeliverable.state.get() == Node.FULL_MESSAGE) {
             Node newDeliverable = firstUndeliverable;
             firstDeliverableCandidate = firstUndeliverable.next;
             pushFirstUndeliverableCursor();
 
-            messagesInFlight.incrementAndGet();
+            recordRemovingMessageForDelivery();
             return newDeliverable.item;
         } else {
             return null;
         }
+    }
+
+    /**
+     * Update corresponding counts when message is removed from the queue for delivery.
+     */
+    private void recordRemovingMessageForDelivery() {
+        messagesInFlight.incrementAndGet();
+        undeliveredMessageCount.decrementAndGet();
     }
 
     private void pushFirstUndeliverableCursor() {

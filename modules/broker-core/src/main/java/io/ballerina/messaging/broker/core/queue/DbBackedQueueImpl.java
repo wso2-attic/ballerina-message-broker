@@ -79,7 +79,7 @@ public class DbBackedQueueImpl extends Queue {
 
     @Override
     public int size() {
-        return buffer.getNumberOfInflightMessages();
+        return buffer.getNumberOfUndeliveredMessages();
     }
 
     @Override
