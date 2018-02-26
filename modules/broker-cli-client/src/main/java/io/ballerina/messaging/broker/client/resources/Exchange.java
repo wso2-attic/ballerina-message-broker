@@ -18,6 +18,8 @@
  */
 package io.ballerina.messaging.broker.client.resources;
 
+import com.google.gson.JsonObject;
+
 /**
  * Representation of exchange in the broker.
  */
@@ -52,6 +54,10 @@ public class Exchange {
     }
 
     public String getAsJsonString() {
-        return "{" + NAME + ":" + name + "," + TYPE + ":" + type + "," + DURABLE + ":" + durable + "}";
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty(NAME, name);
+        jsonObject.addProperty(TYPE, type);
+        jsonObject.addProperty(DURABLE, durable);
+        return jsonObject.toString();
     }
 }

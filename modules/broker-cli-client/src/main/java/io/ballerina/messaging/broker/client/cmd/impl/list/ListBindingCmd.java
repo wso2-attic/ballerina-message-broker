@@ -91,8 +91,8 @@ public class ListBindingCmd extends ListCmd {
 
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             if (!exchangeName.isEmpty()) {
-                List<Binding> bindingList = processExchangeResponse(response.getPayload(), exchangeName);
-                responseFormatter.printBindingsExchange((bindingList.toArray(new Binding[bindingList.size()])));
+                Binding[] bindings = processExchangeResponse(response.getPayload(), exchangeName);
+                responseFormatter.printBindingsExchange(bindings);
             }
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
@@ -106,8 +106,14 @@ public class ListBindingCmd extends ListCmd {
         out.append("  " + rootCommand + " list binding (--exchange|--queue) [resource-name] [flag]*\n");
     }
 
-
-    private List<Binding> processExchangeResponse(String payload, String exchangeName) {
+    /**
+     * Parse the response payload.
+     *
+     * @param payload response payload.
+     * @param exchangeName name of the exchange given at the command.
+     * @return array of binding objects.
+     */
+    private Binding[] processExchangeResponse(String payload, String exchangeName) {
         JsonParser parser = new JsonParser();
         JsonArray json = parser.parse(payload).getAsJsonArray();
         List<Binding> bindings = new ArrayList<>();
@@ -121,6 +127,6 @@ public class ListBindingCmd extends ListCmd {
                     });
                 }
         );
-        return bindings;
+        return bindings.toArray(new Binding[bindings.size()]);
     }
 }
