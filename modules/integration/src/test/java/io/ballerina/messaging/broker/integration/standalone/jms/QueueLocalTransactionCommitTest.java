@@ -22,6 +22,8 @@ package io.ballerina.messaging.broker.integration.standalone.jms;
 
 import io.ballerina.messaging.broker.integration.util.ClientHelper;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
@@ -42,6 +44,16 @@ import javax.naming.NamingException;
  * Test cases written to verify queue consumer and producer behavior in local transaction commit operation
  */
 public class QueueLocalTransactionCommitTest {
+
+    @BeforeClass
+    public void setup() {
+        System.setProperty("STRICT_AMQP", "true");
+    }
+
+    @AfterClass
+    public void destroy() {
+        System.setProperty("STRICT_AMQP", "false");
+    }
 
     @Parameters({"broker-port"})
     @Test
@@ -91,7 +103,6 @@ public class QueueLocalTransactionCommitTest {
     @Parameters({"broker-port"})
     @Test
     public void testTwoConsumersOneProducerCommitTransaction(String port) throws NamingException, JMSException {
-        System.setProperty("STRICT_AMQP", "true");
         String queueName = "testTwoConsumersOneProducerCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin", "localhost", port)
@@ -150,14 +161,12 @@ public class QueueLocalTransactionCommitTest {
         subscriberSession1.close();
         subscriberSession2.close();
         connection.close();
-        System.setProperty("STRICT_AMQP", "false");
     }
 
     @Parameters({"broker-port"})
     @Test
     public void testOneConsumerCommitOneConsumerRollbackOneProducerCommitTransaction(String port)
             throws NamingException, JMSException {
-        System.setProperty("STRICT_AMQP", "true");
         String queueName = "testOneConsumerCommitOneConsumerRollbackOneProducerCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin", "localhost", port)
@@ -226,7 +235,6 @@ public class QueueLocalTransactionCommitTest {
         subscriberSession1.close();
         subscriberSession2.close();
         connection.close();
-        System.setProperty("STRICT_AMQP", "false");
     }
 
     @Parameters({"broker-port"})

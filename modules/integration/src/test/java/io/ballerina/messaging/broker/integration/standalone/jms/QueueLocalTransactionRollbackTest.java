@@ -21,6 +21,8 @@ package io.ballerina.messaging.broker.integration.standalone.jms;
 
 import io.ballerina.messaging.broker.integration.util.ClientHelper;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
@@ -40,6 +42,16 @@ import javax.naming.NamingException;
  * Test cases written to verify queue consumer and producer behavior in local transaction rollback operation
  */
 public class QueueLocalTransactionRollbackTest {
+
+    @BeforeClass
+    public void setup() {
+        System.setProperty("STRICT_AMQP", "true");
+    }
+
+    @AfterClass
+    public void destroy() {
+        System.setProperty("STRICT_AMQP", "false");
+    }
 
     @Parameters({"broker-port"})
     @Test
@@ -140,7 +152,6 @@ public class QueueLocalTransactionRollbackTest {
     @Test
     public void testTwoConsumersRollbackOneProducerCommitTransaction(String port)
             throws NamingException, JMSException {
-        System.setProperty("STRICT_AMQP", "true");
         String queueName = "testTwoConsumersRollbackOneProducerCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
                 .getInitialContextBuilder("admin", "admin", "localhost", port)
@@ -225,7 +236,6 @@ public class QueueLocalTransactionRollbackTest {
         subscriberSession1.close();
         subscriberSession2.close();
         connection.close();
-        System.setProperty("STRICT_AMQP", "false");
     }
 
     @Parameters({"broker-port"})
