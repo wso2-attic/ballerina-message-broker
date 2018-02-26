@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.integration.standalone.cli;
 
 import io.ballerina.messaging.broker.client.Main;
-import org.testng.Assert;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import org.testng.annotations.Test;
 
 import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
@@ -32,24 +32,22 @@ public class ListCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'list'")
     public void testList() {
-        String[] cmd = { CLI_ROOT_COMMAND, "list" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST };
         String expectedLog = "a command is expected after 'list'";
-        String errorMessage = "error when executing 'list' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
           description = "test command 'list --help'")
     public void testListHelp() {
-        String[] cmd = { CLI_ROOT_COMMAND, "list", "--help" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, "--help" };
         String expectedLog = "Retrieve information on resource(s) in the Broker";
-        String errorMessage = "error when executing 'list --help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 }

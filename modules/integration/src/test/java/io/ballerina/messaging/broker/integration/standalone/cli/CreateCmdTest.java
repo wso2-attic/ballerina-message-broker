@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.integration.standalone.cli;
 
 import io.ballerina.messaging.broker.client.Main;
-import org.testng.Assert;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import org.testng.annotations.Test;
 
 import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
@@ -32,24 +32,22 @@ public class CreateCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'create'")
     public void testCreate() {
-        String[] cmd = { CLI_ROOT_COMMAND, "create" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE };
         String expectedLog = "a command is expected after 'create'";
-        String errorMessage = "error when executing 'create' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
           description = "test command 'create --help'")
     public void testCreateHelp() {
-        String[] cmd = { CLI_ROOT_COMMAND, "create", "--help" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, "--help" };
         String expectedLog = "Create a resource in the Broker with parameters";
-        String errorMessage = "error when executing 'create --help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 }

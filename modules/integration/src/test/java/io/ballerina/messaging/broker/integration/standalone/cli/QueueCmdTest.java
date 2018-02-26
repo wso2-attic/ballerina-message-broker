@@ -36,11 +36,10 @@ public class QueueCmdTest extends CliTestParent {
         String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_QUEUE };
         // default dead letter queue should be there
         String expectedLog = "amq.dlq";
-        String errorMessage = "error when executing 'list queue' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readOutStream(), expectedLog, cmd);
     }
 
     @Test(dependsOnMethods = "testListQueue",
@@ -50,12 +49,11 @@ public class QueueCmdTest extends CliTestParent {
         String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_QUEUE, "sampleQ1" };
         String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_QUEUE, "sampleQ1" };
         String expectedLog = "sampleQ1";
-        String errorMessage = "error when executing 'create queue <QUEUE_NAME>' command";
 
         Main.main(cmd);
         Main.main(checkCmd);
 
-        Assert.assertTrue(PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readOutStream(), expectedLog, cmd);
     }
 
     @Test(dependsOnMethods = "testCreateQueue",
@@ -64,13 +62,19 @@ public class QueueCmdTest extends CliTestParent {
     public void testDeleteQueue() {
         String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_DELETE, Constants.CMD_QUEUE, "sampleQ1" };
         String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_QUEUE };
-        String expectedLog = "sampleQ1";
-        String errorMessage = "error when executing 'delete queue <QUEUE_NAME>' command";
+        String notExpectedLog = "sampleQ1";
 
         Main.main(cmd);
         Main.main(checkCmd);
+        // This is a special test case. This has to checked for its non existence.
 
-        Assert.assertTrue(!PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
+        // build onFailure message
+        StringBuilder sb = new StringBuilder();
+        sb.append("error when executing command: " + String.join(" ", cmd) + "\n");
+        sb.append("not expected: " + notExpectedLog + "\n");
+        sb.append("stream content: " + PrintStreamHandler.readOutStream());
+
+        Assert.assertTrue(!PrintStreamHandler.readOutStream().contains(notExpectedLog), sb.toString());
     }
 
     @Test(dependsOnMethods = "testListQueue",
@@ -80,12 +84,11 @@ public class QueueCmdTest extends CliTestParent {
         String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_QUEUE, "sampleQ2", "-d", "-a" };
         String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_QUEUE, "sampleQ2" };
         String expectedLog = "sampleQ2";
-        String errorMessage = "error when executing 'create queue <QUEUE_NAME> -d -a' command";
 
         Main.main(cmd);
         Main.main(checkCmd);
 
-        Assert.assertTrue(PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readOutStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
@@ -93,11 +96,10 @@ public class QueueCmdTest extends CliTestParent {
     public void testListQueueHelp() {
         String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_QUEUE, "--help" };
         String expectedLog = "List queue(s) in the Broker";
-        String errorMessage = "error when executing 'list queue --help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
@@ -105,11 +107,10 @@ public class QueueCmdTest extends CliTestParent {
     public void testCreateQueueHelp() {
         String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_QUEUE, "--help" };
         String expectedLog = "Create a queue in the Broker with parameters";
-        String errorMessage = "error when executing 'create queue --help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
@@ -117,10 +118,9 @@ public class QueueCmdTest extends CliTestParent {
     public void testDeleteQueueHelp() {
         String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_DELETE, Constants.CMD_QUEUE, "--help" };
         String expectedLog = "Delete a queue in the Broker";
-        String errorMessage = "error when executing 'delete queue --help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 }
