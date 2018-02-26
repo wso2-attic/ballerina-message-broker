@@ -26,10 +26,10 @@ import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.user.UserStoreManager;
 import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.core.Broker;
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.integration.util.DbUtils;
 import io.ballerina.messaging.broker.integration.util.TestConfigProvider;
 import io.ballerina.messaging.broker.integration.util.TestConstants;
@@ -67,9 +67,9 @@ public class SuiteInitializer {
         StartupContext startupContext = new StartupContext();
         TestConfigProvider configProvider = new TestConfigProvider();
 
-        BrokerConfiguration brokerConfiguration = new BrokerConfiguration();
-        brokerConfiguration.setDurableQueueInMemoryCacheLimit("1000");
-        configProvider.registerConfigurationObject(BrokerConfiguration.NAMESPACE, brokerConfiguration);
+        BrokerCoreConfiguration brokerCoreConfiguration = new BrokerCoreConfiguration();
+        brokerCoreConfiguration.setDurableQueueInMemoryCacheLimit("1000");
+        configProvider.registerConfigurationObject(BrokerCoreConfiguration.NAMESPACE, brokerCoreConfiguration);
 
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
         serverConfiguration.setHostName(hostname);

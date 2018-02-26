@@ -17,7 +17,7 @@
  *
  */
 
-package io.ballerina.messaging.broker.common;
+package io.ballerina.messaging.broker.common.config;
 
 /**
  * {@link BrokerConfigProvider} is used to retrieve the config object in different modules.

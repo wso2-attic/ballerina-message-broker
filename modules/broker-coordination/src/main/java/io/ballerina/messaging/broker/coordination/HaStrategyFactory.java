@@ -19,8 +19,8 @@
 
 package io.ballerina.messaging.broker.coordination;
 
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

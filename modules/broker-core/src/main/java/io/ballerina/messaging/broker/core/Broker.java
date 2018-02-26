@@ -20,15 +20,15 @@
 package io.ballerina.messaging.broker.core;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.coordination.BasicHaListener;
 import io.ballerina.messaging.broker.coordination.HaListener;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.DefaultBrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
@@ -110,8 +110,8 @@ public final class Broker {
         metricManager = getMetricManager(metrics);
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
-                                                                                  BrokerConfiguration.class);
+        BrokerCoreConfiguration configuration = configProvider.getConfigurationObject(BrokerCoreConfiguration.NAMESPACE,
+                                                                                      BrokerCoreConfiguration.class);
         DataSource dataSource = startupContext.getService(DataSource.class);
         StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
 
@@ -159,7 +159,7 @@ public final class Broker {
         }
     }
 
-    private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerConfiguration configuration) {
+    private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerCoreConfiguration configuration) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageDeliveryTaskThreadPool-%d")
                                                                 .build();
         int workerCount = Integer.parseInt(configuration.getDeliveryTask().getWorkerCount());

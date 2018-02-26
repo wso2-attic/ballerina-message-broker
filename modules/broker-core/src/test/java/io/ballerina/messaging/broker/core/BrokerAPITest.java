@@ -19,12 +19,12 @@
 
 package io.ballerina.messaging.broker.core;
 
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -51,7 +51,7 @@ public class BrokerAPITest {
         DataSource dataSource = DbUtil.getDataSource();
         StartupContext startupContext = new StartupContext();
         TestBrokerConfigProvider testBrokerConfigProvider = new TestBrokerConfigProvider();
-        testBrokerConfigProvider.addConfigObject(BrokerConfiguration.NAMESPACE, new BrokerConfiguration());
+        testBrokerConfigProvider.addConfigObject(BrokerCoreConfiguration.NAMESPACE, new BrokerCoreConfiguration());
         startupContext.registerService(BrokerConfigProvider.class, testBrokerConfigProvider);
         startupContext.registerService(DataSource.class, dataSource);
         broker = new Broker(startupContext);

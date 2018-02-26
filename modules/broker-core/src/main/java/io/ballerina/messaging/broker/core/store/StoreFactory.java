@@ -23,7 +23,7 @@ import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.ExchangeRegistry;
 import io.ballerina.messaging.broker.core.QueueHandlerFactory;
 import io.ballerina.messaging.broker.core.QueueRegistry;
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.dao.impl.DaoFactory;
 
@@ -36,11 +36,13 @@ public class StoreFactory {
 
     private final DaoFactory daoFactory;
     private final BrokerMetricManager metricManager;
-    private final BrokerConfiguration configuration;
+    private final BrokerCoreConfiguration configuration;
 
     private SharedMessageStore sharedMessageStore;
 
-    public StoreFactory(DataSource dataSource, BrokerMetricManager metricManager, BrokerConfiguration configuration) {
+    public StoreFactory(DataSource dataSource,
+                        BrokerMetricManager metricManager,
+                        BrokerCoreConfiguration configuration) {
         daoFactory = new DaoFactory(dataSource, metricManager);
         this.metricManager = metricManager;
         this.configuration = configuration;

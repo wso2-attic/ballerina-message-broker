@@ -19,7 +19,7 @@
 
 package io.ballerina.messaging.broker.core;
 
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.queue.DbBackedQueueImpl;
 import io.ballerina.messaging.broker.core.queue.MemQueueImpl;
@@ -36,7 +36,7 @@ public class QueueHandlerFactory {
     private QueueBufferFactory queueBufferFactory;
 
     public QueueHandlerFactory(SharedMessageStore sharedMessageStore, BrokerMetricManager metricManager,
-            BrokerConfiguration configuration) {
+            BrokerCoreConfiguration configuration) {
         this.sharedMessageStore = sharedMessageStore;
         this.metricManager = metricManager;
         nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());

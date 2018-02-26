@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.core.configuration;
 /**
  * Represents configuration for broker.
  */
-public class BrokerConfiguration {
+public class BrokerCoreConfiguration {
 
     /**
      * Namespace used in config file
