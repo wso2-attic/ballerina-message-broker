@@ -15,7 +15,7 @@
 # under the License.
 
 # Broker Configurations.
-wso2.broker:
+ballerina.broker.core:
  # Maximum number of messages kept in a non-durable queue. Increasing this number can increase the memory consumption.
  # Messages published to queue are dropped after this limit is reached.
  nonDurableQueueMaxDepth: 10000
@@ -42,7 +42,7 @@ wso2.broker:
   password: wso2carbon
 
 # Broker auth related configurations.
-wso2.broker.auth:
+ballerina.broker.auth:
  # Broker authentication related configurations.
  authentication:
   # Enable the authentication
@@ -52,7 +52,7 @@ wso2.broker.auth:
    loginModule: io.ballerina.messaging.broker.auth.authentication.jaas.BrokerLoginModule
 
 # AMQP transport related configurations.
-wso2.broker.transport.amqp:
+ballerina.broker.transport.amqp:
  # Hostname configuration used in creating the server socket
  hostName: localhost
 
@@ -103,7 +103,7 @@ wso2.broker.transport.amqp:
    certType: SunX509
 
 # Failover related configurations
-wso2.broker.failover:
+ballerina.broker.failover:
  # Whether or not failover is enabled
  enabled: false
 

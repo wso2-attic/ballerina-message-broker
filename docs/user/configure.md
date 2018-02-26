@@ -11,7 +11,7 @@ values are sufficient to run the message broker in some environments (e.g. devel
 
 ### Broker-core configurations
 
-These configurations are defined under the namespace `wso2.broker`. 
+These configurations are defined under the namespace `ballerina.broke.corer`. 
 
 | Config                      | Default Value                          | Description                                   |
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
@@ -26,7 +26,7 @@ These configurations are defined under the namespace `wso2.broker`.
 
 ### AMQP transport configurations
 
-These configurations are defined under the namespace `wso2.broker.transport.amqp`. 
+These configurations are defined under the namespace `ballerina.broker.transport.amqp`. 
 
 | Config                      | Default Value                                | Description                                                                                                  |
 |-----------------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------|
@@ -49,7 +49,7 @@ These configurations are defined under the namespace `wso2.broker.transport.amqp
 
 ### Fail-over configurations
 
-These configurations are defined under the namespace `wso2.broker.failover`. 
+These configurations are defined under the namespace `ballerina.broker.failover`. 
 
 | Config                                   | Default Value                 | Description                                                                              |
 |------------------------------------------|-------------------------------|------------------------------------------------------------------------------------------|

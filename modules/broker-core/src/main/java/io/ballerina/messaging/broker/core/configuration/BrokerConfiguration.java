@@ -27,7 +27,7 @@ public class BrokerConfiguration {
     /**
      * Namespace used in config file
      */
-    public static final String NAMESPACE = "wso2.broker";
+    public static final String NAMESPACE = "ballerina.broker.core";
     /**
      * Name of the configuration file.
      */
