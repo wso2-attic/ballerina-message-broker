@@ -21,56 +21,31 @@ package io.ballerina.messaging.broker.core.store;
 
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.ExchangeRegistry;
-import io.ballerina.messaging.broker.core.QueueHandlerFactory;
 import io.ballerina.messaging.broker.core.QueueRegistry;
-import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
-import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
-import io.ballerina.messaging.broker.core.store.dao.impl.DaoFactory;
-
-import javax.sql.DataSource;
 
 /**
- * Factory class for store backed objects.
+ * Factory interface for store backed objects.
  */
-public class StoreFactory {
-
-    private final DaoFactory daoFactory;
-    private final BrokerMetricManager metricManager;
-    private final BrokerCoreConfiguration configuration;
-
-    private SharedMessageStore sharedMessageStore;
-
-    public StoreFactory(DataSource dataSource,
-                        BrokerMetricManager metricManager,
-                        BrokerCoreConfiguration configuration) {
-        daoFactory = new DaoFactory(dataSource, metricManager);
-        this.metricManager = metricManager;
-        this.configuration = configuration;
-        sharedMessageStore = new SharedMessageStore(daoFactory.createMessageDao(), 32768, 1024);
-    }
+public interface StoreFactory {
 
     /**
      * Create exchange registry
+     *
      * @return ExchangeRegistry object
      */
-    public ExchangeRegistry getExchangeRegistry() {
-        return new ExchangeRegistry(daoFactory.createExchangeDao(), daoFactory.createBindingDao());
-    }
+    ExchangeRegistry getExchangeRegistry();
 
     /**
      * Create message registry
+     *
      * @return SharedMessageStore object
      */
-    public SharedMessageStore getSharedMessageStore() {
-        return sharedMessageStore;
-    }
+    SharedMessageStore getSharedMessageStore();
 
     /**
      * Create queue registry
+     *
      * @return QueueRegistry object
      */
-    public QueueRegistry getQueueRegistry(SharedMessageStore messageStore) throws BrokerException {
-        return new QueueRegistry(daoFactory.createQueueDao(),
-                                 new QueueHandlerFactory(messageStore, metricManager, configuration));
-    }
+    QueueRegistry getQueueRegistry() throws BrokerException;
 }

@@ -32,7 +32,7 @@ public class TestConfigProvider implements BrokerConfigProvider {
     private Map<String, Object> configMap = new HashMap<>();
 
     @Override
-    public <T> T getConfigurationObject(String namespace, Class<T> configurationClass) throws Exception {
+    public <T> T getConfigurationObject(String namespace, Class<T> configurationClass) {
         return configurationClass.cast(configMap.get(namespace));
     }
 

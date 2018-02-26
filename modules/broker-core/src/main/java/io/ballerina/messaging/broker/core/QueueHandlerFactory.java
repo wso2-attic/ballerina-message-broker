@@ -19,29 +19,10 @@
 
 package io.ballerina.messaging.broker.core;
 
-import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
-import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
-import io.ballerina.messaging.broker.core.queue.DbBackedQueueImpl;
-import io.ballerina.messaging.broker.core.queue.MemQueueImpl;
-import io.ballerina.messaging.broker.core.queue.QueueBufferFactory;
-import io.ballerina.messaging.broker.core.store.SharedMessageStore;
-
 /**
  * Factory for creating queue handler objects.
  */
-public class QueueHandlerFactory {
-    private final SharedMessageStore sharedMessageStore;
-    private final BrokerMetricManager metricManager;
-    private final int nonDurableQueueMaxDepth;
-    private QueueBufferFactory queueBufferFactory;
-
-    public QueueHandlerFactory(SharedMessageStore sharedMessageStore, BrokerMetricManager metricManager,
-            BrokerCoreConfiguration configuration) {
-        this.sharedMessageStore = sharedMessageStore;
-        this.metricManager = metricManager;
-        nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
-        queueBufferFactory = new QueueBufferFactory(configuration);
-    }
+public interface QueueHandlerFactory {
 
     /**
      * Create a durable queue handler with the give arguments.
@@ -51,10 +32,7 @@ public class QueueHandlerFactory {
      * @return QueueHandler object
      * @throws BrokerException if cannot create queue handler
      */
-    QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete) throws BrokerException {
-        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, sharedMessageStore, queueBufferFactory);
-        return new QueueHandler(queue, metricManager);
-    }
+    QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete) throws BrokerException;
 
     /**
      * Create a non durable queue handler with the give arguments.
@@ -63,9 +41,5 @@ public class QueueHandlerFactory {
      * @param autoDelete true if auto deletable
      * @return QueueHandler object
      */
-    QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete) {
-        Queue queue = new MemQueueImpl(queueName, nonDurableQueueMaxDepth, autoDelete);
-        return new QueueHandler(queue, metricManager);
-    }
-
+    QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete);
 }

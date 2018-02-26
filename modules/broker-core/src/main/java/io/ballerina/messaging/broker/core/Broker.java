@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.coordination.BasicHaListener;
@@ -34,6 +35,8 @@ import io.ballerina.messaging.broker.core.metrics.DefaultBrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
 import io.ballerina.messaging.broker.core.rest.api.ExchangesApi;
 import io.ballerina.messaging.broker.core.rest.api.QueuesApi;
+import io.ballerina.messaging.broker.core.store.DbBackedStoreFactory;
+import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
 import io.ballerina.messaging.broker.core.store.SharedMessageStore;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
 import io.ballerina.messaging.broker.core.task.TaskExecutorService;
@@ -112,12 +115,11 @@ public final class Broker {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerCoreConfiguration configuration = configProvider.getConfigurationObject(BrokerCoreConfiguration.NAMESPACE,
                                                                                       BrokerCoreConfiguration.class);
-        DataSource dataSource = startupContext.getService(DataSource.class);
-        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
+        StoreFactory storeFactory = getStoreFactory(startupContext, configProvider, configuration);
 
         exchangeRegistry = storeFactory.getExchangeRegistry();
         this.sharedMessageStore = storeFactory.getSharedMessageStore();
-        queueRegistry = storeFactory.getQueueRegistry(sharedMessageStore);
+        queueRegistry = storeFactory.getQueueRegistry();
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
         this.deliveryTaskService = createTaskExecutorService(configuration);
@@ -125,14 +127,40 @@ public final class Broker {
 
         initDefaultDeadLetterQueue();
 
-        this.brokerTransactionFactory =
-                new BrokerTransactionFactory(new BranchFactory(this, storeFactory));
+        this.brokerTransactionFactory = new BrokerTransactionFactory(new BranchFactory(this, storeFactory));
 
+        initRestApi(startupContext);
+        initHaSupport(startupContext);
+
+        startupContext.registerService(Broker.class, this);
+    }
+
+    private StoreFactory getStoreFactory(StartupContext startupContext,
+                                         BrokerConfigProvider configProvider,
+                                         BrokerCoreConfiguration configuration) throws Exception {
+        BrokerCommonConfiguration commonConfigs
+                = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
+                                                        BrokerCommonConfiguration.class);
+        if (Objects.isNull(commonConfigs)) {
+            commonConfigs = new BrokerCommonConfiguration();
+        }
+        DataSource dataSource = startupContext.getService(DataSource.class);
+
+        if (commonConfigs.getEnableInMemoryMode()) {
+            return new MemBackedStoreFactory(metricManager, configuration);
+        } else {
+            return new DbBackedStoreFactory(dataSource, metricManager, configuration);
+        }
+    }
+
+    private void initRestApi(StartupContext startupContext) {
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         if (Objects.nonNull(serviceRunner)) {
             serviceRunner.deploy(new QueuesApi(this), new ExchangesApi(this));
         }
+    }
 
+    private void initHaSupport(StartupContext startupContext) {
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
             brokerHelper = new BrokerHelper();
@@ -140,7 +168,6 @@ public final class Broker {
             LOGGER.info("Broker is in PASSIVE mode"); //starts up in passive mode
             brokerHelper = new HaEnabledBrokerHelper();
         }
-        startupContext.registerService(Broker.class, this);
     }
 
     private void initDefaultDeadLetterQueue() throws BrokerException, ValidationException {

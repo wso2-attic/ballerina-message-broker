@@ -23,23 +23,21 @@ import io.ballerina.messaging.broker.core.Binding;
 import io.ballerina.messaging.broker.core.store.dao.BindingDao;
 
 /**
- * {@link BindingDao} implementation which represents the NullObject pattern. Used for non durable exchanges where
- * bindings shouldn't be persisted.
+ * Null binding DAO used when broker is operating in in-memory mode.
  */
-public class NoOpBindingDao implements BindingDao {
-
+public class NullBindingDao implements BindingDao {
     @Override
     public void persist(String exchangeName, Binding binding) {
-        // Ignore method invocation.
+        // Do nothing
     }
 
     @Override
     public void delete(String queueName, String routingKey, String exchangeName) {
-        // Ignore method invocation.
+        // Do nothing
     }
 
     @Override
     public void retrieveBindingsForExchange(String exchangeName, BindingCollector bindingCollector) {
-        // Ignore method invocation.
+        // Do nothing
     }
 }

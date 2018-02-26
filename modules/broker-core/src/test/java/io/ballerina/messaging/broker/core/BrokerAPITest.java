@@ -33,7 +33,6 @@ import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import javax.sql.DataSource;
 
 public class BrokerAPITest {
@@ -129,13 +128,10 @@ public class BrokerAPITest {
 
     private static class TestBrokerConfigProvider implements BrokerConfigProvider {
         Map<String, Object> configMap = new HashMap<>();
-        @Override
-        public <T> T getConfigurationObject(String namespace, Class<T> configurationClass) throws Exception {
-            Object configObject = configMap.get(namespace);
 
-            if (Objects.isNull(configObject)) {
-                throw new Exception("Unknown key");
-            }
+        @Override
+        public <T> T getConfigurationObject(String namespace, Class<T> configurationClass) {
+            Object configObject = configMap.get(namespace);
             return configurationClass.cast(configObject);
         }
 
