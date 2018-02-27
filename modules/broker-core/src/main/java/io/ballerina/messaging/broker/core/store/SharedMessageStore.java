@@ -86,13 +86,13 @@ public class SharedMessageStore {
         this.messageDao = messageDao;
     }
 
-    public void addShallowCopy(Message message) {
-        pendingMessages.put(message.getInternalId(), message.shallowCopy());
+    public void add(Message message) {
+        pendingMessages.put(message.getInternalId(), message);
     }
 
-    public void addShallowCopy(Xid xid, Message message) throws BrokerException {
+    public void add(Xid xid, Message message) throws BrokerException {
         TransactionData transactionData = getTransactionData(xid);
-        transactionData.addEnqueueMessage(message.shallowCopy());
+        transactionData.addEnqueueMessage(message);
     }
 
     public void attach(String queueName, long messageInternalId) throws BrokerException {
@@ -158,6 +158,7 @@ public class SharedMessageStore {
 
     public void flush(Xid xid) throws BrokerException {
         messageDao.persist(getTransactionData(xid));
+        clear(xid);
     }
 
     public void branch(Xid xid) {
@@ -176,6 +177,8 @@ public class SharedMessageStore {
     }
 
     public void clear(Xid xid) {
-        transactionMap.remove(xid);
+        TransactionData transactionData = transactionMap.remove(xid);
+        transactionData.releaseEnqueueMessages();
+        transactionData.clear();
     }
 }

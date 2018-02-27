@@ -180,26 +180,24 @@ public final class Broker {
                 if (bindingSet.isEmpty()) {
                     LOGGER.info("Dropping message since no queues found for routing key {} in {}",
                                 routingKey, exchange);
-                    message.release();
                     MessageTracer.trace(message, MessageTracer.NO_ROUTES);
                 } else {
                     try {
-                        sharedMessageStore.addShallowCopy(message);
+                        sharedMessageStore.add(message.shallowCopy());
                         Set<QueueHandler> uniqueQueues = getUniqueQueueHandlersForBinding(metadata, bindingSet);
                         publishToQueues(message, uniqueQueues);
                     } finally {
                         sharedMessageStore.flush(message.getInternalId());
-                        // Release the original message. Shallow copies are distributed
-                        message.release();
                     }
                 }
             } else {
-                message.release();
                 MessageTracer.trace(message, MessageTracer.UNKNOWN_EXCHANGE);
                 throw new BrokerException("Message publish failed. Unknown exchange: " + metadata.getExchangeName());
             }
         } finally {
             lock.readLock().unlock();
+            // Release the original message. Shallow copies are distributed
+            message.release();
         }
 
     }
@@ -228,8 +226,7 @@ public final class Broker {
         }
 
         for (QueueHandler handler : uniqueQueueHandlers) {
-            Message copiedMessage = message.shallowCopy();
-            handler.enqueue(copiedMessage);
+            handler.enqueue(message.shallowCopy());
         }
         metricManager.markPublish();
     }
@@ -251,30 +248,39 @@ public final class Broker {
     }
 
     public Set<QueueHandler> prepareEnqueue(Xid xid, Message message) throws BrokerException {
-        Metadata metadata = message.getMetadata();
-        Exchange exchange = exchangeRegistry.getExchange(metadata.getExchangeName());
-        if (Objects.nonNull(exchange)) {
-            BindingSet bindingsForRoute = exchange.getBindingsForRoute(metadata.getRoutingKey());
-            Set<QueueHandler> uniqueQueueHandlers = getUniqueQueueHandlersForBinding(metadata, bindingsForRoute);
-            if (uniqueQueueHandlers.isEmpty()) {
-                message.release();
+        lock.readLock().lock();
+        try {
+            Metadata metadata = message.getMetadata();
+            Exchange exchange = exchangeRegistry.getExchange(metadata.getExchangeName());
+            if (Objects.nonNull(exchange)) {
+                BindingSet bindingsForRoute = exchange.getBindingsForRoute(metadata.getRoutingKey());
+                Set<QueueHandler> uniqueQueueHandlers = getUniqueQueueHandlersForBinding(metadata, bindingsForRoute);
+                if (uniqueQueueHandlers.isEmpty()) {
+                    return uniqueQueueHandlers;
+                }
+                sharedMessageStore.add(xid, message.shallowCopy());
+                for (QueueHandler handler : uniqueQueueHandlers) {
+                    handler.prepareForEnqueue(xid, message.shallowCopy());
+                }
                 return uniqueQueueHandlers;
+            } else {
+                throw new BrokerException("Message published to unknown exchange " + metadata.getExchangeName());
             }
-
-            for (QueueHandler handler : uniqueQueueHandlers) {
-                handler.prepareForEnqueue(xid, message);
-            }
-            return uniqueQueueHandlers;
-        } else {
+        } finally {
+            lock.readLock().unlock();
             message.release();
-            throw new BrokerException("Message published to unknown exchange " + metadata.getExchangeName());
         }
     }
 
     public QueueHandler prepareDequeue(Xid xid, String queueName, Message message) throws BrokerException {
-        QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
-        queueHandler.prepareForDetach(xid, message);
-        return queueHandler;
+        lock.readLock().lock();
+        try {
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+            queueHandler.prepareForDetach(xid, message);
+            return queueHandler;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**

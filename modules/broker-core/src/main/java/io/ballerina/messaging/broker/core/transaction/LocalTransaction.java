@@ -63,7 +63,7 @@ public class LocalTransaction implements BrokerTransaction {
 
         try {
             createBranchIfNeeded();
-            branch.dequeue(queueName, message);
+            branch.dequeue(queueName, message.shallowCopy());
         } catch (BrokerException e) {
             preConditionFailed = true;
             errorMessageBuilder.append(e.getMessage()).append('\n');
