@@ -40,8 +40,8 @@ import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
 import io.ballerina.messaging.broker.core.store.MessageStore;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
 import io.ballerina.messaging.broker.core.task.TaskExecutorService;
-import io.ballerina.messaging.broker.core.transaction.BranchFactory;
 import io.ballerina.messaging.broker.core.transaction.BrokerTransactionFactory;
+import io.ballerina.messaging.broker.core.transaction.DistributedTransaction;
 import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
 import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
@@ -127,7 +127,7 @@ public final class Broker {
 
         initDefaultDeadLetterQueue();
 
-        this.brokerTransactionFactory = new BrokerTransactionFactory(new BranchFactory(this, storeFactory));
+        this.brokerTransactionFactory = new BrokerTransactionFactory(this, messageStore);
 
         initRestApi(startupContext);
         initHaSupport(startupContext);
@@ -556,7 +556,16 @@ public final class Broker {
      * Start local transaction flow
      */
     public LocalTransaction newLocalTransaction() {
-        return brokerTransactionFactory.createLocalTransaction();
+        return brokerTransactionFactory.newLocalTransaction();
+    }
+
+    /**
+     * Start distributed transaction flow.
+     *
+     * @return a new DistributedTransaction object
+     */
+    public DistributedTransaction newDistributedTransaction() {
+        return brokerTransactionFactory.newDistributedTransaction();
     }
 
     private class BrokerHelper {

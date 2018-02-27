@@ -23,12 +23,28 @@ import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 
+import java.util.Objects;
 import javax.transaction.xa.Xid;
 
 /**
  * Distributed transactional operation handle in this implementation.
  */
 public class DistributedTransaction implements BrokerTransaction {
+
+    private static final String SAME_XID_ERROR_MSG = "Branch not found with xid ";
+
+    private final BranchFactory branchFactory;
+
+    private final Registry transactionRegistry;
+
+    private Branch currentBranch;
+
+    public DistributedTransaction(BranchFactory branchFactory, Registry transactionRegistry) {
+
+        this.branchFactory = branchFactory;
+        this.transactionRegistry = transactionRegistry;
+        this.currentBranch = null;
+    }
 
     @Override
     public void dequeue(String queue, Message message) throws BrokerException {
@@ -60,17 +76,43 @@ public class DistributedTransaction implements BrokerTransaction {
         return false;
     }
 
-    @Override public void onClose() {
-
+    @Override
+    public void onClose() {
     }
 
     @Override
-    public void start(Xid xid, boolean join, boolean resume) {
+    public void start(Xid xid, int sessionId, boolean join, boolean resume) throws ValidationException {
+        if (join && resume) {
+            throw new ValidationException("Cannot start a branch with both join and resume set " + xid);
+        }
 
+        Branch branch = transactionRegistry.getBranch(xid);
+        if (join) {
+            if (Objects.isNull(branch)) {
+                throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+            }
+            this.currentBranch = branch;
+            currentBranch.associateSession(sessionId);
+        } else if (resume) {
+            if (Objects.isNull(branch)) {
+                throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+            }
+
+            this.currentBranch = branch;
+            branch.resumeSession(sessionId);
+        } else {
+            if (Objects.nonNull(branch)) {
+                throw new ValidationException("Xid " + xid + " cannot be started as it is already known");
+            }
+            branch = branchFactory.createBranch(xid);
+            transactionRegistry.register(branch);
+            branch.associateSession(sessionId);
+            this.currentBranch = branch;
+        }
     }
 
     @Override
-    public void end(Xid xid, boolean fail, boolean suspend) {
+    public void end(Xid xid, int sessionId, boolean fail, boolean suspend) {
 
     }
 

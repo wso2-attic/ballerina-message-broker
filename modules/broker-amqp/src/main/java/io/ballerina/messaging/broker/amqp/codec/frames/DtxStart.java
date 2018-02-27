@@ -19,11 +19,19 @@
 
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
+import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
+import io.ballerina.messaging.broker.amqp.codec.ChannelException;
 import io.ballerina.messaging.broker.amqp.codec.XaResult;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.LongString;
+import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.transaction.XidImpl;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for dtx.start
@@ -36,6 +44,7 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class DtxStart extends MethodFrame {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DtxStart.class);
     private static final short CLASS_ID = 100;
     private static final short METHOD_ID = 20;
     private final int format;
@@ -77,7 +86,20 @@ public class DtxStart extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         int channelId = getChannel();
-        ctx.writeAndFlush(new DtxStartOk(channelId, XaResult.XA_OK.getValue()));
+        AmqpChannel channel = connectionHandler.getChannel(channelId);
+        XidImpl xid = new XidImpl(format, branchId.getBytes(), globalId.getBytes());
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.startDtx(xid, join, resume);
+                ctx.writeAndFlush(new DtxStartOk(channelId, XaResult.XA_OK.getValue()));
+            } catch (ValidationException e) {
+                LOGGER.warn("User input error while starting transaction", e);
+                ctx.writeAndFlush(new ChannelClose(channelId, ChannelException.PRECONDITION_FAILED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            }
+        });
 
     }
 

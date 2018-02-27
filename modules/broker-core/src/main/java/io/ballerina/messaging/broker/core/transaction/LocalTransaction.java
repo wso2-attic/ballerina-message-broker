@@ -118,12 +118,12 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void start(Xid xid, boolean join, boolean resume) throws ValidationException {
+    public void start(Xid xid, int sessionId, boolean join, boolean resume) throws ValidationException {
         throw new ValidationException("dtx.start called on local-transactional channel");
     }
 
     @Override
-    public void end(Xid xid, boolean fail, boolean suspend) throws ValidationException {
+    public void end(Xid xid, int sessionId, boolean fail, boolean suspend) throws ValidationException {
         throw new ValidationException("dtx.end called on local-transactional channel");
     }
 

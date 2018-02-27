@@ -20,7 +20,7 @@
 package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.core.Broker;
-import io.ballerina.messaging.broker.core.store.StoreFactory;
+import io.ballerina.messaging.broker.core.store.MessageStore;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -31,13 +31,12 @@ import javax.transaction.xa.Xid;
  */
 public class BranchFactory {
 
-    private final StoreFactory storeFactory;
-
     private final Broker broker;
+    private final MessageStore messageStore;
 
-    public BranchFactory(Broker broker, StoreFactory storeFactory) {
-        this.storeFactory = storeFactory;
+    public BranchFactory(Broker broker, MessageStore messageStore) {
         this.broker = broker;
+        this.messageStore = messageStore;
     }
 
     public Branch createBranch() {
@@ -45,6 +44,10 @@ public class BranchFactory {
         Xid xid = new XidImpl(0,
                               UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8),
                               "".getBytes(StandardCharsets.UTF_8));
-        return new Branch(xid, storeFactory.getMessageStore(), broker);
+        return createBranch(xid);
+    }
+
+    public Branch createBranch(Xid xid) {
+        return new Branch(xid, messageStore, broker);
     }
 }

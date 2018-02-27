@@ -50,6 +50,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.transaction.xa.Xid;
 
 /**
  * AMQP channel representation.
@@ -75,6 +76,7 @@ public class AmqpChannel {
     private final Broker broker;
 
     private final int channelId;
+
     private final AmqpMetricManager metricManager;
 
     private final Map<ShortString, AmqpConsumer> consumerMap;
@@ -387,7 +389,8 @@ public class AmqpChannel {
      * Start distributed transaction on the channel
      */
     public void setDistributedTransactional() {
-
+        transaction = broker.newDistributedTransaction();
+        messageAggregator.setTransaction(transaction);
     }
 
     /**
@@ -416,6 +419,10 @@ public class AmqpChannel {
      */
     public boolean isTransactional () {
         return transaction.isTransactional();
+    }
+
+    public void startDtx(Xid xid, boolean join, boolean resume) throws ValidationException {
+        transaction.start(xid, channelId, join, resume);
     }
 
     /**
