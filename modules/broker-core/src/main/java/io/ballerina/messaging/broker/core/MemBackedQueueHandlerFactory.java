@@ -45,5 +45,6 @@ public class MemBackedQueueHandlerFactory implements QueueHandlerFactory {
     @Override
     public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete) {
         Queue queue = new MemQueueImpl(queueName, nonDurableQueueMaxDepth, autoDelete);
-        return new QueueHandler(queue, metricManager);    }
+        return new QueueHandler(queue, metricManager);
+    }
 }

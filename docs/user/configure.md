@@ -11,7 +11,7 @@ values are sufficient to run the message broker in some environments (e.g. devel
 
 ### Broker common configurations
 
-These configurations are defined under the namespace `ballerina.broke`.
+These configurations are defined under the namespace `ballerina.broker`.
 
 | Config                      | Default Value                          | Description                                   |
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
@@ -22,7 +22,7 @@ These configurations are defined under the namespace `ballerina.broke`.
 
 ### Broker-core configurations
 
-These configurations are defined under the namespace `ballerina.broke.core`. 
+These configurations are defined under the namespace `ballerina.broker.core`. 
 
 | Config                      | Default Value                          | Description                                   |
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
