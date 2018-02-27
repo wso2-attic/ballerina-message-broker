@@ -28,6 +28,7 @@ import io.ballerina.messaging.broker.core.store.MessageStore;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.transaction.xa.Xid;
 
@@ -37,6 +38,7 @@ import javax.transaction.xa.Xid;
 public class Branch {
 
 
+    private State state;
 
     /**
      * States of a {@link Branch}
@@ -56,17 +58,18 @@ public class Branch {
         /**
          * Branch can only be rolled back
          */
-        ROLLBACK_ONLY
-    }
+        ROLLBACK_ONLY;
 
+
+
+
+    }
     private Xid xid;
 
     private final MessageStore messageStore;
 
     private final Set<QueueHandler> affectedQueueHandlers;
-
     private final Broker broker;
-
     private final Map<Integer, State> associatedSessions;
 
     public Branch(Xid xid, MessageStore messageStore, Broker broker) {
@@ -106,6 +109,14 @@ public class Branch {
         return xid;
     }
 
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public State getState() {
+        return state;
+    }
+
     /**
      * Associate a session to current branch.
      *
@@ -115,11 +126,36 @@ public class Branch {
         associatedSessions.put(sessionId, State.ACTIVE);
     }
 
-    public boolean resumeSession(int sessionId) {
+
+    /**
+     * Resume a session if it is suspended
+     *
+     * @param sessionId session identifier of the session
+     */
+    public void resumeSession(int sessionId) {
         if (associatedSessions.containsKey(sessionId) && associatedSessions.get(sessionId) == State.SUSPENDED) {
             associatedSessions.put(sessionId, State.ACTIVE);
-            return true;
         }
-        return false;
+    }
+
+    public void disassociateSession(int sessionId) {
+        associatedSessions.remove(sessionId);
+    }
+
+    public void suspendSession(int sessionId) {
+        State associatedState = associatedSessions.get(sessionId);
+        if (Objects.nonNull(associatedState) && associatedState == State.ACTIVE) {
+            associatedSessions.put(sessionId, State.SUSPENDED);
+        }
+    }
+
+    /**
+     * Check if a session is associated with the branch
+     *
+     * @param sessionId session identifier of the session
+     * @return True is the session is associated with the branch
+     */
+    public boolean isAssociated(int sessionId) {
+        return associatedSessions.containsKey(sessionId);
     }
 }

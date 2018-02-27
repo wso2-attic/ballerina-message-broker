@@ -425,6 +425,10 @@ public class AmqpChannel {
         transaction.start(xid, channelId, join, resume);
     }
 
+    public void endDtx(Xid xid, boolean fail, boolean suspend) throws ValidationException {
+        transaction.end(xid, channelId,  fail, suspend);
+    }
+
     /**
      * Data-structure to handle unacknowledge messages. This class will update the has room variable depending on the
      * number of messages in the unackedMessageMap.

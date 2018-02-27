@@ -112,8 +112,27 @@ public class DistributedTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void end(Xid xid, int sessionId, boolean fail, boolean suspend) {
+    public void end(Xid xid, int sessionId, boolean fail, boolean suspend) throws ValidationException {
+        Branch branch = transactionRegistry.getBranch(xid);
 
+        if (Objects.isNull(branch)) {
+            throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+        }
+
+        if (suspend && fail) {
+            branch.disassociateSession(sessionId);
+            this.currentBranch = null;
+            throw new ValidationException("Cannot end a branch with both suspend and fail set " + xid);
+        } else if (!branch.isAssociated(sessionId)) {
+            throw new ValidationException("Xid " + xid + " not associated with the current session");
+        } else if (suspend) {
+            branch.suspendSession(sessionId);
+        } else {
+            if (fail) {
+                branch.setState(Branch.State.ROLLBACK_ONLY);
+            }
+            branch.disassociateSession(sessionId);
+        }
     }
 
     @Override
