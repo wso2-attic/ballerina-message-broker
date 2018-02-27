@@ -19,72 +19,25 @@
 
 package io.ballerina.messaging.broker.core.store;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.lmax.disruptor.EventTranslatorOneArg;
-import com.lmax.disruptor.EventTranslatorTwoArg;
-import com.lmax.disruptor.dsl.Disruptor;
-import com.lmax.disruptor.dsl.ProducerType;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.queue.QueueBuffer;
-import io.ballerina.messaging.broker.core.store.dao.MessageDao;
-import io.ballerina.messaging.broker.core.store.disruptor.SleepingBlockingWaitStrategy;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadFactory;
-import javax.annotation.concurrent.ThreadSafe;
 import javax.transaction.xa.Xid;
 
 /**
- * Message store class that is used by all the durable queues to persist messages
- * <p>
- * Note: This class is thread safe
+ * Message store class that is used to handle messages.
+ * Note: This class is thread safe.
  */
-@ThreadSafe
-public class SharedMessageStore {
+public abstract class MessageStore {
 
-    private final Map<Long, Message> pendingMessages;
+    private final Map<Long, Message> pendingMessages = new ConcurrentHashMap<>();
 
-    private final Disruptor<DbOperation> disruptor;
-
-    private static final EventTranslatorOneArg<DbOperation, Message> INSERT_MESSAGE =
-            (event, sequence, message) -> event.insertMessage(message);
-
-    private static final EventTranslatorTwoArg<DbOperation, String, Long> DETACH_FROM_QUEUE =
-            (event, sequence, queueName, messageId) -> event.detachFromQueue(queueName, messageId);
-
-    private static final EventTranslatorOneArg<DbOperation, Long> DELETE_MESSAGE =
-            (event, sequence, messageId) -> event.deleteMessage(messageId);
-
-    private static final EventTranslatorTwoArg<DbOperation, QueueBuffer, Message> READ_MESSAGE_DATA =
-            (event, sequence, queueBuffer, message) -> event.readMessageData(queueBuffer, message);
-
-    private final MessageDao messageDao;
-
-    private final Map<Xid, TransactionData> transactionMap;
-
-    @SuppressWarnings("unchecked") SharedMessageStore(MessageDao messageDao, int bufferSize, int maxDbBatchSize) {
-
-        pendingMessages = new ConcurrentHashMap<>();
-        transactionMap = new ConcurrentHashMap<>();
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("DisruptorMessageStoreThread-%d").build();
-
-        disruptor = new Disruptor<>(DbOperation.getFactory(),
-                                    bufferSize, namedThreadFactory, ProducerType.MULTI, new
-                                            SleepingBlockingWaitStrategy());
-
-        disruptor.setDefaultExceptionHandler(new LogExceptionHandler());
-
-        disruptor.handleEventsWith(new DbEventMatcher(bufferSize))
-                 .then(new DbAccessHandler(messageDao, maxDbBatchSize))
-                 .then(new FinalEventHandler());
-        disruptor.start();
-        this.messageDao = messageDao;
-    }
+    private final Map<Xid, TransactionData> transactionMap =  new ConcurrentHashMap<>();
 
     public void add(Message message) {
         pendingMessages.put(message.getInternalId(), message);
@@ -117,16 +70,12 @@ public class SharedMessageStore {
         return transactionData;
     }
 
-    private void delete(long messageId) {
-        disruptor.publishEvent(DELETE_MESSAGE, messageId);
-    }
-
     public synchronized void detach(String queueName, final Message message) {
         message.removeAttachedQueue(queueName);
         if (!message.hasAttachedQueues()) {
-            delete(message.getInternalId());
+            deleteMessage(message.getInternalId());
         } else {
-            disruptor.publishEvent(DETACH_FROM_QUEUE, queueName, message.getInternalId());
+            detachFromQueue(queueName, message);
         }
     }
 
@@ -140,16 +89,13 @@ public class SharedMessageStore {
         }
     }
 
-    public void readData(QueueBuffer queueBuffer, Message message) {
-        disruptor.publishEvent(READ_MESSAGE_DATA, queueBuffer, message);
-    }
 
     public void flush(long internalMessageId) {
         Message message = pendingMessages.remove(internalMessageId);
         if (message != null) {
 
             if (message.hasAttachedQueues()) {
-                disruptor.publishEvent(INSERT_MESSAGE, message);
+                publishMessageToStore(message);
             } else {
                 message.release();
             }
@@ -157,16 +103,13 @@ public class SharedMessageStore {
     }
 
     public void flush(Xid xid) throws BrokerException {
-        messageDao.persist(getTransactionData(xid));
+        commitTransactionToStore(getTransactionData(xid));
         clear(xid);
     }
 
+
     public void branch(Xid xid) {
         transactionMap.putIfAbsent(xid, new TransactionData());
-    }
-
-    public Collection<Message> readStoredMessages(String queueName) throws BrokerException {
-        return messageDao.readAll(queueName);
     }
 
     public void clear(Xid xid) {
@@ -174,4 +117,16 @@ public class SharedMessageStore {
         transactionData.releaseEnqueueMessages();
         transactionData.clear();
     }
+
+    abstract void publishMessageToStore(Message message);
+
+    abstract void detachFromQueue(String queueName, Message message);
+
+    abstract void deleteMessage(long messageId);
+
+    abstract void commitTransactionToStore(TransactionData transactionData) throws BrokerException;
+
+    public abstract void fillMessageData(QueueBuffer queueBuffer, Message message);
+
+    public abstract Collection<Message> readAllMessagesForQueue(String queueName) throws BrokerException;
 }

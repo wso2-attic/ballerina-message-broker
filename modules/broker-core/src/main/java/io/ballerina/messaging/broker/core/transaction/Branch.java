@@ -23,7 +23,7 @@ import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.QueueHandler;
-import io.ballerina.messaging.broker.core.store.SharedMessageStore;
+import io.ballerina.messaging.broker.core.store.MessageStore;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,17 +36,17 @@ public class Branch {
 
     private Xid xid;
 
-    private final SharedMessageStore sharedMessageStore;
+    private final MessageStore messageStore;
 
     private final Set<QueueHandler> affectedQueueHandlers;
 
     private final Broker broker;
 
-    public Branch(Xid xid, SharedMessageStore sharedMessageStore, Broker broker) {
+    public Branch(Xid xid, MessageStore messageStore, Broker broker) {
         this.xid = xid;
-        this.sharedMessageStore = sharedMessageStore;
+        this.messageStore = messageStore;
         this.broker = broker;
-        sharedMessageStore.branch(xid);
+        messageStore.branch(xid);
         this.affectedQueueHandlers = new HashSet<>();
     }
 
@@ -61,14 +61,14 @@ public class Branch {
     }
 
     public void commit() throws BrokerException {
-        sharedMessageStore.flush(xid);
+        messageStore.flush(xid);
         for (QueueHandler queueHandler: affectedQueueHandlers) {
             queueHandler.commit(xid);
         }
     }
 
     public void rollback() {
-        sharedMessageStore.clear(xid);
+        messageStore.clear(xid);
         for (QueueHandler queueHandler: affectedQueueHandlers) {
             queueHandler.rollback(xid);
         }

@@ -38,7 +38,7 @@ public class DbBackedStoreFactory implements StoreFactory {
     private final BrokerMetricManager metricManager;
     private final BrokerCoreConfiguration configuration;
 
-    private SharedMessageStore sharedMessageStore;
+    private DbMessageStore dbMessageStore;
 
     public DbBackedStoreFactory(DataSource dataSource,
                                 BrokerMetricManager metricManager,
@@ -46,7 +46,7 @@ public class DbBackedStoreFactory implements StoreFactory {
         daoFactory = new DaoFactory(dataSource, metricManager);
         this.metricManager = metricManager;
         this.configuration = configuration;
-        sharedMessageStore = new SharedMessageStore(daoFactory.createMessageDao(), 32768, 1024);
+        dbMessageStore = new DbMessageStore(daoFactory.createMessageDao(), 32768, 1024);
     }
 
     @Override
@@ -55,13 +55,13 @@ public class DbBackedStoreFactory implements StoreFactory {
     }
 
     @Override
-    public SharedMessageStore getSharedMessageStore() {
-        return sharedMessageStore;
+    public MessageStore getMessageStore() {
+        return dbMessageStore;
     }
 
     @Override
     public QueueRegistry getQueueRegistry() throws BrokerException {
         return new QueueRegistry(daoFactory.createQueueDao(),
-                                 new DbBackedQueueHandlerFactory(sharedMessageStore, metricManager, configuration));
+                                 new DbBackedQueueHandlerFactory(dbMessageStore, metricManager, configuration));
     }
 }

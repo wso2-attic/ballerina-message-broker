@@ -24,20 +24,20 @@ import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.queue.DbBackedQueueImpl;
 import io.ballerina.messaging.broker.core.queue.MemQueueImpl;
 import io.ballerina.messaging.broker.core.queue.QueueBufferFactory;
-import io.ballerina.messaging.broker.core.store.SharedMessageStore;
+import io.ballerina.messaging.broker.core.store.DbMessageStore;
 
 /**
  * DB backed factory for creating queue handler objects.
  */
 public class DbBackedQueueHandlerFactory implements QueueHandlerFactory {
-    private final SharedMessageStore sharedMessageStore;
+    private final DbMessageStore dbMessageStore;
     private final BrokerMetricManager metricManager;
     private final int nonDurableQueueMaxDepth;
     private QueueBufferFactory queueBufferFactory;
 
-    public DbBackedQueueHandlerFactory(SharedMessageStore sharedMessageStore, BrokerMetricManager metricManager,
+    public DbBackedQueueHandlerFactory(DbMessageStore dbMessageStore, BrokerMetricManager metricManager,
                                        BrokerCoreConfiguration configuration) {
-        this.sharedMessageStore = sharedMessageStore;
+        this.dbMessageStore = dbMessageStore;
         this.metricManager = metricManager;
         nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
         queueBufferFactory = new QueueBufferFactory(configuration);
@@ -52,7 +52,7 @@ public class DbBackedQueueHandlerFactory implements QueueHandlerFactory {
      * @throws BrokerException if cannot create queue handler
      */
     public QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete) throws BrokerException {
-        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, sharedMessageStore, queueBufferFactory);
+        Queue queue = new DbBackedQueueImpl(queueName, autoDelete, dbMessageStore, queueBufferFactory);
         return new QueueHandler(queue, metricManager);
     }
 

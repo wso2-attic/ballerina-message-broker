@@ -36,6 +36,11 @@ public class MemBackedStoreFactory implements StoreFactory {
     private final BrokerMetricManager metricManager;
     private final BrokerCoreConfiguration configuration;
 
+    /**
+     * Null object used to represent the database access layer in in-memory mode.
+     */
+    private NullMessageStore messageStore = new NullMessageStore();
+
     public MemBackedStoreFactory(BrokerMetricManager metricManager,
                                  BrokerCoreConfiguration configuration) {
         this.metricManager = metricManager;
@@ -48,8 +53,8 @@ public class MemBackedStoreFactory implements StoreFactory {
     }
 
     @Override
-    public SharedMessageStore getSharedMessageStore() {
-        return null;
+    public MessageStore getMessageStore() {
+        return messageStore;
     }
 
     @Override

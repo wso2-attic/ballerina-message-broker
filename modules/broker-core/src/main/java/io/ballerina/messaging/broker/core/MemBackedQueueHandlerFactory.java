@@ -34,13 +34,13 @@ public class MemBackedQueueHandlerFactory implements QueueHandlerFactory {
     public MemBackedQueueHandlerFactory(BrokerMetricManager metricManager,
                                         BrokerCoreConfiguration configuration) {
         this.metricManager = metricManager;
-        nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
+        this.nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
     }
 
     @Override
     public QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete) {
-        Queue queue = new MemQueueImpl(queueName, nonDurableQueueMaxDepth, autoDelete);
-        return new QueueHandler(queue, metricManager);    }
+        return createNonDurableQueueHandler(queueName, autoDelete);
+    }
 
     @Override
     public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete) {

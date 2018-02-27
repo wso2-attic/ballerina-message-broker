@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.core.queue;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Queue;
-import io.ballerina.messaging.broker.core.store.SharedMessageStore;
+import io.ballerina.messaging.broker.core.store.DbMessageStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class DbBackedQueueImpl extends Queue {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(DbBackedQueueImpl.class);
 
-    private final SharedMessageStore sharedMessageStore;
+    private final DbMessageStore dbMessageStore;
 
     private final QueueBuffer buffer;
 
@@ -53,15 +53,15 @@ public class DbBackedQueueImpl extends Queue {
     private final Map<Xid, List<Message>> pendingDequeueMessages;
 
     public DbBackedQueueImpl(String queueName, boolean autoDelete,
-                             SharedMessageStore sharedMessageStore, QueueBufferFactory queueBufferFactory)
+                             DbMessageStore dbMessageStore, QueueBufferFactory queueBufferFactory)
             throws BrokerException {
         super(queueName, true, autoDelete);
-        this.sharedMessageStore = sharedMessageStore;
-        buffer = queueBufferFactory.createBuffer(sharedMessageStore::readData);
+        this.dbMessageStore = dbMessageStore;
+        buffer = queueBufferFactory.createBuffer(dbMessageStore::fillMessageData);
 
         LOGGER.debug("Recovering messages for queue {}", queueName);
 
-        Collection<Message> messages = sharedMessageStore.readStoredMessages(queueName);
+        Collection<Message> messages = dbMessageStore.readAllMessagesForQueue(queueName);
 
         pendingEnqueueMessages = new ConcurrentHashMap<>();
         pendingDequeueMessages = new ConcurrentHashMap<>();
@@ -85,7 +85,7 @@ public class DbBackedQueueImpl extends Queue {
     @Override
     public boolean enqueue(Message message) throws BrokerException {
         if (message.getMetadata().isPersistent()) {
-            sharedMessageStore.attach(getName(), message.getInternalId());
+            dbMessageStore.attach(getName(), message.getInternalId());
         }
         buffer.add(message);
         return true;
@@ -94,7 +94,7 @@ public class DbBackedQueueImpl extends Queue {
     @Override
     public void prepareEnqueue(Xid xid, Message message) throws BrokerException {
         if (message.getMetadata().isPersistent()) {
-            sharedMessageStore.attach(xid, getName(), message.getInternalId());
+            dbMessageStore.attach(xid, getName(), message.getInternalId());
         }
         List<Message> messages = pendingEnqueueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
         messages.add(message);
@@ -127,13 +127,13 @@ public class DbBackedQueueImpl extends Queue {
 
     @Override
     public void detach(Message message) {
-        sharedMessageStore.detach(getName(), message);
+        dbMessageStore.detach(getName(), message);
         buffer.remove(message);
     }
 
     @Override
     public void prepareDetach(Xid xid, Message message) throws BrokerException {
-        sharedMessageStore.detach(xid, getName(), message);
+        dbMessageStore.detach(xid, getName(), message);
         List<Message> dequeueMessages = pendingDequeueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
         dequeueMessages.add(message);
     }

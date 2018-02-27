@@ -40,7 +40,7 @@ public interface StoreFactory {
      *
      * @return SharedMessageStore object
      */
-    SharedMessageStore getSharedMessageStore();
+    MessageStore getMessageStore();
 
     /**
      * Create queue registry

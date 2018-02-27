@@ -37,7 +37,7 @@ import io.ballerina.messaging.broker.core.rest.api.ExchangesApi;
 import io.ballerina.messaging.broker.core.rest.api.QueuesApi;
 import io.ballerina.messaging.broker.core.store.DbBackedStoreFactory;
 import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
-import io.ballerina.messaging.broker.core.store.SharedMessageStore;
+import io.ballerina.messaging.broker.core.store.MessageStore;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
 import io.ballerina.messaging.broker.core.task.TaskExecutorService;
 import io.ballerina.messaging.broker.core.transaction.BranchFactory;
@@ -101,7 +101,7 @@ public final class Broker {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private final SharedMessageStore sharedMessageStore;
+    private final MessageStore messageStore;
 
     /**
      * In memory message id.
@@ -118,7 +118,7 @@ public final class Broker {
         StoreFactory storeFactory = getStoreFactory(startupContext, configProvider, configuration);
 
         exchangeRegistry = storeFactory.getExchangeRegistry();
-        this.sharedMessageStore = storeFactory.getSharedMessageStore();
+        messageStore = storeFactory.getMessageStore();
         queueRegistry = storeFactory.getQueueRegistry();
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
@@ -210,11 +210,11 @@ public final class Broker {
                     MessageTracer.trace(message, MessageTracer.NO_ROUTES);
                 } else {
                     try {
-                        sharedMessageStore.add(message.shallowCopy());
+                        messageStore.add(message.shallowCopy());
                         Set<QueueHandler> uniqueQueues = getUniqueQueueHandlersForBinding(metadata, bindingSet);
                         publishToQueues(message, uniqueQueues);
                     } finally {
-                        sharedMessageStore.flush(message.getInternalId());
+                        messageStore.flush(message.getInternalId());
                     }
                 }
             } else {
@@ -285,7 +285,7 @@ public final class Broker {
                 if (uniqueQueueHandlers.isEmpty()) {
                     return uniqueQueueHandlers;
                 }
-                sharedMessageStore.add(xid, message.shallowCopy());
+                messageStore.add(xid, message.shallowCopy());
                 for (QueueHandler handler : uniqueQueueHandlers) {
                     handler.prepareForEnqueue(xid, message.shallowCopy());
                 }
