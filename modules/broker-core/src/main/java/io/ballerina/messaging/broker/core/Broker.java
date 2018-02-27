@@ -601,7 +601,6 @@ public final class Broker {
          */
         public void activate() {
             try {
-                sharedMessageStore.clearPendingMessages();
                 queueRegistry.reloadQueuesOnBecomingActive();
                 exchangeRegistry.reloadExchangesOnBecomingActive(queueRegistry);
             } catch (BrokerException e) {

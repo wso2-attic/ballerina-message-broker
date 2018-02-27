@@ -169,13 +169,6 @@ public class SharedMessageStore {
         return messageDao.readAll(queueName);
     }
 
-    /**
-     * Method to clear all pending messages.
-     */
-    public void clearPendingMessages() {
-        pendingMessages.clear();
-    }
-
     public void clear(Xid xid) {
         TransactionData transactionData = transactionMap.remove(xid);
         transactionData.releaseEnqueueMessages();
