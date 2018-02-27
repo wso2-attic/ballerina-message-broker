@@ -21,25 +21,28 @@ import io.ballerina.messaging.broker.client.resources.Binding;
 import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
+import java.util.Arrays;
+
 /**
  * Print backend responses into tables. This is used for displaying results of 'list' commands.
  */
 public class TableFormatter implements ResponseFormatter {
+
+    public static final int TABLE_PADDING = 2;
 
     @Override
     public void printExchanges(Exchange[] exchanges) {
         if (exchanges.length == 0) {
             return;
         }
-        int nameColumnSize = 10;
+        int maxExchangeNameLength = Arrays.stream(exchanges)
+                .mapToInt(exchange -> exchange.getName().length())
+                .max()
+                .getAsInt();
 
-        for (Exchange exchange : exchanges) {
-            if (exchange.getName().length() > nameColumnSize - 2) {
-                nameColumnSize = exchange.getName().length() + 2;
-            }
-        }
+        int maxColumnSize = Math.max(maxExchangeNameLength, Exchange.NAME.length());
 
-        String printTemplate = "%-" + String.valueOf(nameColumnSize) + "s%-10s%-10s\n";
+        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-10s%-10s\n";
 
         OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE);
         for (Exchange exchange : exchanges) {
@@ -53,15 +56,14 @@ public class TableFormatter implements ResponseFormatter {
         if (queues.length == 0) {
             return;
         }
-        int nameColumnSize = 10;
+        int maxQueueNameLength = Arrays.stream(queues)
+                .mapToInt(queue -> queue.getName().length())
+                .max()
+                .getAsInt();
 
-        for (Queue queue : queues) {
-            if (queue.getName().length() > nameColumnSize - 2) {
-                nameColumnSize = queue.getName().length() + 2;
-            }
-        }
+        int maxColumnSize = Math.max(maxQueueNameLength, Queue.NAME.length());
 
-        String printTemplate = "%-" + String.valueOf(nameColumnSize) + "s%-15s%-15s%-10s%-10s%-10s\n";
+        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-15s%-15s%-10s%-10s%-10s\n";
 
         OUT_STREAM.printf(printTemplate, Queue.NAME, Queue.CONSUMER_COUNT, Queue.CAPACITY, Queue.SIZE, Queue.DURABLE,
                 Queue.AUTO_DELETE);
@@ -77,20 +79,14 @@ public class TableFormatter implements ResponseFormatter {
         if (bindings.length == 0) {
             return;
         }
-        int queueColumnSize = 10;
-        int patternColumnSize = 10;
+        int maxQueueNameLength = Arrays.stream(bindings)
+                .mapToInt(binding -> binding.getQueueName().length())
+                .max()
+                .getAsInt();
 
-        for (Binding binding : bindings) {
-            if (binding.getQueueName().length() > queueColumnSize - 2) {
-                queueColumnSize = binding.getQueueName().length() + 2;
-            }
-            if (binding.getBindingPattern().length() > patternColumnSize - 2) {
-                patternColumnSize = binding.getBindingPattern().length() + 2;
-            }
-        }
+        int maxColumnSize = Math.max(maxQueueNameLength, Binding.QUEUE_NAME.length());
 
-        String printTemplate =
-                "%-" + String.valueOf(queueColumnSize) + "s%-" + String.valueOf(patternColumnSize) + "s\n";
+        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%s\n";
 
         OUT_STREAM.printf(printTemplate, Binding.QUEUE_NAME, Binding.BINDING_PATTERN);
         for (Binding binding : bindings) {
