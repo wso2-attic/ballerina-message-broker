@@ -122,8 +122,8 @@ public class ListBindingCmd extends ListCmd {
                     String bindingPatten = jsonElement.getAsJsonObject().get(Binding.BINDING_PATTERN).getAsString();
                     JsonArray internalArray = jsonElement.getAsJsonObject().getAsJsonArray("bindings");
                     internalArray.forEach(resource -> {
-                        String queueName = resource.getAsJsonObject().get(Binding.QUEUE_NAME).getAsString();
-                        bindings.add(new Binding(queueName, bindingPatten, exchangeName, ""));
+                        String bindQueueName = resource.getAsJsonObject().get(Binding.QUEUE_NAME).getAsString();
+                        bindings.add(new Binding(bindQueueName, bindingPatten, exchangeName, ""));
                     });
                 }
         );

@@ -20,20 +20,10 @@ package io.ballerina.messaging.broker.client.cmd.impl.create;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import io.ballerina.messaging.broker.client.http.HttpClient;
-import io.ballerina.messaging.broker.client.http.HttpRequest;
-import io.ballerina.messaging.broker.client.http.HttpResponse;
-import io.ballerina.messaging.broker.client.output.ResponseFormatter;
 import io.ballerina.messaging.broker.client.resources.Binding;
-import io.ballerina.messaging.broker.client.resources.Configuration;
-import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.utils.Constants;
-import io.ballerina.messaging.broker.client.utils.Utils;
 
-import java.net.HttpURLConnection;
 import java.util.Objects;
-
-import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
  * Command representing MB binding creation.
@@ -59,7 +49,7 @@ public class CreateBindingCmd extends CreateCmd {
     private String filterExpression = "";
 
     public CreateBindingCmd(String rootCommand) {
-        super(rootCommand);
+        super(rootCommand, "Binding created successfully");
     }
 
     @Override
@@ -69,28 +59,16 @@ public class CreateBindingCmd extends CreateCmd {
             return;
         }
 
-        Configuration configuration = Utils.readConfigurationFile();
-        HttpClient httpClient = new HttpClient(configuration);
-
         if (Objects.isNull(bindingPattern)) {
             bindingPattern = queueName;
         }
 
         Binding binding = new Binding(queueName, bindingPattern, exchangeName, filterExpression);
 
-        // do POST
-        HttpRequest httpRequest = new HttpRequest(
+        performResourceCreationOverHttp(
                 Constants.QUEUES_URL_PARAM + binding.getQueueName() + Constants.BINDINGS_URL_PARAM,
                 binding.getAsJsonString());
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "POST");
 
-        // handle response
-        if (response.getStatusCode() == HttpURLConnection.HTTP_CREATED) {
-            Message message = buildResponseMessage(response, "Binding created successfully");
-            ResponseFormatter.printMessage(message);
-        } else {
-            ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
-        }
     }
 
     @Override
