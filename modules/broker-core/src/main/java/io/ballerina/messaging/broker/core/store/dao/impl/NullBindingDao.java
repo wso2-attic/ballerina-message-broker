@@ -17,20 +17,27 @@
  *
  */
 
-package io.ballerina.messaging.broker.core.queue;
+package io.ballerina.messaging.broker.core.store.dao.impl;
 
-import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
+import io.ballerina.messaging.broker.core.Binding;
+import io.ballerina.messaging.broker.core.store.dao.BindingDao;
+
 /**
- * Factory class for {@link QueueBuffer}.
+ * Null binding DAO used when broker is operating in in-memory mode.
  */
-public class QueueBufferFactory {
-    private int inMemoryCacheLimit;
-
-    public QueueBufferFactory(BrokerCoreConfiguration configuration) {
-        inMemoryCacheLimit = Integer.parseInt(configuration.getDurableQueueInMemoryCacheLimit());
+public class NullBindingDao implements BindingDao {
+    @Override
+    public void persist(String exchangeName, Binding binding) {
+        // Do nothing
     }
 
-    public QueueBuffer createBuffer(QueueBuffer.MessageReader messageReader) {
-        return new QueueBuffer(inMemoryCacheLimit, messageReader);
+    @Override
+    public void delete(String queueName, String routingKey, String exchangeName) {
+        // Do nothing
+    }
+
+    @Override
+    public void retrieveBindingsForExchange(String exchangeName, BindingCollector bindingCollector) {
+        // Do nothing
     }
 }

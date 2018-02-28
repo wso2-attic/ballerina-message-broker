@@ -17,20 +17,11 @@
  *
  */
 
-package io.ballerina.messaging.broker.core.queue;
+package io.ballerina.messaging.broker.common.config;
 
-import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 /**
- * Factory class for {@link QueueBuffer}.
+ * {@link BrokerConfigProvider} is used to retrieve the config object in different modules.
  */
-public class QueueBufferFactory {
-    private int inMemoryCacheLimit;
-
-    public QueueBufferFactory(BrokerCoreConfiguration configuration) {
-        inMemoryCacheLimit = Integer.parseInt(configuration.getDurableQueueInMemoryCacheLimit());
-    }
-
-    public QueueBuffer createBuffer(QueueBuffer.MessageReader messageReader) {
-        return new QueueBuffer(inMemoryCacheLimit, messageReader);
-    }
+public interface BrokerConfigProvider {
+    <T> T getConfigurationObject(String namespace, Class<T> configurationClass) throws Exception;
 }

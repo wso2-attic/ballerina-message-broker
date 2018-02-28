@@ -20,21 +20,24 @@
 package io.ballerina.messaging.broker.core;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.coordination.BasicHaListener;
 import io.ballerina.messaging.broker.coordination.HaListener;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.DefaultBrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
 import io.ballerina.messaging.broker.core.rest.api.ExchangesApi;
 import io.ballerina.messaging.broker.core.rest.api.QueuesApi;
-import io.ballerina.messaging.broker.core.store.SharedMessageStore;
+import io.ballerina.messaging.broker.core.store.DbBackedStoreFactory;
+import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
+import io.ballerina.messaging.broker.core.store.MessageStore;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
 import io.ballerina.messaging.broker.core.task.TaskExecutorService;
 import io.ballerina.messaging.broker.core.transaction.BranchFactory;
@@ -98,7 +101,7 @@ public final class Broker {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private final SharedMessageStore sharedMessageStore;
+    private final MessageStore messageStore;
 
     /**
      * In memory message id.
@@ -110,14 +113,13 @@ public final class Broker {
         metricManager = getMetricManager(metrics);
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        BrokerConfiguration configuration = configProvider.getConfigurationObject(BrokerConfiguration.NAMESPACE,
-                                                                                  BrokerConfiguration.class);
-        DataSource dataSource = startupContext.getService(DataSource.class);
-        StoreFactory storeFactory = new StoreFactory(dataSource, metricManager, configuration);
+        BrokerCoreConfiguration configuration = configProvider.getConfigurationObject(BrokerCoreConfiguration.NAMESPACE,
+                                                                                      BrokerCoreConfiguration.class);
+        StoreFactory storeFactory = getStoreFactory(startupContext, configProvider, configuration);
 
         exchangeRegistry = storeFactory.getExchangeRegistry();
-        this.sharedMessageStore = storeFactory.getSharedMessageStore();
-        queueRegistry = storeFactory.getQueueRegistry(sharedMessageStore);
+        messageStore = storeFactory.getMessageStore();
+        queueRegistry = storeFactory.getQueueRegistry();
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
         this.deliveryTaskService = createTaskExecutorService(configuration);
@@ -125,14 +127,40 @@ public final class Broker {
 
         initDefaultDeadLetterQueue();
 
-        this.brokerTransactionFactory =
-                new BrokerTransactionFactory(new BranchFactory(this, storeFactory));
+        this.brokerTransactionFactory = new BrokerTransactionFactory(new BranchFactory(this, storeFactory));
 
+        initRestApi(startupContext);
+        initHaSupport(startupContext);
+
+        startupContext.registerService(Broker.class, this);
+    }
+
+    private StoreFactory getStoreFactory(StartupContext startupContext,
+                                         BrokerConfigProvider configProvider,
+                                         BrokerCoreConfiguration configuration) throws Exception {
+        BrokerCommonConfiguration commonConfigs
+                = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
+                                                        BrokerCommonConfiguration.class);
+        if (Objects.isNull(commonConfigs)) {
+            commonConfigs = new BrokerCommonConfiguration();
+        }
+        DataSource dataSource = startupContext.getService(DataSource.class);
+
+        if (commonConfigs.getEnableInMemoryMode()) {
+            return new MemBackedStoreFactory(metricManager, configuration);
+        } else {
+            return new DbBackedStoreFactory(dataSource, metricManager, configuration);
+        }
+    }
+
+    private void initRestApi(StartupContext startupContext) {
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         if (Objects.nonNull(serviceRunner)) {
             serviceRunner.deploy(new QueuesApi(this), new ExchangesApi(this));
         }
+    }
 
+    private void initHaSupport(StartupContext startupContext) {
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
             brokerHelper = new BrokerHelper();
@@ -140,7 +168,6 @@ public final class Broker {
             LOGGER.info("Broker is in PASSIVE mode"); //starts up in passive mode
             brokerHelper = new HaEnabledBrokerHelper();
         }
-        startupContext.registerService(Broker.class, this);
     }
 
     private void initDefaultDeadLetterQueue() throws BrokerException, ValidationException {
@@ -159,7 +186,7 @@ public final class Broker {
         }
     }
 
-    private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerConfiguration configuration) {
+    private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerCoreConfiguration configuration) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageDeliveryTaskThreadPool-%d")
                                                                 .build();
         int workerCount = Integer.parseInt(configuration.getDeliveryTask().getWorkerCount());
@@ -183,11 +210,11 @@ public final class Broker {
                     MessageTracer.trace(message, MessageTracer.NO_ROUTES);
                 } else {
                     try {
-                        sharedMessageStore.add(message.shallowCopy());
+                        messageStore.add(message.shallowCopy());
                         Set<QueueHandler> uniqueQueues = getUniqueQueueHandlersForBinding(metadata, bindingSet);
                         publishToQueues(message, uniqueQueues);
                     } finally {
-                        sharedMessageStore.flush(message.getInternalId());
+                        messageStore.flush(message.getInternalId());
                     }
                 }
             } else {
@@ -258,7 +285,7 @@ public final class Broker {
                 if (uniqueQueueHandlers.isEmpty()) {
                     return uniqueQueueHandlers;
                 }
-                sharedMessageStore.add(xid, message.shallowCopy());
+                messageStore.add(xid, message.shallowCopy());
                 for (QueueHandler handler : uniqueQueueHandlers) {
                     handler.prepareForEnqueue(xid, message.shallowCopy());
                 }
@@ -574,7 +601,6 @@ public final class Broker {
          */
         public void activate() {
             try {
-                sharedMessageStore.clearPendingMessages();
                 queueRegistry.reloadQueuesOnBecomingActive();
                 exchangeRegistry.reloadExchangesOnBecomingActive(queueRegistry);
             } catch (BrokerException e) {

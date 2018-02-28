@@ -17,7 +17,7 @@
  *
  */
 
-package io.ballerina.messaging.broker.integration.standalone;
+package io.ballerina.messaging.broker.integration.standalone.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ballerina.messaging.broker.core.rest.QueuesApiDelegate;

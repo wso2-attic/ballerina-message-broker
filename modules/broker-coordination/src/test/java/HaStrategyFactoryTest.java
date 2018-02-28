@@ -16,8 +16,8 @@
  * under the License.
  */
 
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.BrokerHaConfiguration;
 import io.ballerina.messaging.broker.coordination.HaStrategyFactory;
 import org.testng.Assert;

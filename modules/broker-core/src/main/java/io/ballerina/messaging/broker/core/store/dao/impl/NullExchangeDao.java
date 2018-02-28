@@ -17,20 +17,28 @@
  *
  */
 
-package io.ballerina.messaging.broker.core.queue;
+package io.ballerina.messaging.broker.core.store.dao.impl;
 
-import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
+import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.Exchange;
+import io.ballerina.messaging.broker.core.store.dao.ExchangeDao;
+
 /**
- * Factory class for {@link QueueBuffer}.
+ * Null exchange DAO used when broker is operating in in-memory mode.
  */
-public class QueueBufferFactory {
-    private int inMemoryCacheLimit;
-
-    public QueueBufferFactory(BrokerCoreConfiguration configuration) {
-        inMemoryCacheLimit = Integer.parseInt(configuration.getDurableQueueInMemoryCacheLimit());
+public class NullExchangeDao implements ExchangeDao {
+    @Override
+    public void persist(Exchange exchange) throws BrokerException {
+        // Do nothing
     }
 
-    public QueueBuffer createBuffer(QueueBuffer.MessageReader messageReader) {
-        return new QueueBuffer(inMemoryCacheLimit, messageReader);
+    @Override
+    public void delete(Exchange exchange) throws BrokerException {
+        // Do nothing
+    }
+
+    @Override
+    public void retrieveAll(ExchangeCollector exchangeCollector) throws BrokerException {
+        // Do nothing
     }
 }
