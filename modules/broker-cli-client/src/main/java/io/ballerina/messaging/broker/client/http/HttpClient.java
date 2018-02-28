@@ -131,6 +131,10 @@ public class HttpClient {
                 while ((inputLine = in.readLine()) != null) {
                     response.append(inputLine);
                 }
+
+                if (response.toString().isEmpty()) {
+                    response.append(String.valueOf(responseCode) + " " + con.getResponseMessage());
+                }
             } finally {
                 if (in != null) {
                     in.close();
