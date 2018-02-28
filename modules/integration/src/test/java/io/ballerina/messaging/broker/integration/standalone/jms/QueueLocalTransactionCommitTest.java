@@ -52,7 +52,7 @@ public class QueueLocalTransactionCommitTest {
 
     @AfterClass
     public void destroy() {
-        System.setProperty("STRICT_AMQP", "false");
+        System.clearProperty("STRICT_AMQP");
     }
 
     @Parameters({"broker-port"})
