@@ -19,7 +19,7 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="MBIntegrationTestsuite">
+<suite name="MBInMemoryIntegrationTestsuite">
     <parameter name="broker-port" value="5772"/>
     <parameter name="broker-ssl-port" value="8772"/>
     <parameter name="broker-rest-port" value="9100"/>
@@ -33,18 +33,19 @@
         <listener class-name="io.ballerina.messaging.broker.integration.util.TestExecutionListener"/>
     </listeners>
 
-    <test name="broker-integration-tests-initializer" verbose="2">
+    <!--<parameter name="useDefaultListeners" value="false"/>-->
+
+    <test name="broker-in-memory-tests-initializer" verbose="2">
         <classes>
-            <class name="io.ballerina.messaging.broker.integration.standalone.DefaultSuiteInitializer" />
+            <class name="io.ballerina.messaging.broker.integration.standalone.InMemorySuiteInitializer" />
         </classes>
     </test>
-
-    <test name="broker-integration-tests" verbose="2">
+    <test name="broker-in-memory-tests" verbose="2">
         <packages>
-            <package name="io.ballerina.messaging.broker.integration.standalone.rest"/>
-            <package name="io.ballerina.messaging.broker.integration.standalone.amqp"/>
-            <package name="io.ballerina.messaging.broker.integration.standalone.jms"/>
-            <package name="io.ballerina.messaging.broker.integration.standalone.cli"/>
+            <package name="io.ballerina.messaging.broker.integration.standalone.amqp" />
+            <package name="io.ballerina.messaging.broker.integration.standalone.jms" />
+            <package name="io.ballerina.messaging.broker.integration.standalone.rest" />
+            <!--<package name="io.ballerina.messaging.broker.integration.standalone.cli" />-->
         </packages>
     </test>
 </suite>

@@ -17,55 +17,35 @@
  *
  */
 
-package io.ballerina.messaging.broker.integration.standalone;
+package io.ballerina.messaging.broker.integration.util;
 
 import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
-import io.ballerina.messaging.broker.amqp.Server;
-import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.user.UserStoreManager;
 import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
-import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
-import io.ballerina.messaging.broker.integration.util.DbUtils;
-import io.ballerina.messaging.broker.integration.util.TestConfigProvider;
-import io.ballerina.messaging.broker.integration.util.TestConstants;
-import io.ballerina.messaging.broker.rest.BrokerRestServer;
 import io.ballerina.messaging.broker.rest.config.RestServerConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.ITestContext;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Parameters;
+import org.wso2.carbon.config.ConfigurationException;
 
 import java.net.URL;
-import javax.sql.DataSource;
 
-public class SuiteInitializer {
-    /**
-     * Class logger.
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SuiteInitializer.class);
+/**
+ * Contains shared helper method used across the integration test suite.
+ */
+public class TestUtils {
 
-    private Broker broker;
-
-    private Server server;
-
-    private BrokerRestServer restServer;
-
-    @Parameters({ "broker-port", "broker-ssl-port", "broker-hostname", "admin-username", "admin-password" ,
-                  "broker-rest-port"})
-    @BeforeSuite
-    public void beforeSuite(String port, String sslPort, String hostname, String adminUsername, String adminPassword,
-            String restPort, ITestContext context)
-            throws Exception {
-        LOGGER.info("Starting broker on " + port + " for suite " + context.getSuite().getName());
+    public static StartupContext initStartupContext(String port, String sslPort, String hostname, String restPort)
+            throws ConfigurationException {
         StartupContext startupContext = new StartupContext();
         TestConfigProvider configProvider = new TestConfigProvider();
+
+        BrokerCommonConfiguration commonConfig = new BrokerCommonConfiguration();
+        configProvider.registerConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
+                                                   commonConfig);
 
         BrokerCoreConfiguration brokerCoreConfiguration = new BrokerCoreConfiguration();
         brokerCoreConfiguration.setDurableQueueInMemoryCacheLimit("1000");
@@ -86,39 +66,20 @@ public class SuiteInitializer {
         restConfig.getPlain().setPort(restPort);
         configProvider.registerConfigurationObject(RestServerConfiguration.NAMESPACE, restConfig);
 
+        BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
+        configProvider.registerConfigurationObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
+
         startupContext.registerService(BrokerConfigProvider.class, configProvider);
 
-        DbUtils.setupDB();
-        DataSource dataSource = DbUtils.getDataSource();
-        startupContext.registerService(DataSource.class, dataSource);
-
         // Auth configurations
-        ClassLoader classLoader = getClass().getClassLoader();
+        ClassLoader classLoader = TestUtils.class.getClassLoader();
         URL resource = classLoader.getResource(BrokerAuthConstants.USERS_FILE_NAME);
         if (resource != null) {
             System.setProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG, resource.getFile());
         }
 
-        BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
-        configProvider.registerConfigurationObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
         startupContext.registerService(UserStoreManager.class, new UserStoreManagerImpl());
-        AuthManager authManager = new AuthManager(startupContext);
 
-        authManager.start();
-        restServer = new BrokerRestServer(startupContext);
-        broker = new Broker(startupContext);
-        broker.startMessageDelivery();
-        server = new Server(startupContext);
-        server.start();
-        restServer.start();
+        return startupContext;
     }
-
-    @AfterSuite
-    public void afterSuite(ITestContext context) throws Exception {
-        restServer.stop();
-        server.stop();
-        broker.stopMessageDelivery();
-        LOGGER.info("Stopped broker for suite " + context.getSuite().getName());
-    }
-
 }
