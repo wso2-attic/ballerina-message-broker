@@ -22,14 +22,13 @@ package io.ballerina.messaging.broker.core.store;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.queue.QueueBuffer;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Null message store object used to avoid calling the database access layer
  */
 public class NullMessageStore extends MessageStore {
-    private static final Collection<Message> EMPTY_COLLECTION = new ArrayList<>(0);
 
     @Override
     void publishMessageToStore(Message message) {
@@ -58,6 +57,6 @@ public class NullMessageStore extends MessageStore {
 
     @Override
     public Collection<Message> readAllMessagesForQueue(String queueName) {
-        return EMPTY_COLLECTION;
+        return Collections.emptyList();
     }
 }
