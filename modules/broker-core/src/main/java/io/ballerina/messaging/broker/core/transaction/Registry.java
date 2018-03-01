@@ -33,7 +33,7 @@ public class Registry {
 
     private final Map<Xid, Branch> branchMap;
 
-    public Registry() {
+    Registry() {
         branchMap = new ConcurrentHashMap<>();
     }
 

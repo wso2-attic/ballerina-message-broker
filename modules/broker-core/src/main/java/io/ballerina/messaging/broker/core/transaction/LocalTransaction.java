@@ -50,7 +50,7 @@ public class LocalTransaction implements BrokerTransaction {
 
     private final BranchFactory branchFactory;
 
-    public LocalTransaction(Registry registry, BranchFactory branchFactory) {
+    LocalTransaction(Registry registry, BranchFactory branchFactory) {
         this.transactionRegistry = registry;
         preConditionFailed = false;
         this.branchFactory = branchFactory;

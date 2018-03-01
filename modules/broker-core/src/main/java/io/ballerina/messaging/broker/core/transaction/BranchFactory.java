@@ -20,6 +20,8 @@
 package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.MessageStore;
 
 import java.nio.charset.StandardCharsets;
@@ -33,10 +35,12 @@ public class BranchFactory {
 
     private final Broker broker;
     private final MessageStore messageStore;
+    private final EnqueueDequeueStrategy enqueueDequeueStrategy;
 
-    public BranchFactory(Broker broker, MessageStore messageStore) {
+    BranchFactory(Broker broker, MessageStore messageStore) {
         this.broker = broker;
         this.messageStore = messageStore;
+        this.enqueueDequeueStrategy = new DirectEnqueueDequeueStrategy(broker);
     }
 
     public Branch createBranch() {
@@ -49,5 +53,32 @@ public class BranchFactory {
 
     public Branch createBranch(Xid xid) {
         return new Branch(xid, messageStore, broker);
+    }
+
+    public EnqueueDequeueStrategy getDirectEnqueueDequeueStrategy() {
+        return enqueueDequeueStrategy;
+    }
+
+    /**
+     * Strategy to directly publish to the broker without going through the transactional
+     * enqueue dequeue message flow.
+     */
+    private static class DirectEnqueueDequeueStrategy implements EnqueueDequeueStrategy {
+
+        final Broker broker;
+
+        private DirectEnqueueDequeueStrategy(Broker broker) {
+            this.broker = broker;
+        }
+
+        @Override
+        public void enqueue(Message message) throws BrokerException {
+            broker.publish(message);
+        }
+
+        @Override
+        public void dequeue(String queueName, Message message) throws BrokerException {
+            broker.acknowledge(queueName, message);
+        }
     }
 }

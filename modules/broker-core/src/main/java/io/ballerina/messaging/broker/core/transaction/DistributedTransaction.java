@@ -37,23 +37,23 @@ public class DistributedTransaction implements BrokerTransaction {
 
     private final Registry transactionRegistry;
 
-    private Branch currentBranch;
+    private EnqueueDequeueStrategy enqueueDequeueStrategy;
 
-    public DistributedTransaction(BranchFactory branchFactory, Registry transactionRegistry) {
+    DistributedTransaction(BranchFactory branchFactory, Registry transactionRegistry) {
 
         this.branchFactory = branchFactory;
         this.transactionRegistry = transactionRegistry;
-        this.currentBranch = null;
+        this.enqueueDequeueStrategy = branchFactory.getDirectEnqueueDequeueStrategy();
     }
 
     @Override
     public void dequeue(String queue, Message message) throws BrokerException {
-
+        enqueueDequeueStrategy.dequeue(queue, message);
     }
 
     @Override
     public void enqueue(Message message) throws BrokerException {
-
+        enqueueDequeueStrategy.enqueue(message);
     }
 
     @Override
@@ -91,14 +91,11 @@ public class DistributedTransaction implements BrokerTransaction {
             if (Objects.isNull(branch)) {
                 throw new ValidationException(SAME_XID_ERROR_MSG + xid);
             }
-            this.currentBranch = branch;
-            currentBranch.associateSession(sessionId);
+            branch.associateSession(sessionId);
         } else if (resume) {
             if (Objects.isNull(branch)) {
                 throw new ValidationException(SAME_XID_ERROR_MSG + xid);
             }
-
-            this.currentBranch = branch;
             branch.resumeSession(sessionId);
         } else {
             if (Objects.nonNull(branch)) {
@@ -107,8 +104,8 @@ public class DistributedTransaction implements BrokerTransaction {
             branch = branchFactory.createBranch(xid);
             transactionRegistry.register(branch);
             branch.associateSession(sessionId);
-            this.currentBranch = branch;
         }
+        this.enqueueDequeueStrategy = branch;
     }
 
     @Override
@@ -121,7 +118,7 @@ public class DistributedTransaction implements BrokerTransaction {
 
         if (suspend && fail) {
             branch.disassociateSession(sessionId);
-            this.currentBranch = null;
+            this.enqueueDequeueStrategy = branchFactory.getDirectEnqueueDequeueStrategy();
             throw new ValidationException("Cannot end a branch with both suspend and fail set " + xid);
         } else if (!branch.isAssociated(sessionId)) {
             throw new ValidationException("Xid " + xid + " not associated with the current session");
@@ -133,6 +130,7 @@ public class DistributedTransaction implements BrokerTransaction {
             }
             branch.disassociateSession(sessionId);
         }
+        enqueueDequeueStrategy = branchFactory.getDirectEnqueueDequeueStrategy();
     }
 
     @Override

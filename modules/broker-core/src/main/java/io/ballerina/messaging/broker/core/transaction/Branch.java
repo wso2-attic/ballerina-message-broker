@@ -35,7 +35,7 @@ import javax.transaction.xa.Xid;
 /**
  * XA transaction information hold within the broker
  */
-public class Branch {
+public class Branch implements EnqueueDequeueStrategy {
 
 
     private State state;
@@ -59,20 +59,19 @@ public class Branch {
          * Branch can only be rolled back
          */
         ROLLBACK_ONLY;
-
-
-
-
     }
+
     private Xid xid;
 
     private final MessageStore messageStore;
 
     private final Set<QueueHandler> affectedQueueHandlers;
+
     private final Broker broker;
+
     private final Map<Integer, State> associatedSessions;
 
-    public Branch(Xid xid, MessageStore messageStore, Broker broker) {
+    Branch(Xid xid, MessageStore messageStore, Broker broker) {
         this.xid = xid;
         this.messageStore = messageStore;
         this.broker = broker;
@@ -81,11 +80,13 @@ public class Branch {
         this.associatedSessions = new HashMap<>();
     }
 
+    @Override
     public void enqueue(Message message) throws BrokerException {
         Set<QueueHandler> queueHandlers = broker.prepareEnqueue(xid, message);
         affectedQueueHandlers.addAll(queueHandlers);
     }
 
+    @Override
     public void dequeue(String queueName, Message message) throws BrokerException {
         QueueHandler queueHandler = broker.prepareDequeue(xid, queueName, message);
         affectedQueueHandlers.add(queueHandler);
@@ -125,7 +126,6 @@ public class Branch {
     public void associateSession(int sessionId) {
         associatedSessions.put(sessionId, State.ACTIVE);
     }
-
 
     /**
      * Resume a session if it is suspended
