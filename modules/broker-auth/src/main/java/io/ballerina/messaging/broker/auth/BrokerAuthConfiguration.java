@@ -31,7 +31,7 @@ public class BrokerAuthConfiguration {
     /**
      * Namespace used in the config file.
      */
-    public static final String NAMESPACE = "wso2.broker.auth";
+    public static final String NAMESPACE = "ballerina.broker.auth";
 
     private AuthenticationConfiguration authentication = new AuthenticationConfiguration();
 

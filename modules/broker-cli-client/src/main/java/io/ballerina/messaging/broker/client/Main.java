@@ -106,10 +106,12 @@ public class Main {
         // add list sub-commands
         addChildCommand(jCommanderList, Constants.CMD_EXCHANGE, commandFactory.createListExchangeCommand());
         addChildCommand(jCommanderList, Constants.CMD_QUEUE, commandFactory.createListQueueCommand());
+        addChildCommand(jCommanderList, Constants.CMD_BINDING, commandFactory.createListBindingCommand());
 
         // add create sub-commands
         addChildCommand(jCommanderCreate, Constants.CMD_EXCHANGE, commandFactory.createCreateExchangeCommand());
         addChildCommand(jCommanderCreate, Constants.CMD_QUEUE, commandFactory.createCreateQueueCommand());
+        addChildCommand(jCommanderCreate, Constants.CMD_BINDING, commandFactory.createCreateBindingCommand());
 
         // add delete sub-commands
         addChildCommand(jCommanderDelete, Constants.CMD_EXCHANGE, commandFactory.createDeleteExchangeCommand());

@@ -21,8 +21,8 @@ package io.ballerina.messaging.broker.rest;
 
 import com.google.common.base.Strings;
 import io.ballerina.messaging.broker.auth.AuthManager;
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.BasicHaListener;
 import io.ballerina.messaging.broker.coordination.HaListener;
 import io.ballerina.messaging.broker.coordination.HaStrategy;

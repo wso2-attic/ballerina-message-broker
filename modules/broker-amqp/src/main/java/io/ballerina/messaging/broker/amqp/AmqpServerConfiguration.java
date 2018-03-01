@@ -26,7 +26,7 @@ public class AmqpServerConfiguration {
     /**
      * Namespace used in config file
      */
-    public static final String NAMESPACE = "wso2.broker.transport.amqp";
+    public static final String NAMESPACE = "ballerina.broker.transport.amqp";
 
     private String hostName = "localhost";
 

@@ -26,15 +26,15 @@ import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.user.UserStoreManager;
 import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.BrokerHaConfiguration;
 import io.ballerina.messaging.broker.coordination.CoordinationException;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
 import io.ballerina.messaging.broker.coordination.HaStrategyFactory;
 import io.ballerina.messaging.broker.coordination.rdbms.RdbmsHaStrategy;
 import io.ballerina.messaging.broker.core.Broker;
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
 import io.ballerina.messaging.broker.rest.config.RestServerConfiguration;
 
@@ -71,8 +71,8 @@ public class BrokerNode {
         this.hostname = hostname;
         this.port = port;
 
-        BrokerConfiguration brokerConfiguration = new BrokerConfiguration();
-        configProvider.registerConfigurationObject(BrokerConfiguration.NAMESPACE, brokerConfiguration);
+        BrokerCoreConfiguration brokerCoreConfiguration = new BrokerCoreConfiguration();
+        configProvider.registerConfigurationObject(BrokerCoreConfiguration.NAMESPACE, brokerCoreConfiguration);
 
         AmqpServerConfiguration serverConfiguration = new AmqpServerConfiguration();
         serverConfiguration.setHostName(hostname);

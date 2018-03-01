@@ -33,6 +33,10 @@
     <parameter name="admin-username" value="admin"/>
     <parameter name="admin-password" value="admin"/>
 
+    <listeners>
+        <listener class-name="io.ballerina.messaging.broker.integration.util.TestExecutionListener"/>
+    </listeners>
+
     <test name="multi-broker-integration-tests" verbose="2">
         <packages>
             <package name="io.ballerina.messaging.broker.integration.failover"/>

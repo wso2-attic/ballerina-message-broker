@@ -14,8 +14,24 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Broker Configurations.
-wso2.broker:
+# Broker configurations
+ballerina.broker:
+ # When the in-memory mode is enabled all message and context data including durable entities are held in memory.
+ # Please note that this can increase memory usage of the broker. Therefore it is advised to allocate more memory in
+ # the JVM which run the broker.
+ enableInMemoryMode: false
+
+ # Datasource configurations used to communicate with the database.
+ dataSource:
+  # Database URL.
+  url: jdbc:h2:./database/MB_DB
+  # Database username.
+  user: wso2carbon
+  # Database password.
+  password: wso2carbon
+
+# Broker core configurations.
+ballerina.broker.core:
  # Maximum number of messages kept in a non-durable queue. Increasing this number can increase the memory consumption.
  # Messages published to queue are dropped after this limit is reached.
  nonDurableQueueMaxDepth: 10000
@@ -32,17 +48,8 @@ wso2.broker:
   # delivery in milliseconds.
   idleTaskDelay: 50
 
- # Datasource configurations used to communicate with the database.
- dataSource:
-  # Database URL.
-  url: jdbc:h2:./database/MB_DB
-  # Database username.
-  user: wso2carbon
-  # Database password.
-  password: wso2carbon
-
 # Broker auth related configurations.
-wso2.broker.auth:
+ballerina.broker.auth:
  # Broker authentication related configurations.
  authentication:
   # Enable the authentication
@@ -52,7 +59,7 @@ wso2.broker.auth:
    loginModule: io.ballerina.messaging.broker.auth.authentication.jaas.BrokerLoginModule
 
 # AMQP transport related configurations.
-wso2.broker.transport.amqp:
+ballerina.broker.transport.amqp:
  # Hostname configuration used in creating the server socket
  hostName: localhost
 
@@ -103,7 +110,7 @@ wso2.broker.transport.amqp:
    certType: SunX509
 
 # Failover related configurations
-wso2.broker.failover:
+ballerina.broker.failover:
  # Whether or not failover is enabled
  enabled: false
 

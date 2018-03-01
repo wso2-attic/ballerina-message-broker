@@ -89,6 +89,13 @@ public class TransactionData {
         detachOperationsCount = 0;
     }
 
+    public void releaseEnqueueMessages() {
+        for (Message message: enqueueMessages.values()) {
+            message.release();
+        }
+        enqueueMessages.clear();
+    }
+
     public boolean isEmpty() {
         return deleteMessageIdList.isEmpty() && enqueueMessages.isEmpty() && detachMessageMap.isEmpty();
     }

@@ -20,7 +20,17 @@ package io.ballerina.messaging.broker.client.cmd.impl.create;
 
 import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
+import io.ballerina.messaging.broker.client.http.HttpClient;
+import io.ballerina.messaging.broker.client.http.HttpRequest;
+import io.ballerina.messaging.broker.client.http.HttpResponse;
+import io.ballerina.messaging.broker.client.output.ResponseFormatter;
+import io.ballerina.messaging.broker.client.resources.Configuration;
+import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.utils.Utils;
+
+import java.net.HttpURLConnection;
+
+import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 
 /**
  * Command representing the resource creation.
@@ -28,8 +38,15 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 @Parameters(commandDescription = "Create a resource in the Broker with parameters")
 public class CreateCmd extends AbstractCmd {
 
+    private String defaultSuccessMessage;
+
     public CreateCmd(String rootCommand) {
         super(rootCommand);
+    }
+
+    public CreateCmd(String rootCommand, String defaultSuccessMessage) {
+        super(rootCommand);
+        this.defaultSuccessMessage = defaultSuccessMessage;
     }
 
     @Override
@@ -44,5 +61,28 @@ public class CreateCmd extends AbstractCmd {
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
         out.append("  " + rootCommand + " create [command]\n");
+    }
+
+    /**
+     * This will perform all the http request response processing related to resource creation.
+     *
+     * @param urlSuffix suffix that needs to be appended to the url.
+     * @param payload message payload needs to be included.
+     */
+    void performResourceCreationOverHttp(String urlSuffix, String payload) {
+        Configuration configuration = Utils.readConfigurationFile();
+        HttpClient httpClient = new HttpClient(configuration);
+
+        // do POST
+        HttpRequest httpRequest = new HttpRequest(urlSuffix, payload);
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "POST");
+
+        // handle response
+        if (response.getStatusCode() == HttpURLConnection.HTTP_CREATED) {
+            Message message = buildResponseMessage(response, defaultSuccessMessage);
+            ResponseFormatter.printMessage(message);
+        } else {
+            ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
+        }
     }
 }

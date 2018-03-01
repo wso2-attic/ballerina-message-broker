@@ -35,7 +35,7 @@ public class Message {
 
     private Metadata metadata;
 
-    private final ArrayList<ContentChunk> contentChunks;
+    private final List<ContentChunk> contentChunks;
 
     private boolean redelivered = false;
 

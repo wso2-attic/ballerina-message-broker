@@ -21,7 +21,7 @@ package io.ballerina.messaging.broker.core;
 
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.dao.impl.NoOpBindingDao;
 import org.testng.Assert;
@@ -59,9 +59,9 @@ public class TopicExchangeTest {
     @Test(dataProvider = "positiveTopicPairs", description = "Test positive topic matching")
     public void testPositiveSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException, ValidationException {
-        QueueHandlerFactory factory = new QueueHandlerFactory(null,
-                                                              new NullBrokerMetricManager(),
-                                                              new BrokerConfiguration());
+        DbBackedQueueHandlerFactory factory = new DbBackedQueueHandlerFactory(null,
+                                                                              new NullBrokerMetricManager(),
+                                                                              new BrokerCoreConfiguration());
         QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);
 
@@ -78,8 +78,8 @@ public class TopicExchangeTest {
     @Test(dataProvider = "negativeTopicPairs", description = "Test negative topic matching")
     public void testNegativeSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException, ValidationException {
-        QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager(),
-                                                              new BrokerConfiguration());
+        DbBackedQueueHandlerFactory factory = new DbBackedQueueHandlerFactory(null, new NullBrokerMetricManager(),
+                                                                              new BrokerCoreConfiguration());
         QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);
 
@@ -91,8 +91,8 @@ public class TopicExchangeTest {
     @Test(dataProvider = "positiveTopicPairs", description = "Test topic removal")
     public void testTopicRemoval(String subscribedPattern, String publishedTopic)
             throws BrokerException, ValidationException {
-        QueueHandlerFactory factory = new QueueHandlerFactory(null, new NullBrokerMetricManager(),
-                                                              new BrokerConfiguration());
+        DbBackedQueueHandlerFactory factory = new DbBackedQueueHandlerFactory(null, new NullBrokerMetricManager(),
+                                                                              new BrokerCoreConfiguration());
         QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
         Queue queue = handler.getQueue();
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);

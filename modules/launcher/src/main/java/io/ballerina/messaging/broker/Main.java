@@ -25,13 +25,14 @@ import io.ballerina.messaging.broker.amqp.Server;
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.user.UserStoreManager;
 import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.CoordinationException;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
 import io.ballerina.messaging.broker.coordination.HaStrategyFactory;
 import io.ballerina.messaging.broker.core.Broker;
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.metrics.BrokerMetricService;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
 import org.slf4j.Logger;
@@ -61,9 +62,9 @@ public class Main {
 
             initConfigProvider(startupContext);
             BrokerConfigProvider service = startupContext.getService(BrokerConfigProvider.class);
-            BrokerConfiguration brokerConfiguration =
-                    service.getConfigurationObject(BrokerConfiguration.NAMESPACE, BrokerConfiguration.class);
-            DataSource dataSource = getDataSource(brokerConfiguration.getDataSource());
+            BrokerCommonConfiguration commonConfig = service.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
+                                                                                    BrokerCommonConfiguration.class);
+            DataSource dataSource = getDataSource(commonConfig.getDataSource());
             startupContext.registerService(UserStoreManager.class, new UserStoreManagerImpl());
             startupContext.registerService(DataSource.class, dataSource);
             HaStrategy haStrategy;
@@ -106,7 +107,7 @@ public class Main {
         }
     }
 
-    private static DataSource getDataSource(BrokerConfiguration.DataSourceConfiguration dataSourceConfiguration) {
+    private static DataSource getDataSource(BrokerCommonConfiguration.DataSourceConfiguration dataSourceConfiguration) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(dataSourceConfiguration.getUrl());
         config.setUsername(dataSourceConfiguration.getUser());
@@ -127,10 +128,10 @@ public class Main {
      */
     private static void initConfigProvider(StartupContext startupContext) throws ConfigurationException {
         Path brokerYamlFile;
-        String brokerFilePath = System.getProperty(BrokerConfiguration.SYSTEM_PARAM_BROKER_CONFIG_FILE);
+        String brokerFilePath = System.getProperty(BrokerCoreConfiguration.SYSTEM_PARAM_BROKER_CONFIG_FILE);
         if (brokerFilePath == null || brokerFilePath.trim().isEmpty()) {
             // use current path.
-            brokerYamlFile = Paths.get("", BrokerConfiguration.BROKER_FILE_NAME).toAbsolutePath();
+            brokerYamlFile = Paths.get("", BrokerCoreConfiguration.BROKER_FILE_NAME).toAbsolutePath();
         } else {
             brokerYamlFile = Paths.get(brokerFilePath).toAbsolutePath();
         }

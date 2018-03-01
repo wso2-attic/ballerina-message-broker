@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.integration.standalone.cli;
 
 import io.ballerina.messaging.broker.client.Main;
-import org.testng.Assert;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import org.testng.annotations.Test;
 
 import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
@@ -32,24 +32,22 @@ public class DeleteCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'delete'")
     public void testDelete() {
-        String[] cmd = { CLI_ROOT_COMMAND, "delete" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_DELETE };
         String expectedLog = "a command is expected after 'delete'";
-        String errorMessage = "error when executing 'delete' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
           description = "test command 'delete --help'")
     public void testDeleteHelp() {
-        String[] cmd = { CLI_ROOT_COMMAND, "delete", "--help" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_DELETE, "--help" };
         String expectedLog = "Delete resources in the Broker";
-        String errorMessage = "error when executing 'delete --help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 }
