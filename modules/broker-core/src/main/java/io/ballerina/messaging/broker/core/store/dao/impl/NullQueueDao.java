@@ -17,11 +17,28 @@
  *
  */
 
-package io.ballerina.messaging.broker.common;
+package io.ballerina.messaging.broker.core.store.dao.impl;
+
+import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.Queue;
+import io.ballerina.messaging.broker.core.store.dao.QueueDao;
 
 /**
- * {@link BrokerConfigProvider} is used to retrieve the config object in different modules.
+ * Null queue DAO used when broker is operating in in-memory mode.
  */
-public interface BrokerConfigProvider {
-    <T> T getConfigurationObject(String namespace, Class<T> configurationClass) throws Exception;
+public class NullQueueDao implements QueueDao {
+    @Override
+    public void persist(Queue queue) throws BrokerException {
+        // Do nothing
+    }
+
+    @Override
+    public void delete(Queue queue) throws BrokerException {
+        // Do nothing
+    }
+
+    @Override
+    public void retrieveAll(QueueCollector queueNameCollector) throws BrokerException {
+        // Do nothing
+    }
 }

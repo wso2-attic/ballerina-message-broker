@@ -19,6 +19,7 @@
 package io.ballerina.messaging.broker.integration.standalone.cli;
 
 import io.ballerina.messaging.broker.integration.util.TestConstants;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
@@ -37,5 +38,23 @@ public class CliTestParent {
     public void resetStream() {
         // reset the print stream after each test
         PrintStreamHandler.resetStreams();
+    }
+
+    /**
+     * Common method to be used in evaluating the stream content for test cases.
+     *
+     * @param streamContent Content of the stream.
+     * @param expected expected message to be included in the stream.
+     * @param command executed command.
+     */
+    void evalStreamContent(String streamContent, String expected, String[] command) {
+
+        // build onFailure message
+        StringBuilder sb = new StringBuilder();
+        sb.append("error when executing command: " + String.join(" ", command) + "\n");
+        sb.append("expected: \n" + expected + "\n");
+        sb.append("stream content: \n" + streamContent);
+
+        Assert.assertTrue(streamContent.contains(expected), sb.toString());
     }
 }

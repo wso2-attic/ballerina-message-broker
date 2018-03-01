@@ -22,7 +22,7 @@
     <parent>
         <groupId>io.ballerina.messaging</groupId>
         <artifactId>broker-parent</artifactId>
-        <version>0.1.14-SNAPSHOT</version>
+        <version>0.1.21-SNAPSHOT</version>
         <relativePath>../..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -118,7 +118,9 @@
                     <!-- Uncomment to debug integration tests -->
                     <!--<argLine>-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005</argLine>-->
                     <suiteXmlFiles>
-                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                        <suiteXmlFile>src/test/resources/broker-auto-start-suite.xml</suiteXmlFile>
+                        <suiteXmlFile>src/test/resources/broker-in-memory-suite.xml</suiteXmlFile>
+                        <suiteXmlFile>src/test/resources/failover-broker-suite.xml</suiteXmlFile>
                     </suiteXmlFiles>
                     <systemPropertyVariables>
                         <maven.test.haltafterfailure>false</maven.test.haltafterfailure>

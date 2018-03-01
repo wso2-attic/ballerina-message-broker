@@ -22,12 +22,12 @@ package io.ballerina.messaging.broker.core.configuration;
 /**
  * Represents configuration for broker.
  */
-public class BrokerConfiguration {
+public class BrokerCoreConfiguration {
 
     /**
      * Namespace used in config file
      */
-    public static final String NAMESPACE = "wso2.broker";
+    public static final String NAMESPACE = "ballerina.broker.core";
     /**
      * Name of the configuration file.
      */
@@ -43,8 +43,6 @@ public class BrokerConfiguration {
     private String durableQueueInMemoryCacheLimit = "10000";
 
     private DeliveryTask deliveryTask = new DeliveryTask();
-
-    private DataSourceConfiguration dataSource;
 
     /**
      * Getter for nonDurableQueueMaxDepth
@@ -79,14 +77,6 @@ public class BrokerConfiguration {
         this.deliveryTask = deliveryTask;
     }
 
-    public DataSourceConfiguration getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(DataSourceConfiguration dataSource) {
-        this.dataSource = dataSource;
-    }
-
     /**
      * Represent delivery task related configurations.
      */
@@ -116,58 +106,5 @@ public class BrokerConfiguration {
         public void setIdleTaskDelay(String idleTaskDelay) {
             this.idleTaskDelay = idleTaskDelay;
         }
-    }
-
-    /**
-     * Represents a dataSource configuration for broker ( e.g. database).
-     */
-    public static class DataSourceConfiguration {
-
-        private String url;
-
-        private String databaseDriver;
-
-        private String user;
-
-        private String password;
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public String getDatabaseDriver() {
-            return databaseDriver;
-        }
-
-        public void setDatabaseDriver(String databaseDriver) {
-            this.databaseDriver = databaseDriver;
-        }
-
-        public String getUser() {
-            return user;
-        }
-
-        public void setUser(String user) {
-            this.user = user;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        @Override
-        public String toString() {
-            return "DataSourceConfigurations [url=" + url + ", databaseDriver=" + databaseDriver + ", user=" + user
-                    + ", password=" + password + "]";
-        }
-
     }
 }

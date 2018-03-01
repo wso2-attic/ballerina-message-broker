@@ -34,13 +34,13 @@ import java.util.Objects;
         + "HTTP connection details and user credentials")
 public class InitCmd extends AbstractCmd {
 
-    @Parameter(names = { "--host", "-H" })
+    @Parameter(names = { "--host", "-H" }, description = "Broker admin service hostname")
     private String hostname = Constants.DEFAULT_HOSTNAME;
 
-    @Parameter(names = { "--port", "-P" })
+    @Parameter(names = { "--port", "-P" }, description = "Broker admin service port")
     private int port = Constants.DEFAULT_PORT;
 
-    @Parameter(names = { "--username", "-u" })
+    @Parameter(names = { "--username", "-u" }, description = "Username")
     private String username = Constants.DEFAULT_USERNAME;
 
     @Parameter(names = { "--password", "-p" }, description = "Password", password = true)

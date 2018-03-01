@@ -99,7 +99,7 @@ public class AmqpChannel {
     private AtomicLong deliveryTagGenerator = new AtomicLong(0);
 
     /**
-     * Used to get the ack data matching to a delivery id.
+     * Used to handle the acknowledgment data matching to a delivery id.
      */
     private UnackedMessageMap unackedMessageMap = new UnackedMessageMap();
 
@@ -195,7 +195,7 @@ public class AmqpChannel {
     }
 
     private void requeueUnackedMessages() {
-        Collection<AckData> ackDataList = unackedMessageMap.clear();
+        Collection<AckData> ackDataList = unackedMessageMap.removeAll();
 
         for (AckData ackData : ackDataList) {
             Message message = ackData.getMessage();
@@ -232,15 +232,19 @@ public class AmqpChannel {
 
     public void acknowledge(long deliveryTag, boolean multiple) throws BrokerException {
         //TODO handle multiple
-        AckData ackData = unackedMessageMap.remove(deliveryTag);
+        AckData ackData = unackedMessageMap.markAcknowledgement(deliveryTag);
         if (MessageTracer.isTraceEnabled()) {
             String description = Objects.nonNull(ackData) ? ACKNOWLEDGE_RECEIVED : UNKNOWN_ACKNOWLEDGEMENT;
             MessageTracer.trace(description, traceChannelIdField, new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag));
         }
         if (ackData != null) {
             transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
+            if (!transaction.isTransactional()) {
+                ackData = unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
+                ackData.getMessage().release();
+            }
         } else {
-            LOGGER.warn("Could not find a matching ack data for acking the delivery tag " + deliveryTag);
+            LOGGER.warn("Could not find a matching ack data for acking the delivery tag {}", deliveryTag);
         }
     }
 
@@ -265,7 +269,7 @@ public class AmqpChannel {
 
     public void reject(long deliveryTag, boolean requeue) throws BrokerException {
         metricManager.markReject();
-        AckData ackData = unackedMessageMap.remove(deliveryTag);
+        AckData ackData = unackedMessageMap.negativeAcknowledge(deliveryTag);
         if (MessageTracer.isTraceEnabled()) {
             String description = Objects.nonNull(ackData) ? REJECT_RECEIVED : UNKNOWN_REJECT;
             MessageTracer.trace(description, traceChannelIdField,
@@ -282,7 +286,7 @@ public class AmqpChannel {
                 LOGGER.debug("Dropping message for delivery tag {}", deliveryTag);
             }
         } else {
-            LOGGER.warn("Could not find a matching ack data for rejecting the delivery tag " + deliveryTag);
+            LOGGER.warn("Could not find a matching ack data for rejecting the delivery tag {}", deliveryTag);
         }
     }
 
@@ -306,11 +310,11 @@ public class AmqpChannel {
      * @return all unacknowledged messages
      */
     public Collection<AckData> recover() {
-        return unackedMessageMap.clear();
+        return unackedMessageMap.removeAll();
     }
 
     public void requeueAll() throws BrokerException {
-        Collection<AckData> entries = unackedMessageMap.clear();
+        Collection<AckData> entries = unackedMessageMap.removeAll();
         for (AckData ackData : entries) {
             broker.requeue(ackData.getQueueName(), ackData.getMessage());
         }
@@ -391,6 +395,10 @@ public class AmqpChannel {
      */
     public void commit() throws ValidationException, BrokerException {
         transaction.commit();
+        Collection<AckData> acknowledgments = unackedMessageMap.removeMarkedAcknowledgments();
+        for (AckData ackData: acknowledgments) {
+            ackData.getMessage().release();
+        }
     }
 
     /**
@@ -398,6 +406,7 @@ public class AmqpChannel {
      */
     public void rollback() throws ValidationException {
         transaction.rollback();
+        unackedMessageMap.resetMarkedAcknowledgments();
     }
 
     /**
@@ -414,31 +423,81 @@ public class AmqpChannel {
      * number of messages in the unackedMessageMap.
      */
     private class UnackedMessageMap {
-        private Map<Long, AckData> unackedMessageMap = new LinkedHashMap<>();
 
-        AckData remove(long deliveryTag) {
-            AckData ackData = unackedMessageMap.remove(deliveryTag);
+        /**
+         * Acknowledgment pending messages
+         */
+        private final Map<Long, AckData> pendingAcknowledgments = new LinkedHashMap<>();
 
-            if (!hasRoom.get() && unackedMessageMap.size() < prefetchCount) {
-                hasRoom.set(true);
+        /**
+         * Acknowledgments that are waiting for a subsequent commit or rollback.
+         */
+        private final Map<Long, AckData> markedAcknowledgments = new LinkedHashMap<>();
+
+        /**
+         * Mark the specific delivery tag as acknowledgment received and return the specific {@link AckData} object
+         *
+         * @param deliveryTag delivery tag of the acknowledged message delivery
+         * @return AckData object for the corresponding delivery tag
+         */
+        AckData markAcknowledgement(long deliveryTag) {
+            AckData ackData = pendingAcknowledgments.remove(deliveryTag);
+            if (Objects.nonNull(ackData)) {
+                markedAcknowledgments.put(deliveryTag, ackData);
             }
+            return ackData;
+        }
 
+        AckData negativeAcknowledge(long deliveryTag) {
+            AckData ackData = pendingAcknowledgments.remove(deliveryTag);
+            checkAndEnableHasRoom();
             return ackData;
         }
 
         void put(long deliveryTag, AckData ackData) {
-            unackedMessageMap.put(deliveryTag, ackData);
+            pendingAcknowledgments.put(deliveryTag, ackData);
 
-            if (hasRoom.get() && unackedMessageMap.size() >= prefetchCount) {
+            if (hasRoom.get() && pendingAcknowledgments.size() >= prefetchCount) {
                 hasRoom.set(false);
             }
         }
 
-        Collection<AckData> clear() {
-            Collection<AckData> entries = new ArrayList<>(unackedMessageMap.values());
-            unackedMessageMap.clear();
+        Collection<AckData> removeAll() {
+            Collection<AckData> entries = new ArrayList<>(pendingAcknowledgments.values());
+            pendingAcknowledgments.clear();
+            entries.addAll(markedAcknowledgments.values());
+            markedAcknowledgments.clear();
             hasRoom.set(true);
             return entries;
+        }
+
+        AckData removeMarkedAcknowledgment(long deliveryTag) {
+            AckData ackData = markedAcknowledgments.remove(deliveryTag);
+            checkAndEnableHasRoom();
+            return ackData;
+        }
+
+        private void checkAndEnableHasRoom() {
+            if (!hasRoom.get() && pendingAcknowledgments.size() < prefetchCount) {
+                hasRoom.set(true);
+            }
+        }
+
+        void resetMarkedAcknowledgments() {
+            pendingAcknowledgments.putAll(markedAcknowledgments);
+            markedAcknowledgments.clear();
+
+            if (hasRoom.get() && pendingAcknowledgments.size() >= prefetchCount) {
+                hasRoom.set(false);
+            }
+        }
+
+        Collection<AckData> removeMarkedAcknowledgments() {
+            ArrayList<AckData> ackedMessages = new ArrayList<>(markedAcknowledgments.values());
+            markedAcknowledgments.clear();
+            checkAndEnableHasRoom();
+            return ackedMessages;
+
         }
     }
 }
