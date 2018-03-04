@@ -69,9 +69,6 @@ public class Main {
             //Initializing an HaStrategy implementation only if HA is enabled
             try {
                 haStrategy = HaStrategyFactory.getHaStrategy(startupContext);
-                if (haStrategy != null) {
-                    startupContext.registerService(HaStrategy.class, haStrategy);
-                }
             } catch (Exception e) {
                 throw new CoordinationException("Error initializing HA Strategy: ", e);
             }
