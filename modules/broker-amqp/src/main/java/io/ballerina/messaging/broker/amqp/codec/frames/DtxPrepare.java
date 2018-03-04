@@ -19,11 +19,21 @@
 
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
+import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
+import io.ballerina.messaging.broker.amqp.codec.ChannelException;
 import io.ballerina.messaging.broker.amqp.codec.XaResult;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.LongString;
+import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.transaction.XidImpl;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * AMQP frame for dtx.prepare
@@ -34,13 +44,14 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class DtxPrepare extends MethodFrame {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DtxPrepare.class);
     private static final short CLASS_ID = 100;
     private static final short METHOD_ID = 70;
     private final int format;
     private final LongString globalId;
     private final LongString branchId;
 
-    public DtxPrepare(int channel, int format, LongString globalId, LongString branchId) {
+    private DtxPrepare(int channel, int format, LongString globalId, LongString branchId) {
         super(channel, CLASS_ID, METHOD_ID);
         this.format = format;
         this.globalId = globalId;
@@ -62,7 +73,27 @@ public class DtxPrepare extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         int channelId = getChannel();
-        ctx.writeAndFlush(new DtxPrepareOk(channelId, XaResult.XA_OK.getValue()));
+        AmqpChannel channel = connectionHandler.getChannel(channelId);
+
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.prepare(new XidImpl(format, branchId.getBytes(), globalId.getBytes()));
+                ctx.writeAndFlush(new DtxPrepareOk(channelId, XaResult.XA_OK.getValue()));
+            } catch (BrokerException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.NOT_ALLOWED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            } catch (ValidationException e) {
+                LOGGER.debug("Queue delete validation failure", e);
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.PRECONDITION_FAILED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            }
+        });
     }
 
     public static AmqMethodBodyFactory getFactory() {

@@ -128,8 +128,8 @@ public class DistributedTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void prepare(Xid xid) {
-
+    public void prepare(Xid xid) throws BrokerException, ValidationException {
+        transactionRegistry.prepare(xid);
     }
 
     @Override

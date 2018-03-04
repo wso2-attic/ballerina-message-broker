@@ -109,7 +109,7 @@ public interface BrokerTransaction {
      *
      * @param xid Prepare for commitment any work associated with Xid
      */
-    void prepare(Xid xid) throws ValidationException;
+    void prepare(Xid xid) throws ValidationException, BrokerException;
 
     /**
      * Commit the work done on behalf a transaction branch

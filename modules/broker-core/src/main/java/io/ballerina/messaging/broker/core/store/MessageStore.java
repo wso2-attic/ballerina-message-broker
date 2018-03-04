@@ -102,6 +102,10 @@ public abstract class MessageStore {
         }
     }
 
+    public void prepare(Xid xid) throws BrokerException {
+        prepare(xid, getTransactionData(xid));
+    }
+
     public void flush(Xid xid) throws BrokerException {
         commitTransactionToStore(getTransactionData(xid));
         clear(xid);
@@ -129,4 +133,6 @@ public abstract class MessageStore {
     public abstract void fillMessageData(QueueBuffer queueBuffer, Message message);
 
     public abstract Collection<Message> readAllMessagesForQueue(String queueName) throws BrokerException;
+
+    public abstract void prepare(Xid xid, TransactionData transactionData) throws BrokerException;
 }

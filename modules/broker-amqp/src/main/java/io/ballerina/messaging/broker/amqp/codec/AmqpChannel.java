@@ -429,6 +429,10 @@ public class AmqpChannel {
         transaction.end(xid, channelId,  fail, suspend);
     }
 
+    public void prepare(Xid xid) throws BrokerException, ValidationException {
+        transaction.prepare(xid);
+    }
+
     /**
      * Data-structure to handle unacknowledge messages. This class will update the has room variable depending on the
      * number of messages in the unackedMessageMap.
