@@ -18,7 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth.authentication.authenticator;
 
-import io.ballerina.messaging.broker.auth.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 /**
@@ -35,6 +35,7 @@ public interface Authenticator {
      * @param startupContext the startup context provides registered services for authenticator functionality.
      */
     void initialize(StartupContext startupContext) throws Exception;
+
     /**
      * Authenticate given user based on defined authentication strategy.
      *

@@ -23,7 +23,12 @@ import io.ballerina.messaging.broker.auth.authentication.authenticator.Authentic
 import io.ballerina.messaging.broker.auth.authentication.sasl.BrokerSecurityProvider;
 import io.ballerina.messaging.broker.auth.authentication.sasl.SaslServerBuilder;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.PlainSaslServerBuilder;
+import io.ballerina.messaging.broker.auth.authorization.AuthProvider;
+import io.ballerina.messaging.broker.auth.authorization.AuthProviderFactory;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.AuthorizerFactory;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
@@ -54,13 +60,25 @@ public class AuthManager {
      */
     private Authenticator authenticator;
 
-    public AuthManager(StartupContext startupContext)  throws Exception {
+    private Authorizer authorizer;
+
+    private static ThreadLocal<String> authContext = new ThreadLocal<>();
+
+    public AuthManager(StartupContext startupContext) throws Exception {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         brokerAuthConfiguration = configProvider
                 .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
+        BrokerCommonConfiguration commonConfigs
+                = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
+                                                        BrokerCommonConfiguration.class);
         startupContext.registerService(AuthManager.class, this);
         authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
                                                                     brokerAuthConfiguration.getAuthentication());
+        AuthProvider authProvider = new AuthProviderFactory().getAuthorizer(commonConfigs,
+                                                                            brokerAuthConfiguration,
+                                                                            startupContext);
+        authorizer = new AuthorizerFactory().getAutStore(authProvider, commonConfigs,
+                                                         brokerAuthConfiguration, startupContext);
     }
 
     public void start() {
@@ -119,6 +137,7 @@ public class AuthManager {
 
     /**
      * Provides broker authentication enabled.
+     *
      * @return broker authentication enabled or not
      */
     public boolean isAuthenticationEnabled() {
@@ -127,9 +146,51 @@ public class AuthManager {
 
     /**
      * Provides authenticator which will be used to authenticate users.
+     *
      * @return broker authenticator
      */
     public Authenticator getAuthenticator() {
         return authenticator;
+    }
+
+    /**
+     * Provides authorizer which will be used to authorize users for broker resources.
+     *
+     * @return broker authorizer
+     */
+    public Authorizer getAuthorizer() {
+        return authorizer;
+    }
+
+    public static ThreadLocal<String> getAuthContext() {
+        return authContext;
+    }
+
+    /**
+     * Do authorization with given authentication id.
+     * @param authenticationId authentication id
+     * @param runnable runnable
+     */
+    public static void doAuthContextAwareFunction(String authenticationId, Runnable runnable) {
+        try {
+            authContext.set(authenticationId);
+            runnable.run();
+        } finally {
+            authContext.remove();
+        }
+    }
+
+    /**
+     * Do authorization with given authentication id.
+     * @param authenticationId authentication id
+     * @param supplier supplier
+     */
+    public static <T> T doAuthContextAwareFunction(String authenticationId, Supplier<T> supplier) {
+        try {
+            authContext.set(authenticationId);
+            return supplier.get();
+        } finally {
+            authContext.remove();
+        }
     }
 }

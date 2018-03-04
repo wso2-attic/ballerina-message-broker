@@ -19,6 +19,7 @@
 package io.ballerina.messaging.broker.auth;
 
 import io.ballerina.messaging.broker.auth.authentication.jaas.BrokerLoginModule;
+import io.ballerina.messaging.broker.auth.authorization.provider.UserStoreAuthProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,12 +36,22 @@ public class BrokerAuthConfiguration {
 
     private AuthenticationConfiguration authentication = new AuthenticationConfiguration();
 
+    private AuthorizationConfiguration authorization = new AuthorizationConfiguration();
+
     public AuthenticationConfiguration getAuthentication() {
         return authentication;
     }
 
     public void setAuthentication(AuthenticationConfiguration authentication) {
         this.authentication = authentication;
+    }
+
+    public AuthorizationConfiguration getAuthorization() {
+        return authorization;
+    }
+
+    public void setAuthorization(AuthorizationConfiguration authorization) {
+        this.authorization = authorization;
     }
 
     /**
@@ -66,6 +77,42 @@ public class BrokerAuthConfiguration {
 
         public void setJaas(JaasConfiguration jaas) {
             this.jaas = jaas;
+        }
+    }
+
+    /**
+     * Represents authorization configuration for broker
+     */
+    public static class AuthorizationConfiguration {
+
+        private boolean enabled = true;
+
+        private AuthProviderConfiguration authProvider = new AuthProviderConfiguration();
+
+        private CacheConfiguration cache = new CacheConfiguration();
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public AuthProviderConfiguration getAuthProvider() {
+            return authProvider;
+        }
+
+        public void setAuthProvider(AuthProviderConfiguration authProvider) {
+            this.authProvider = authProvider;
+        }
+
+        public CacheConfiguration getCache() {
+            return cache;
+        }
+
+        public void setCache(CacheConfiguration cache) {
+            this.cache = cache;
         }
     }
 
@@ -100,6 +147,61 @@ public class BrokerAuthConfiguration {
             this.options = options;
         }
     }
+
+    /**
+     * Represents authProvider configuration for broker
+     */
+    public static class AuthProviderConfiguration {
+
+        private String className = UserStoreAuthProvider.class.getCanonicalName();
+
+        private Map<String, Object> properties = new HashMap<>();
+
+        public String getClassName() {
+            return className;
+        }
+
+        public void setClassName(String className) {
+            this.className = className;
+        }
+
+        public Map<String, Object> getProperties() {
+            return properties;
+        }
+
+        public void setProperties(Map<String, Object> properties) {
+            this.properties = properties;
+        }
+    }
+
+    /**
+     * Represents permission cache configuration required for authorization
+     */
+    public static class CacheConfiguration {
+
+        /**
+         * Cache timeout in minutes
+         */
+        private int timeout = 15;
+        /**
+         * Maximum cache size
+         */
+        private int size = 5000;
+
+        public int getTimeout() {
+            return timeout;
+        }
+
+        public void setTimeout(int timeout) {
+            this.timeout = timeout;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public void setSize(int size) {
+            this.size = size;
+        }
+    }
 }
-
-

@@ -20,12 +20,19 @@
 package io.ballerina.messaging.broker.core;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceActions;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScopes;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceTypes;
+import io.ballerina.messaging.broker.auth.authorization.handler.AuthorizationHandler;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
+import io.ballerina.messaging.broker.common.util.function.ThrowingRunnable;
 import io.ballerina.messaging.broker.coordination.BasicHaListener;
 import io.ballerina.messaging.broker.coordination.HaListener;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
@@ -108,9 +115,15 @@ public final class Broker {
      */
     private final MessageIdGenerator messageIdGenerator;
 
+    /**
+     * The @{@link AuthorizationHandler} to handle authorization.
+     */
+    private final AuthorizationHandler authHandler;
+
     public Broker(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
         metricManager = getMetricManager(metrics);
+        authHandler = new AuthorizationHandler(startupContext.getService(AuthManager.class));
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerCoreConfiguration configuration = configProvider.getConfigurationObject(BrokerCoreConfiguration.NAMESPACE,
@@ -171,11 +184,17 @@ public final class Broker {
     }
 
     private void initDefaultDeadLetterQueue() throws BrokerException, ValidationException {
-        createQueue(DEFAULT_DEAD_LETTER_QUEUE, false, true, false);
-        bind(DEFAULT_DEAD_LETTER_QUEUE,
-             ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE,
-             DEFAULT_DEAD_LETTER_QUEUE,
-             FieldTable.EMPTY_TABLE);
+        try {
+            createQueue(DEFAULT_DEAD_LETTER_QUEUE, false, true, false, () -> {
+            }, () -> {
+            });
+            bind(DEFAULT_DEAD_LETTER_QUEUE,
+                 ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE,
+                 DEFAULT_DEAD_LETTER_QUEUE,
+                 FieldTable.EMPTY_TABLE);
+        } catch (BrokerAuthException e) {
+            throw new BrokerException("Auth error while initializing dead letter queue", e);
+        }
     }
 
     private BrokerMetricManager getMetricManager(MetricService metrics) {
@@ -384,12 +403,23 @@ public final class Broker {
         }
     }
 
-    public boolean createQueue(String queueName, boolean passive,
-                               boolean durable, boolean autoDelete) throws BrokerException, ValidationException {
+    public boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
+            throws BrokerException, ValidationException, BrokerAuthException {
+        return createQueue(queueName, passive, durable, autoDelete,
+                           () -> authHandler.handle(ResourceAuthScopes.QUEUES_CREATE),
+                           () -> authHandler.createAuthResource(ResourceTypes.QUEUE, queueName, durable));
+    }
+
+    private boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete,
+                                ThrowingRunnable<BrokerAuthException> queueAuthorizer,
+                                ThrowingRunnable<BrokerAuthException> authResourceCreator)
+            throws BrokerException, BrokerAuthException, ValidationException {
         lock.writeLock().lock();
         try {
+            queueAuthorizer.run();
             boolean queueAdded = queueRegistry.addQueue(queueName, passive, durable, autoDelete);
             if (queueAdded) {
+                authResourceCreator.run();
                 QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
                 // We need to bind every queue to the default exchange
                 exchangeRegistry.getDefaultExchange().bind(queueHandler, queueName, FieldTable.EMPTY_TABLE);
@@ -400,12 +430,17 @@ public final class Broker {
         }
     }
 
-    public int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException,
-                                                                                           ValidationException,
-                                                                                           ResourceNotFoundException {
+    public int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty)
+            throws BrokerException, ValidationException, ResourceNotFoundException, BrokerAuthException {
         lock.writeLock().lock();
         try {
-            return queueRegistry.removeQueue(queueName, ifUnused, ifEmpty);
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+            if (Objects.nonNull(queueHandler) && Objects.nonNull(queueHandler.getQueue())) {
+                authHandler.handle(ResourceTypes.QUEUE, queueName, ResourceActions.DELETE);
+            }
+            int messageCount = queueRegistry.removeQueue(queueName, ifUnused, ifEmpty);
+            authHandler.deleteAuthResource(ResourceTypes.QUEUE, queueName);
+            return messageCount;
         } finally {
             lock.writeLock().unlock();
         }

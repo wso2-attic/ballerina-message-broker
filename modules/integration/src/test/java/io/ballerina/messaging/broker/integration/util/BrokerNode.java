@@ -27,6 +27,7 @@ import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.user.UserStoreManager;
 import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.BrokerHaConfiguration;
 import io.ballerina.messaging.broker.coordination.CoordinationException;
@@ -115,7 +116,9 @@ public class BrokerNode {
         }
 
         BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
+        BrokerCommonConfiguration brokerCommonConfiguration = new BrokerCommonConfiguration();
         configProvider.registerConfigurationObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
+        configProvider.registerConfigurationObject(BrokerCommonConfiguration.NAMESPACE, brokerCommonConfiguration);
         startupContext.registerService(UserStoreManager.class, new UserStoreManagerImpl());
         AuthManager authManager = new AuthManager(startupContext);
 

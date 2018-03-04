@@ -31,6 +31,8 @@ public class ChannelException extends Exception {
 
     public static final int PRECONDITION_FAILED = 406;
 
+    public static final int ACCESS_REFUSED = 403;
+
     private final int replyCode;
 
     public ChannelException(int replyCode, String replyText) {
