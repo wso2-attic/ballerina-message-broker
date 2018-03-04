@@ -108,11 +108,6 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     @Override
-    public boolean isTransactional() {
-        return true;
-    }
-
-    @Override
     public void onClose() {
         rollback();
     }

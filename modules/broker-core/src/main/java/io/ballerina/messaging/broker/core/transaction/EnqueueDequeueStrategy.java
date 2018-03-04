@@ -28,7 +28,24 @@ import io.ballerina.messaging.broker.core.Message;
  */
 public interface EnqueueDequeueStrategy {
 
+    /**
+     * Depending on the enqueue mode, transactional or non transactional mode, the enqueue strategy changes. For
+     * instance add the messages to the underlying queue when non transactional. Add the message to a temporary store
+     * when transactional
+     *
+     * @param message Incoming {@link Message}
+     * @throws BrokerException throws when enqueue operation fail
+     */
     void enqueue(Message message) throws BrokerException;
 
+    /**
+     * Depending on the dequeue mode,  transactional or non transactional mode, the dequeue strategy changes. For
+     * instance messages are removed from the queue when non transactiona. Move the message to a temporary store when
+     * transactional.
+     *
+     * @param queueName name of the relevant queue
+     * @param message {@link Message} to be removed
+     * @throws BrokerException throws on dequeue operation failure
+     */
     void dequeue(String queueName, Message message) throws BrokerException;
 }

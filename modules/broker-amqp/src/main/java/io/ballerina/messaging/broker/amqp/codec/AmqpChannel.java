@@ -241,7 +241,7 @@ public class AmqpChannel {
         }
         if (ackData != null) {
             transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
-            if (!transaction.isTransactional()) {
+            if (isNonTransactional()) {
                 ackData = unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
                 ackData.getMessage().release();
             }
@@ -413,12 +413,12 @@ public class AmqpChannel {
     }
 
     /**
-     * Check whether the channel start local transaction
+     * Check whether the channel is in a transaction mode
      *
-     * @return transaction started or not
+     * @return transaction started or not. True if not in a transaction false otherwise
      */
-    public boolean isTransactional () {
-        return transaction.isTransactional();
+    public boolean isNonTransactional() {
+        return transaction instanceof AutoCommitTransaction;
     }
 
     public void startDtx(Xid xid, boolean join, boolean resume) throws ValidationException {

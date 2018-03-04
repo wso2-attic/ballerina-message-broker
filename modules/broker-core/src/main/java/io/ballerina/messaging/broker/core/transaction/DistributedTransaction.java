@@ -40,7 +40,6 @@ public class DistributedTransaction implements BrokerTransaction {
     private EnqueueDequeueStrategy enqueueDequeueStrategy;
 
     DistributedTransaction(BranchFactory branchFactory, Registry transactionRegistry) {
-
         this.branchFactory = branchFactory;
         this.transactionRegistry = transactionRegistry;
         this.enqueueDequeueStrategy = branchFactory.getDirectEnqueueDequeueStrategy();
@@ -69,11 +68,6 @@ public class DistributedTransaction implements BrokerTransaction {
     @Override
     public void addPostTransactionAction(Action postTransactionAction) {
 
-    }
-
-    @Override
-    public boolean isTransactional() {
-        return false;
     }
 
     @Override

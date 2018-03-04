@@ -80,13 +80,6 @@ public interface BrokerTransaction {
     void addPostTransactionAction(Action postTransactionAction);
 
     /**
-     * Return implementation support transaction
-     *
-     * @return local transactional or not
-     */
-    boolean isTransactional();
-
-    /**
      * Actions to be performed on a transaction close
      */
     void onClose();

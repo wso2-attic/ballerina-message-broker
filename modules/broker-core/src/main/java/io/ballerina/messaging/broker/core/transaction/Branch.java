@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core.transaction;
 
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
@@ -36,7 +37,6 @@ import javax.transaction.xa.Xid;
  * XA transaction information hold within the broker
  */
 public class Branch implements EnqueueDequeueStrategy {
-
 
     private State state;
 
@@ -132,9 +132,12 @@ public class Branch implements EnqueueDequeueStrategy {
      *
      * @param sessionId session identifier of the session
      */
-    public void resumeSession(int sessionId) {
+    public void resumeSession(int sessionId) throws ValidationException {
         if (associatedSessions.containsKey(sessionId) && associatedSessions.get(sessionId) == State.SUSPENDED) {
             associatedSessions.put(sessionId, State.ACTIVE);
+        } else {
+            throw new ValidationException("Couldn't resume session for branch with xid " + xid
+                                                  + " and session id " + sessionId);
         }
     }
 
