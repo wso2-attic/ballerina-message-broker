@@ -19,9 +19,13 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
@@ -51,13 +55,20 @@ public class BrokerAPITest {
         StartupContext startupContext = new StartupContext();
         TestBrokerConfigProvider testBrokerConfigProvider = new TestBrokerConfigProvider();
         testBrokerConfigProvider.addConfigObject(BrokerCoreConfiguration.NAMESPACE, new BrokerCoreConfiguration());
+        BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
+        BrokerCommonConfiguration brokerCommonConfiguration = new BrokerCommonConfiguration();
+        brokerAuthConfiguration.getAuthorization().setEnabled(false);
+        testBrokerConfigProvider.addConfigObject(BrokerCommonConfiguration.NAMESPACE, brokerCommonConfiguration);
+        testBrokerConfigProvider.addConfigObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
+
         startupContext.registerService(BrokerConfigProvider.class, testBrokerConfigProvider);
         startupContext.registerService(DataSource.class, dataSource);
+        new AuthManager(startupContext);
         broker = new Broker(startupContext);
     }
 
     @BeforeMethod
-    public void setup() throws BrokerException, ValidationException {
+    public void setup() throws BrokerException, ValidationException, BrokerAuthException {
         broker.createQueue(DEFAULT_QUEUE_NAME, false, false, false);
         broker.bind(DEFAULT_QUEUE_NAME, DEFAULT_EXCHANGE_NAME, DEFAULT_ROUTING_KEY, FieldTable.EMPTY_TABLE);
     }
@@ -104,9 +115,8 @@ public class BrokerAPITest {
     @Test (dataProvider = "nonExistingQueues",
            description = "Test non existing queue delete.",
            expectedExceptions = {ResourceNotFoundException.class})
-    public void testNonExistingQueueDelete(String queueName) throws BrokerException,
-                                                                    ResourceNotFoundException,
-                                                                    ValidationException {
+    public void testNonExistingQueueDelete(String queueName)
+            throws BrokerException, ResourceNotFoundException, ValidationException, BrokerAuthException {
         broker.deleteQueue(queueName, false, false);
     }
 
