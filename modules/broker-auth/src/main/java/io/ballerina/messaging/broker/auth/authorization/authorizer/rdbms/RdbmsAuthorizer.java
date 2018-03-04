@@ -32,8 +32,8 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.A
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
