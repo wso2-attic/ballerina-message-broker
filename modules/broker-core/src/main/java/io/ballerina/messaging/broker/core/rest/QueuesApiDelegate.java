@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.Broker;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -72,6 +74,8 @@ public class QueuesApiDelegate {
         } catch (BrokerException | URISyntaxException e) {
             LOGGER.error("Error occurred while generating location URI ", e);
             throw new InternalServerErrorException(e.getMessage(), e);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
         }
     }
 
@@ -93,6 +97,8 @@ public class QueuesApiDelegate {
             throw new InternalServerErrorException(e.getMessage(), e);
         } catch (ResourceNotFoundException e) {
             throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
         }
     }
 
