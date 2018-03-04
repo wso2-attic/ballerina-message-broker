@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.auth;
 
 import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
-import io.ballerina.messaging.broker.auth.authorization.provider.DefaultAuthProvider;
+import io.ballerina.messaging.broker.auth.authorization.provider.UserStoreAuthProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -147,7 +147,7 @@ public class BrokerAuthConfiguration {
      */
     public static class AuthProviderConfiguration {
 
-        private String className = DefaultAuthProvider.class.getCanonicalName();
+        private String className = UserStoreAuthProvider.class.getCanonicalName();
 
         private Map<String, Object> properties = new HashMap<>();
 

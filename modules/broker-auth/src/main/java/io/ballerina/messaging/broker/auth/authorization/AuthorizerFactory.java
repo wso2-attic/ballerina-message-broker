@@ -22,6 +22,7 @@ import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.DefaultAuthorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 
 /**
  * Factory class for create new instance of @{@link Authorizer}.
@@ -32,16 +33,19 @@ public class AuthorizerFactory {
      * Provides an instance of @{@link Authorizer}
      *
      * @param authProvider              an authProvider to retrieve authorize information for user.
+     * @param commonConfiguration     common Configuration
      * @param startupContext          the startup context provides registered services for authenticator functionality.
      * @param brokerAuthConfiguration the auth configuration
      * @return authProvider for given configuration
      * @throws Exception throws if error occurred while providing new instance of authProvider
      */
     public Authorizer getAutStore(AuthProvider authProvider,
+                                  BrokerCommonConfiguration commonConfiguration,
                                   BrokerAuthConfiguration brokerAuthConfiguration,
                                   StartupContext startupContext) throws Exception {
 
-        if (brokerAuthConfiguration.getAuthentication().isEnabled() &&
+        if (!commonConfiguration.getEnableInMemoryMode() &&
+                brokerAuthConfiguration.getAuthentication().isEnabled() &&
                 brokerAuthConfiguration.getAuthorization().isEnabled()) {
             Authorizer authorizer = new RdbmsAuthorizer();
             authorizer.initialize(authProvider,
