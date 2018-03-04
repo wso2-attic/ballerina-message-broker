@@ -81,7 +81,7 @@ public class AuthScopeRdbmsDaoTest {
     @Test
     public void testReadAll() throws BrokerAuthServerException {
         List<AuthScope> authScopes = authScopeDao.readAll();
-        Assert.assertEquals(authScopes.size(), 10);
+        Assert.assertEquals(authScopes.size(), 8);
     }
 
     @Test
