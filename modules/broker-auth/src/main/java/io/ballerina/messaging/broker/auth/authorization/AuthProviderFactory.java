@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.auth.authorization;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.provider.DefaultAuthProvider;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +36,17 @@ public class AuthProviderFactory {
      * Provides an instance of @{@link AuthProvider}
      *
      * @param startupContext          the startup context provides registered services for authenticator functionality.
+     * @param commonConfiguration     common Configuration
      * @param brokerAuthConfiguration the auth configuration
      * @return authorizer for given configuration
      * @throws Exception throws if error occurred while providing new instance of authorizer
      */
-    public AuthProvider getAuthorizer(BrokerAuthConfiguration brokerAuthConfiguration,
+    public AuthProvider getAuthorizer(BrokerCommonConfiguration commonConfiguration,
+                                      BrokerAuthConfiguration brokerAuthConfiguration,
                                       StartupContext startupContext) throws Exception {
 
-        if (brokerAuthConfiguration.getAuthentication().isEnabled() &&
+        if (!commonConfiguration.getEnableInMemoryMode() &&
+                brokerAuthConfiguration.getAuthentication().isEnabled() &&
                 brokerAuthConfiguration.getAuthorization().isEnabled()) {
             String authenticatorClass = brokerAuthConfiguration.getAuthorization()
                                                                .getAuthProvider()

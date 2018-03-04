@@ -28,6 +28,7 @@ import io.ballerina.messaging.broker.auth.authorization.AuthProviderFactory;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizerFactory;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,11 +68,17 @@ public class AuthManager {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         brokerAuthConfiguration = configProvider
                 .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
+        BrokerCommonConfiguration commonConfigs
+                = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
+                                                        BrokerCommonConfiguration.class);
         startupContext.registerService(AuthManager.class, this);
         authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
                                                                     brokerAuthConfiguration.getAuthentication());
-        AuthProvider authProvider = new AuthProviderFactory().getAuthorizer(brokerAuthConfiguration, startupContext);
-        authorizer = new AuthorizerFactory().getAutStore(authProvider, brokerAuthConfiguration, startupContext);
+        AuthProvider authProvider = new AuthProviderFactory().getAuthorizer(commonConfigs,
+                                                                            brokerAuthConfiguration,
+                                                                            startupContext);
+        authorizer = new AuthorizerFactory().getAutStore(authProvider, commonConfigs,
+                                                         brokerAuthConfiguration, startupContext);
     }
 
     public void start() {
