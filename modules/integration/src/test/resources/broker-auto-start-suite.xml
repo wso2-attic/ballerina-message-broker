@@ -33,11 +33,14 @@
         <listener class-name="io.ballerina.messaging.broker.integration.util.TestExecutionListener"/>
     </listeners>
 
-    <!--<parameter name="useDefaultListeners" value="false"/>-->
+    <test name="broker-integration-tests-initializer" verbose="2">
+        <classes>
+            <class name="io.ballerina.messaging.broker.integration.standalone.DefaultSuiteInitializer" />
+        </classes>
+    </test>
 
     <test name="broker-integration-tests" verbose="2">
         <packages>
-            <package name="io.ballerina.messaging.broker.integration.standalone"/>
             <package name="io.ballerina.messaging.broker.integration.standalone.rest"/>
             <package name="io.ballerina.messaging.broker.integration.standalone.amqp"/>
             <package name="io.ballerina.messaging.broker.integration.standalone.jms"/>

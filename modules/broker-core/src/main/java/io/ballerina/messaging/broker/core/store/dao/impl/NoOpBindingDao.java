@@ -28,7 +28,6 @@ import io.ballerina.messaging.broker.core.store.dao.BindingDao;
  */
 public class NoOpBindingDao implements BindingDao {
 
-
     @Override
     public void persist(String exchangeName, Binding binding) {
         // Ignore method invocation.

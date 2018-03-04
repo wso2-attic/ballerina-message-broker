@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.integration.standalone.cli;
 
 import io.ballerina.messaging.broker.client.Main;
-import org.testng.Assert;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import org.testng.annotations.Test;
 
 import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
@@ -32,48 +32,44 @@ public class NegativeCommandTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'list abc'")
     public void testListInvalidResource() {
-        String[] cmd = { CLI_ROOT_COMMAND, "list", "abc" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, "abc" };
         String expectedLog = "unknown command 'abc'";
-        String errorMessage = "error message on, list unknown resource type is invalid";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
           description = "test command 'create abc'")
     public void testCreateInvalidResource() {
-        String[] cmd = { CLI_ROOT_COMMAND, "create", "abc" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, "abc" };
         String expectedLog = "unknown command 'abc'";
-        String errorMessage = "error message on, create unknown resource type is invalid";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
           description = "test command 'delete abc'")
     public void testDeleteInvalidResource() {
-        String[] cmd = { CLI_ROOT_COMMAND, "delete", "abc" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_DELETE, "abc" };
         String expectedLog = "unknown command 'abc'";
-        String errorMessage = "error message on, delete unknown resource is type invalid";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
           description = "test command 'list exchange ex1 ex2'")
     public void testMultipleMainValues() {
-        String[] cmd = { CLI_ROOT_COMMAND, "list", "exchange", "ex1", "ex2" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE, "ex1", "ex2" };
         String expectedLog = "Only one main parameter allowed but found several: \"ex1\" and \"ex2\"";
-        String errorMessage = "error message on, multiple main parameters provided";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 }

@@ -19,14 +19,14 @@
 
 package io.ballerina.messaging.broker.core.queue;
 
-import io.ballerina.messaging.broker.core.configuration.BrokerConfiguration;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 /**
  * Factory class for {@link QueueBuffer}.
  */
 public class QueueBufferFactory {
     private int inMemoryCacheLimit;
 
-    public QueueBufferFactory(BrokerConfiguration configuration) {
+    public QueueBufferFactory(BrokerCoreConfiguration configuration) {
         inMemoryCacheLimit = Integer.parseInt(configuration.getDurableQueueInMemoryCacheLimit());
     }
 

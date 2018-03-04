@@ -15,7 +15,7 @@
 # under the License.
 
 # Broker Configurations.
-wso2.broker:
+ballerina.broker.core:
  # Datasource configurations used to communicate with the database.
  dataSource:
   # Database URL.
@@ -31,7 +31,7 @@ wso2.broker:
   loginModule: io.ballerina.messaging.broker.core.security.authentication.jaas.BrokerLoginModule
 
 # AMQP transport related configurations.
-wso2.broker.transport.amqp:
+ballerina.broker.transport.amqp:
  # Hostname configuration used in creating the server socket
  hostName: localhost
 
@@ -82,7 +82,7 @@ wso2.broker.transport.amqp:
    certType: SunX509
 
 # Failover related configurations
-wso2.broker.failover:
+ballerina.broker.failover:
  # Whether or not failover is enabled
  enabled: true
  # The strategy to use in providing failover
@@ -91,11 +91,3 @@ wso2.broker.failover:
  options:
   heartbeatInterval: 5000
   coordinatorEntryCreationWaitTime: 3000
-
-# Admin service related configurations.
-wso2.broker.admin.service:
- plain:
-  # Hostname configuration used in creating server socket
-  hostName: localhost
-  # Port used for the nonsecured admin service.
-  port: 9000

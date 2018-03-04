@@ -19,6 +19,7 @@
 package io.ballerina.messaging.broker.integration.standalone.cli;
 
 import io.ballerina.messaging.broker.client.Main;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -32,93 +33,96 @@ public class ExchangeCmdTest extends CliTestParent {
     @Test(groups = "StreamReading",
           description = "test command 'list exchange'")
     public void testListExchange() {
-        String[] cmd = { CLI_ROOT_COMMAND, "list", "exchange" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE };
         String expectedLog = "amq.topic";
-        String errorMessage = "error when executing 'list exchange' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readOutStream(), expectedLog, cmd);
     }
 
     @Test(dependsOnMethods = "testListExchange",
           groups = "StreamReading",
-          description = "test command 'list exchange sampleEx1'")
+          description = "test command 'create exchanges sampleEx1'")
     public void testCreateExchange() {
-        String[] cmd = { CLI_ROOT_COMMAND, "create", "exchange", "sampleEx1" };
-        String[] checkCmd = { CLI_ROOT_COMMAND, "list", "exchange", "sampleEx1" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_EXCHANGE, "sampleEx1" };
+        String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE, "sampleEx1" };
         String expectedLog = "sampleEx1";
-        String errorMessage = "error when executing 'create exchange <EX_NAME>' command";
 
         Main.main(cmd);
         Main.main(checkCmd);
 
-        Assert.assertTrue(PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readOutStream(), expectedLog, cmd);
     }
 
     @Test(dependsOnMethods = "testCreateExchange",
           groups = "StreamReading",
-          description = "test command 'list exchange sampleEx1'")
+          description = "test command 'delete exchanges sampleEx1'")
     public void testDeleteExchange() {
-        String[] cmd = { CLI_ROOT_COMMAND, "delete", "exchange", "sampleEx1" };
-        String[] checkCmd = { CLI_ROOT_COMMAND, "list", "exchange" };
-        String expectedLog = "sampleEx1";
-        String errorMessage = "error when executing 'delete exchange <EX_NAME>' command";
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_DELETE, Constants.CMD_EXCHANGE, "sampleEx1" };
+        String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE };
+        String notExpectedLog = "sampleEx1";
 
         Main.main(cmd);
         Main.main(checkCmd);
 
-        Assert.assertTrue(!PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
+        // This is a special test case. This has to checked for its non existence.
+
+        // build onFailure message
+        StringBuilder sb = new StringBuilder();
+        sb.append("error when executing command: " + String.join(" ", cmd) + "\n");
+        sb.append("not expected: " + notExpectedLog + "\n");
+        sb.append("stream content: " + PrintStreamHandler.readOutStream());
+
+        Assert.assertTrue(!PrintStreamHandler.readOutStream().contains(notExpectedLog), sb.toString());
     }
 
     @Test(dependsOnMethods = "testListExchange",
           groups = "StreamReading",
-          description = "test command 'list exchange sampleEx2 -d -t topic'")
+          description = "test command 'create exchange sampleEx2 -d -t topic'")
     public void testCreateExchangeWithFlags() {
-        String[] cmd = { CLI_ROOT_COMMAND, "create", "exchange", "sampleEx2", "-d", "-t", "topic" };
-        String[] checkCmd = { CLI_ROOT_COMMAND, "list", "exchange", "sampleEx2" };
+        String[] cmd = {
+                CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_EXCHANGE, "sampleEx2", "-d", "-t", "topic"
+        };
+        String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE, "sampleEx2" };
         String expectedLog = "sampleEx2";
-        String errorMessage = "error when executing 'create exchange <EX_NAME>' command";
 
         Main.main(cmd);
         Main.main(checkCmd);
 
-        Assert.assertTrue(PrintStreamHandler.readOutStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readOutStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
           description = "test command 'list exchange --help'")
     public void testListExchangeHelp() {
-        String[] cmd = { CLI_ROOT_COMMAND, "list", "exchange", "--help" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE, "--help" };
         String expectedLog = "List exchange(s) in the Broker";
-        String errorMessage = "error when executing 'list exchange --help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
-          description = "test command 'delete exchange --help'")
+          description = "test command 'create exchange --help'")
     public void testCreateExchangeHelp() {
-        String[] cmd = { CLI_ROOT_COMMAND, "create", "exchange", "--help" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_EXCHANGE, "--help" };
         String expectedLog = "Create an exchange in the Broker with parameters";
-        String errorMessage = "error when executing 'create exchange --help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(groups = "StreamReading",
           description = "test command 'delete exchange --help'")
     public void testDeleteExchangeHelp() {
-        String[] cmd = { CLI_ROOT_COMMAND, "delete", "exchange", "--help" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_DELETE, Constants.CMD_EXCHANGE, "--help" };
         String expectedLog = "Delete an exchange in the Broker";
-        String errorMessage = "error when executing 'delete exchange --help' command";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 }
