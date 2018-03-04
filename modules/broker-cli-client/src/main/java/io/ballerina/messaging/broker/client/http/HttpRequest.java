@@ -31,11 +31,14 @@ public class HttpRequest {
 
     public HttpRequest(String suffix) {
         this.suffix = suffix;
+        this.payload = null;
+        this.queryParameters = "";
     }
 
     public HttpRequest(String suffix, String payload) {
         this.suffix = suffix;
         this.payload = payload;
+        this.queryParameters = "";
     }
 
     public String getQueryParameters() {

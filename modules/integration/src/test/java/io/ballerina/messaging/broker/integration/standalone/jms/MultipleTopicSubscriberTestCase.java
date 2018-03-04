@@ -17,7 +17,7 @@
  *
  */
 
-package io.ballerina.messaging.broker.integration.standalone;
+package io.ballerina.messaging.broker.integration.standalone.jms;
 
 import io.ballerina.messaging.broker.integration.util.ClientHelper;
 import org.slf4j.Logger;

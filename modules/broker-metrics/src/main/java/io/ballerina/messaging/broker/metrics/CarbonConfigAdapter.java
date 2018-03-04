@@ -19,7 +19,7 @@
 
 package io.ballerina.messaging.broker.metrics;
 
-import io.ballerina.messaging.broker.common.BrokerConfigProvider;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.wso2.carbon.config.ConfigurationException;
 import org.wso2.carbon.config.provider.ConfigProvider;
 

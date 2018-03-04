@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
@@ -86,7 +87,7 @@ public class HttpClient {
 
         try {
 
-            URL obj = new URL(url + request.getSuffix());
+            URL obj = new URL(url + request.getSuffix() + request.getQueryParameters());
             HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
 
             //add request header
@@ -95,24 +96,14 @@ public class HttpClient {
             con.setRequestProperty("Accept", "application/json");
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Authorization", "Basic" + encodedCredentials);
+            // Disable keep-alive. Since client will send one request per each startup, it won't get any advantage
+            con.setRequestProperty("Connection", "close");
 
             // set http data
-            if (Objects.nonNull(request.getQueryParameters()) || Objects.nonNull(request.getPayload())) {
+            if (Objects.nonNull(request.getPayload())) {
                 con.setDoOutput(true);
-                DataOutputStream wr = null;
-                try {
-                    wr = new DataOutputStream(con.getOutputStream());
-                    if (Objects.nonNull(request.getQueryParameters())) {
-                        wr.writeBytes(request.getQueryParameters());
-                    }
-                    if (Objects.nonNull(request.getPayload())) {
-                        wr.writeBytes(request.getPayload());
-                    }
-                } finally {
-                    if (Objects.nonNull(wr)) {
-                        wr.flush();
-                        wr.close();
-                    }
+                try (DataOutputStream wr = new DataOutputStream(con.getOutputStream())) {
+                    wr.writeBytes(request.getPayload());
                 }
             }
 
@@ -121,24 +112,28 @@ public class HttpClient {
             BufferedReader in = null;
             StringBuilder response = new StringBuilder();
             try {
-                // if an error code is returned retrieve the errorStream otherwise inputStream
-                if (responseCode / 100 == 4 || responseCode / 100 == 5) {
+                // if non-error code is returned retrieve the inputStream otherwise errorStream
+                if (responseCode < HttpURLConnection.HTTP_BAD_REQUEST) {
+                    if (Objects.isNull(con.getInputStream())) {
+                        return new HttpResponse(responseCode, "");
+                    }
+                    in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
+                } else {
                     if (Objects.isNull(con.getErrorStream())) {
                         return new HttpResponse(responseCode,
                                 String.valueOf(responseCode) + " " + con.getResponseMessage());
                     }
                     in = new BufferedReader(new InputStreamReader(con.getErrorStream(), StandardCharsets.UTF_8));
-                } else {
-                    if (Objects.isNull(con.getInputStream())) {
-                        return new HttpResponse(responseCode, "");
-                    }
-                    in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
                 }
 
                 String inputLine;
 
                 while ((inputLine = in.readLine()) != null) {
                     response.append(inputLine);
+                }
+
+                if (response.toString().isEmpty()) {
+                    response.append(String.valueOf(responseCode) + " " + con.getResponseMessage());
                 }
             } finally {
                 if (in != null) {

@@ -32,7 +32,7 @@ public class BrokerHaConfiguration {
     /**
      * Namespace used in the config file.
      */
-    public static final String NAMESPACE = "wso2.broker.failover";
+    public static final String NAMESPACE = "ballerina.broker.failover";
 
     private boolean enabled = false;
 

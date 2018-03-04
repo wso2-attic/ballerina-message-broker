@@ -45,6 +45,6 @@ public class BranchFactory {
         Xid xid = new XidImpl(0,
                               UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8),
                               "".getBytes(StandardCharsets.UTF_8));
-        return new Branch(xid, storeFactory.getSharedMessageStore(), broker);
+        return new Branch(xid, storeFactory.getMessageStore(), broker);
     }
 }

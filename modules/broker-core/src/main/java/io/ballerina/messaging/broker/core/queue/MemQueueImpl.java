@@ -44,7 +44,11 @@ public class MemQueueImpl extends Queue {
     private final Map<Xid, List<Message>> pendingDequeueMessages;
 
     public MemQueueImpl(String queueName, int capacity, boolean autoDelete) {
-        super(queueName, false, autoDelete);
+        this(queueName, false, capacity, autoDelete);
+    }
+
+    public MemQueueImpl(String queueName, boolean durable, int capacity, boolean autoDelete) {
+        super(queueName, durable, autoDelete);
         this.capacity = capacity;
         queue = new LinkedBlockingDeque<>(capacity);
         pendingEnqueueMessages = new ConcurrentHashMap<>();

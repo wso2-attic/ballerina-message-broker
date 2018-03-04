@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.integration.standalone.cli;
 
 import io.ballerina.messaging.broker.client.Main;
 import io.ballerina.messaging.broker.client.resources.Configuration;
+import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 import io.ballerina.messaging.broker.integration.util.TestConstants;
 import org.testng.Assert;
@@ -36,7 +37,7 @@ import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_R
 /**
  * Test class containing tests of 'init' command.
  */
-public class InitCmdTest {
+public class InitCmdTest extends CliTestParent {
     private static final String TEMP_CONFIG_DIR = "target/config/";
     private static final String INVALID_CONFIG_PATH = "src/test/resources/config/cli-config-invalid.yaml";
 
@@ -53,18 +54,16 @@ public class InitCmdTest {
         FileUtils.deleteDir(new File(TEMP_CONFIG_DIR));
     }
 
-
     @Test(description = "test command 'init --help'",
           groups = "StreamReading")
     public void testInitCmdHelp() {
-        String[] cmd = { CLI_ROOT_COMMAND, "init", "--help" };
-        String expectedLog = "Initialize the Broker CLI Client by providing HTTP connection details and user "
-                + "credentials";
-        String errorMessage = "error when executing 'init --help' command";
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_INIT, "--help" };
+        String expectedLog =
+                "Initialize the Broker CLI Client by providing HTTP connection details and user " + "credentials";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(description = "test corrupted configuration file",
@@ -72,13 +71,12 @@ public class InitCmdTest {
     public void testCorruptedConfig() {
         System.setProperty(TestConstants.CLI_CONFIG_SYSTEM_PROPERTY, INVALID_CONFIG_PATH);
 
-        String[] cmd = { CLI_ROOT_COMMAND, "list", "exchange" };
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE };
         String expectedLog = "Error in the CLI client configuration";
-        String errorMessage = "configuration file validation test failed";
 
         Main.main(cmd);
 
-        Assert.assertTrue(PrintStreamHandler.readErrStream().contains(expectedLog), errorMessage);
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
 
     @Test(description = "test command 'init'")
@@ -104,8 +102,8 @@ public class InitCmdTest {
         System.setProperty(TestConstants.CLI_CONFIG_SYSTEM_PROPERTY, TEMP_CONFIG_DIR + "cli-config2.yaml");
 
         String[] cmd = {
-                CLI_ROOT_COMMAND, "init", "--host", "192.168.100.1", "--port", "9090", "--username", "admin_user",
-                "--password", "admin123"
+                CLI_ROOT_COMMAND, Constants.CMD_INIT, "--host", "192.168.100.1", "--port", "9090", "--username",
+                "admin_user", "--password", "admin123"
         };
 
         Main.main(cmd);
