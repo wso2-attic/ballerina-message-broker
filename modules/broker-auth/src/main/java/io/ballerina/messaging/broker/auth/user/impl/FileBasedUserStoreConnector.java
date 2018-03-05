@@ -34,6 +34,7 @@ import org.wso2.carbon.config.provider.ConfigProvider;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class FileBasedUserStoreConnector implements UserStoreConnector {
         } else if (Objects.isNull(user = userRegistry.get(userName))) {
             throw new BrokerAuthException("User not found for the given username.");
         } else {
-            if (credentials != null && Arrays.equals(credentials, user.getPassword())) {
+            if (Arrays.equals(credentials, user.getPassword())) {
                 return new AuthResult(true, userName);
             } else {
                 throw new BrokerAuthException("Password did not match with the configured user");
@@ -116,6 +117,6 @@ public class FileBasedUserStoreConnector implements UserStoreConnector {
         if (user != null) {
             return user.getRoles();
         }
-        return null;
+        return Collections.emptySet();
     }
 }

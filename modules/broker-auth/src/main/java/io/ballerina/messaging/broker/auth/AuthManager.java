@@ -87,9 +87,7 @@ public class AuthManager {
         PlainSaslServerBuilder plainSaslServerBuilder = new PlainSaslServerBuilder(authenticator);
         saslMechanisms.put(plainSaslServerBuilder.getMechanismName(), plainSaslServerBuilder);
         // Register given Sasl Server factories
-        if (Security
-                .insertProviderAt(new BrokerSecurityProvider(PROVIDER_NAME, saslMechanisms), 1)
-                == -1) {
+        if (Security.insertProviderAt(new BrokerSecurityProvider(PROVIDER_NAME, saslMechanisms), 1) == -1) {
             LOGGER.info("AMQ security authentication providers are already installed.");
         } else {
             if (LOGGER.isDebugEnabled()) {
