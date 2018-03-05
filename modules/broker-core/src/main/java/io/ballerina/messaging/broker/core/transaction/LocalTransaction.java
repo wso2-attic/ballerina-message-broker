@@ -50,7 +50,7 @@ public class LocalTransaction implements BrokerTransaction {
 
     private final BranchFactory branchFactory;
 
-    public LocalTransaction(Registry registry, BranchFactory branchFactory) {
+    LocalTransaction(Registry registry, BranchFactory branchFactory) {
         this.transactionRegistry = registry;
         preConditionFailed = false;
         this.branchFactory = branchFactory;
@@ -108,22 +108,17 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     @Override
-    public boolean isTransactional() {
-        return true;
-    }
-
-    @Override
     public void onClose() {
         rollback();
     }
 
     @Override
-    public void start(Xid xid, boolean join, boolean resume) throws ValidationException {
+    public void start(Xid xid, int sessionId, boolean join, boolean resume) throws ValidationException {
         throw new ValidationException("dtx.start called on local-transactional channel");
     }
 
     @Override
-    public void end(Xid xid, boolean fail, boolean suspend) throws ValidationException {
+    public void end(Xid xid, int sessionId, boolean fail, boolean suspend) throws ValidationException {
         throw new ValidationException("dtx.end called on local-transactional channel");
     }
 

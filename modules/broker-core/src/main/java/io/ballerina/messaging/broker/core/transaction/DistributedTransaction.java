@@ -23,6 +23,7 @@ import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 
+import java.util.Objects;
 import javax.transaction.xa.Xid;
 
 /**
@@ -30,14 +31,28 @@ import javax.transaction.xa.Xid;
  */
 public class DistributedTransaction implements BrokerTransaction {
 
+    private static final String SAME_XID_ERROR_MSG = "Branch not found with xid ";
+
+    private final BranchFactory branchFactory;
+
+    private final Registry transactionRegistry;
+
+    private EnqueueDequeueStrategy enqueueDequeueStrategy;
+
+    DistributedTransaction(BranchFactory branchFactory, Registry transactionRegistry) {
+        this.branchFactory = branchFactory;
+        this.transactionRegistry = transactionRegistry;
+        this.enqueueDequeueStrategy = branchFactory.getDirectEnqueueDequeueStrategy();
+    }
+
     @Override
     public void dequeue(String queue, Message message) throws BrokerException {
-
+        enqueueDequeueStrategy.dequeue(queue, message);
     }
 
     @Override
     public void enqueue(Message message) throws BrokerException {
-
+        enqueueDequeueStrategy.enqueue(message);
     }
 
     @Override
@@ -56,22 +71,60 @@ public class DistributedTransaction implements BrokerTransaction {
     }
 
     @Override
-    public boolean isTransactional() {
-        return false;
-    }
-
-    @Override public void onClose() {
-
+    public void onClose() {
     }
 
     @Override
-    public void start(Xid xid, boolean join, boolean resume) {
+    public void start(Xid xid, int sessionId, boolean join, boolean resume) throws ValidationException {
+        if (join && resume) {
+            throw new ValidationException("Cannot start a branch with both join and resume set " + xid);
+        }
 
+        Branch branch = transactionRegistry.getBranch(xid);
+        if (join) {
+            if (Objects.isNull(branch)) {
+                throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+            }
+            branch.associateSession(sessionId);
+        } else if (resume) {
+            if (Objects.isNull(branch)) {
+                throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+            }
+            branch.resumeSession(sessionId);
+        } else {
+            if (Objects.nonNull(branch)) {
+                throw new ValidationException("Xid " + xid + " cannot be started as it is already known");
+            }
+            branch = branchFactory.createBranch(xid);
+            transactionRegistry.register(branch);
+            branch.associateSession(sessionId);
+        }
+        this.enqueueDequeueStrategy = branch;
     }
 
     @Override
-    public void end(Xid xid, boolean fail, boolean suspend) {
+    public void end(Xid xid, int sessionId, boolean fail, boolean suspend) throws ValidationException {
+        Branch branch = transactionRegistry.getBranch(xid);
 
+        if (Objects.isNull(branch)) {
+            throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+        }
+
+        if (suspend && fail) {
+            branch.disassociateSession(sessionId);
+            this.enqueueDequeueStrategy = branchFactory.getDirectEnqueueDequeueStrategy();
+            throw new ValidationException("Cannot end a branch with both suspend and fail set " + xid);
+        } else if (!branch.isAssociated(sessionId)) {
+            throw new ValidationException("Xid " + xid + " not associated with the current session");
+        } else if (suspend) {
+            branch.suspendSession(sessionId);
+        } else {
+            if (fail) {
+                branch.setState(Branch.State.ROLLBACK_ONLY);
+            }
+            branch.disassociateSession(sessionId);
+        }
+        enqueueDequeueStrategy = branchFactory.getDirectEnqueueDequeueStrategy();
     }
 
     @Override

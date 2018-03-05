@@ -50,6 +50,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.transaction.xa.Xid;
 
 /**
  * AMQP channel representation.
@@ -75,6 +76,7 @@ public class AmqpChannel {
     private final Broker broker;
 
     private final int channelId;
+
     private final AmqpMetricManager metricManager;
 
     private final Map<ShortString, AmqpConsumer> consumerMap;
@@ -239,7 +241,7 @@ public class AmqpChannel {
         }
         if (ackData != null) {
             transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
-            if (!transaction.isTransactional()) {
+            if (isNonTransactional()) {
                 ackData = unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
                 ackData.getMessage().release();
             }
@@ -387,7 +389,8 @@ public class AmqpChannel {
      * Start distributed transaction on the channel
      */
     public void setDistributedTransactional() {
-
+        transaction = broker.newDistributedTransaction();
+        messageAggregator.setTransaction(transaction);
     }
 
     /**
@@ -410,12 +413,20 @@ public class AmqpChannel {
     }
 
     /**
-     * Check whether the channel start local transaction
+     * Check whether the channel is in a transaction mode
      *
-     * @return transaction started or not
+     * @return transaction started or not. True if not in a transaction false otherwise
      */
-    public boolean isTransactional () {
-        return transaction.isTransactional();
+    public boolean isNonTransactional() {
+        return transaction instanceof AutoCommitTransaction;
+    }
+
+    public void startDtx(Xid xid, boolean join, boolean resume) throws ValidationException {
+        transaction.start(xid, channelId, join, resume);
+    }
+
+    public void endDtx(Xid xid, boolean fail, boolean suspend) throws ValidationException {
+        transaction.end(xid, channelId,  fail, suspend);
     }
 
     /**

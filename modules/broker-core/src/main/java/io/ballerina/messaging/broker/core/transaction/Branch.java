@@ -19,20 +19,47 @@
 
 package io.ballerina.messaging.broker.core.transaction;
 
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.QueueHandler;
 import io.ballerina.messaging.broker.core.store.MessageStore;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.transaction.xa.Xid;
 
 /**
  * XA transaction information hold within the broker
  */
-public class Branch {
+public class Branch implements EnqueueDequeueStrategy {
+
+    private State state;
+
+    /**
+     * States of a {@link Branch}
+     */
+    public enum State {
+
+        /**
+         * The branch was suspended in a dtx.end
+         */
+        SUSPENDED,
+
+        /**
+         * Branch is registered in DtxRegistry
+         */
+        ACTIVE,
+
+        /**
+         * Branch can only be rolled back
+         */
+        ROLLBACK_ONLY;
+    }
 
     private Xid xid;
 
@@ -42,19 +69,24 @@ public class Branch {
 
     private final Broker broker;
 
-    public Branch(Xid xid, MessageStore messageStore, Broker broker) {
+    private final Map<Integer, State> associatedSessions;
+
+    Branch(Xid xid, MessageStore messageStore, Broker broker) {
         this.xid = xid;
         this.messageStore = messageStore;
         this.broker = broker;
         messageStore.branch(xid);
         this.affectedQueueHandlers = new HashSet<>();
+        this.associatedSessions = new HashMap<>();
     }
 
+    @Override
     public void enqueue(Message message) throws BrokerException {
         Set<QueueHandler> queueHandlers = broker.prepareEnqueue(xid, message);
         affectedQueueHandlers.addAll(queueHandlers);
     }
 
+    @Override
     public void dequeue(String queueName, Message message) throws BrokerException {
         QueueHandler queueHandler = broker.prepareDequeue(xid, queueName, message);
         affectedQueueHandlers.add(queueHandler);
@@ -76,5 +108,57 @@ public class Branch {
 
     public Xid getXid() {
         return xid;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    /**
+     * Associate a session to current branch.
+     *
+     * @param sessionId session identifier of the session
+     */
+    public void associateSession(int sessionId) {
+        associatedSessions.put(sessionId, State.ACTIVE);
+    }
+
+    /**
+     * Resume a session if it is suspended
+     *
+     * @param sessionId session identifier of the session
+     */
+    public void resumeSession(int sessionId) throws ValidationException {
+        if (associatedSessions.containsKey(sessionId) && associatedSessions.get(sessionId) == State.SUSPENDED) {
+            associatedSessions.put(sessionId, State.ACTIVE);
+        } else {
+            throw new ValidationException("Couldn't resume session for branch with xid " + xid
+                                                  + " and session id " + sessionId);
+        }
+    }
+
+    public void disassociateSession(int sessionId) {
+        associatedSessions.remove(sessionId);
+    }
+
+    public void suspendSession(int sessionId) {
+        State associatedState = associatedSessions.get(sessionId);
+        if (Objects.nonNull(associatedState) && associatedState == State.ACTIVE) {
+            associatedSessions.put(sessionId, State.SUSPENDED);
+        }
+    }
+
+    /**
+     * Check if a session is associated with the branch
+     *
+     * @param sessionId session identifier of the session
+     * @return True is the session is associated with the branch
+     */
+    public boolean isAssociated(int sessionId) {
+        return associatedSessions.containsKey(sessionId);
     }
 }

@@ -33,17 +33,21 @@ public class Registry {
 
     private final Map<Xid, Branch> branchMap;
 
-    public Registry() {
+    Registry() {
         branchMap = new ConcurrentHashMap<>();
     }
 
     public void register(Branch branch) throws ValidationException {
         if (Objects.nonNull(branchMap.putIfAbsent(branch.getXid(), branch))) {
-            throw new ValidationException("Branch with already exist with Xid " + branch.getXid());
+            throw new ValidationException("Branch with the same xid " + branch.getXid() + " is already registered.");
         }
     }
 
     public void unregister(Xid xid) {
         branchMap.remove(xid);
+    }
+
+    public Branch getBranch(Xid xid) {
+        return branchMap.get(xid);
     }
 }
