@@ -75,4 +75,22 @@ final class RDBMSConstants {
                     + "INNER JOIN MB_QUEUE_MAPPING "
                     + "ON QUEUE_MESSAGES.MESSAGE_ID=MB_QUEUE_MAPPING.MESSAGE_ID "
                     + "ORDER BY QUEUE_MESSAGES.MESSAGE_ID";
+
+    public static final String PS_DTX_INSERT_XID =
+            "INSERT INTO MB_DTX_XID (INTERNAL_XID, FORMAT_CODE, GLOBAL_ID, BRANCH_ID) VALUES (?,?,?,?)";
+
+    public static final String PS_DTX_INSERT_ENQUEUE_METADATA =
+            "INSERT INTO MB_DTX_ENQUEUE_METADATA "
+                    + "(INTERNAL_XID, MESSAGE_ID, EXCHANGE_NAME, ROUTING_KEY, CONTENT_LENGTH, MESSAGE_METADATA) "
+                    + "VALUES (?,?,?,?,?,?)";
+
+    public static final String PS_DTX_INSERT_ENQUEUE_CONTENT =
+            "INSERT INTO MB_DTX_ENQUEUE_CONTENT "
+                    + "(INTERNAL_XID, MESSAGE_ID, CONTENT_OFFSET, MESSAGE_CONTENT) VALUES (?,?,?,?)";
+
+    public static final String PS_DTX_INSERT_QUEUE_ATTACHMENTS =
+            "INSERT INTO MB_DTX_ENQUEUE_MAPPING (INTERNAL_XID, MESSAGE_ID, QUEUE_NAME) VALUES(?,?,?)";
+
+    public static final String PS_DTX_INSERT_DEQUEUE_MAPPING =
+            "INSERT INTO MB_DTX_DEQUEUE_MAPPING (INTERNAL_XID, MESSAGE_ID, QUEUE_NAME) VALUES(?,?,?)";
 }

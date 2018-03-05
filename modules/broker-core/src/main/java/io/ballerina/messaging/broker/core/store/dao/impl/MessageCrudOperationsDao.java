@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.core.ContentChunk;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
+import io.ballerina.messaging.broker.core.store.QueueDetachEventList;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.wso2.carbon.metrics.core.Timer.Context;
@@ -36,7 +37,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.sql.DataSource;
@@ -96,14 +96,10 @@ class MessageCrudOperationsDao extends BaseDao {
     }
 
     private void prepareContent(PreparedStatement contentStmt, Message message) throws SQLException {
-        byte[] bytes;
-
         for (ContentChunk chunk : message.getContentChunks()) {
             contentStmt.setLong(1, message.getInternalId());
             contentStmt.setLong(2, chunk.getOffset());
-            bytes = new byte[chunk.getBytes().readableBytes()];
-            chunk.getBytes().getBytes(0, bytes);
-            contentStmt.setBytes(3, bytes);
+            contentStmt.setBytes(3, chunk.getBytes());
             contentStmt.addBatch();
         }
     }
@@ -114,32 +110,20 @@ class MessageCrudOperationsDao extends BaseDao {
         metadataStmt.setString(2, metadata.getExchangeName());
         metadataStmt.setString(3, metadata.getRoutingKey());
         metadataStmt.setLong(4, metadata.getContentLength());
-        long size = metadata.getProperties().getSize() + metadata.getHeaders().getSize();
-        byte[] bytes = new byte[(int) size];
-        ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
-
-        try {
-            buffer.resetWriterIndex();
-
-            metadata.getProperties().write(buffer);
-            metadata.getHeaders().write(buffer);
-
-            metadataStmt.setBytes(5, bytes);
-            metadataStmt.addBatch();
-        } finally {
-            buffer.release();
-        }
+        metadataStmt.setBytes(5, metadata.getBytes());
+        metadataStmt.addBatch();
     }
 
     public void detachFromQueue(Connection connection,
-                                Map<String, List<Long>> detachableMessageMap) throws BrokerException {
+                                Map<String, QueueDetachEventList> detachableMessageMap)
+            throws BrokerException {
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement(RDBMSConstants.PS_DELETE_FROM_QUEUE);
-            for (Map.Entry<String, List<Long>> entry : detachableMessageMap.entrySet()) {
+            for (Map.Entry<String, QueueDetachEventList> entry : detachableMessageMap.entrySet()) {
                 String queueName = entry.getKey();
-                List<Long> messageIds = entry.getValue();
-                for (long internalMessageId : messageIds) {
+                QueueDetachEventList queueDetachEventList = entry.getValue();
+                for (long internalMessageId : queueDetachEventList.getMessageIds()) {
                     statement.setLong(1, internalMessageId);
                     statement.setString(2, queueName);
                     statement.addBatch();

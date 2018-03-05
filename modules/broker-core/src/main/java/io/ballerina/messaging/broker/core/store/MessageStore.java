@@ -81,12 +81,9 @@ public abstract class MessageStore {
 
     public synchronized void detach(Xid xid, String queueName, Message message) throws BrokerException {
         TransactionData transactionData = getTransactionData(xid);
-        message.removeAttachedQueue(queueName);
-        if (message.hasAttachedQueues()) {
-            transactionData.detach(queueName, message.getInternalId());
-        } else {
-            transactionData.addDeletableMessage(message.getInternalId());
-        }
+        transactionData.detach(queueName,
+                               message.getInternalId(),
+                               () -> message.removeAttachedQueue(queueName));
     }
 
 
@@ -107,10 +104,11 @@ public abstract class MessageStore {
     }
 
     public void flush(Xid xid) throws BrokerException {
-        commitTransactionToStore(getTransactionData(xid));
+        TransactionData transactionData = getTransactionData(xid);
+        commitTransactionToStore(transactionData);
+        transactionData.completePostCommitActions();
         clear(xid);
     }
-
 
     public void branch(Xid xid) {
         transactionMap.putIfAbsent(xid, new TransactionData());

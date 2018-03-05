@@ -108,7 +108,7 @@ public class DbMessageStore extends MessageStore {
     }
 
     @Override
-    public void prepare(Xid xid, TransactionData transactionData) {
-        // TODO: implement
+    public void prepare(Xid xid, TransactionData transactionData) throws BrokerException {
+        messageDao.prepare(xid, transactionData);
     }
 }

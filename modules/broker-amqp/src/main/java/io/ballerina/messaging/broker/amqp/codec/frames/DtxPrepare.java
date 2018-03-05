@@ -86,7 +86,7 @@ public class DtxPrepare extends MethodFrame {
                                                    CLASS_ID,
                                                    METHOD_ID));
             } catch (ValidationException e) {
-                LOGGER.debug("Queue delete validation failure", e);
+                LOGGER.debug("Validation failure on dtx prepare", e);
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
                                                    ChannelException.PRECONDITION_FAILED,
                                                    ShortString.parseString(e.getMessage()),
