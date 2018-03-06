@@ -273,7 +273,7 @@ public final class Broker {
         }
     }
 
-    public Set<QueueHandler> prepareEnqueue(Xid xid, Message message) throws BrokerException {
+    public Set<QueueHandler> enqueue(Xid xid, Message message) throws BrokerException {
         lock.readLock().lock();
         try {
             Metadata metadata = message.getMetadata();
@@ -298,7 +298,7 @@ public final class Broker {
         }
     }
 
-    public QueueHandler prepareDequeue(Xid xid, String queueName, Message message) throws BrokerException {
+    public QueueHandler dequeue(Xid xid, String queueName, Message message) throws BrokerException {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
