@@ -59,8 +59,8 @@ public class Branch implements EnqueueDequeueStrategy {
          * Branch can only be rolled back
          */
         ROLLBACK_ONLY;
-    }
 
+    }
     private Xid xid;
 
     private final MessageStore messageStore;
@@ -82,14 +82,18 @@ public class Branch implements EnqueueDequeueStrategy {
 
     @Override
     public void enqueue(Message message) throws BrokerException {
-        Set<QueueHandler> queueHandlers = broker.prepareEnqueue(xid, message);
+        Set<QueueHandler> queueHandlers = broker.enqueue(xid, message);
         affectedQueueHandlers.addAll(queueHandlers);
     }
 
     @Override
     public void dequeue(String queueName, Message message) throws BrokerException {
-        QueueHandler queueHandler = broker.prepareDequeue(xid, queueName, message);
+        QueueHandler queueHandler = broker.dequeue(xid, queueName, message);
         affectedQueueHandlers.add(queueHandler);
+    }
+
+    public void prepare() throws BrokerException {
+        messageStore.prepare(xid);
     }
 
     public void commit() throws BrokerException {

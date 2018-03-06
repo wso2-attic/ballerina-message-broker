@@ -24,6 +24,7 @@ import io.ballerina.messaging.broker.core.queue.QueueBuffer;
 
 import java.util.Collection;
 import java.util.Collections;
+import javax.transaction.xa.Xid;
 
 /**
  * Null message store object used to avoid calling the database access layer
@@ -58,5 +59,10 @@ public class NullMessageStore extends MessageStore {
     @Override
     public Collection<Message> readAllMessagesForQueue(String queueName) {
         return Collections.emptyList();
+    }
+
+    @Override
+    public void prepare(Xid xid, TransactionData transactionData) {
+        // Do nothing
     }
 }

@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.core.store.dao.MessageDao;
 
 import java.util.Collection;
 import java.util.Map;
+import javax.transaction.xa.Xid;
 
 /**
  * Implements functionality required to manage messages in persistence storage.
@@ -34,8 +35,11 @@ class MessageDaoImpl implements MessageDao {
 
     private final MessageCrudOperationsDao crudOperationsDao;
 
-    MessageDaoImpl(MessageCrudOperationsDao crudOperationsDao) {
+    private final DtxCrudOperationsDao dtxCrudOperationsDao;
+
+    MessageDaoImpl(MessageCrudOperationsDao crudOperationsDao, DtxCrudOperationsDao dtxCrudOperationsDao) {
         this.crudOperationsDao = crudOperationsDao;
+        this.dtxCrudOperationsDao = dtxCrudOperationsDao;
     }
 
     @Override
@@ -57,5 +61,14 @@ class MessageDaoImpl implements MessageDao {
     public Collection<Message> read(Map<Long, Message> readList) throws BrokerException {
         return crudOperationsDao.selectOperation(connection -> crudOperationsDao.read(connection, readList),
                                                  "retrieving messages for delivery");
+    }
+
+    @Override
+    public void prepare(Xid xid, TransactionData transactionData) throws BrokerException {
+        dtxCrudOperationsDao.transaction(connection -> {
+            long internalXid = dtxCrudOperationsDao.storeXid(connection, xid);
+            dtxCrudOperationsDao.prepareEnqueueMessages(connection, internalXid, transactionData.getEnqueueMessages());
+            dtxCrudOperationsDao.prepareDetachMessages(connection, internalXid, transactionData.getDetachMessageMap());
+        });
     }
 }

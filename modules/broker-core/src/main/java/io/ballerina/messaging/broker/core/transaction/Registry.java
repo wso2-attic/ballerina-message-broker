@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.core.BrokerException;
 
 import java.util.Map;
 import java.util.Objects;
@@ -49,5 +50,13 @@ public class Registry {
 
     public Branch getBranch(Xid xid) {
         return branchMap.get(xid);
+    }
+
+    public void prepare(Xid xid) throws ValidationException, BrokerException {
+        Branch branch = branchMap.get(xid);
+        if (Objects.isNull(branch)) {
+            throw new ValidationException("Branch with Xid " + xid + " not found.");
+        }
+        branch.prepare();
     }
 }

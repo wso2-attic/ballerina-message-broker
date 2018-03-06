@@ -68,7 +68,7 @@ public class XidImpl implements Xid {
         }
         if (obj instanceof Xid) {
             return Arrays.equals(branchQualifier, ((Xid) obj).getBranchQualifier()) &&
-                    Arrays.equals(globalTransactionId, ((Xid) obj).getBranchQualifier());
+                    Arrays.equals(globalTransactionId, ((Xid) obj).getGlobalTransactionId());
         }
         return false;
     }

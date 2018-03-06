@@ -37,13 +37,13 @@ public class TransactionData {
 
     private final Map<Long, Message> enqueueMessages;
 
-    private final Map<String, List<Long>> detachMessageMap;
+    private final Map<String, QueueDetachEventList> detachMessageMap;
 
     private final List<Long> deleteMessageIdList;
 
     private int detachOperationsCount;
 
-    public TransactionData() {
+    TransactionData() {
         enqueueMessages = new HashMap<>();
         detachMessageMap = new HashMap<>();
         deleteMessageIdList = new ArrayList<>();
@@ -61,8 +61,14 @@ public class TransactionData {
     }
 
     public void detach(String queueName, long internalMessageId) {
-        List<Long> detachList = detachMessageMap.computeIfAbsent(queueName, k -> new ArrayList<>());
+        QueueDetachEventList detachList = detachMessageMap.computeIfAbsent(queueName, k -> new QueueDetachEventList());
         detachList.add(internalMessageId);
+        detachOperationsCount++;
+    }
+
+    public void detach(String queueName, long internalMessageId, Runnable postCommitAction) {
+        QueueDetachEventList detachList = detachMessageMap.computeIfAbsent(queueName, k -> new QueueDetachEventList());
+        detachList.add(internalMessageId, postCommitAction);
         detachOperationsCount++;
     }
 
@@ -74,7 +80,7 @@ public class TransactionData {
         return enqueueMessages.values();
     }
 
-    public Map<String, List<Long>> getDetachMessageMap() {
+    public Map<String, QueueDetachEventList> getDetachMessageMap() {
         return detachMessageMap;
     }
 
@@ -102,5 +108,15 @@ public class TransactionData {
 
     public int size() {
         return detachOperationsCount + enqueueMessages.size() + deleteMessageIdList.size();
+    }
+
+    public void completePostCommitActions() {
+        for (Map.Entry<String, QueueDetachEventList> entry: detachMessageMap.entrySet()) {
+            List<Runnable> postTransactionActions = entry.getValue().getPostCommitActions();
+            for (Runnable action: postTransactionActions) {
+                action.run();
+            }
+        }
+
     }
 }

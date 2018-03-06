@@ -106,7 +106,7 @@ public final class Broker {
     /**
      * In memory message id.
      */
-    private final MessageIdGenerator messageIdGenerator;
+    private static final UniqueIdGenerator messageIdGenerator = new UniqueIdGenerator();
 
     public Broker(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
@@ -123,7 +123,6 @@ public final class Broker {
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
         this.deliveryTaskService = createTaskExecutorService(configuration);
-        messageIdGenerator = new MessageIdGenerator();
 
         initDefaultDeadLetterQueue();
 
@@ -274,7 +273,7 @@ public final class Broker {
         }
     }
 
-    public Set<QueueHandler> prepareEnqueue(Xid xid, Message message) throws BrokerException {
+    public Set<QueueHandler> enqueue(Xid xid, Message message) throws BrokerException {
         lock.readLock().lock();
         try {
             Metadata metadata = message.getMetadata();
@@ -299,7 +298,7 @@ public final class Broker {
         }
     }
 
-    public QueueHandler prepareDequeue(Xid xid, String queueName, Message message) throws BrokerException {
+    public QueueHandler dequeue(Xid xid, String queueName, Message message) throws BrokerException {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
@@ -467,7 +466,7 @@ public final class Broker {
         brokerHelper.shutdown();
     }
 
-    public long getNextMessageId() {
+    public static long getNextMessageId() {
         return messageIdGenerator.getNextId();
     }
 

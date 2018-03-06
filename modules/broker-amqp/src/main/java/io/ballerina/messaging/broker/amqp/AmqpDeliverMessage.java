@@ -105,8 +105,8 @@ public class AmqpDeliverMessage {
             ctx.write(headerFrame);
             for (ContentChunk chunk : message.getContentChunks()) {
                 ContentFrame contentFrame = new ContentFrame(channel.getChannelId(),
-                                                             chunk.getBytes().capacity(),
-                                                             chunk.getBytes());
+                                                             chunk.getByteBuf().capacity(),
+                                                             chunk.getByteBuf());
                 ctx.write(contentFrame);
             }
 

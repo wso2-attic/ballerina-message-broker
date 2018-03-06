@@ -141,7 +141,7 @@ public class AmqpChannel {
         this.metricManager = metricManager;
         this.consumerMap = new HashMap<>();
         this.transaction = new AutoCommitTransaction(broker);
-        this.messageAggregator = new InMemoryMessageAggregator(broker, transaction);
+        this.messageAggregator = new InMemoryMessageAggregator(transaction);
         this.flowManager = new ChannelFlowManager(this,
                                                   configuration.getChannelFlow().getLowLimit(),
                                                   configuration.getChannelFlow().getHighLimit());
@@ -427,6 +427,10 @@ public class AmqpChannel {
 
     public void endDtx(Xid xid, boolean fail, boolean suspend) throws ValidationException {
         transaction.end(xid, channelId,  fail, suspend);
+    }
+
+    public void prepare(Xid xid) throws BrokerException, ValidationException {
+        transaction.prepare(xid);
     }
 
     /**

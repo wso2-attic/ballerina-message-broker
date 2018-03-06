@@ -50,8 +50,6 @@ public class InMemoryMessageAggregator {
 
     private Message message;
 
-    private final Broker broker;
-
     private BrokerTransaction transaction;
 
     private String routingKey;
@@ -60,8 +58,7 @@ public class InMemoryMessageAggregator {
 
     private long receivedPayloadSize;
 
-    InMemoryMessageAggregator(Broker broker, BrokerTransaction transaction) {
-        this.broker = broker;
+    InMemoryMessageAggregator(BrokerTransaction transaction) {
         this.transaction = transaction;
     }
 
@@ -78,7 +75,7 @@ public class InMemoryMessageAggregator {
      * @param payloadSize total message content length in bytes
      */
     public void headerFrameReceived(FieldTable headers, FieldTable properties, long payloadSize) {
-        long messageId = broker.getNextMessageId();
+        long messageId = Broker.getNextMessageId();
         Metadata metadata = new Metadata(routingKey, exchangeName, payloadSize);
         metadata.setProperties(properties);
         metadata.setHeaders(headers);
