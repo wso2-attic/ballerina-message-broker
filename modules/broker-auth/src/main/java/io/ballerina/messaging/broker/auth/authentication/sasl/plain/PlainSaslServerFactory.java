@@ -18,6 +18,9 @@
  */
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain;
 
+import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.auth.authentication.Authenticator;
+
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.Sasl;
@@ -34,13 +37,9 @@ public class PlainSaslServerFactory implements SaslServerFactory {
     @Override
     public SaslServer createSaslServer(String mechanism, String protocol, String serverName, Map<String, ?> props,
             CallbackHandler cbh) throws SaslException {
-        if (!(cbh instanceof PlainSaslCallbackHandler)) {
-            throw new SaslException(
-                    "CallbackHandler must be of type of PlainSaslCallbackHandler, but received  : " + cbh
-                            .getClass());
-        }
+        Authenticator authenticator = (Authenticator) props.get(BrokerAuthConstants.PROPERTY_AUTHENTICATOR_INSTANCE);
         return (PlainSaslServer.PLAIN_MECHANISM.equals(mechanism)) ?
-                new PlainSaslServer((PlainSaslCallbackHandler) cbh) :
+                new PlainSaslServer(authenticator) :
                 null;
     }
 

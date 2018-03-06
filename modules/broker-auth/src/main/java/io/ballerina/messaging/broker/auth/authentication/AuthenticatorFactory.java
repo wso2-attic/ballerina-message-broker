@@ -16,22 +16,25 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authentication.authenticator;
+package io.ballerina.messaging.broker.auth.authentication;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.authentication.authenticator.impl.DefaultAuthenticator;
-import io.ballerina.messaging.broker.auth.authentication.authenticator.impl.JaasAuthenticator;
 import io.ballerina.messaging.broker.common.StartupContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory class for retrieve an instance of specified implementation of {@link Authenticator}.
  */
 public class AuthenticatorFactory {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticatorFactory.class);
+
     /**
      * Provides an instance of @{@link Authenticator}
      *
-     * @param startupContext the startup context provides registered services for authenticator functionality.
+     * @param startupContext              the startup context provides registered services for authenticator
+     *                                    functionality.
      * @param authenticationConfiguration the authentication configuration
      * @return authenticator for given configuration
      * @throws Exception throws if error occurred while providing new instance of authenticator
@@ -40,12 +43,10 @@ public class AuthenticatorFactory {
                                           BrokerAuthConfiguration.AuthenticationConfiguration
                                                   authenticationConfiguration) throws Exception {
         Authenticator authenticator;
-        if (authenticationConfiguration.isEnabled()) {
-            authenticator = new JaasAuthenticator();
-        } else {
-            authenticator = new DefaultAuthenticator();
-        }
-        authenticator.initialize(startupContext);
+        String authenticatorClass = authenticationConfiguration.getAuthenticator().getClassName();
+        LOGGER.info("Initializing authenticator: {}", authenticatorClass);
+        authenticator = (Authenticator) ClassLoader.getSystemClassLoader().loadClass(authenticatorClass).newInstance();
+        authenticator.initialize(startupContext, authenticationConfiguration.getAuthenticator().getProperties());
         return authenticator;
     }
 }

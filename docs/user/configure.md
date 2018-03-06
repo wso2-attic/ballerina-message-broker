@@ -66,6 +66,17 @@ These configurations are defined under the namespace `ballerina.broker.failover`
 | options:heartbeatInterval                | 5000                          | The interval, in milliseconds, at which nodes in the fail-over group update the database (for RdbmsHaStrategy) |
 | options:coordinatorEntryCreationWaitTime | 3000                          | The interval, in milliseconds, to wait prior to confirming election as coordinator (for RdbmsHaStrategy) |
 
+
+### Authentication configurations
+
+These configurations are defined under the namespace `wso2.broker.auth`. 
+
+| Config                                   | Default Value                 | Description                                                                              |
+|------------------------------------------|-------------------------------|------------------------------------------------------------------------------------------|
+| authentication:enabled                   | true           | Whether or not authentication is enabled |
+| authentication:authenticator:className   | io.ballerina.messaging.broker.auth. authentication.authenticator. JaasAuthenticator | The authenticator strategy to use to provide authentication functionality                 |
+| authentication:authenticator:properties |   loginModule: io.ballerina.messaging.broker.auth. authentication.jaas.UserStoreLoginModule  | Set of properties required for authenticator. ex. serverUrl, Jaas login module . |
+
 ## Admin service related configurations (admin-service-transports.yaml)
 
 ### Admin service listener configurations

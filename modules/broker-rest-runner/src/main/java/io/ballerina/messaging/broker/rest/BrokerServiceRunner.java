@@ -19,7 +19,7 @@
 
 package io.ballerina.messaging.broker.rest;
 
-import io.ballerina.messaging.broker.auth.authentication.authenticator.Authenticator;
+import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.rest.auth.BasicAuthSecurityInterceptor;
 import org.wso2.msf4j.MicroservicesRunner;
 
@@ -30,9 +30,11 @@ public class BrokerServiceRunner {
 
     private MicroservicesRunner runner;
 
-    BrokerServiceRunner(MicroservicesRunner runner, Authenticator authenticator) {
-        runner.addGlobalRequestInterceptor(
-                new BasicAuthSecurityInterceptor(authenticator::authenticate));
+    BrokerServiceRunner(MicroservicesRunner runner, AuthManager authManager) {
+        if (authManager.isAuthenticationEnabled()) {
+            runner.addGlobalRequestInterceptor(
+                    new BasicAuthSecurityInterceptor(authManager.getAuthenticator()::authenticate));
+        }
         runner.addExceptionMapper(new ResourceNotFoundMapper(), new BadRequestMapper(),
                                   new InternalServerErrorExceptionMapper());
         this.runner = runner;
