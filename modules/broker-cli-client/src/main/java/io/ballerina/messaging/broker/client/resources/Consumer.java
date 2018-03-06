@@ -23,7 +23,7 @@ package io.ballerina.messaging.broker.client.resources;
  */
 public class Consumer {
 
-    public static final String ID = "id";
+    public static final String CONSUMER_ID = "id";
     public static final String IS_EXCLUSIVE = "isExclusive";
     public static final String FLOW_ENABLED = "flowEnabled";
 

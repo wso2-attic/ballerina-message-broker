@@ -82,6 +82,7 @@ public class CommandFactory {
     public CreateQueueCmd createCreateQueueCommand() {
         return new CreateQueueCmd(rootCommand);
     }
+
     public DeleteQueueCmd createDeleteQueueCommand() {
         return new DeleteQueueCmd(rootCommand);
     }

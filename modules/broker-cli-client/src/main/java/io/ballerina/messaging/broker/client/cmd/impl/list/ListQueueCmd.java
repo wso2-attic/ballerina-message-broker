@@ -34,6 +34,7 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import java.net.HttpURLConnection;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
+import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_GET;
 
 /**
  * Command representing MB queue information retrieval.
@@ -68,7 +69,7 @@ public class ListQueueCmd extends ListCmd {
 
         // do GET
         HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName);
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "GET");
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
 
         // handle data processing
         ResponseFormatter responseFormatter = new TableFormatter();

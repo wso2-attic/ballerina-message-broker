@@ -105,11 +105,11 @@ public class TableFormatter implements ResponseFormatter {
                 .max()
                 .getAsInt();
 
-        int maxColumnSize = Math.max(maxIdLength, Consumer.ID.length());
+        int maxColumnSize = Math.max(maxIdLength, Consumer.CONSUMER_ID.length());
 
         String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-12s%s\n";
 
-        OUT_STREAM.printf(printTemplate, Consumer.ID, Consumer.IS_EXCLUSIVE, Consumer.FLOW_ENABLED);
+        OUT_STREAM.printf(printTemplate, Consumer.CONSUMER_ID, Consumer.IS_EXCLUSIVE, Consumer.FLOW_ENABLED);
         for (Consumer consumer : consumers) {
             OUT_STREAM.printf(printTemplate, consumer.getId(), consumer.isExclusive(), consumer.isFlowEnabled());
         }

@@ -34,6 +34,7 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import java.net.HttpURLConnection;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
+import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_GET;
 
 /**
  * Command representing MB consumer information retrieval.
@@ -74,7 +75,7 @@ public class ListConsumerCmd extends ListCmd {
         // do GET
         HttpRequest httpRequest = new HttpRequest(
                 Constants.QUEUES_URL_PARAM + queueName + Constants.CONSUMERS_URL_PARAM + consumerId);
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "GET");
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
 
         // handle data processing
         ResponseFormatter responseFormatter = new TableFormatter();

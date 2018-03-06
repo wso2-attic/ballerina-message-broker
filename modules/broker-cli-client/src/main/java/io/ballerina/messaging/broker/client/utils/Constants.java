@@ -47,4 +47,9 @@ public class Constants {
     public static final String CMD_CONSUMER = "consumer";
 
     public static final String BROKER_ERROR_MSG = "Error while invoking Brokers admin services";
+
+    // http constants
+    public static final String HTTP_GET = "GET";
+    public static final String HTTP_POST = "POST";
+    public static final String HTTP_DELETE = "DELETE";
 }
