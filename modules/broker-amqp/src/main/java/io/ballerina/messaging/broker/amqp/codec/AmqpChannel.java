@@ -178,7 +178,7 @@ public class AmqpChannel {
             tag = ShortString.parseString("sgen" + getNextConsumerTag());
         }
         AmqpConsumer amqpConsumer = new AmqpConsumer(ctx, this, queueName.toString(), tag, exclusive);
-        consumerMap.put(consumerTag, amqpConsumer);
+        consumerMap.put(tag, amqpConsumer);
         broker.addConsumer(amqpConsumer);
         metricManager.incrementConsumerCount();
         return tag;
