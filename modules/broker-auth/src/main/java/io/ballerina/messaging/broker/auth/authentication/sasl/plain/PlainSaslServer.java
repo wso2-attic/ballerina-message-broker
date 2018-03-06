@@ -19,12 +19,12 @@
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain;
 
 import com.google.common.primitives.Bytes;
-import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.auth.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
+import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
@@ -37,9 +37,9 @@ import javax.security.sasl.SaslServer;
  * authcid = authentication identity
  * passwd = password
  */
-public class PlainSaslServer implements SaslServer {
+class PlainSaslServer implements SaslServer {
 
-    private PlainSaslCallbackHandler callbackHandler;
+    private Authenticator authenticator;
 
     private boolean isComplete = false;
 
@@ -49,8 +49,8 @@ public class PlainSaslServer implements SaslServer {
 
     static final String PLAIN_MECHANISM = "PLAIN";
 
-    public PlainSaslServer(PlainSaslCallbackHandler callbackHandler) {
-        this.callbackHandler = callbackHandler;
+    PlainSaslServer(Authenticator authenticator) {
+        this.authenticator = authenticator;
     }
 
     @Override
@@ -69,22 +69,20 @@ public class PlainSaslServer implements SaslServer {
         if (authcidNullPosition < 0) {
             throw new SaslException("Invalid SASL/PLAIN response due to authcid null separator not found");
         }
-        authenticationId = new String(response, authzidNullPosition + 1, authcidNullPosition, StandardCharsets.UTF_8);
+        String userName = new String(response, authzidNullPosition + 1, authcidNullPosition, StandardCharsets.UTF_8);
         int counter = authzidNullPosition + authcidNullPosition + 1;
         int passwordLen = response.length - counter - 1;
         password = new char[passwordLen];
         for (int i = 0; i < passwordLen; i++) {
             password[i] = (char) response[++counter];
         }
-        callbackHandler.setUsername(authenticationId);
-        callbackHandler.setPassword(password);
         try {
-            LoginContext loginContext = new LoginContext(BrokerAuthConstants.BROKER_SECURITY_CONFIG, callbackHandler);
-            loginContext.login();
-            isComplete = true;
+            AuthResult authResult = authenticator.authenticate(userName, password);
+            authenticationId = authResult.getUserId();
+            isComplete = authResult.isAuthenticated();
             return new byte[0];
-        } catch (LoginException e) {
-            throw new SaslException("Error while authenticating user with login module", e);
+        } catch (BrokerAuthException e) {
+            throw new SaslException("Error while authenticating user with authenticator", e);
         } finally {
             clearCredentials();
         }
@@ -129,6 +127,6 @@ public class PlainSaslServer implements SaslServer {
 
     @Override
     public void dispose() throws SaslException {
-        callbackHandler = null;
+        authenticator = null;
     }
 }
