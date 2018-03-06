@@ -20,9 +20,10 @@ package io.ballerina.messaging.broker.client.output;
 import io.ballerina.messaging.broker.client.utils.BrokerClientException;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
- * Enum to hold output formatter types
+ * Enum to hold output formatter types.
  */
 public enum OutputFormatEnum {
     CSV, TABLE;
@@ -43,7 +44,8 @@ public enum OutputFormatEnum {
 
         BrokerClientException exception = new BrokerClientException();
         exception.addMessage("invalid output formatter type provided: " + outputTypeText);
-        exception.addMessage("valid output formatter types: " + Arrays.toString(OutputFormatEnum.values()));
+        exception.addMessage(
+                "valid output formatter types: " + Arrays.toString(OutputFormatEnum.values()).toLowerCase(Locale.US));
         throw exception;
     }
 }

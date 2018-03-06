@@ -26,6 +26,13 @@ import io.ballerina.messaging.broker.client.resources.Queue;
  * Print backend responses in csv format.
  */
 public class CsvFormatter implements ResponseFormatter {
+
+    public static final String WRAPPED_STRING_FORMATTER = "\"%s\"";
+    /**
+     * Name of this formatter class. This will be used when displaying help logs.
+     */
+    private static final String FORMATTER_NAME = "csv";
+
     @Override
     public void printExchanges(Exchange[] exchanges) {
         if (exchanges.length == 0) {
@@ -34,10 +41,9 @@ public class CsvFormatter implements ResponseFormatter {
         String printTemplate = "%s,%s,%s%n";
         OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE);
         for (Exchange exchange : exchanges) {
-            OUT_STREAM.printf(printTemplate.replaceFirst("%s", "\"%s\""), exchange.getName(), exchange.getType(),
-                    String.valueOf(exchange.isDurable()));
+            OUT_STREAM.printf(printTemplate.replaceFirst("%s", WRAPPED_STRING_FORMATTER), exchange.getName(),
+                    exchange.getType(), String.valueOf(exchange.isDurable()));
         }
-
     }
 
     @Override
@@ -49,7 +55,7 @@ public class CsvFormatter implements ResponseFormatter {
         OUT_STREAM.printf(printTemplate, Queue.NAME, Queue.CONSUMER_COUNT, Queue.CAPACITY, Queue.SIZE, Queue.DURABLE,
                 Queue.AUTO_DELETE);
         for (Queue queue : queues) {
-            OUT_STREAM.printf(printTemplate.replaceFirst("%s", "\"%s\""), queue.getName(),
+            OUT_STREAM.printf(printTemplate.replaceFirst("%s", WRAPPED_STRING_FORMATTER), queue.getName(),
                     String.valueOf(queue.getConsumerCount()), String.valueOf(queue.getCapacity()),
                     String.valueOf(queue.getSize()), String.valueOf(queue.isDurable()),
                     String.valueOf(queue.isAutoDelete()));
@@ -64,8 +70,8 @@ public class CsvFormatter implements ResponseFormatter {
         String printTemplate = "%s,%s%n";
         OUT_STREAM.printf(printTemplate, Binding.QUEUE_NAME, Binding.BINDING_PATTERN);
         for (Binding binding : bindings) {
-            OUT_STREAM
-                    .printf(printTemplate.replace("%s", "\"%s\""), binding.getQueueName(), binding.getBindingPattern());
+            OUT_STREAM.printf(printTemplate.replace("%s", WRAPPED_STRING_FORMATTER), binding.getQueueName(),
+                    binding.getBindingPattern());
         }
     }
 
@@ -79,5 +85,10 @@ public class CsvFormatter implements ResponseFormatter {
         for (Consumer consumer : consumers) {
             OUT_STREAM.printf(printTemplate, consumer.getId(), consumer.isExclusive(), consumer.isFlowEnabled());
         }
+    }
+
+    @Override
+    public String toString() {
+        return FORMATTER_NAME;
     }
 }

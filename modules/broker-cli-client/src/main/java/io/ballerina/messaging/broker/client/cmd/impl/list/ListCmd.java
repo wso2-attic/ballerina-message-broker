@@ -33,7 +33,7 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 public class ListCmd extends AbstractCmd {
 
     @Parameter(names = { "--output", "-o" },
-               description = "format of the output results set. Possible inputs: csv, table",
+               description = "format of the output results set. possible inputs: csv, table",
                converter = OutputFormatConverter.class)
     protected ResponseFormatter responseFormatter = new TableFormatter();
 

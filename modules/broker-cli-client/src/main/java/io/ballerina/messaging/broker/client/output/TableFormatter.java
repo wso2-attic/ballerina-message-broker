@@ -31,6 +31,11 @@ public class TableFormatter implements ResponseFormatter {
 
     public static final int TABLE_PADDING = 2;
 
+    /**
+     * Name of this formatter class. This will be used when displaying help logs.
+     */
+    private static final String FORMATTER_NAME = "table";
+
     @Override
     public void printExchanges(Exchange[] exchanges) {
         if (exchanges.length == 0) {
@@ -113,5 +118,10 @@ public class TableFormatter implements ResponseFormatter {
         for (Consumer consumer : consumers) {
             OUT_STREAM.printf(printTemplate, consumer.getId(), consumer.isExclusive(), consumer.isFlowEnabled());
         }
+    }
+
+    @Override
+    public String toString() {
+        return FORMATTER_NAME;
     }
 }
