@@ -18,8 +18,12 @@
  */
 package io.ballerina.messaging.broker.client.cmd.impl.list;
 
+import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import io.ballerina.messaging.broker.client.cmd.AbstractCmd;
+import io.ballerina.messaging.broker.client.output.OutputFormatConverter;
+import io.ballerina.messaging.broker.client.output.ResponseFormatter;
+import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
 /**
@@ -27,6 +31,11 @@ import io.ballerina.messaging.broker.client.utils.Utils;
  */
 @Parameters(commandDescription = "Retrieve information on resource(s) in the Broker")
 public class ListCmd extends AbstractCmd {
+
+    @Parameter(names = { "--output", "-o" },
+               description = "format of the output results set. Possible inputs: csv, table",
+               converter = OutputFormatConverter.class)
+    protected ResponseFormatter responseFormatter = new TableFormatter();
 
     public ListCmd(String rootCommand) {
         super(rootCommand);

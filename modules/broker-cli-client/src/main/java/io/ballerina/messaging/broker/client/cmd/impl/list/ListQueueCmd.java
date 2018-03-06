@@ -25,7 +25,6 @@ import io.ballerina.messaging.broker.client.http.HttpClient;
 import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
-import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.resources.Queue;
 import io.ballerina.messaging.broker.client.utils.Constants;
@@ -70,9 +69,6 @@ public class ListQueueCmd extends ListCmd {
         // do GET
         HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName);
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
-
-        // handle data processing
-        ResponseFormatter responseFormatter = new TableFormatter();
 
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             Gson gson = new Gson();

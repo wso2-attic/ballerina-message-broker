@@ -26,7 +26,6 @@ import io.ballerina.messaging.broker.client.http.HttpClient;
 import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
-import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.resources.Binding;
 import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.utils.BrokerClientException;
@@ -87,13 +86,10 @@ public class ListBindingCmd extends ListCmd {
         HttpRequest httpRequest = new HttpRequest(urlParamType + urlParamName + Constants.BINDINGS_URL_PARAM);
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
 
-        // handle data processing
-        ResponseFormatter responseFormatter = new TableFormatter();
-
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             if (!exchangeName.isEmpty()) {
                 Binding[] bindings = processExchangeResponse(response.getPayload(), exchangeName);
-                responseFormatter.printBindingsExchange(bindings);
+                responseFormatter.printExchangeBindings(bindings);
             }
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
