@@ -68,6 +68,21 @@ public class NegativeQueueDeleteTest {
         channel.queueDelete(queueWithMessages, false, true);
     }
 
+    @Test(description = "Test queue auto delete", expectedExceptions = IOException.class)
+    public void testQueueAutoDelete() throws Exception {
+        Channel channel = amqpConnection.createChannel();
+
+        String queueName = "PositiveQueueDeleteTestTestQueueAutoDelete";
+        channel.queueDeclare(queueName, false, false, true, null);
+        String consumerTag = channel.basicConsume(queueName, new DefaultConsumer(channel));
+
+        channel.basicCancel(consumerTag);
+
+        // This should throw an exception since the queue is auto deleted
+        channel.queueDeclarePassive(queueName);
+    }
+
+
     @Parameters({"broker-hostname", "broker-port", "admin-username", "admin-password"})
     @AfterMethod
     public void tearDown(String hostname, String port, String username, String password) throws Exception {
