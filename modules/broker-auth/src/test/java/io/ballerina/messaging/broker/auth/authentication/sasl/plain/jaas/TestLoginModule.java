@@ -40,9 +40,10 @@ public class TestLoginModule implements LoginModule {
     private CallbackHandler callbackHandler;
 
     private Map<String, char[]> usersMap = new HashMap<>();
+
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState,
-            Map<String, ?> options) {
+                           Map<String, ?> options) {
         this.callbackHandler = callbackHandler;
         usersMap.put("user", new char[] { 'p', 'a', 's', 's' });
         usersMap.put("u#@a.com", new char[] { 'P', '1', '@', '$', '&', '#' });

@@ -16,10 +16,12 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authentication.authenticator;
+package io.ballerina.messaging.broker.auth.authentication;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
+
+import java.util.Map;
 
 /**
  * Interface represents the authenticator.
@@ -33,15 +35,17 @@ public interface Authenticator {
      * Initiate authenticator with startup context.
      *
      * @param startupContext the startup context provides registered services for authenticator functionality.
+     * @param properties     set of properties
      */
-    void initialize(StartupContext startupContext) throws Exception;
+    void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception;
+
     /**
      * Authenticate given user based on defined authentication strategy.
      *
-     * @param username    an username
-     * @param credentials the credentials of the user
+     * @param username an username
+     * @param password the password of the user
      * @return authentication result with user information
      * @throws BrokerAuthException if error occurred while authenticating user.
      */
-    boolean authenticate(String username, char[] credentials) throws BrokerAuthException;
+    AuthResult authenticate(String username, char[] password) throws BrokerAuthException;
 }

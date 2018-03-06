@@ -20,19 +20,21 @@ package io.ballerina.messaging.broker.auth.user.impl;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.user.UserStoreManager;
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
+import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 import io.ballerina.messaging.broker.auth.user.config.UserConfig;
 import io.ballerina.messaging.broker.auth.user.config.UsersFile;
 import io.ballerina.messaging.broker.auth.user.dto.User;
+import io.ballerina.messaging.broker.common.StartupContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.config.ConfigProviderFactory;
-import org.wso2.carbon.config.ConfigurationException;
 import org.wso2.carbon.config.provider.ConfigProvider;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,19 +43,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * This class implements @{@link UserStoreManager} to provide file based user store manager.
+ * This class implements @{@link UserStoreConnector} to connect to file based user store.
  */
-public class UserStoreManagerImpl implements UserStoreManager {
+public class FileBasedUserStoreConnector implements UserStoreConnector {
 
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(UserStoreManagerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedUserStoreConnector.class);
 
     /**
      * Store the map of userRegistry
      */
     private static Map<String, User> userRegistry = new ConcurrentHashMap<>();
 
-    public UserStoreManagerImpl() throws ConfigurationException {
+    @Override
+    public void initialize(StartupContext startupContext) throws Exception {
         Path usersYamlFile;
         String usersFilePath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG);
         if (usersFilePath == null || usersFilePath.trim().isEmpty()) {
@@ -88,15 +90,15 @@ public class UserStoreManagerImpl implements UserStoreManager {
      * @throws BrokerAuthException Exception throws when authentication failed.
      */
     @Override
-    public boolean authenticate(String userName, char... credentials) throws BrokerAuthException {
+    public AuthResult authenticate(String userName, char... credentials) throws BrokerAuthException {
         User user;
         if (Objects.isNull(userName)) {
             throw new BrokerAuthException("Username cannot be null.");
         } else if (Objects.isNull(user = userRegistry.get(userName))) {
             throw new BrokerAuthException("User not found for the given username.");
         } else {
-            if (credentials != null && Arrays.equals(credentials, user.getPassword())) {
-                return true;
+            if (Arrays.equals(credentials, user.getPassword())) {
+                return new AuthResult(true, userName);
             } else {
                 throw new BrokerAuthException("Password did not match with the configured user");
             }
@@ -115,6 +117,6 @@ public class UserStoreManagerImpl implements UserStoreManager {
         if (user != null) {
             return user.getRoles();
         }
-        return null;
+        return Collections.emptySet();
     }
 }
