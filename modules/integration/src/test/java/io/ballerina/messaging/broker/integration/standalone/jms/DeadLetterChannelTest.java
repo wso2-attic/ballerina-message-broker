@@ -39,9 +39,9 @@ public class DeadLetterChannelTest {
     @Parameters({ "broker-hostname", "broker-port", "admin-username", "admin-password" })
     @Test
     public void testDlcWithBasicRecover(String brokerHostname,
-                                             String port,
-                                             String adminUsername,
-                                             String adminPassword) throws Exception {
+                                        String port,
+                                        String adminUsername,
+                                        String adminPassword) throws Exception {
         String queueName = "testDlcWithBasicRecover";
         String dlcQueueName = "amq.dlq";
         InitialContext initialContextForQueue = ClientHelper
