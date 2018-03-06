@@ -32,6 +32,7 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import java.net.HttpURLConnection;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
+import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_DELETE;
 
 /**
  * Command representing MB queue deletion.
@@ -69,7 +70,7 @@ public class DeleteQueueCmd extends DeleteCmd {
         httpRequest.setQueryParameters("?ifUnused=" + String.valueOf(ifUnused) + "&ifEmpty=" + String.valueOf(ifEmpty));
 
         // do DELETE
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "DELETE");
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_DELETE);
 
         // handle response
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {

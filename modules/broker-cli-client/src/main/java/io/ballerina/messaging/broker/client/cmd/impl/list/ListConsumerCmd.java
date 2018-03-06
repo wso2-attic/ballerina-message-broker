@@ -27,7 +27,7 @@ import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
 import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
-import io.ballerina.messaging.broker.client.resources.Queue;
+import io.ballerina.messaging.broker.client.resources.Consumer;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
@@ -37,19 +37,24 @@ import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_
 import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_GET;
 
 /**
- * Command representing MB queue information retrieval.
+ * Command representing MB consumer information retrieval.
  */
-@Parameters(commandDescription = "List queue(s) in the Broker")
-public class ListQueueCmd extends ListCmd {
+@Parameters(commandDescription = "List consumers in a Broker queue")
+public class ListConsumerCmd extends ListCmd {
 
     @Parameter(names = { "--all", "-a" },
-               description = "return info on all queues of the broker")
+               description = "return info on all consumer of the queue")
     private boolean all;
 
-    @Parameter(description = "name of the queue which info needs to be retrieved")
+    @Parameter(names = { "--consumer", "-c" },
+               description = "id of the consumer which info needs to be retrieved")
+    private String consumerId = "";
+
+    @Parameter(description = "name of the queue",
+               required = true)
     private String queueName = "";
 
-    public ListQueueCmd(String rootCommand) {
+    public ListConsumerCmd(String rootCommand) {
         super(rootCommand);
     }
 
@@ -64,11 +69,12 @@ public class ListQueueCmd extends ListCmd {
         HttpClient httpClient = new HttpClient(configuration);
 
         if (all) {
-            queueName = "";
+            consumerId = "";
         }
 
         // do GET
-        HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName);
+        HttpRequest httpRequest = new HttpRequest(
+                Constants.QUEUES_URL_PARAM + queueName + Constants.CONSUMERS_URL_PARAM + consumerId);
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
 
         // handle data processing
@@ -76,13 +82,13 @@ public class ListQueueCmd extends ListCmd {
 
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             Gson gson = new Gson();
-            Queue[] queues;
-            if (queueName.isEmpty()) {
-                queues = gson.fromJson(response.getPayload(), Queue[].class);
+            Consumer[] consumers;
+            if (consumerId.isEmpty()) {
+                consumers = gson.fromJson(response.getPayload(), Consumer[].class);
             } else {
-                queues = new Queue[] { gson.fromJson(response.getPayload(), Queue.class) };
+                consumers = new Consumer[] { gson.fromJson(response.getPayload(), Consumer.class) };
             }
-            responseFormatter.printQueues(queues);
+            responseFormatter.printConsumers(consumers);
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
         }
@@ -92,6 +98,6 @@ public class ListQueueCmd extends ListCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + rootCommand + " list queue [queue-name]? [flag]*\n");
+        out.append("  " + rootCommand + " list consumer [queue-name] [flag]*\n");
     }
 }

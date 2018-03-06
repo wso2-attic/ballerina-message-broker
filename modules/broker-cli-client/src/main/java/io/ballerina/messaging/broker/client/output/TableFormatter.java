@@ -18,6 +18,7 @@
 package io.ballerina.messaging.broker.client.output;
 
 import io.ballerina.messaging.broker.client.resources.Binding;
+import io.ballerina.messaging.broker.client.resources.Consumer;
 import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
@@ -91,6 +92,26 @@ public class TableFormatter implements ResponseFormatter {
         OUT_STREAM.printf(printTemplate, Binding.QUEUE_NAME, Binding.BINDING_PATTERN);
         for (Binding binding : bindings) {
             OUT_STREAM.printf(printTemplate, binding.getQueueName(), binding.getBindingPattern());
+        }
+    }
+
+    @Override
+    public void printConsumers(Consumer[] consumers) {
+        if (consumers.length == 0) {
+            return;
+        }
+        int maxIdLength = Arrays.stream(consumers)
+                .mapToInt(consumer -> String.valueOf(consumer.getId()).length())
+                .max()
+                .getAsInt();
+
+        int maxColumnSize = Math.max(maxIdLength, Consumer.CONSUMER_ID.length());
+
+        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-12s%s\n";
+
+        OUT_STREAM.printf(printTemplate, Consumer.CONSUMER_ID, Consumer.IS_EXCLUSIVE, Consumer.FLOW_ENABLED);
+        for (Consumer consumer : consumers) {
+            OUT_STREAM.printf(printTemplate, consumer.getId(), consumer.isExclusive(), consumer.isFlowEnabled());
         }
     }
 }

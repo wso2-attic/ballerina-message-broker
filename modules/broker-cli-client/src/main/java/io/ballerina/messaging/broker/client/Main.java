@@ -107,6 +107,7 @@ public class Main {
         addChildCommand(jCommanderList, Constants.CMD_EXCHANGE, commandFactory.createListExchangeCommand());
         addChildCommand(jCommanderList, Constants.CMD_QUEUE, commandFactory.createListQueueCommand());
         addChildCommand(jCommanderList, Constants.CMD_BINDING, commandFactory.createListBindingCommand());
+        addChildCommand(jCommanderList, Constants.CMD_CONSUMER, commandFactory.createListConsumerCommand());
 
         // add create sub-commands
         addChildCommand(jCommanderCreate, Constants.CMD_EXCHANGE, commandFactory.createCreateExchangeCommand());

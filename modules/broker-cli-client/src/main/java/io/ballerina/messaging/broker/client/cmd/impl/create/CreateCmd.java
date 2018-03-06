@@ -31,6 +31,7 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import java.net.HttpURLConnection;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
+import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_POST;
 
 /**
  * Command representing the resource creation.
@@ -75,7 +76,7 @@ public class CreateCmd extends AbstractCmd {
 
         // do POST
         HttpRequest httpRequest = new HttpRequest(urlSuffix, payload);
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "POST");
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_POST);
 
         // handle response
         if (response.getStatusCode() == HttpURLConnection.HTTP_CREATED) {

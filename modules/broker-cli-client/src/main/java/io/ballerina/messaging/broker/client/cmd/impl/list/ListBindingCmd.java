@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
+import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_GET;
 
 /**
  * Command representing MB binding information retrieval.
@@ -84,7 +85,7 @@ public class ListBindingCmd extends ListCmd {
 
         // do GET
         HttpRequest httpRequest = new HttpRequest(urlParamType + urlParamName + Constants.BINDINGS_URL_PARAM);
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "GET");
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
 
         // handle data processing
         ResponseFormatter responseFormatter = new TableFormatter();

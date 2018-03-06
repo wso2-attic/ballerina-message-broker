@@ -32,6 +32,7 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import java.net.HttpURLConnection;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
+import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_DELETE;
 
 /**
  * Command representing MB exchange deletion.
@@ -67,7 +68,7 @@ public class DeleteExchangeCmd extends DeleteCmd {
         }
 
         // do DELETE
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "DELETE");
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_DELETE);
 
         // handle response
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
