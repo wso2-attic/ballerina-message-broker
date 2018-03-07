@@ -125,6 +125,11 @@ public abstract class MessageStore {
         }
     }
 
+    public void cancel(Xid xid) throws BrokerException {
+        rollback(xid);
+        clear(xid);
+    }
+
     public void branch(Xid xid) {
         transactionMap.putIfAbsent(xid, new TransactionData());
     }
@@ -144,6 +149,8 @@ public abstract class MessageStore {
     abstract void commit(TransactionData transactionData) throws BrokerException;
 
     abstract void commit(Xid xid, TransactionData transactionData) throws BrokerException;
+
+    protected abstract void rollback(Xid xid) throws BrokerException;
 
     public abstract void fillMessageData(QueueBuffer queueBuffer, Message message);
 

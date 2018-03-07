@@ -70,4 +70,11 @@ public interface MessageDao {
      * @throws BrokerException throws exception on persistence failure.
      */
     void commitPreparedData(Xid xid, TransactionData transactionData) throws BrokerException;
+
+    /**
+     * If prepared data exist, revert the requested operations in prepare stage.
+     *
+     * @param xid {@link Xid} of the rollback operation related transaction
+     */
+    void rollbackPreparedData(Xid xid) throws BrokerException;
 }

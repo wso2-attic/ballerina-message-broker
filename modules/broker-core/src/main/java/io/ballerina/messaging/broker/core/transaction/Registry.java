@@ -25,13 +25,15 @@ import io.ballerina.messaging.broker.core.BrokerException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.concurrent.ThreadSafe;
 import javax.transaction.xa.Xid;
 
-import static io.ballerina.messaging.broker.core.transaction.DistributedTransaction.SAME_XID_ERROR_MSG;
+import static io.ballerina.messaging.broker.core.transaction.DistributedTransaction.UNKNOWN_XID_ERROR_MSG;
 
 /**
  * Manages {@link Branch} objects related to transactions.
  */
+@ThreadSafe
 public class Registry {
 
     private final Map<Xid, Branch> branchMap;
@@ -54,10 +56,10 @@ public class Registry {
         return branchMap.get(xid);
     }
 
-    public void prepare(Xid xid) throws ValidationException, BrokerException {
+    public synchronized void prepare(Xid xid) throws ValidationException, BrokerException {
         Branch branch = branchMap.get(xid);
         if (Objects.isNull(branch)) {
-            throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+            throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
         }
 
         if (branch.hasAssociatedActiveSessions()) {
@@ -77,7 +79,7 @@ public class Registry {
         branch.setState(Branch.State.PREPARED);
     }
 
-    public void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException {
+    public synchronized void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException {
         Branch branch = branchMap.get(xid);
         validateCommitRequest(xid, onePhase, branch);
         branch.clearAssociations();
@@ -88,7 +90,7 @@ public class Registry {
 
     private void validateCommitRequest(Xid xid, boolean onePhase, Branch branch) throws ValidationException {
         if (Objects.isNull(branch)) {
-            throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+            throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
         } else if (branch.hasAssociatedActiveSessions()) {
             throw new ValidationException("Branch still has associated active sessions for xid" + xid);
         } else if (branch.getState() == Branch.State.ROLLBACK_ONLY) {
@@ -98,5 +100,21 @@ public class Registry {
         } else if (!onePhase && branch.getState() != Branch.State.PREPARED) {
             throw new ValidationException("Cannot call two-phase commit on a non-prepared branch for xid " + xid);
         }
+    }
+
+    public synchronized void rollback(Xid xid) throws ValidationException, BrokerException {
+        Branch branch = branchMap.get(xid);
+        if (Objects.isNull(branch)) {
+            throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
+        }
+
+        if (branch.hasAssociatedActiveSessions()) {
+            throw new ValidationException("Branch still has associated sessions for xid " + xid);
+        }
+
+        branch.clearAssociations();
+        branch.dtxRollback();
+        branch.setState(Branch.State.FORGOTTEN);
+        unregister(xid);
     }
 }

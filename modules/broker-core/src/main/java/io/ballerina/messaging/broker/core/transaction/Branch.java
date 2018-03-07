@@ -121,6 +121,15 @@ public class Branch implements EnqueueDequeueStrategy {
 
     public void rollback() {
         messageStore.clear(xid);
+        rollbackQueueHandlers();
+    }
+
+    public void dtxRollback() throws BrokerException {
+        messageStore.cancel(xid);
+        rollbackQueueHandlers();
+    }
+
+    private void rollbackQueueHandlers() {
         for (QueueHandler queueHandler: affectedQueueHandlers) {
             queueHandler.rollback(xid);
         }

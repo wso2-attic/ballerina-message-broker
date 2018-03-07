@@ -19,13 +19,12 @@
 
 package io.ballerina.messaging.broker.core.store.dao.impl;
 
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.TransactionData;
 import io.ballerina.messaging.broker.core.store.dao.MessageDao;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -86,7 +85,7 @@ class MessageDaoImpl implements MessageDao {
     public void commitPreparedData(Xid xid, TransactionData transactionData) throws BrokerException {
 
         dtxCrudOperationsDao.transaction(connection -> {
-            long internalXid = getInternalXid(connection, xid);
+            long internalXid = getInternalXid(xid);
             dtxCrudOperationsDao.copyEnqueueMessages(connection, internalXid);
             crudOperationsDao.delete(connection, transactionData.getDeletableMessage());
             dtxCrudOperationsDao.removePreparedData(connection, internalXid);
@@ -94,10 +93,19 @@ class MessageDaoImpl implements MessageDao {
         });
     }
 
-    private long getInternalXid(Connection connection, Xid xid) throws SQLException {
+    @Override
+    public void rollbackPreparedData(Xid xid) throws BrokerException {
+        dtxCrudOperationsDao.transaction(connection -> {
+            long internalXid = getInternalXid(xid);
+            dtxCrudOperationsDao.restoreDequeueMessages(connection, internalXid);
+            dtxCrudOperationsDao.removePreparedData(connection, internalXid);
+        });
+    }
+
+    private long getInternalXid(Xid xid) throws ValidationException {
         Long id = xidToInternalIdMap.get(xid);
         if (Objects.isNull(id)) {
-            id = dtxCrudOperationsDao.getInternalXid(connection, xid);
+            throw new ValidationException("Unknown xid. " + xid);
         }
         return id;
     }

@@ -192,4 +192,15 @@ public class DtxCrudOperationsDao extends BaseDao {
             close(deleteXidStatement);
         }
     }
+
+    public void restoreDequeueMessages(Connection connection, long internalXid) throws SQLException {
+        PreparedStatement preparedStatement = null;
+        try {
+            preparedStatement = connection.prepareStatement(RDBMSConstants.PS_DTX_RESTORE_DEQUEUE_MAPPING);
+            preparedStatement.setLong(1, internalXid);
+            preparedStatement.executeUpdate();
+        } finally {
+            close(preparedStatement);
+        }
+    }
 }

@@ -124,7 +124,7 @@ public interface BrokerTransaction {
      *
      * @param xid Rollback any work associated with Xid
      */
-    void rollback(Xid xid) throws ValidationException;
+    void rollback(Xid xid) throws ValidationException, BrokerException;
 
     /**
      * Discard knowledge of a heuristically-completed transaction branch

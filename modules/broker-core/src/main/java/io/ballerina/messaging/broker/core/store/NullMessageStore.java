@@ -57,6 +57,11 @@ public class NullMessageStore extends MessageStore {
     }
 
     @Override
+    protected void rollback(Xid xid) {
+        // Do nothing
+    }
+
+    @Override
     public void fillMessageData(QueueBuffer queueBuffer, Message message) {
         // Do nothing
     }

@@ -28,6 +28,7 @@ final class RDBMSConstants {
     }
 
 
+
     static final String PS_INSERT_METADATA =
             "INSERT INTO MB_METADATA (MESSAGE_ID, EXCHANGE_NAME, ROUTING_KEY, CONTENT_LENGTH, MESSAGE_METADATA) "
                     + "VALUES(?, ?, ?, ?, ?)";
@@ -110,8 +111,12 @@ final class RDBMSConstants {
                     + "SELECT MESSAGE_ID, QUEUE_NAME FROM MB_DTX_ENQUEUE_MAPPING WHERE INTERNAL_XID=?";
 
     public static final String PS_DTX_SELECT_INTERNAL_XID =
-            "SELECT INTERNAL_XID FROM MB_DTX_XID where FORMAT_CODE=? AND GLOBAL_ID=? AND BRANCH_ID=?";
+            "SELECT INTERNAL_XID FROM MB_DTX_XID WHERE FORMAT_CODE=? AND GLOBAL_ID=? AND BRANCH_ID=?";
 
     public static final String PS_DTX_DELETE_XID =
             "DELETE FROM MB_DTX_XID WHERE INTERNAL_XID=?";
+
+    public static final String PS_DTX_RESTORE_DEQUEUE_MAPPING =
+            "INSERT INTO MB_QUEUE_MAPPING (MESSAGE_ID, QUEUE_NAME) "
+                    + "SELECT MESSAGE_ID, QUEUE_NAME FROM MB_DTX_DEQUEUE_MAPPING WHERE INTERNAL_XID=?";
 }

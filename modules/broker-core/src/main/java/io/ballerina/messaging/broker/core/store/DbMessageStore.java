@@ -103,6 +103,11 @@ public class DbMessageStore extends MessageStore {
     }
 
     @Override
+    protected void rollback(Xid xid) throws BrokerException {
+        messageDao.rollbackPreparedData(xid);
+    }
+
+    @Override
     public void fillMessageData(QueueBuffer queueBuffer, Message message) {
         disruptor.publishEvent(READ_MESSAGE_DATA, queueBuffer, message);
     }

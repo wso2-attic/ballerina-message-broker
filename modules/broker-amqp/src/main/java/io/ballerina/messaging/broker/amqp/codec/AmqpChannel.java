@@ -454,6 +454,11 @@ public class AmqpChannel {
         updatePendingAcknowledgements();
     }
 
+    public void rollback(Xid xid) throws ValidationException, BrokerException {
+        transaction.rollback(xid);
+        unackedMessageMap.resetMarkedAcknowledgments();
+    }
+
     /**
      * Data-structure to handle unacknowledge messages. This class will update the has room variable depending on the
      * number of messages in the unackedMessageMap.
