@@ -29,7 +29,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 /**
- * Exception Mapper for 400 HTTP BAD REQUEST
+ * Exception Mapper for 400 HTTP BAD REQUEST.
  */
 public class BadRequestMapper implements ExceptionMapper<BadRequestException> {
 

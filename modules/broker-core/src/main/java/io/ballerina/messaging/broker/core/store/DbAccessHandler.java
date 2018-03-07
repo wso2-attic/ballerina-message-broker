@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class initiates database operations through disruptor
+ * This class initiates database operations through disruptor.
  */
 public class DbAccessHandler implements EventHandler<DbOperation> {
 

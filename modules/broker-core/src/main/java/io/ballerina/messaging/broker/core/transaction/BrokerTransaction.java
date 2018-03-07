@@ -32,23 +32,23 @@ import javax.transaction.xa.Xid;
 public interface BrokerTransaction {
 
     /**
-     * An action to be perform on transaction commit or rollback
+     * An action to be perform on transaction commit or rollback.
      */
     interface Action {
 
         /**
-         * Execute actions after commit operation
+         * Execute actions after commit operation.
          */
         void postCommit();
 
         /**
-         * Execute actions after rollback operation
+         * Execute actions after rollback operation.
          */
         void onRollback();
 
     }
     /**
-     * Dequeue a message from queue
+     * Dequeue a message from queue.
      *
      * @param queue Acknowledgment received queue name
      * @param message An acknowledgement message
@@ -56,36 +56,36 @@ public interface BrokerTransaction {
     void dequeue(String queue, Message message) throws BrokerException;
 
     /**
-     * Enqueue a message to a queue
+     * Enqueue a message to a queue.
      *
      * @param message A message publish to a routing key
      */
     void enqueue(Message message) throws BrokerException;
 
     /**
-     * Commit the transaction represent by this object
+     * Commit the transaction represent by this object.
      */
     void commit() throws ValidationException, BrokerException;
 
     /**
-     * Rollback the transaction represent by this object
+     * Rollback the transaction represent by this object.
      */
     void rollback() throws ValidationException;
 
     /**
-     * Actions to be perform after commit or rollback
+     * Actions to be perform after commit or rollback.
      *
      * @param postTransactionAction action to be perform after commit or rollback
      */
     void addPostTransactionAction(Action postTransactionAction);
 
     /**
-     * Actions to be performed on a transaction close
+     * Actions to be performed on a transaction close.
      */
     void onClose();
 
     /**
-     * Start a transaction branch
+     * Start a transaction branch.
      *
      * @param xid Start any work associated with transaction branch with Xid
      * @param sessionId unique id for the transaction session
@@ -95,7 +95,7 @@ public interface BrokerTransaction {
     void start(Xid xid, int sessionId, boolean join, boolean resume) throws ValidationException;
 
     /**
-     * End a transaction branch
+     * End a transaction branch.
      *
      *  @param xid End any work associated with transaction branch with Xid
      *  @param sessionId unique id for the transaction session
@@ -105,14 +105,14 @@ public interface BrokerTransaction {
     void end(Xid xid, int sessionId, boolean fail, boolean suspend) throws ValidationException;
 
     /**
-     * Ask to prepare a transaction branch
+     * Ask to prepare a transaction branch.
      *
      * @param xid Prepare for commitment any work associated with Xid
      */
     void prepare(Xid xid) throws ValidationException, BrokerException;
 
     /**
-     * Commit the work done on behalf a transaction branch
+     * Commit the work done on behalf a transaction branch.
      *
      * @param xid Commit the work associated with Xid
      * @param onePhase Indicate that one-phase optimization must be used
@@ -120,21 +120,21 @@ public interface BrokerTransaction {
     void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException;
 
     /**
-     * Rollback a transaction branch
+     * Rollback a transaction branch.
      *
      * @param xid Rollback any work associated with Xid
      */
     void rollback(Xid xid) throws ValidationException, BrokerException;
 
     /**
-     * Discard knowledge of a heuristically-completed transaction branch
+     * Discard knowledge of a heuristically-completed transaction branch.
      *
      * @param xid Erase RM its knowledge of Xid
      */
     void forget(Xid xid) throws ValidationException;
 
     /**
-     * Set the transaction timeout value
+     * Set the transaction timeout value.
      *
      * @param xid Xid of the branch to set the timeout value
      * @param timeout The transaction timeout value in seconds

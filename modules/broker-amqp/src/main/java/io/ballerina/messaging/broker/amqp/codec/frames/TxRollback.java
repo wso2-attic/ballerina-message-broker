@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AMQP frame for tx.rollback
+ * AMQP frame for tx.rollback.
  */
 public class TxRollback extends MethodFrame {
 

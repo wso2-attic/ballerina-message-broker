@@ -153,7 +153,7 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     /**
-     * Execute post transaction action after commit
+     * Execute post transaction action after commit.
      */
     private void doPostCommit() {
         for (Action postTransactionAction : postTransactionActions) {
@@ -169,7 +169,7 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     /**
-     * Execute post transaction action after rollback
+     * Execute post transaction action after rollback.
      */
     private void doOnRollback() {
         for (Action postTransactionAction : postTransactionActions) {

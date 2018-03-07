@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP frame for tx.commit-ok
+ * AMQP frame for tx.commit-ok.
  */
 public class TxCommitOk extends MethodFrame {
 

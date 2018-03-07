@@ -20,7 +20,7 @@
 package io.ballerina.messaging.broker.core.transaction;
 
 /**
- * Transaction actions to be perform upon acknowledge
+ * Transaction actions to be perform upon acknowledge.
  */
 public class MessageAcknowledgeAction implements BrokerTransaction.Action {
 

@@ -25,7 +25,7 @@ package io.ballerina.messaging.broker.core.configuration;
 public class BrokerCoreConfiguration {
 
     /**
-     * Namespace used in config file
+     * Namespace used in config file.
      */
     public static final String NAMESPACE = "ballerina.broker.core";
     /**
@@ -45,7 +45,7 @@ public class BrokerCoreConfiguration {
     private DeliveryTask deliveryTask = new DeliveryTask();
 
     /**
-     * Getter for nonDurableQueueMaxDepth
+     * Getter for nonDurableQueueMaxDepth.
      */
     public String getNonDurableQueueMaxDepth() {
         return nonDurableQueueMaxDepth;
@@ -67,7 +67,7 @@ public class BrokerCoreConfiguration {
     }
 
     /**
-     * Getter for deliveryTask
+     * Getter for deliveryTask.
      */
     public DeliveryTask getDeliveryTask() {
         return deliveryTask;
@@ -86,7 +86,7 @@ public class BrokerCoreConfiguration {
         private String idleTaskDelay = "50";
 
         /**
-         * Getter for workerCount
+         * Getter for workerCount.
          */
         public String getWorkerCount() {
             return workerCount;
@@ -97,7 +97,7 @@ public class BrokerCoreConfiguration {
         }
 
         /**
-         * Getter for idleTaskDelay
+         * Getter for idleTaskDelay.
          */
         public String getIdleTaskDelay() {
             return idleTaskDelay;

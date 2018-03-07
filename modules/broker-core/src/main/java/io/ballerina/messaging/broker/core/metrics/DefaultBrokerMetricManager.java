@@ -28,7 +28,7 @@ import org.wso2.carbon.metrics.core.Timer;
 import org.wso2.carbon.metrics.core.Timer.Context;
 
 /**
- * Default implementation of {@link BrokerMetricManager}
+ * Default implementation of {@link BrokerMetricManager}.
  */
 public class DefaultBrokerMetricManager implements BrokerMetricManager {
     private final Meter totalPublishedCounter;

@@ -50,7 +50,7 @@ public class FieldValue implements EncodableData {
     private final EncodableData value;
 
     /**
-     * Denotes the {@link FieldValue} data type
+     * Denotes the {@link FieldValue} data type.
      */
     public enum Type {
         BOOLEAN('t'),
@@ -112,7 +112,7 @@ public class FieldValue implements EncodableData {
     }
 
     /**
-     * Retrieve size of the underlying {@link EncodableData}
+     * Retrieve size of the underlying {@link EncodableData}.
      *
      * @return value size in bytes
      */

@@ -28,16 +28,16 @@ import javax.security.sasl.SaslServerFactory;
 public interface SaslServerBuilder {
 
     /**
-     * Provides list of mechanisms supported by server
+     * Provides list of mechanisms supported by server.
      *
      * @return the mechanism's name
      */
     String getMechanismName();
 
     /**
-     * This is used to store and provide security information to authenticator
+     * This is used to store and provide security information to authenticator.
      *
-     * @return the callback handler .
+     * @return the callback handler
      */
     CallbackHandler getCallbackHandler();
 

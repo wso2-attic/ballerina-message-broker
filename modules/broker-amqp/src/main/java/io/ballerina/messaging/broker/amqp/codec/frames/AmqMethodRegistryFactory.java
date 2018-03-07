@@ -21,7 +21,7 @@ package io.ballerina.messaging.broker.amqp.codec.frames;
 import io.ballerina.messaging.broker.amqp.codec.auth.AuthenticationStrategy;
 
 /**
- * Factory Class for create new instance of @{@link AmqMethodRegistry}
+ * Factory Class for create new instance of @{@link AmqMethodRegistry}.
  */
 public class AmqMethodRegistryFactory {
 

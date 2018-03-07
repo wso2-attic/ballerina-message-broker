@@ -55,7 +55,7 @@ public class PlainSaslCallbackHandler implements CallbackHandler {
     }
 
     /**
-     * Clear the credentials after handling data
+     * Clear the credentials after handling data.
      */
     private void clearCredentials() {
         username = null;

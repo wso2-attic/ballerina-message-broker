@@ -80,7 +80,7 @@ public final class Broker {
     public static final String ORIGIN_ROUTING_KEY_HEADER = "x-origin-routing-key";
 
     /**
-     * Used to manage metrics related to broker
+     * Used to manage metrics related to broker.
      */
     private final BrokerMetricManager metricManager;
 
@@ -595,7 +595,7 @@ public final class Broker {
     }
 
     /**
-     * Start local transaction flow
+     * Start local transaction flow.
      */
     public LocalTransaction newLocalTransaction() {
         return brokerTransactionFactory.newLocalTransaction();

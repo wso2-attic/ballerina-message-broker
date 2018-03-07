@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AMQP delivery message which consists of the basic.deliver, ContentHeader and ContentBody frames
+ * AMQP delivery message which consists of the basic.deliver, ContentHeader and ContentBody frames.
  */
 public class AmqpDeliverMessage {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpDeliverMessage.class);

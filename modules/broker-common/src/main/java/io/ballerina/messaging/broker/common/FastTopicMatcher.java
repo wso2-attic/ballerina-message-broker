@@ -218,9 +218,10 @@ public class FastTopicMatcher {
     }
 
     /**
-     * 
-     * @param topicName
-     * @param matchedPatternsConsumer
+     * Method to retrieve matching bindings.
+     *
+     * @param topicName                 the topic name to match against
+     * @param matchedPatternsConsumer   the consumer implementation accepting matches
      */
     public void matchingBindings(String topicName, Consumer<String> matchedPatternsConsumer) {
 

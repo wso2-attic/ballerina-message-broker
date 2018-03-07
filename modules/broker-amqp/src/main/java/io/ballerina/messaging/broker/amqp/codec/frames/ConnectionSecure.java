@@ -25,7 +25,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP frame for connection.secure
+ * AMQP frame for connection.secure.
  * Parameter Summary:
  *     1. challenge (LongString) - security challenge data
  */

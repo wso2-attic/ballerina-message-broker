@@ -34,7 +34,7 @@ public class BrokerSecurityProvider extends Provider {
     private static final long serialVersionUID = -1576616958900657930L;
 
     /**
-     * Constructs a provider with the specified name and sasl server builders map
+     * Constructs a provider with the specified name and sasl server builders map.
      *
      * @param name        Provider name.
      * @param providerMap Map of SASLServerProviders
@@ -46,7 +46,7 @@ public class BrokerSecurityProvider extends Provider {
     }
 
     /**
-     * Register given Sasl server factory list
+     * Register given Sasl server factory list.
      *
      * @param providerMap Map of sasl server builders
      */

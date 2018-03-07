@@ -41,7 +41,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 
 /**
- * Factory class for creating the SSL engine
+ * Factory class for creating the SSL engine.
  */
 public class SslHandlerFactory {
 

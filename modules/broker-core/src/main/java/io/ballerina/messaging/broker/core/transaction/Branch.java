@@ -34,7 +34,7 @@ import java.util.Set;
 import javax.transaction.xa.Xid;
 
 /**
- * XA transaction information hold within the broker
+ * XA transaction information hold within the broker.
  */
 public class Branch implements EnqueueDequeueStrategy {
 

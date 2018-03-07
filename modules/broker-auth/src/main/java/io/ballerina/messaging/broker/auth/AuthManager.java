@@ -50,7 +50,7 @@ public class AuthManager {
      */
     private static final String PROVIDER_NAME = "AMQSASLProvider";
     /**
-     * Map of SASL Server mechanisms
+     * Map of SASL Server mechanisms.
      */
     private Map<String, SaslServerBuilder> saslMechanisms = new HashMap<>();
 
@@ -80,7 +80,7 @@ public class AuthManager {
     }
 
     /**
-     * Register security provider mechanisms
+     * Register security provider mechanisms.
      */
     private void registerSaslServers() {
         // create PLAIN SaslServer builder
@@ -97,7 +97,7 @@ public class AuthManager {
     }
 
     /**
-     * Create sasl server for given mechanism
+     * Create sasl server for given mechanism.
      *
      * @param hostName  Hostname of the server
      * @param mechanism Sasl mechanism
