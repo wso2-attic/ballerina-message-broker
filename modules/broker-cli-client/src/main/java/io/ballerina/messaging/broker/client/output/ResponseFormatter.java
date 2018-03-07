@@ -73,7 +73,7 @@ public interface ResponseFormatter {
      *
      * @param bindings array of bindings.
      */
-    void printBindingsExchange(Binding[] bindings);
+    void printExchangeBindings(Binding[] bindings);
 
     /**
      * Print an array of Queue consumers into a desired output format.

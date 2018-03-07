@@ -50,12 +50,12 @@ public abstract class AbstractCmd implements MBClientCmd {
     @Parameter(names = { "--help", "-h" },
                help = true,
                hidden = true,
-               description = "Ask for help")
+               description = "ask for help")
     protected boolean help;
 
     @Parameter(names = { "--verbose", "-v" },
                hidden = true,
-               description = "Enable verbose mode")
+               description = "enable verbose mode")
     protected boolean verbose;
 
     /**
