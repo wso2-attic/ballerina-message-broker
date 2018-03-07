@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core;
 
 import com.google.common.collect.Iterables;
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.util.function.ThrowingConsumer;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.queue.MemQueueImpl;
@@ -258,5 +259,18 @@ public final class QueueHandler {
 
     public void removeBinding(Binding binding) {
         bindingChangeListenersMap.remove(binding);
+    }
+
+    public int purgeQueue() throws ValidationException {
+        if (consumerCount() == 0) {
+            int queueMessages = queue.clear();
+            int totalMessages = queueMessages + redeliveryQueue.size();
+            redeliveryQueue.clear();
+
+            return totalMessages;
+        } else {
+            throw new ValidationException("Cannot purge queue " + queue.getName() + " since there " + consumerCount()
+             + " active consumer(s)");
+        }
     }
 }

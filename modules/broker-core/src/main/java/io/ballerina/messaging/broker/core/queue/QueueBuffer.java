@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.queue;
 
 import io.ballerina.messaging.broker.core.Message;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -325,6 +326,21 @@ public class QueueBuffer {
         for (Message message: messages) {
             add(message);
         }
+    }
+
+    /**
+     * Remove all messages in the buffer.
+     *
+     * @return number of messages removed
+     */
+    public synchronized int clear() {
+        Collection<Node> values = new ArrayList<>(keyMap.values());
+        int bufferSize = values.size();
+        for (Node node : values) {
+            node.item.clearData();
+            unlink(node);
+        }
+        return bufferSize;
     }
 
     private static class Node {
