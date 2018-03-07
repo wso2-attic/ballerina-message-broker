@@ -38,8 +38,6 @@ import javax.transaction.xa.Xid;
  */
 public class Branch implements EnqueueDequeueStrategy {
 
-    private State state;
-
     /**
      * States of a {@link Branch}
      */
@@ -51,16 +49,33 @@ public class Branch implements EnqueueDequeueStrategy {
         SUSPENDED,
 
         /**
-         * Branch is registered in DtxRegistry
+         * Branch is registered in {@link Registry}
          */
         ACTIVE,
 
         /**
          * Branch can only be rolled back
          */
-        ROLLBACK_ONLY;
+        ROLLBACK_ONLY,
+
+        /**
+         * Branch received a prepare call and in the process of persisting
+         */
+        PRE_PREPARE,
+
+        /**
+         * Branch was unregistered from {@link Registry}
+         */
+        FORGOTTEN,
+
+        /**
+         * Branch is in prepared state. Branch can only be committed or rolled back after this
+         */
+        PREPARED
 
     }
+    private State state;
+
     private Xid xid;
 
     private final MessageStore messageStore;
@@ -78,6 +93,7 @@ public class Branch implements EnqueueDequeueStrategy {
         messageStore.branch(xid);
         this.affectedQueueHandlers = new HashSet<>();
         this.associatedSessions = new HashMap<>();
+        state = State.ACTIVE;
     }
 
     @Override
@@ -96,8 +112,8 @@ public class Branch implements EnqueueDequeueStrategy {
         messageStore.prepare(xid);
     }
 
-    public void commit() throws BrokerException {
-        messageStore.flush(xid);
+    public void commit(boolean onePhase) throws BrokerException {
+        messageStore.flush(xid, onePhase);
         for (QueueHandler queueHandler: affectedQueueHandlers) {
             queueHandler.commit(xid);
         }
@@ -164,5 +180,29 @@ public class Branch implements EnqueueDequeueStrategy {
      */
     public boolean isAssociated(int sessionId) {
         return associatedSessions.containsKey(sessionId);
+    }
+
+    public boolean hasAssociatedActiveSessions() {
+        if (hasAssociatedSessions()) {
+            for (State sessionState : associatedSessions.values()) {
+                if (sessionState != State.SUSPENDED) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if there are any associated sessions
+     *
+     * @return True if there are any associated sessions, false otherwise
+     */
+    private boolean hasAssociatedSessions() {
+        return !associatedSessions.isEmpty();
+    }
+
+    public void clearAssociations() {
+        associatedSessions.clear();
     }
 }

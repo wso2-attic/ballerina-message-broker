@@ -19,11 +19,21 @@
 
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
+import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
+import io.ballerina.messaging.broker.amqp.codec.ChannelException;
+import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.XaResult;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.LongString;
+import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.transaction.XidImpl;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for dtx.commit
@@ -35,6 +45,7 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class DtxCommit extends MethodFrame {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DtxCommit.class);
     private static final short CLASS_ID = 100;
     private static final short METHOD_ID = 40;
     private final int format;
@@ -42,7 +53,7 @@ public class DtxCommit extends MethodFrame {
     private final LongString branchId;
     private final boolean onePhase;
 
-    public DtxCommit(int channel, int format, LongString globalId, LongString branchId, boolean onePhase) {
+    private DtxCommit(int channel, int format, LongString globalId, LongString branchId, boolean onePhase) {
         super(channel, CLASS_ID, METHOD_ID);
         this.format = format;
         this.globalId = globalId;
@@ -71,7 +82,28 @@ public class DtxCommit extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         int channelId = getChannel();
-        ctx.writeAndFlush(new DtxCommitOk(channelId, XaResult.XA_OK.getValue()));
+        AmqpChannel channel = connectionHandler.getChannel(channelId);
+
+        ctx.fireChannelRead((BlockingTask) () -> {
+            XidImpl xid = new XidImpl(format, branchId.getBytes(), globalId.getBytes());
+            try {
+                channel.commit(xid, onePhase);
+                ctx.writeAndFlush(new DtxCommitOk(channelId, XaResult.XA_OK.getValue()));
+            } catch (ValidationException e) {
+                LOGGER.debug("Validation error occurred while committing transaction", e);
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.PRECONDITION_FAILED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            } catch (BrokerException e) {
+                LOGGER.error("Error occurred while committing transaction for xid " + xid, e);
+                ctx.writeAndFlush(new ConnectionClose(ConnectionException.INTERNAL_ERROR,
+                                                      ShortString.parseString(e.getMessage()),
+                                                      CLASS_ID,
+                                                      METHOD_ID));
+            }
+        });
     }
 
     public static AmqMethodBodyFactory getFactory() {

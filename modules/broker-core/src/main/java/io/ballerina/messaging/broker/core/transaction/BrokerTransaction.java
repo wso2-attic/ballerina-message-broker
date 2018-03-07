@@ -117,7 +117,7 @@ public interface BrokerTransaction {
      * @param xid Commit the work associated with Xid
      * @param onePhase Indicate that one-phase optimization must be used
      */
-    void commit(Xid xid, boolean onePhase) throws ValidationException;
+    void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException;
 
     /**
      * Rollback a transaction branch

@@ -31,7 +31,7 @@ import javax.transaction.xa.Xid;
  */
 public class DistributedTransaction implements BrokerTransaction {
 
-    private static final String SAME_XID_ERROR_MSG = "Branch not found with xid ";
+    public static final String SAME_XID_ERROR_MSG = "Branch not found with xid ";
 
     private final BranchFactory branchFactory;
 
@@ -133,8 +133,8 @@ public class DistributedTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void commit(Xid xid, boolean onePhase) {
-
+    public void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException {
+        transactionRegistry.commit(xid, onePhase);
     }
 
     @Override

@@ -24,8 +24,12 @@ import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.TransactionData;
 import io.ballerina.messaging.broker.core.store.dao.MessageDao;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.transaction.xa.Xid;
 
 /**
@@ -37,15 +41,18 @@ class MessageDaoImpl implements MessageDao {
 
     private final DtxCrudOperationsDao dtxCrudOperationsDao;
 
+    private final Map<Xid, Long> xidToInternalIdMap;
+
     MessageDaoImpl(MessageCrudOperationsDao crudOperationsDao, DtxCrudOperationsDao dtxCrudOperationsDao) {
         this.crudOperationsDao = crudOperationsDao;
         this.dtxCrudOperationsDao = dtxCrudOperationsDao;
+        this.xidToInternalIdMap = new ConcurrentHashMap<>();
     }
 
     @Override
     public void persist(TransactionData transactionData) throws BrokerException {
         crudOperationsDao.transaction(connection -> {
-            crudOperationsDao.persist(connection, transactionData.getEnqueueMessages());
+            crudOperationsDao.storeMessages(connection, transactionData.getEnqueueMessages());
             crudOperationsDao.detachFromQueue(connection, transactionData.getDetachMessageMap());
             crudOperationsDao.delete(connection, transactionData.getDeletableMessage());
         });
@@ -69,6 +76,29 @@ class MessageDaoImpl implements MessageDao {
             long internalXid = dtxCrudOperationsDao.storeXid(connection, xid);
             dtxCrudOperationsDao.prepareEnqueueMessages(connection, internalXid, transactionData.getEnqueueMessages());
             dtxCrudOperationsDao.prepareDetachMessages(connection, internalXid, transactionData.getDetachMessageMap());
+            crudOperationsDao.detachFromQueue(connection, transactionData.getDetachMessageMap());
+            xidToInternalIdMap.put(xid, internalXid);
         });
+
+    }
+
+    @Override
+    public void commitPreparedData(Xid xid, TransactionData transactionData) throws BrokerException {
+
+        dtxCrudOperationsDao.transaction(connection -> {
+            long internalXid = getInternalXid(connection, xid);
+            dtxCrudOperationsDao.copyEnqueueMessages(connection, internalXid);
+            crudOperationsDao.delete(connection, transactionData.getDeletableMessage());
+            dtxCrudOperationsDao.removePreparedData(connection, internalXid);
+
+        });
+    }
+
+    private long getInternalXid(Connection connection, Xid xid) throws SQLException {
+        Long id = xidToInternalIdMap.get(xid);
+        if (Objects.isNull(id)) {
+            id = dtxCrudOperationsDao.getInternalXid(connection, xid);
+        }
+        return id;
     }
 }
