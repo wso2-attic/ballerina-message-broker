@@ -21,9 +21,16 @@ package io.ballerina.messaging.broker.amqp.codec.frames;
 
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
+import io.ballerina.messaging.broker.amqp.codec.ChannelException;
+import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.common.ResourceNotFoundException;
+import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for basic.reject
@@ -32,12 +39,26 @@ import io.netty.channel.ChannelHandlerContext;
  *      2. requeue (bit) - requeue message
  */
 public class BasicReject extends MethodFrame {
+    /**
+     * Class ID of the frame.
+     */
+    private static final int CLASS_ID = 60;
+
+    /**
+     * Method ID of the frame.
+     */
+    private static final int METHOD_ID = 90;
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicReject.class);
 
     private final long deliveryTag;
     private final boolean requeue;
 
     public BasicReject(int channel, long deliveryTag, boolean requeue) {
-        super(channel, (short) 60, (short) 90);
+        super(channel, (short) CLASS_ID, (short) METHOD_ID);
         this.deliveryTag = deliveryTag;
         this.requeue = requeue;
     }
@@ -56,7 +77,24 @@ public class BasicReject extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
-        ctx.fireChannelRead((BlockingTask) () -> channel.reject(deliveryTag, requeue));
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.reject(deliveryTag, requeue);
+            } catch (ResourceNotFoundException e) {
+                LOGGER.debug("Error rejecting message for delivery tag " + deliveryTag, e);
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.NOT_FOUND,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            } catch (BrokerException e) {
+                LOGGER.warn("Error rejecting message for delivery tag " + deliveryTag, e);
+                ctx.writeAndFlush(new ConnectionClose(ConnectionException.INTERNAL_ERROR,
+                                                      ShortString.parseString(e.getMessage()),
+                                                      CLASS_ID,
+                                                      METHOD_ID));
+            }
+        });
     }
 
     public static AmqMethodBodyFactory getFactory() {

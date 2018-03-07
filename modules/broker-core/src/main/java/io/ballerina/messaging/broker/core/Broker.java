@@ -487,10 +487,14 @@ public final class Broker {
         return messageIdGenerator.getNextId();
     }
 
-    public void requeue(String queueName, Message message) throws BrokerException {
+    public void requeue(String queueName, Message message) throws BrokerException, ResourceNotFoundException {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+
+            if (Objects.isNull(queueHandler)) {
+                throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
+            }
             queueHandler.requeue(message);
         } finally {
             lock.readLock().unlock();

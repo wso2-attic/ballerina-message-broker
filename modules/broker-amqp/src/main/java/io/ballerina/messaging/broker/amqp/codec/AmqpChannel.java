@@ -25,6 +25,7 @@ import io.ballerina.messaging.broker.amqp.AmqpDeliverMessage;
 import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.amqp.codec.flow.ChannelFlowManager;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
+import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
@@ -204,6 +205,9 @@ public class AmqpChannel {
                 broker.requeue(queueName, message);
             } catch (BrokerException e) {
                 LOGGER.error("Error while requeueing message {} for queue ()", message, queueName, e);
+            } catch (ResourceNotFoundException e) {
+                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found",
+                            e);
             }
         }
     }
@@ -267,7 +271,7 @@ public class AmqpChannel {
         unackedMessageMap.put(deliveryTag, ackData);
     }
 
-    public void reject(long deliveryTag, boolean requeue) throws BrokerException {
+    public void reject(long deliveryTag, boolean requeue) throws BrokerException, ResourceNotFoundException {
         metricManager.markReject();
         AckData ackData = unackedMessageMap.negativeAcknowledge(deliveryTag);
         if (MessageTracer.isTraceEnabled()) {
@@ -290,7 +294,8 @@ public class AmqpChannel {
         }
     }
 
-    private void setRedeliverAndRequeue(Message message, String queueName) throws BrokerException {
+    private void setRedeliverAndRequeue(Message message, String queueName)
+            throws BrokerException, ResourceNotFoundException {
         int redeliveryCount = message.setRedeliver();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Redelivery count is {} for message {}",
@@ -316,7 +321,14 @@ public class AmqpChannel {
     public void requeueAll() throws BrokerException {
         Collection<AckData> entries = unackedMessageMap.removeAll();
         for (AckData ackData : entries) {
-            broker.requeue(ackData.getQueueName(), ackData.getMessage());
+            String queueName = ackData.getQueueName();
+            Message message = ackData.getMessage();
+            try {
+                broker.requeue(queueName, message);
+            } catch (ResourceNotFoundException e) {
+                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found",
+                            e);
+            }
         }
     }
 

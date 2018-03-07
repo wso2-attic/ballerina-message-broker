@@ -23,6 +23,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
 import io.ballerina.messaging.broker.integration.util.ClientHelper;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -88,6 +89,40 @@ public class PositiveQueueDeleteTest {
 
         AMQP.Queue.DeleteOk deleteOk = channel.queueDelete(queueName, true, false);
         Assert.assertEquals(deleteOk.getMessageCount(), 1);
+    }
+
+    @Test(description = "Test queue auto delete")
+    public void testQueueAutoDeleteWithPendingMessages() throws Exception {
+
+        Channel consumerChannel = connection.createChannel();
+
+        String queueName = "PositiveQueueDeleteTestTestQueueAutoDelete";
+        consumerChannel.queueDeclare(queueName, false, false, true, null);
+        String consumerTag = consumerChannel.basicConsume(queueName, new DefaultConsumer(consumerChannel) {
+            @Override
+            public void handleDelivery(String consumerTag,
+                                       Envelope envelope,
+                                       AMQP.BasicProperties properties,
+                                       byte[] body) {
+                synchronized (consumerChannel) {
+                    consumerChannel.notify();
+                }
+            }
+        });
+
+        // Publish a message to the queue
+        Channel publisherChannel = connection.createChannel();
+        publisherChannel.basicPublish("<<default>>", queueName, new AMQP.BasicProperties(), "testMessage".getBytes());
+        publisherChannel.close();
+
+        synchronized (consumerChannel) {
+            consumerChannel.wait(1000);
+        }
+
+        consumerChannel.basicCancel(consumerTag);
+        consumerChannel.close();
+
+        // The test should complete without throwing an exception.
     }
 
     @DataProvider(name = "queueNames")
