@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueMetadata;
 import io.ballerina.messaging.broker.integration.util.ClientHelper;
+import io.ballerina.messaging.broker.integration.util.HttpClientHelper;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -72,7 +73,7 @@ public class QueuesRestApiTest {
     @Parameters({"broker-hostname", "broker-rest-port"})
     @BeforeClass
     public void setUp(String brokerHost, String port) throws Exception {
-        apiBasePath = ClientHelper.getRestApiBasePath(brokerHost, port);
+        apiBasePath = HttpClientHelper.getRestApiBasePath(brokerHost, port);
         objectMapper = new ObjectMapper();
         responseHandler = new BasicResponseHandler();
     }
