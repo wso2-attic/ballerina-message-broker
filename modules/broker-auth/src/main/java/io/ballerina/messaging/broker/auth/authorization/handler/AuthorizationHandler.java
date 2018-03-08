@@ -19,6 +19,7 @@
 package io.ballerina.messaging.broker.auth.authorization.handler;
 
 import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.UsernamePrincipal;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceActions;
@@ -28,6 +29,9 @@ import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
+import io.ballerina.messaging.broker.common.ResourceNotFoundException;
+
+import javax.security.auth.Subject;
 
 /**
  * Class handles authorization for broker actions.
@@ -35,9 +39,11 @@ import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 public class AuthorizationHandler {
 
     private Authorizer authorizer;
+    private UsernamePrincipal userPrincipal;
 
-    public AuthorizationHandler(AuthManager authManager) {
+    public AuthorizationHandler(AuthManager authManager, Subject subject) {
         authorizer = authManager.getAuthorizer();
+        this.userPrincipal = (UsernamePrincipal) subject.getPrincipals().iterator().next();
     }
 
     /**
@@ -49,8 +55,8 @@ public class AuthorizationHandler {
      * @param action          action
      * @throws BrokerAuthException throws if error occurs while authorizing resource.
      */
-    public void handle(ResourceAuthScopes brokerAuthScope, ResourceTypes resourceType,
-                       String resourceName, ResourceActions action) throws BrokerAuthException {
+    public void handle(ResourceAuthScopes brokerAuthScope, ResourceTypes resourceType, String resourceName,
+                       ResourceActions action) throws BrokerAuthException, ResourceNotFoundException {
         handle(brokerAuthScope);
         handle(resourceType, resourceName, action);
     }
@@ -64,20 +70,23 @@ public class AuthorizationHandler {
      * @throws BrokerAuthException throws if error occurs while authorizing resource.
      */
     public void handle(ResourceTypes resourceType, String resourceName, ResourceActions action)
-            throws BrokerAuthException {
+            throws BrokerAuthException, ResourceNotFoundException {
         try {
             if (!authorizer.authorize(resourceType.toString(),
                                       resourceName,
                                       action.toString(),
-                                      AuthManager.getAuthContext().get())) {
+                                      userPrincipal.getName())) {
                 throw new BrokerAuthException("Unauthorized action on : " + resourceType.toString() +
                                                       " resourceName: " + resourceName +
                                                       " action: " + action.toString());
             }
-        } catch (BrokerAuthServerException | BrokerAuthNotFoundException e) {
+        } catch (BrokerAuthServerException e) {
             throw new BrokerAuthException("Error occurred while authorizing on : " + resourceType.toString() +
                                                   " resourceName: " + resourceName +
                                                   " action: " + action.toString(), e);
+        } catch (BrokerAuthNotFoundException e) {
+            throw new ResourceNotFoundException("Error occurred while authorizing due to resource name : " +
+                                                  resourceName + " not found.");
         }
     }
 
@@ -91,7 +100,7 @@ public class AuthorizationHandler {
             throws BrokerAuthException {
         try {
             if (!authorizer.authorize(authScope.toString(),
-                                      AuthManager.getAuthContext().get())) {
+                                      userPrincipal.getName())) {
                 throw new BrokerAuthException("Unauthorized action on auth scope key : " + authScope.toString());
             }
         } catch (BrokerAuthServerException | BrokerAuthNotFoundException e) {
@@ -114,9 +123,12 @@ public class AuthorizationHandler {
             authorizer.getAuthResourceStore().add(new AuthResource(resourceType.toString(),
                                                                    resourceName,
                                                                    durable,
-                                                                   AuthManager.getAuthContext().get()));
-        } catch (BrokerAuthServerException | BrokerAuthNotFoundException | BrokerAuthDuplicateException e) {
+                                                                   userPrincipal.getName()));
+        } catch (BrokerAuthServerException e) {
             throw new BrokerAuthException("Error while creating " + resourceType + " with name : " + resourceName, e);
+        } catch (BrokerAuthDuplicateException e) {
+            throw new BrokerAuthException("Duplicate resource found for resource type : " + resourceType +
+                    " with name : " + resourceName, e);
         }
     }
 
@@ -128,11 +140,14 @@ public class AuthorizationHandler {
      * @throws BrokerAuthException throws if error occurs while authorizing resource.
      */
     public void deleteAuthResource(ResourceTypes resourceType, String resourceName)
-            throws BrokerAuthException {
+            throws BrokerAuthException, ResourceNotFoundException {
         try {
             authorizer.getAuthResourceStore().delete(resourceType.toString(), resourceName);
-        } catch (BrokerAuthServerException | BrokerAuthNotFoundException e) {
-            throw new BrokerAuthException("Error while creating " + resourceType + " with name : " + resourceName, e);
+        } catch (BrokerAuthServerException e) {
+            throw new BrokerAuthException("Error while deleting " + resourceType + " with name : " + resourceName, e);
+        } catch (BrokerAuthNotFoundException e) {
+            throw new ResourceNotFoundException("Error occurred while authorizing due to resource name : " +
+                    resourceName + " not found.");
         }
     }
 }

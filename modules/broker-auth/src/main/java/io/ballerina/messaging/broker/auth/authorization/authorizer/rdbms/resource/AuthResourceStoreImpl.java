@@ -79,7 +79,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
 
     @Override
     public void add(AuthResource authResource)
-            throws BrokerAuthServerException, BrokerAuthDuplicateException, BrokerAuthNotFoundException {
+            throws BrokerAuthServerException, BrokerAuthDuplicateException {
         if (isExists(authResource.getResourceType(), authResource.getResourceName(), authResource.isDurable())) {
             throw new BrokerAuthDuplicateException("Duplicate resource found for resource type : " +
                                                            authResource.getResourceType() + "  name : " +

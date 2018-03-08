@@ -41,7 +41,7 @@ class EmptyAuthResourceStore implements AuthResourceStore {
 
     @Override
     public void add(AuthResource authResource)
-            throws BrokerAuthServerException, BrokerAuthDuplicateException, BrokerAuthNotFoundException {
+            throws BrokerAuthServerException, BrokerAuthDuplicateException {
 
     }
 
