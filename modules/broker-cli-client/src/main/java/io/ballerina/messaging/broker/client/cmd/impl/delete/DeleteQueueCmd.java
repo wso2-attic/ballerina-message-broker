@@ -63,7 +63,7 @@ public class DeleteQueueCmd extends DeleteCmd {
             return;
         }
 
-        Configuration configuration = Utils.readConfigurationFile();
+        Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
         HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName);
 

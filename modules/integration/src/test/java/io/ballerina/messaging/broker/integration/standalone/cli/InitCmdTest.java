@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.integration.standalone.cli;
 
 import io.ballerina.messaging.broker.client.Main;
 import io.ballerina.messaging.broker.client.resources.Configuration;
+import io.ballerina.messaging.broker.client.utils.BrokerClientException;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 import io.ballerina.messaging.broker.integration.util.TestConstants;
@@ -86,7 +87,7 @@ public class InitCmdTest extends CliTestParent {
         String[] cmd = { CLI_ROOT_COMMAND, "init" };
 
         Main.main(cmd);
-        Configuration configuration = Utils.readConfigurationFile();
+        Configuration configuration = Utils.getConfiguration("admin");
 
         Assert.assertNotNull(configuration, "configuration file is not correctly created");
 
@@ -107,7 +108,7 @@ public class InitCmdTest extends CliTestParent {
         };
 
         Main.main(cmd);
-        Configuration configuration = Utils.readConfigurationFile();
+        Configuration configuration = Utils.getConfiguration(null);
 
         Assert.assertNotNull(configuration, "configuration file is not correctly created");
 
@@ -116,6 +117,28 @@ public class InitCmdTest extends CliTestParent {
         Assert.assertEquals(configuration.getPort(), 9090, "port is invalid in the configuration file");
         Assert.assertEquals(configuration.getUsername(), "admin_user", "username is invalid in the configuration file");
         Assert.assertEquals(configuration.getPassword(), "admin123", "password is invalid in the configuration file");
+    }
+
+
+    @Test(description = "test configuration 'without password' invoked without providing a command password")
+    public void testNoPasswordParam() {
+        System.setProperty(TestConstants.CLI_CONFIG_SYSTEM_PROPERTY, InitCmdTest.TEMP_CONFIG_DIR + "cli-config3.yaml");
+
+        String[] cmd = { CLI_ROOT_COMMAND, "init" };
+        String expectedExpMessage = "User password is not provided.";
+
+        boolean doesContain = false;
+
+        Main.main(cmd);
+        // haven't used testNG builtin exception support because BrokerClientException doesn't support
+        // getDetailedMessage method
+        try {
+            Utils.getConfiguration(null);
+        } catch (BrokerClientException ex) {
+            doesContain = ex.getMessages().stream().anyMatch(msg -> msg.contains(expectedExpMessage));
+        }
+
+        Assert.assertTrue(doesContain, "no exception is thrown or exception message is invalid");
     }
 
 }

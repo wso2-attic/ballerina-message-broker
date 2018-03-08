@@ -59,7 +59,7 @@ public class DeleteExchangeCmd extends DeleteCmd {
             return;
         }
 
-        Configuration configuration = Utils.readConfigurationFile();
+        Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
         HttpRequest httpRequest = new HttpRequest(Constants.EXCHANGES_URL_PARAM + exchangeName);
 

@@ -58,6 +58,12 @@ public abstract class AbstractCmd implements MBClientCmd {
                description = "enable verbose mode")
     protected boolean verbose;
 
+    @Parameter(names = { "--password", "-p" },
+               hidden = true,
+               description = "Password",
+               password = true)
+    protected String password = null;
+
     /**
      * Constructor, set the root command when creation.
      *

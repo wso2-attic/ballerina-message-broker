@@ -59,7 +59,7 @@ public class ListQueueCmd extends ListCmd {
             return;
         }
 
-        Configuration configuration = Utils.readConfigurationFile();
+        Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
 
         if (all) {
