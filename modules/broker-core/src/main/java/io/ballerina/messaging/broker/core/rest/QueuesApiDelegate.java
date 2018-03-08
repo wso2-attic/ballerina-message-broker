@@ -24,6 +24,7 @@ import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.QueueHandler;
+import io.ballerina.messaging.broker.core.rest.model.MessageDeleteResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueMetadata;
@@ -85,8 +86,10 @@ public class QueuesApiDelegate {
         }
 
         try {
-            broker.deleteQueue(queueName, ifUnused, ifEmpty);
-            return Response.ok().build();
+            int numberOfMessagesDeleted = broker.deleteQueue(queueName, ifUnused, ifEmpty);
+            return Response.ok()
+                           .entity(new MessageDeleteResponse().numberOfMessagesDeleted(numberOfMessagesDeleted))
+                           .build();
         } catch (ValidationException e) {
             throw new BadRequestException(e.getMessage(), e);
         } catch (BrokerException e) {
@@ -128,5 +131,18 @@ public class QueuesApiDelegate {
                 .capacity(queueHandler.getQueue().capacity())
                 .consumerCount(queueHandler.consumerCount())
                 .size(queueHandler.size());
+    }
+
+    public Response purgeQueue(String queueName) {
+        try {
+            int numberOfMessagesDeleted = broker.purgeQueue(queueName);
+            return Response.ok()
+                           .entity(new MessageDeleteResponse().numberOfMessagesDeleted(numberOfMessagesDeleted))
+                           .build();
+        } catch (ValidationException e) {
+            throw new BadRequestException(e.getMessage(), e);
+        } catch (ResourceNotFoundException e) {
+            throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
+        }
     }
 }

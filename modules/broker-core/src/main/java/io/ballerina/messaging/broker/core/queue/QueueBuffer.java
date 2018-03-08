@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
  * Used to track messages for the queue.
@@ -333,12 +334,14 @@ public class QueueBuffer {
      *
      * @return number of messages removed
      */
-    public synchronized int clear() {
+    public synchronized int clear(Consumer<Message> postDeleteAction) {
         Collection<Node> values = new ArrayList<>(keyMap.values());
         int bufferSize = values.size();
         for (Node node : values) {
-            node.item.clearData();
+            Message message = node.item;
+            message.clearData();
             unlink(node);
+            postDeleteAction.accept(message);
         }
         return bufferSize;
     }
