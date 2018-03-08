@@ -109,4 +109,6 @@ public abstract class Queue {
     public abstract void detach(Message message) throws BrokerException;
 
     public abstract void prepareDetach(Xid xid, Message message) throws BrokerException;
+
+    public abstract int clear();
 }

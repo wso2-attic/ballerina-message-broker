@@ -19,13 +19,6 @@
 
 package io.ballerina.messaging.broker.core.rest.api;
 
-import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.rest.BindingsApiDelegate;
 import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
@@ -36,8 +29,16 @@ import io.ballerina.messaging.broker.core.rest.model.BindingCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.BindingInfo;
 import io.ballerina.messaging.broker.core.rest.model.ConsumerMetadata;
 import io.ballerina.messaging.broker.core.rest.model.Error;
+import io.ballerina.messaging.broker.core.rest.model.MessageDeleteResponse;
+import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueMetadata;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -137,7 +138,7 @@ public class QueuesApi {
             @Authorization(value = "basicAuth")
     }, tags={  })
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Queue deleted", response = Void.class),
+            @ApiResponse(code = 200, message = "Queue deleted", response = MessageDeleteResponse.class),
             @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
@@ -211,5 +212,20 @@ public class QueuesApi {
             @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
     public Response getQueue(@PathParam("name") @ApiParam("Name of the queue") String name) {
         return queuesApiDelegate.getQueue(name);
+    }
+
+    @DELETE
+    @Path("/{name}/messages")
+    @Produces({ "application/json" })
+    @ApiOperation(value = "purge messages", notes = "Purge all messages in the queue", response = Void.class, authorizations = {
+        @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Queue purged", response = MessageDeleteResponse.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Queue/Consumer not found", response = Error.class)
+    })
+    public Response purgeMessages(@PathParam("name") @ApiParam("Name of the queue") String name) {
+        return queuesApiDelegate.purgeQueue(name);
     }
 }

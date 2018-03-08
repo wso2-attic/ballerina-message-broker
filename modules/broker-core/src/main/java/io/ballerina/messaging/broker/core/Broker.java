@@ -427,6 +427,29 @@ public final class Broker {
         }
     }
 
+    /**
+     * Purge all messages in the queue.
+     *
+     * @param queueName name of the queue
+     * @return number of messages purged
+     * @throws ResourceNotFoundException if the queue is not found
+     * @throws ValidationException       if there are online consumers for queue
+     */
+    public int purgeQueue(String queueName) throws ResourceNotFoundException, ValidationException {
+        lock.writeLock().lock();
+        try {
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+
+            if (queueHandler == null) {
+                throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
+            }
+
+            return queueHandler.purgeQueue();
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
     public void bind(String queueName, String exchangeName,
                      String routingKey, FieldTable arguments) throws BrokerException, ValidationException {
         lock.writeLock().lock();

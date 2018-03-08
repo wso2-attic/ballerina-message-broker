@@ -137,4 +137,10 @@ public class DbBackedQueueImpl extends Queue {
         List<Message> dequeueMessages = pendingDequeueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
         dequeueMessages.add(message);
     }
+
+    @Override
+    public int clear() {
+        String queueName = getName();
+        return buffer.clear(message -> dbMessageStore.detach(queueName, message));
+    }
 }
