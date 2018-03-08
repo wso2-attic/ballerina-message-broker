@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.SYSTEM_PARAM_CLI_CLIENT_CONFIG_FILE;
 
@@ -40,9 +41,9 @@ public class Utils {
     /**
      * Create {@link BrokerClientException} instance including the error message.
      *
-     * @param errorMsg error message.
+     * @param errorMsg    error message.
      * @param rootCommand root command used in the script.
-     * @return new {@link BrokerClientException} instance with error message
+     * @return new {@link BrokerClientException} instance with error message.
      */
     public static BrokerClientException createUsageException(String errorMsg, String rootCommand) {
         BrokerClientException brokerClientException = new BrokerClientException();
@@ -51,12 +52,7 @@ public class Utils {
         return brokerClientException;
     }
 
-    /**
-     * Read CLI Client configuration file and binds its information into a {@link Configuration} instance
-     *
-     * @return generated {@link Configuration} instance
-     */
-    public static Configuration readConfigurationFile() {
+    private static Configuration readConfigurationFile() {
         Yaml yaml = new Yaml();
 
         try (InputStream in = new FileInputStream(getConfigFilePath())) {
@@ -64,8 +60,8 @@ public class Utils {
             // validate the configuration
             if (!Configuration.validateConfiguration(configuration)) {
                 BrokerClientException exception = new BrokerClientException();
-                exception.addMessage("Error in the CLI client configuration\n");
-                exception.addMessage("Please re-initialize using 'init' command\n");
+                exception.addMessage("Error in the CLI client configuration");
+                exception.addMessage("Please re-initialize using 'init' command");
                 throw exception;
             }
             return configuration;
@@ -77,9 +73,34 @@ public class Utils {
     }
 
     /**
-     * Create the CLI configuration information file
+     * Read CLI Client configuration file and binds its information into a {@link Configuration} instance.
+     * If the password needs to be overridden it should be passed into the method, otherwise pass null.
      *
-     * @param configuration instance containing the Configuration information
+     * @param password updated password that should be set into the Configuration instance. Pass null to use existing.
+     * @return generated {@link Configuration} instance.
+     */
+    public static Configuration getConfiguration(String password) {
+        Configuration configuration = readConfigurationFile();
+        // order-ride the password
+        if (Objects.nonNull(password)) {
+            configuration.setPassword(password);
+        }
+
+        if (Objects.isNull(configuration.getPassword())) {
+            BrokerClientException exception = new BrokerClientException();
+            exception.addMessage("User password is not provided.");
+            exception.addMessage(
+                    "Setup the password at global level using 'init' command or provide password when executing each "
+                            + "command using (--password|-p) flag");
+            throw exception;
+        }
+        return configuration;
+    }
+
+    /**
+     * Create the CLI configuration information file.
+     *
+     * @param configuration instance containing the Configuration information.
      */
     public static void createConfigurationFile(Configuration configuration) {
         DumperOptions options = new DumperOptions();

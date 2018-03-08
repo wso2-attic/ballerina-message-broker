@@ -77,7 +77,7 @@ public class ListBindingCmd extends ListCmd {
             throw exception;
         }
 
-        Configuration configuration = Utils.readConfigurationFile();
+        Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
         String urlParamType = !exchangeName.isEmpty() ? Constants.EXCHANGES_URL_PARAM : Constants.QUEUES_URL_PARAM;
         String urlParamName = !exchangeName.isEmpty() ? exchangeName : queueName;

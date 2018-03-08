@@ -71,7 +71,7 @@ public class CreateCmd extends AbstractCmd {
      * @param payload message payload needs to be included.
      */
     void performResourceCreationOverHttp(String urlSuffix, String payload) {
-        Configuration configuration = Utils.readConfigurationFile();
+        Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
 
         // do POST
