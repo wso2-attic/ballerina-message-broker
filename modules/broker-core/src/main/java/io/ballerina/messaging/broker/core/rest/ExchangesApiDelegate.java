@@ -20,8 +20,8 @@
 package io.ballerina.messaging.broker.core.rest;
 
 import io.ballerina.messaging.broker.common.ValidationException;
-import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.Exchange;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateResponse;
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import javax.security.auth.Subject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
@@ -47,17 +48,18 @@ public class ExchangesApiDelegate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExchangesApiDelegate.class);
 
-    public static final String EXCHANGES_API_PATH = "/exchanges";
+    private static final String EXCHANGES_API_PATH = "/exchanges";
 
-    private final Broker broker;
+    private final BrokerFactory brokerFactory;
 
-    public ExchangesApiDelegate(Broker broker) {
-        this.broker = broker;
+    public ExchangesApiDelegate(BrokerFactory brokerFactory) {
+        this.brokerFactory = brokerFactory;
     }
 
-    public Response createExchange(ExchangeCreateRequest requestBody) {
+    public Response createExchange(ExchangeCreateRequest requestBody, Subject subject) {
         try {
-            broker.createExchange(requestBody.getName(), requestBody.getType(), requestBody.isDurable());
+            brokerFactory.getBroker(subject).createExchange(requestBody.getName(),
+                    requestBody.getType(), requestBody.isDurable());
             // TODO: exchange create message response type
             return Response.created(new URI(BrokerAdminService.API_BASE_PATH + EXCHANGES_API_PATH
                                                     + "/" + requestBody.getName()))
@@ -77,9 +79,9 @@ public class ExchangesApiDelegate {
         }
     }
 
-    public Response deleteExchange(String exchangeName, boolean ifUnused) {
+    public Response deleteExchange(String exchangeName, boolean ifUnused, Subject subject) {
         try {
-            boolean deleted = broker.deleteExchange(exchangeName, ifUnused);
+            boolean deleted = brokerFactory.getBroker(subject).deleteExchange(exchangeName, ifUnused);
             if (!deleted) {
                 throw new NotFoundException("Exchange " + exchangeName + " not found.");
             }
@@ -93,8 +95,8 @@ public class ExchangesApiDelegate {
         }
     }
 
-    public Response getAllExchanges() {
-        Collection<Exchange> exchangeList = broker.getAllExchanges();
+    public Response getAllExchanges(Subject subject) {
+        Collection<Exchange> exchangeList = brokerFactory.getBroker(subject).getAllExchanges();
         List<ExchangeMetadata> exchangeMetadataList = new ArrayList<>(exchangeList.size());
         for (Exchange exchange : exchangeList) {
             exchangeMetadataList.add(new ExchangeMetadata().name(exchange.getName())
@@ -104,9 +106,9 @@ public class ExchangesApiDelegate {
         return Response.ok().entity(exchangeMetadataList).build();
     }
 
-    public Response getExchange(String exchangeName) {
+    public Response getExchange(String exchangeName, Subject subject) {
 
-        Exchange exchange = broker.getExchange(exchangeName);
+        Exchange exchange = brokerFactory.getBroker(subject).getExchange(exchangeName);
         if (Objects.isNull(exchange)) {
             throw new NotFoundException("Exchange '" + exchangeName + "' not found.");
         }

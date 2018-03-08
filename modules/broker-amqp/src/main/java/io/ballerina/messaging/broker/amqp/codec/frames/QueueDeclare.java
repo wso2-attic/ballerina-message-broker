@@ -23,8 +23,6 @@ import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ChannelException;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
-import io.ballerina.messaging.broker.auth.AuthManager;
-import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
@@ -32,8 +30,6 @@ import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,34 +106,29 @@ public class QueueDeclare extends MethodFrame {
         AmqpChannel channel = connectionHandler.getChannel(getChannel());
 
         ctx.fireChannelRead((BlockingTask) () -> {
-            Attribute<String> authorizationId =
-                    ctx.channel().attr(AttributeKey.valueOf(BrokerAuthConstants.AUTHENTICATION_ID));
-            AuthManager.doAuthContextAwareFunction(authorizationId.get(), () -> {
-                try {
-
-                    channel.declareQueue(queue, passive, durable, autoDelete);
-                    ctx.writeAndFlush(new QueueDeclareOk(getChannel(), queue, 0, 0));
-                } catch (ValidationException e) {
-                    ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                                       ChannelException.PRECONDITION_FAILED,
-                                                       ShortString.parseString(e.getMessage()),
-                                                       CLASS_ID,
-                                                       METHOD_ID));
-                } catch (BrokerException e) {
-                    LOGGER.warn("Error declaring queue.", e);
-                    ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                                       ChannelException.NOT_ALLOWED,
-                                                       ShortString.parseString(e.getMessage()),
-                                                       CLASS_ID,
-                                                       METHOD_ID));
-                } catch (BrokerAuthException e) {
-                    ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                                       ChannelException.ACCESS_REFUSED,
-                                                       ShortString.parseString(e.getMessage()),
-                                                       CLASS_ID,
-                                                       METHOD_ID));
-                }
-            });
+            try {
+                channel.declareQueue(queue, passive, durable, autoDelete);
+                ctx.writeAndFlush(new QueueDeclareOk(getChannel(), queue, 0, 0));
+            } catch (ValidationException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                        ChannelException.PRECONDITION_FAILED,
+                        ShortString.parseString(e.getMessage()),
+                        CLASS_ID,
+                        METHOD_ID));
+            } catch (BrokerException e) {
+                LOGGER.warn("Error declaring queue.", e);
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                        ChannelException.NOT_ALLOWED,
+                        ShortString.parseString(e.getMessage()),
+                        CLASS_ID,
+                        METHOD_ID));
+            } catch (BrokerAuthException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                        ChannelException.ACCESS_REFUSED,
+                        ShortString.parseString(e.getMessage()),
+                        CLASS_ID,
+                        METHOD_ID));
+            }
         });
     }
 

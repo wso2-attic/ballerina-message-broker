@@ -21,8 +21,8 @@ package io.ballerina.messaging.broker.auth.authentication.jaas;
 import com.sun.security.auth.UserPrincipal;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
-import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 
 import java.io.IOException;
 import java.util.Map;

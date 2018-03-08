@@ -19,13 +19,18 @@
 
 package io.ballerina.messaging.broker.core.rest.api;
 
+import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.core.BrokerFactory;
+import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
+import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
-import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.rest.BindingsApiDelegate;
 import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
 import io.ballerina.messaging.broker.core.rest.ExchangesApiDelegate;
@@ -34,7 +39,9 @@ import io.ballerina.messaging.broker.core.rest.model.Error;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeMetadata;
+import org.wso2.msf4j.Request;
 
+import javax.security.auth.Subject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -45,6 +52,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 @Path(BrokerAdminService.API_BASE_PATH + "/exchanges")
@@ -55,10 +63,17 @@ public class ExchangesApi {
 
     private final ExchangesApiDelegate exchangesApiDelegate;
     private final BindingsApiDelegate bindingsApiDelegate;
+    private final BrokerFactory brokerFactory;
 
-    public ExchangesApi(Broker broker) {
-        this.exchangesApiDelegate = new ExchangesApiDelegate(broker);
-        this.bindingsApiDelegate = new BindingsApiDelegate(broker);
+    public ExchangesApi(StartupContext startupContext) {
+        if (startupContext.getService(AuthManager.class).isAuthenticationEnabled() &&
+                startupContext.getService(AuthManager.class).isAuthorizationEnabled()) {
+            brokerFactory = new SecureBrokerFactory(startupContext);
+        } else {
+            brokerFactory = new DefaultBrokerFactory(startupContext);
+        }
+        this.exchangesApiDelegate = new ExchangesApiDelegate(brokerFactory);
+        this.bindingsApiDelegate = new BindingsApiDelegate(brokerFactory);
     }
 
     @POST
@@ -72,8 +87,8 @@ public class ExchangesApi {
             @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response createExchange(@Valid ExchangeCreateRequest body) {
-        return exchangesApiDelegate.createExchange(body);
+    public Response createExchange(@Context Request request, @Valid ExchangeCreateRequest body) {
+        return exchangesApiDelegate.createExchange(body, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @DELETE
@@ -87,8 +102,8 @@ public class ExchangesApi {
             @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
-    public Response deleteExchange(@PathParam("name") @ApiParam("Name of the exchange.") String name, @DefaultValue("true") @QueryParam("ifUnused")  @ApiParam("Delete if the exchange has no bindings.")  Boolean ifUnused) {
-        return exchangesApiDelegate.deleteExchange(name, ifUnused);
+    public Response deleteExchange(@Context Request request, @PathParam("name") @ApiParam("Name of the exchange.") String name, @DefaultValue("true") @QueryParam("ifUnused")  @ApiParam("Delete if the exchange has no bindings.")  Boolean ifUnused) {
+        return exchangesApiDelegate.deleteExchange(name, ifUnused, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
@@ -101,8 +116,8 @@ public class ExchangesApi {
             @ApiResponse(code = 200, message = "List of Bindings", response = BindingSetInfo.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
-    public Response getAllBindingsForExchange(@PathParam("name") @ApiParam("Name of the exchange.") String name) {
-        return bindingsApiDelegate.getAllBindingsForExchange(name);
+    public Response getAllBindingsForExchange(@Context Request request, @PathParam("name") @ApiParam("Name of the exchange.") String name) {
+        return bindingsApiDelegate.getAllBindingsForExchange(name, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
@@ -113,8 +128,8 @@ public class ExchangesApi {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "List of exchanges", response = ExchangeMetadata.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class) })
-    public Response getAllExchanges() {
-        return exchangesApiDelegate.getAllExchanges();
+    public Response getAllExchanges(@Context Request request) {
+        return exchangesApiDelegate.getAllExchanges((Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
@@ -127,7 +142,7 @@ public class ExchangesApi {
             @ApiResponse(code = 200, message = "Metadata of the exchange", response = ExchangeMetadata.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
-    public Response getExchange(@PathParam("name") @ApiParam("Name of the exchange.") String name) {
-        return exchangesApiDelegate.getExchange(name);
+    public Response getExchange(@Context Request request, @PathParam("name") @ApiParam("Name of the exchange.") String name) {
+        return exchangesApiDelegate.getExchange(name, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 }

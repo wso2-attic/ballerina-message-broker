@@ -21,7 +21,7 @@ produces:
 paths:
   /queues:
     get:
-      operationId: getAuthDataOfAllQueuesa
+      operationId: getAuthDataOfAllQueues
       summary: Get all auth resources related to queues
       description: |
         Gets auth resources of queues in the broker.

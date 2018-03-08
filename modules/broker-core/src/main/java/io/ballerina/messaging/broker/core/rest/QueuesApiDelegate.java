@@ -22,8 +22,8 @@ package io.ballerina.messaging.broker.core.rest;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
-import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.QueueHandler;
 import io.ballerina.messaging.broker.core.rest.model.MessageDeleteResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import javax.security.auth.Subject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
@@ -53,15 +54,15 @@ public class QueuesApiDelegate {
 
     public static final String QUEUES_API_PATH = "/queues";
 
-    private final Broker broker;
+    private final BrokerFactory brokerFactory;
 
-    public QueuesApiDelegate(Broker broker) {
-        this.broker = broker;
+    public QueuesApiDelegate(BrokerFactory brokerFactory) {
+        this.brokerFactory = brokerFactory;
     }
 
-    public Response createQueue(QueueCreateRequest requestBody) {
+    public Response createQueue(QueueCreateRequest requestBody, Subject subject) {
         try {
-            if (broker.createQueue(requestBody.getName(), false,
+            if (brokerFactory.getBroker(subject).createQueue(requestBody.getName(), false,
                                    requestBody.isDurable(), requestBody.isAutoDelete())) {
                 QueueCreateResponse message = new QueueCreateResponse().message("Queue created.");
                 return Response.created(new URI(BrokerAdminService.API_BASE_PATH + QUEUES_API_PATH
@@ -80,7 +81,7 @@ public class QueuesApiDelegate {
         }
     }
 
-    public Response deleteQueue(String queueName, Boolean ifUnused, Boolean ifEmpty) {
+    public Response deleteQueue(String queueName, Boolean ifUnused, Boolean ifEmpty, Subject subject) {
         if (Objects.isNull(ifUnused)) {
             ifUnused = true;
         }
@@ -90,7 +91,7 @@ public class QueuesApiDelegate {
         }
 
         try {
-            int numberOfMessagesDeleted = broker.deleteQueue(queueName, ifUnused, ifEmpty);
+            int numberOfMessagesDeleted = brokerFactory.getBroker(subject).deleteQueue(queueName, ifUnused, ifEmpty);
             return Response.ok()
                            .entity(new MessageDeleteResponse().numberOfMessagesDeleted(numberOfMessagesDeleted))
                            .build();
@@ -105,8 +106,8 @@ public class QueuesApiDelegate {
         }
     }
 
-    public Response getQueue(String queueName) {
-        QueueHandler queueHandler = broker.getQueue(queueName);
+    public Response getQueue(String queueName, Subject subject) {
+        QueueHandler queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
 
         if (Objects.isNull(queueHandler)) {
             throw new NotFoundException("Queue " + queueName + " not found");
@@ -116,9 +117,9 @@ public class QueuesApiDelegate {
         return Response.ok().entity(queueMetadata).build();
     }
 
-    public Response getAllQueues(Boolean durable) {
+    public Response getAllQueues(Boolean durable, Subject subject) {
         boolean filterByDurability = Objects.nonNull(durable);
-        Collection<QueueHandler> queueHandlers = broker.getAllQueues();
+        Collection<QueueHandler> queueHandlers = brokerFactory.getBroker(subject).getAllQueues();
         List<QueueMetadata> queueArray = new ArrayList<>(queueHandlers.size());
         for (QueueHandler handler : queueHandlers) {
             // Add if filter is not set or durability equals to filer value.
@@ -139,9 +140,9 @@ public class QueuesApiDelegate {
                 .size(queueHandler.size());
     }
 
-    public Response purgeQueue(String queueName) {
+    public Response purgeQueue(String queueName, Subject subject) {
         try {
-            int numberOfMessagesDeleted = broker.purgeQueue(queueName);
+            int numberOfMessagesDeleted = brokerFactory.getBroker(subject).purgeQueue(queueName);
             return Response.ok()
                            .entity(new MessageDeleteResponse().numberOfMessagesDeleted(numberOfMessagesDeleted))
                            .build();

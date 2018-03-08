@@ -20,8 +20,8 @@ package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import io.ballerina.messaging.broker.auth.authorization.AuthProvider;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.user.UserStoreManager;
-import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
+import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
+import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -33,13 +33,13 @@ import java.util.Set;
  */
 public class UserStoreAuthProvider implements AuthProvider {
 
-    private UserStoreManager userStoreManager;
+    private UserStoreConnector userStoreManager;
 
     @Override
     public void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception {
-        this.userStoreManager = startupContext.getService(UserStoreManager.class);
+        this.userStoreManager = startupContext.getService(UserStoreConnector.class);
         if (Objects.isNull(userStoreManager)) {
-            userStoreManager = new UserStoreManagerImpl();
+            userStoreManager = new FileBasedUserStoreConnector();
         }
     }
 

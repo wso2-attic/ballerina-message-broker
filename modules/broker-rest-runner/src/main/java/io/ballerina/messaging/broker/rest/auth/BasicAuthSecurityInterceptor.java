@@ -18,8 +18,9 @@
  */
 package io.ballerina.messaging.broker.rest.auth;
 
-import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.auth.UsernamePrincipal;
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import javax.security.auth.Subject;
 
 /**
  * Class implements  @{@link RequestInterceptor} to authenticate requests with basic authentication.
@@ -64,7 +66,9 @@ public class BasicAuthSecurityInterceptor implements RequestInterceptor {
                 String userName = new String(Arrays.copyOfRange(array, 0, separatorIndex));
                 char[] password = Arrays.copyOfRange(array, separatorIndex + 1, array.length);
                 if (authenticate(userName, password)) {
-                    request.getSession().setAttribute(BrokerAuthConstants.AUTHENTICATION_ID, userName);
+                    Subject subject = new Subject();
+                    subject.getPrincipals().add(new UsernamePrincipal(userName));
+                    request.getSession().setAttribute(BrokerAuthConstants.AUTHENTICATION_ID, subject);
                     return true;
                 }
             }

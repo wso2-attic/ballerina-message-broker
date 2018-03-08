@@ -63,7 +63,7 @@ public class PositiveQueueDeleteTest {
         Assert.assertEquals(deleteOk.getMessageCount(), 1);
     }
 
-    @Test (dataProvider = "queueNames", description = "Test multiple delete calls to the same queue. It should not"
+    @Test (dataProvider = "queueNames", description = "Test multiple delete calls to the same queue. It should not "
             + "throw an exception")
     public void testDeleteNonExistingQueue(String queueName) throws Exception {
         AMQP.Queue.DeleteOk deleteOk = channel.queueDelete(queueName);

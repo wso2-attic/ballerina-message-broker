@@ -116,7 +116,7 @@ public class RdbmsAuthorizer implements Authorizer {
 
     @Override
     public boolean authorize(String resourceType, String resourceName, String action, String userId)
-            throws BrokerAuthException {
+            throws BrokerAuthException, BrokerAuthServerException, BrokerAuthNotFoundException {
         ResourceCacheKey resourceCacheKey = new ResourceCacheKey(resourceType, resourceName);
         try {
             if (userId != null) {
@@ -147,7 +147,7 @@ public class RdbmsAuthorizer implements Authorizer {
             } else {
                 throw new BrokerAuthException("user id cannot be null.");
             }
-        } catch (BrokerAuthServerException | BrokerAuthNotFoundException | ExecutionException e) {
+        } catch (ExecutionException e) {
             throw new BrokerAuthException("Error occurred while retrieving authorizations from cache for "
                                                   + "resourceType : " + resourceType +
                                                   " resourceName: " + resourceName, e);

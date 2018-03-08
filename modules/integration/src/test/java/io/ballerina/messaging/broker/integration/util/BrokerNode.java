@@ -35,6 +35,10 @@ import io.ballerina.messaging.broker.coordination.HaStrategy;
 import io.ballerina.messaging.broker.coordination.HaStrategyFactory;
 import io.ballerina.messaging.broker.coordination.rdbms.RdbmsHaStrategy;
 import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerFactory;
+import io.ballerina.messaging.broker.core.BrokerImpl;
+import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
+import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
 import io.ballerina.messaging.broker.rest.config.RestServerConfiguration;
@@ -135,7 +139,14 @@ public class BrokerNode {
 
         authManager.start();
         brokerRestServer = new BrokerRestServer(startupContext);
-        broker = new Broker(startupContext);
+        broker = new BrokerImpl(startupContext);
+        BrokerFactory brokerFactory;
+        if (authManager.isAuthorizationEnabled()) {
+            brokerFactory = new SecureBrokerFactory(startupContext);
+        } else {
+            brokerFactory = new DefaultBrokerFactory(startupContext);
+        }
+        startupContext.registerService(BrokerFactory.class, brokerFactory);
         server = new Server(startupContext);
     }
 

@@ -19,7 +19,12 @@
 
 package io.ballerina.messaging.broker.core.rest.api;
 
-import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.core.BrokerFactory;
+import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
+import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.ballerina.messaging.broker.core.rest.BindingsApiDelegate;
 import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
 import io.ballerina.messaging.broker.core.rest.ConsumersApiDelegate;
@@ -39,7 +44,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
+import org.wso2.msf4j.Request;
 
+import javax.security.auth.Subject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -50,6 +57,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 @Path(BrokerAdminService.API_BASE_PATH + "/queues")
@@ -64,10 +72,18 @@ public class QueuesApi {
 
     private final BindingsApiDelegate bindingsApiDelegate;
 
-    public QueuesApi(Broker broker) {
-        this.queuesApiDelegate = new QueuesApiDelegate(broker);
-        this.consumersApiDelegate = new ConsumersApiDelegate(broker);
-        this.bindingsApiDelegate = new BindingsApiDelegate(broker);
+    private final BrokerFactory brokerFactory;
+
+    public QueuesApi(StartupContext startupContext) {
+        if (startupContext.getService(AuthManager.class).isAuthenticationEnabled() &&
+                startupContext.getService(AuthManager.class).isAuthorizationEnabled()) {
+            brokerFactory = new SecureBrokerFactory(startupContext);
+        } else {
+            brokerFactory = new DefaultBrokerFactory(startupContext);
+        }
+        this.queuesApiDelegate = new QueuesApiDelegate(brokerFactory);
+        this.consumersApiDelegate = new ConsumersApiDelegate(brokerFactory);
+        this.bindingsApiDelegate = new BindingsApiDelegate(brokerFactory);
     }
 
     @POST
@@ -83,8 +99,8 @@ public class QueuesApi {
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Exchange not found", response = Error.class),
             @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response createBinding(@PathParam("name") @ApiParam("Name of the queue to bind to") String name,@Valid BindingCreateRequest body) {
-        return bindingsApiDelegate.createBinding(name, body);
+    public Response createBinding(@Context Request request, @PathParam("name") @ApiParam("Name of the queue to bind to") String name, @Valid BindingCreateRequest body) {
+        return bindingsApiDelegate.createBinding(name, body, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @POST
@@ -98,8 +114,8 @@ public class QueuesApi {
             @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response createQueue(@Valid QueueCreateRequest body) {
-        return queuesApiDelegate.createQueue(body);
+    public Response createQueue(@Context Request request, @Valid QueueCreateRequest body) {
+        return queuesApiDelegate.createQueue(body, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @DELETE
@@ -113,8 +129,8 @@ public class QueuesApi {
             @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Binding not found", response = Error.class) })
-    public Response deleteBinding(@PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("bindingPattern") @ApiParam("Binding pattern for the bindings") String bindingPattern,@QueryParam("filterExpression")   @ApiParam("JMS selector relater message filter pattern")  String filterExpression) {
-        return bindingsApiDelegate.deleteBinding(name, bindingPattern, filterExpression);
+    public Response deleteBinding(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("bindingPattern") @ApiParam("Binding pattern for the bindings") String bindingPattern,@QueryParam("filterExpression")   @ApiParam("JMS selector relater message filter pattern")  String filterExpression) {
+        return bindingsApiDelegate.deleteBinding(name, bindingPattern, filterExpression, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @DELETE
@@ -127,8 +143,8 @@ public class QueuesApi {
             @ApiResponse(code = 200, message = "Consumer deleted", response = Void.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Queue/Consumer not found", response = Error.class) })
-    public Response deleteConsumer(@PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("consumerId") @ApiParam("Unique consumer identifier") Integer consumerId) {
-        return consumersApiDelegate.deleteConsumer(name, consumerId);
+    public Response deleteConsumer(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("consumerId") @ApiParam("Unique consumer identifier") Integer consumerId) {
+        return consumersApiDelegate.deleteConsumer(name, consumerId, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @DELETE
@@ -142,8 +158,8 @@ public class QueuesApi {
             @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
-    public Response deleteQueue(@PathParam("name") @ApiParam("Name of the queue") String name, @DefaultValue("true")  @QueryParam("ifUnused")  @ApiParam("If set to true, queue will be deleted only if the queue has no active consumers.")  Boolean ifUnused,  @DefaultValue("true") @QueryParam("ifEmpty") @ApiParam("If set to true, queue will be deleted only if the queue is empty.")  Boolean ifEmpty) {
-        return queuesApiDelegate.deleteQueue(name, ifUnused, ifEmpty);
+    public Response deleteQueue(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name, @DefaultValue("true")  @QueryParam("ifUnused")  @ApiParam("If set to true, queue will be deleted only if the queue has no active consumers.")  Boolean ifUnused,  @DefaultValue("true") @QueryParam("ifEmpty") @ApiParam("If set to true, queue will be deleted only if the queue is empty.")  Boolean ifEmpty) {
+        return queuesApiDelegate.deleteQueue(name, ifUnused, ifEmpty, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
@@ -156,8 +172,8 @@ public class QueuesApi {
             @ApiResponse(code = 200, message = "Consumers of the queue", response = ConsumerMetadata.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
-    public Response getAllConsumersForQueue(@PathParam("name") @ApiParam("Name of the queue") String name) {
-        return consumersApiDelegate.getAllConsumers(name);
+    public Response getAllConsumersForQueue(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name) {
+        return consumersApiDelegate.getAllConsumers(name, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
@@ -168,8 +184,8 @@ public class QueuesApi {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "List of queues", response = QueueMetadata.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class) })
-    public Response getAllQueues(@QueryParam("durable")   @ApiParam("filter queues by durability")  Boolean durable) {
-        return queuesApiDelegate.getAllQueues(durable);
+    public Response getAllQueues(@Context Request request, @QueryParam("durable")   @ApiParam("filter queues by durability")  Boolean durable) {
+        return queuesApiDelegate.getAllQueues(durable, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
@@ -182,8 +198,8 @@ public class QueuesApi {
             @ApiResponse(code = 200, message = "Binding info", response = BindingInfo.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
-    public Response getBinding(@PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("bindingPattern") @ApiParam("Binding pattern for the bindings") String bindingPattern,@QueryParam("filterExpression")   @ApiParam("JMS selector relater message filter pattern")  String filterExpression) {
-        return bindingsApiDelegate.getBinding(name, bindingPattern, filterExpression);
+    public Response getBinding(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("bindingPattern") @ApiParam("Binding pattern for the bindings") String bindingPattern,@QueryParam("filterExpression")   @ApiParam("JMS selector relater message filter pattern")  String filterExpression) {
+        return bindingsApiDelegate.getBinding(name, bindingPattern, filterExpression, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
@@ -196,8 +212,8 @@ public class QueuesApi {
             @ApiResponse(code = 200, message = "Consumers of the queue", response = ConsumerMetadata.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Queue/Consumer not found", response = Error.class) })
-    public Response getConsumer(@PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("consumerId") @ApiParam("Unique consumer identifier") Integer consumerId) {
-        return consumersApiDelegate.getConsumer(name, consumerId);
+    public Response getConsumer(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name,@PathParam("consumerId") @ApiParam("Unique consumer identifier") Integer consumerId) {
+        return consumersApiDelegate.getConsumer(name, consumerId, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
@@ -210,8 +226,8 @@ public class QueuesApi {
             @ApiResponse(code = 200, message = "Metadata of the queue", response = QueueMetadata.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
-    public Response getQueue(@PathParam("name") @ApiParam("Name of the queue") String name) {
-        return queuesApiDelegate.getQueue(name);
+    public Response getQueue(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name) {
+        return queuesApiDelegate.getQueue(name, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @DELETE
@@ -225,7 +241,7 @@ public class QueuesApi {
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 404, message = "Queue/Consumer not found", response = Error.class)
     })
-    public Response purgeMessages(@PathParam("name") @ApiParam("Name of the queue") String name) {
-        return queuesApiDelegate.purgeQueue(name);
+    public Response purgeMessages(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name) {
+        return queuesApiDelegate.purgeQueue(name, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 }

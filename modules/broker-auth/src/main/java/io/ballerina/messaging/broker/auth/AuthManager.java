@@ -146,6 +146,15 @@ public class AuthManager {
     }
 
     /**
+     * Provides broker authorization enabled
+     *
+     * @return broker authorization enabled or not
+     */
+    public boolean isAuthorizationEnabled() {
+        return brokerAuthConfiguration.getAuthorization().isEnabled();
+    }
+
+    /**
      * Provides authenticator which will be used to authenticate users.
      *
      * @return broker authenticator

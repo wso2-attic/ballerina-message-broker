@@ -19,8 +19,8 @@
 package io.ballerina.messaging.broker.auth.user;
 
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
-import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Set;
 

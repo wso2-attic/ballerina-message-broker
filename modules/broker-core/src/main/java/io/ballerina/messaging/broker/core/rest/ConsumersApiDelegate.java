@@ -19,7 +19,7 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
-import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.Consumer;
 import io.ballerina.messaging.broker.core.QueueHandler;
 import io.ballerina.messaging.broker.core.rest.model.ConsumerMetadata;
@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import javax.security.auth.Subject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -36,14 +37,14 @@ import javax.ws.rs.core.Response;
  */
 public class ConsumersApiDelegate {
 
-    private final Broker broker;
+    private final BrokerFactory brokerFactory;
 
-    public ConsumersApiDelegate(Broker broker) {
-        this.broker = broker;
+    public ConsumersApiDelegate(BrokerFactory brokerFactory) {
+        this.brokerFactory = brokerFactory;
     }
 
-    public Response getConsumer(String queueName, Integer consumerId) {
-        QueueHandler queue = broker.getQueue(queueName);
+    public Response getConsumer(String queueName, Integer consumerId, Subject subject) {
+        QueueHandler queue = brokerFactory.getBroker(subject).getQueue(queueName);
         if (Objects.isNull(queue)) {
             throw new NotFoundException("Unknown queue name " + queueName);
         }
@@ -61,8 +62,8 @@ public class ConsumersApiDelegate {
         }
     }
 
-    public Response getAllConsumers(String queueName) {
-        QueueHandler queueHandler = broker.getQueue(queueName);
+    public Response getAllConsumers(String queueName, Subject subject) {
+        QueueHandler queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
         if (Objects.isNull(queueHandler)) {
             throw new NotFoundException("Unknown queue Name " + queueName);
         }
@@ -82,7 +83,7 @@ public class ConsumersApiDelegate {
                 .flowEnabled(consumer.isReady());
     }
 
-    public Response deleteConsumer(String queueName, Integer consumerId) {
+    public Response deleteConsumer(String queueName, Integer consumerId, Subject subject) {
         return Response.status(Response.Status.NOT_IMPLEMENTED).build();
     }
 }

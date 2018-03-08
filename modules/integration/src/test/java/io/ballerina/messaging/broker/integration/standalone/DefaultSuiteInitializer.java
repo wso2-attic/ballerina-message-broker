@@ -23,6 +23,10 @@ import io.ballerina.messaging.broker.amqp.Server;
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerFactory;
+import io.ballerina.messaging.broker.core.BrokerImpl;
+import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
+import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.ballerina.messaging.broker.integration.util.DbUtils;
 import io.ballerina.messaging.broker.integration.util.TestUtils;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
@@ -64,7 +68,14 @@ public class DefaultSuiteInitializer {
 
         authManager.start();
         restServer = new BrokerRestServer(startupContext);
-        broker = new Broker(startupContext);
+        broker = new BrokerImpl(startupContext);
+        BrokerFactory brokerFactory;
+        if (authManager.isAuthorizationEnabled()) {
+            brokerFactory = new SecureBrokerFactory(startupContext);
+        } else {
+            brokerFactory = new DefaultBrokerFactory(startupContext);
+        }
+        startupContext.registerService(BrokerFactory.class, brokerFactory);
         broker.startMessageDelivery();
         server = new Server(startupContext);
         server.start();

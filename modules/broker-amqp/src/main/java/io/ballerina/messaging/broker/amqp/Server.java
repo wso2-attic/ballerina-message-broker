@@ -38,6 +38,9 @@ import io.ballerina.messaging.broker.coordination.BasicHaListener;
 import io.ballerina.messaging.broker.coordination.HaListener;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
 import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerFactory;
+import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
+import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -77,6 +80,7 @@ public class Server {
     private static final int BLOCKING_TASK_EXECUTOR_THREADS = 32;
 
     private final Broker broker;
+    private final BrokerFactory brokerFactory;
     private final AmqpServerConfiguration configuration;
     private final AmqpMetricManager metricManager;
     private EventLoopGroup bossGroup;
@@ -110,6 +114,14 @@ public class Server {
         if (broker == null) {
             throw new RuntimeException("Could not find the broker class to initialize AMQP server");
         }
+
+        if (startupContext.getService(AuthManager.class).isAuthenticationEnabled() &&
+                startupContext.getService(AuthManager.class).isAuthorizationEnabled()) {
+            brokerFactory = new SecureBrokerFactory(startupContext);
+        } else {
+            brokerFactory = new DefaultBrokerFactory(startupContext);
+        }
+
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
         ThreadFactory blockingTaskThreadFactory = new ThreadFactoryBuilder().setNameFormat("NettyBlockingTaskThread-%d")
@@ -222,7 +234,7 @@ public class Server {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, broker, metricManager))
+                         .addLast(new AmqpConnectionHandler(configuration, brokerFactory, metricManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
@@ -243,7 +255,7 @@ public class Server {
                          .addLast(sslHandlerFactory.create())
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, broker, metricManager))
+                         .addLast(new AmqpConnectionHandler(configuration, brokerFactory, metricManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }

@@ -22,13 +22,14 @@ import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionSecure;
 import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionTune;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.auth.AuthManager;
-import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.auth.UsernamePrincipal;
 import io.ballerina.messaging.broker.common.data.types.LongString;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 
+import javax.security.auth.Subject;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
@@ -54,8 +55,9 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
                     .createSaslServer(connectionHandler.getConfiguration().getHostName(), mechanism.toString());
             byte[] challenge = saslServer.evaluateResponse(response.getBytes());
             if (saslServer.isComplete()) {
-                ctx.channel().attr(AttributeKey.valueOf(BrokerAuthConstants.AUTHENTICATION_ID))
-                   .set(saslServer.getAuthorizationID());
+                Subject subject = new Subject();
+                subject.getPrincipals().add(new UsernamePrincipal(saslServer.getAuthorizationID()));
+                connectionHandler.secureBroker(subject);
                 ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
             } else {
                 ctx.channel().attr(AttributeKey.valueOf(SASL_SERVER_ATTRIBUTE)).set(saslServer);

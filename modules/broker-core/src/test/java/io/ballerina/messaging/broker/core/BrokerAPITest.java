@@ -63,8 +63,15 @@ public class BrokerAPITest {
 
         startupContext.registerService(BrokerConfigProvider.class, testBrokerConfigProvider);
         startupContext.registerService(DataSource.class, dataSource);
-        new AuthManager(startupContext);
-        broker = new Broker(startupContext);
+        AuthManager authManager = new AuthManager(startupContext);
+        broker = new BrokerImpl(startupContext);
+        BrokerFactory brokerFactory;
+        if (authManager.isAuthorizationEnabled()) {
+            brokerFactory = new SecureBrokerFactory(startupContext);
+        } else {
+            brokerFactory = new DefaultBrokerFactory(startupContext);
+        }
+        startupContext.registerService(BrokerFactory.class, brokerFactory);
     }
 
     @BeforeMethod

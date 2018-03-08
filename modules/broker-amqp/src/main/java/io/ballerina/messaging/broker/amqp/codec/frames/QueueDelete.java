@@ -23,8 +23,6 @@ import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ChannelException;
 import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
-import io.ballerina.messaging.broker.auth.AuthManager;
-import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -33,8 +31,6 @@ import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,36 +93,33 @@ public class QueueDelete extends MethodFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         Broker broker = connectionHandler.getBroker();
         ctx.fireChannelRead((BlockingTask) () -> {
-            Attribute<String> authorizationId =
-                    ctx.channel().attr(AttributeKey.valueOf(BrokerAuthConstants.AUTHENTICATION_ID));
-            AuthManager.doAuthContextAwareFunction(authorizationId.get(), () -> {
-                try {
-                    int messageCount = broker.deleteQueue(queue.toString(), ifUnused, ifEmpty);
-                    ctx.writeAndFlush(new QueueDeleteOk(getChannel(), messageCount));
-                } catch (ResourceNotFoundException e) {
-                    // For AMQP clients this is not an exception. Respond with message count zero.
-                    ctx.writeAndFlush(new QueueDeleteOk(getChannel(), 0));
-                } catch (ValidationException e) {
-                    LOGGER.debug("Queue delete validation failure", e);
-                    ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                                       ChannelException.PRECONDITION_FAILED,
-                                                       ShortString.parseString(e.getMessage()),
-                                                       CLASS_ID,
-                                                       METHOD_ID));
-                } catch (BrokerException e) {
-                    LOGGER.warn("Error deleting queue.", e);
-                    ctx.writeAndFlush(new ConnectionClose(ConnectionException.INTERNAL_ERROR,
-                                                          ShortString.parseString(e.getMessage()),
-                                                          CLASS_ID,
-                                                          METHOD_ID));
-                } catch (BrokerAuthException e) {
-                    LOGGER.warn("Unauthorized error while deleting queue.", e);
-                    ctx.writeAndFlush(new ConnectionClose(ChannelException.ACCESS_REFUSED,
-                                                          ShortString.parseString(e.getMessage()),
-                                                          CLASS_ID,
-                                                          METHOD_ID));
-                }
-            });
+            try {
+                int messageCount = broker.deleteQueue(queue.toString(), ifUnused, ifEmpty);
+                ctx.writeAndFlush(new QueueDeleteOk(getChannel(), messageCount));
+            } catch (ResourceNotFoundException e) {
+                // For AMQP clients this is not an exception. Respond with message count zero.
+                ctx.writeAndFlush(new QueueDeleteOk(getChannel(), 0));
+            } catch (ValidationException e) {
+                LOGGER.debug("Queue delete validation failure", e);
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                        ChannelException.PRECONDITION_FAILED,
+                        ShortString.parseString(e.getMessage()),
+                        CLASS_ID,
+                        METHOD_ID));
+            } catch (BrokerException e) {
+                LOGGER.warn("Error deleting queue.", e);
+                ctx.writeAndFlush(new ConnectionClose(ConnectionException.INTERNAL_ERROR,
+                        ShortString.parseString(e.getMessage()),
+                        CLASS_ID,
+                        METHOD_ID));
+            } catch (BrokerAuthException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                        ChannelException.ACCESS_REFUSED,
+                        ShortString.parseString(e.getMessage()),
+                        CLASS_ID,
+                        METHOD_ID));
+            }
+
         });
     }
 

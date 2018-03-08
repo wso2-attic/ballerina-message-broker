@@ -19,9 +19,9 @@
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain;
 
 import com.google.common.primitives.Bytes;
-import io.ballerina.messaging.broker.auth.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
