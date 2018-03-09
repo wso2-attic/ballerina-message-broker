@@ -25,7 +25,6 @@ import io.ballerina.messaging.broker.client.http.HttpClient;
 import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
-import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.resources.Queue;
 import io.ballerina.messaging.broker.client.utils.Constants;
@@ -34,6 +33,7 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import java.net.HttpURLConnection;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
+import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_GET;
 
 /**
  * Command representing MB queue information retrieval.
@@ -59,7 +59,7 @@ public class ListQueueCmd extends ListCmd {
             return;
         }
 
-        Configuration configuration = Utils.readConfigurationFile();
+        Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
 
         if (all) {
@@ -68,10 +68,7 @@ public class ListQueueCmd extends ListCmd {
 
         // do GET
         HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName);
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "GET");
-
-        // handle data processing
-        ResponseFormatter responseFormatter = new TableFormatter();
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
 
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             Gson gson = new Gson();

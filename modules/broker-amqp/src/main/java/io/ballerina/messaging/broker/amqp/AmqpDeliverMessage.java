@@ -23,6 +23,7 @@ import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.frames.BasicDeliver;
 import io.ballerina.messaging.broker.amqp.codec.frames.ContentFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.HeaderFrame;
+import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
@@ -74,6 +75,9 @@ public class AmqpDeliverMessage {
                 broker.requeue(queueName, message);
             } catch (BrokerException e) {
                 LOGGER.error("Error while requeueing message {} for queue {}", message, queueName, e);
+            } catch (ResourceNotFoundException e) {
+                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found",
+                            e);
             }
         } else if (!channel.isFlowEnabled()) {
             channel.hold(this);

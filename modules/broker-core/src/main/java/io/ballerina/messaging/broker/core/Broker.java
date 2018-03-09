@@ -338,19 +338,35 @@ public final class Broker {
         }
     }
 
-    public void removeConsumer(Consumer consumer) {
+    public void removeConsumer(Consumer consumer)  {
         lock.readLock().lock();
+        boolean queueDeletable = false;
+        QueueHandler queueHandler;
         try {
-            QueueHandler queueHandler = queueRegistry.getQueueHandler(consumer.getQueueName());
+            queueHandler = queueRegistry.getQueueHandler(consumer.getQueueName());
             if (queueHandler != null) {
                 synchronized (queueHandler) {
                     if (queueHandler.removeConsumer(consumer) && queueHandler.consumerCount() == 0) {
                         deliveryTaskService.remove(queueHandler.getQueue().getName());
+                        if (queueHandler.getQueue().isAutoDelete()) {
+                            queueDeletable = true;
+                        }
                     }
                 }
             }
         } finally {
             lock.readLock().unlock();
+        }
+
+        // queue delete is done after releasing the read lock since we cannot upgrade to write lock from a read lock.
+        if (queueDeletable) {
+            try {
+                deleteQueue(queueHandler.getQueue().getName(), true, false);
+            } catch (ValidationException | ResourceNotFoundException | BrokerException e) {
+                // We do not propagate the error to transport layer since we should not get an error for a queue
+                // delete initiated from server.
+                LOGGER.warn("Exception while auto deleting the queue " + queueHandler.getQueue(), e);
+            }
         }
     }
 
@@ -405,6 +421,29 @@ public final class Broker {
         lock.writeLock().lock();
         try {
             return queueRegistry.removeQueue(queueName, ifUnused, ifEmpty);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Purge all messages in the queue.
+     *
+     * @param queueName name of the queue
+     * @return number of messages purged
+     * @throws ResourceNotFoundException if the queue is not found
+     * @throws ValidationException       if there are online consumers for queue
+     */
+    public int purgeQueue(String queueName) throws ResourceNotFoundException, ValidationException {
+        lock.writeLock().lock();
+        try {
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+
+            if (queueHandler == null) {
+                throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
+            }
+
+            return queueHandler.purgeQueue();
         } finally {
             lock.writeLock().unlock();
         }
@@ -470,10 +509,14 @@ public final class Broker {
         return messageIdGenerator.getNextId();
     }
 
-    public void requeue(String queueName, Message message) throws BrokerException {
+    public void requeue(String queueName, Message message) throws BrokerException, ResourceNotFoundException {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+
+            if (Objects.isNull(queueHandler)) {
+                throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
+            }
             queueHandler.requeue(message);
         } finally {
             lock.readLock().unlock();

@@ -30,7 +30,7 @@
     <groupId>io.ballerina.messaging</groupId>
     <artifactId>broker-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.21-SNAPSHOT</version>
+    <version>0.1.29-SNAPSHOT</version>
     <name>Ballerina Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
@@ -349,7 +349,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.scm.id>wso2-scm-server</project.scm.id>
         <jacoco.plugin.version>0.7.9</jacoco.plugin.version>
-        <andes.version>3.2.40</andes.version>
+        <andes.version>3.2.47</andes.version>
         <geronimo-jms_1.1_spec.version>1.1.0.wso2v1</geronimo-jms_1.1_spec.version>
         <javacc.plugin.version>2.6</javacc.plugin.version>
         <maven.checkstyleplugin.excludes>

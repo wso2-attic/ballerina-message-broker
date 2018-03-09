@@ -25,10 +25,18 @@ ballerina.broker.core:
   # Database password.
   password: wso2carbon
 
+# Broker auth related configurations.
+wso2.broker.auth:
  # Broker authentication related configurations.
- authenticator:
-  # JAAS login module used to authenticate users.
-  loginModule: io.ballerina.messaging.broker.core.security.authentication.jaas.BrokerLoginModule
+ authentication:
+  # Enable the authentication
+  enabled: true
+  authenticator:
+    # Authenticator implemetation
+    className: io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator
+    # Optional properties
+    properties:
+     loginModule: io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule
 
 # AMQP transport related configurations.
 ballerina.broker.transport.amqp:

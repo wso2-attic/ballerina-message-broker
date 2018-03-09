@@ -29,6 +29,7 @@ import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteQueueCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListBindingCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.list.ListConsumerCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListQueueCmd;
 
@@ -81,6 +82,7 @@ public class CommandFactory {
     public CreateQueueCmd createCreateQueueCommand() {
         return new CreateQueueCmd(rootCommand);
     }
+
     public DeleteQueueCmd createDeleteQueueCommand() {
         return new DeleteQueueCmd(rootCommand);
     }
@@ -95,5 +97,9 @@ public class CommandFactory {
 
     public ListBindingCmd createListBindingCommand() {
         return new ListBindingCmd(rootCommand);
+    }
+
+    public ListConsumerCmd createListConsumerCommand() {
+        return new ListConsumerCmd(rootCommand);
     }
 }

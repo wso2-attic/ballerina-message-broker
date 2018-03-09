@@ -61,7 +61,7 @@ public class MultipleTopicSubscriberTestCase {
         TopicConnection connection = connectionFactory.createTopicConnection();
         connection.start();
 
-        TopicSession subscriberSession = connection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
+        TopicSession subscriberSession = connection.createTopicSession(false, TopicSession.CLIENT_ACKNOWLEDGE);
         Topic topic = (Topic) initialContext.lookup(queueName);
 
         int numberOfConsumers = 3;
@@ -77,6 +77,11 @@ public class MultipleTopicSubscriberTestCase {
             int finalConsumerIndex = consumerIndex;
             consumers[consumerIndex].setMessageListener(message -> {
                 messageCount[finalConsumerIndex]++;
+                try {
+                    message.acknowledge();
+                } catch (JMSException e) {
+                    LOGGER.error("Message acknowledging failed.", e);
+                }
                 receiveQueue.offer(new MessageResult(message, finalConsumerIndex));
             });
         }

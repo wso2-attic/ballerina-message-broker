@@ -18,6 +18,9 @@
  */
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain;
 
+import io.ballerina.messaging.broker.auth.authentication.Authenticator;
+import io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator;
+import io.ballerina.messaging.broker.auth.authentication.jaas.PlainSaslCallbackHandler;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.jaas.TestLoginModule;
 import org.mockito.Mockito;
 import org.testng.Assert;
@@ -36,14 +39,16 @@ import javax.security.sasl.SaslException;
 public class PlainSaslServerTest {
 
     private PlainSaslServer plainSaslServer;
+    private Authenticator authenticator;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        plainSaslServer = new PlainSaslServer(new PlainSaslCallbackHandler());
+        authenticator = new JaasAuthenticator();
+        plainSaslServer = new PlainSaslServer(authenticator);
         // create test login module and set in in the configuration
         AppConfigurationEntry[] entries = {
                 new AppConfigurationEntry(TestLoginModule.class.getCanonicalName(),
-                        AppConfigurationEntry.LoginModuleControlFlag.OPTIONAL, new HashMap<>())
+                                          AppConfigurationEntry.LoginModuleControlFlag.OPTIONAL, new HashMap<>())
         };
         Configuration.setConfiguration(new Configuration() {
             @Override
@@ -94,32 +99,33 @@ public class PlainSaslServerTest {
         Assert.assertEquals(plainSaslServer.isComplete(), true, "Sasl handshake has not been completed.");
         Assert.assertEquals(plainSaslServer.getAuthorizationID(), "u#@a.com", "Invalid Plain server evaluation");
     }
+
     @Test(expectedExceptions = SaslException.class,
           description = "Test evaluate invalid password",
-          expectedExceptionsMessageRegExp = ".*Error while authenticating user with login module.*")
+          expectedExceptionsMessageRegExp = ".*Error while authenticating user with authenticator.*")
     public void testEvaluateInvalidPassword() throws Exception {
         plainSaslServer.evaluateResponse(new byte[] {
                 (byte) 'a', (byte) 0, (byte) 'u', (byte) 's', (byte) 'e', (byte) 'r', (byte) 0, (byte) 'P', (byte) 'a',
                 (byte) 's', (byte) 's'
         });
         Assert.assertEquals(plainSaslServer.isComplete(), false,
-                "Sasl mechanism should not be completed for invalid " + "password.");
+                            "Sasl mechanism should not be completed for invalid " + "password.");
 
     }
 
     @Test(expectedExceptions = SaslException.class,
           description = "Test evaluate invalid callback handler",
-          expectedExceptionsMessageRegExp = ".*Error while authenticating user with login module.*")
+          expectedExceptionsMessageRegExp = ".*Error while authenticating user with authenticator.*")
     public void testInvalidCallbackHandler() throws Exception {
         final PlainSaslCallbackHandler handler = Mockito.mock(PlainSaslCallbackHandler.class);
         Mockito.doThrow(UnsupportedCallbackException.class).when(handler).handle(Mockito.any());
-        plainSaslServer = new PlainSaslServer(handler);
+        plainSaslServer = new PlainSaslServer(authenticator);
         plainSaslServer.evaluateResponse(new byte[] {
                 (byte) 'a', (byte) 0, (byte) 'u', (byte) 's', (byte) 'e', (byte) 'r', (byte) 0, (byte) 'P', (byte) 'a',
                 (byte) 's', (byte) 's'
         });
         Assert.assertEquals(plainSaslServer.isComplete(), false,
-                "Sasl mechanism should not be completed for invalid " + "password.");
+                            "Sasl mechanism should not be completed for invalid password.");
 
     }
 }

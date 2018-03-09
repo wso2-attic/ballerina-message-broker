@@ -136,6 +136,8 @@ paths:
       responses:
         '200':
           description: Queue deleted
+          schema:
+            $ref: '#/definitions/MessageDeleteResponse'
         '400':
           description: Bad request. Invalid request or validation error.
           schema:
@@ -173,6 +175,34 @@ paths:
               $ref: '#/definitions/ConsumerMetadata'
         '404':
           description: Queue not found
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+
+  /queues/{name}/messages:
+    parameters:
+      - in: path
+        name: name
+        type: string
+        required: true
+        description: Name of the queue
+    delete:
+      operationId: purgeMessages
+      summary: purge messages
+      description: Purge all messages in the queue
+      responses:
+        '200':
+          description: Queue purged
+          schema:
+            $ref: '#/definitions/MessageDeleteResponse'
+        '404':
+          description: Queue/Consumer not found
           schema:
             $ref: '#/definitions/Error'
         '401':
@@ -672,6 +702,15 @@ definitions:
       message:
         type: string
         description: Response message with status of the binding create operation.
+  MessageDeleteResponse:
+    title: Queue Purge Response
+    type: object
+    required:
+      - numberOfMessagesDeleted
+    properties:
+      numberOfMessagesDeleted:
+        type: integer
+        description: Response message with number of messages deleted.
   Error:
     title: Error Response
     required:

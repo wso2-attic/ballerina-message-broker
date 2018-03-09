@@ -120,4 +120,11 @@ public class MemQueueImpl extends Queue {
         List<Message> dequeueMessages = pendingDequeueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
         dequeueMessages.add(message);
     }
+
+    @Override
+    public int clear() {
+        int queueSize = queue.size();
+        queue.clear();
+        return queueSize;
+    }
 }

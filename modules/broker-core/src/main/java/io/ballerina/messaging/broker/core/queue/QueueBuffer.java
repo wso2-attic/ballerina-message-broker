@@ -21,12 +21,14 @@ package io.ballerina.messaging.broker.core.queue;
 
 import io.ballerina.messaging.broker.core.Message;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
  * Used to track messages for the queue.
@@ -325,6 +327,23 @@ public class QueueBuffer {
         for (Message message: messages) {
             add(message);
         }
+    }
+
+    /**
+     * Remove all messages in the buffer.
+     *
+     * @return number of messages removed
+     */
+    public synchronized int clear(Consumer<Message> postDeleteAction) {
+        Collection<Node> values = new ArrayList<>(keyMap.values());
+        int bufferSize = values.size();
+        for (Node node : values) {
+            Message message = node.item;
+            message.clearData();
+            unlink(node);
+            postDeleteAction.accept(message);
+        }
+        return bufferSize;
     }
 
     private static class Node {

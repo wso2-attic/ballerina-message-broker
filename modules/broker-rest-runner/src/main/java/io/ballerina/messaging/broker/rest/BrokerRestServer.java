@@ -65,7 +65,7 @@ public class BrokerRestServer {
         }
 
         startupContext.registerService(BrokerServiceRunner.class,
-                                       new BrokerServiceRunner(microservicesRunner, authManager.getAuthenticator()));
+                                       new BrokerServiceRunner(microservicesRunner, authManager));
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
             brokerRestRunnerHelper = new BrokerRestRunnerHelper();

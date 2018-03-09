@@ -48,7 +48,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * Test class for the {@link io.ballerina.messaging.broker.coordination.rdbms.RdbmsHaStrategy} implementation.
+ * Test class for the {@link RdbmsHaStrategy} implementation.
  *
  * This class introduces tests for fail-over by simulating a fail-over scenario, based on the RDBMS coordination
  * strategy.
