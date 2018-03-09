@@ -44,11 +44,6 @@ public class Branch implements EnqueueDequeueStrategy {
     public enum State {
 
         /**
-         * The branch was suspended in a dtx.end
-         */
-        SUSPENDED,
-
-        /**
          * Branch is registered in {@link Registry}
          */
         ACTIVE,
@@ -72,8 +67,23 @@ public class Branch implements EnqueueDequeueStrategy {
          * Branch is in prepared state. Branch can only be committed or rolled back after this
          */
         PREPARED
-
     }
+
+    /**
+     * States of associated sessions for the branch.
+     */
+    private enum SessionState {
+
+        /**
+         * Branch is registered in {@link Registry}
+         */
+        ACTIVE,
+        /**
+         * The branch was suspended in a dtx.end
+         */
+        SUSPENDED,
+    }
+
     private State state;
 
     private Xid xid;
@@ -84,7 +94,7 @@ public class Branch implements EnqueueDequeueStrategy {
 
     private final Broker broker;
 
-    private final Map<Integer, State> associatedSessions;
+    private final Map<Integer, SessionState> associatedSessions;
 
     Branch(Xid xid, MessageStore messageStore, Broker broker) {
         this.xid = xid;
@@ -153,7 +163,7 @@ public class Branch implements EnqueueDequeueStrategy {
      * @param sessionId session identifier of the session
      */
     public void associateSession(int sessionId) {
-        associatedSessions.put(sessionId, State.ACTIVE);
+        associatedSessions.put(sessionId, SessionState.ACTIVE);
     }
 
     /**
@@ -162,8 +172,8 @@ public class Branch implements EnqueueDequeueStrategy {
      * @param sessionId session identifier of the session
      */
     public void resumeSession(int sessionId) throws ValidationException {
-        if (associatedSessions.containsKey(sessionId) && associatedSessions.get(sessionId) == State.SUSPENDED) {
-            associatedSessions.put(sessionId, State.ACTIVE);
+        if (associatedSessions.containsKey(sessionId) && associatedSessions.get(sessionId) == SessionState.SUSPENDED) {
+            associatedSessions.put(sessionId, SessionState.ACTIVE);
         } else {
             throw new ValidationException("Couldn't resume session for branch with xid " + xid
                                                   + " and session id " + sessionId);
@@ -175,9 +185,9 @@ public class Branch implements EnqueueDequeueStrategy {
     }
 
     public void suspendSession(int sessionId) {
-        State associatedState = associatedSessions.get(sessionId);
-        if (Objects.nonNull(associatedState) && associatedState == State.ACTIVE) {
-            associatedSessions.put(sessionId, State.SUSPENDED);
+        SessionState associatedState = associatedSessions.get(sessionId);
+        if (Objects.nonNull(associatedState) && associatedState == SessionState.ACTIVE) {
+            associatedSessions.put(sessionId, SessionState.SUSPENDED);
         }
     }
 
@@ -193,8 +203,8 @@ public class Branch implements EnqueueDequeueStrategy {
 
     public boolean hasAssociatedActiveSessions() {
         if (hasAssociatedSessions()) {
-            for (State sessionState : associatedSessions.values()) {
-                if (sessionState != State.SUSPENDED) {
+            for (SessionState sessionState : associatedSessions.values()) {
+                if (sessionState != SessionState.SUSPENDED) {
                     return true;
                 }
             }

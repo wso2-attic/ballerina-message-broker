@@ -410,10 +410,10 @@ public class AmqpChannel {
      */
     public void commit() throws ValidationException, BrokerException {
         transaction.commit();
-        updatePendingAcknowledgements();
+        releasePendingAcknowledgements();
     }
 
-    private void updatePendingAcknowledgements() {
+    private void releasePendingAcknowledgements() {
         Collection<AckData> acknowledgments = unackedMessageMap.removeMarkedAcknowledgments();
         for (AckData ackData: acknowledgments) {
             ackData.getMessage().release();
@@ -451,7 +451,7 @@ public class AmqpChannel {
 
     public void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException {
         transaction.commit(xid, onePhase);
-        updatePendingAcknowledgements();
+        releasePendingAcknowledgements();
     }
 
     public void rollback(Xid xid) throws ValidationException, BrokerException {

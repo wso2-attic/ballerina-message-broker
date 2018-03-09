@@ -46,7 +46,9 @@ public abstract class MessageStore {
 
     public void add(Xid xid, Message message) throws BrokerException {
         TransactionData transactionData = getTransactionData(xid);
-        transactionData.addEnqueueMessage(message);
+        synchronized (transactionData) {
+            transactionData.addEnqueueMessage(message);
+        }
     }
 
     public void attach(String queueName, long messageInternalId) throws BrokerException {
@@ -60,7 +62,9 @@ public abstract class MessageStore {
 
     public void attach(Xid xid, String queueName, long messageInternalId) throws BrokerException {
         TransactionData transactionData = getTransactionData(xid);
-        transactionData.attach(queueName, messageInternalId);
+        synchronized (transactionData) {
+            transactionData.attach(queueName, messageInternalId);
+        }
     }
 
     private TransactionData getTransactionData(Xid xid) throws BrokerException {
@@ -82,7 +86,9 @@ public abstract class MessageStore {
 
     public synchronized void detach(Xid xid, String queueName, Message message) throws BrokerException {
         TransactionData transactionData = getTransactionData(xid);
-        transactionData.prepareForDetach(queueName, message);
+        synchronized (transactionData) {
+            transactionData.prepareForDetach(queueName, message);
+        }
     }
 
 

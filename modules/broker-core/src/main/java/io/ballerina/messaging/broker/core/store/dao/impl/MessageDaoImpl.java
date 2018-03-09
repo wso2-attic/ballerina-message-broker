@@ -19,7 +19,6 @@
 
 package io.ballerina.messaging.broker.core.store.dao.impl;
 
-import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.TransactionData;
@@ -35,6 +34,8 @@ import javax.transaction.xa.Xid;
  * Implements functionality required to manage messages in persistence storage.
  */
 class MessageDaoImpl implements MessageDao {
+
+    private static final long INVALID_XID = -1;
 
     private final MessageCrudOperationsDao crudOperationsDao;
 
@@ -78,7 +79,6 @@ class MessageDaoImpl implements MessageDao {
             crudOperationsDao.detachFromQueue(connection, transactionData.getDetachMessageMap());
             xidToInternalIdMap.put(xid, internalXid);
         });
-
     }
 
     @Override
@@ -89,23 +89,26 @@ class MessageDaoImpl implements MessageDao {
             dtxCrudOperationsDao.copyEnqueueMessages(connection, internalXid);
             crudOperationsDao.delete(connection, transactionData.getDeletableMessage());
             dtxCrudOperationsDao.removePreparedData(connection, internalXid);
-
         });
+        xidToInternalIdMap.remove(xid);
     }
 
     @Override
     public void rollbackPreparedData(Xid xid) throws BrokerException {
         dtxCrudOperationsDao.transaction(connection -> {
             long internalXid = getInternalXid(xid);
-            dtxCrudOperationsDao.restoreDequeueMessages(connection, internalXid);
-            dtxCrudOperationsDao.removePreparedData(connection, internalXid);
+            if (internalXid != INVALID_XID) {
+                dtxCrudOperationsDao.restoreDequeueMessages(connection, internalXid);
+                dtxCrudOperationsDao.removePreparedData(connection, internalXid);
+            }
         });
+        xidToInternalIdMap.remove(xid);
     }
 
-    private long getInternalXid(Xid xid) throws ValidationException {
+    private long getInternalXid(Xid xid) {
         Long id = xidToInternalIdMap.get(xid);
         if (Objects.isNull(id)) {
-            throw new ValidationException("Unknown xid. " + xid);
+            return INVALID_XID;
         }
         return id;
     }

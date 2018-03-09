@@ -27,8 +27,6 @@ final class RDBMSConstants {
     private RDBMSConstants() {
     }
 
-
-
     static final String PS_INSERT_METADATA =
             "INSERT INTO MB_METADATA (MESSAGE_ID, EXCHANGE_NAME, ROUTING_KEY, CONTENT_LENGTH, MESSAGE_METADATA) "
                     + "VALUES(?, ?, ?, ?, ?)";
