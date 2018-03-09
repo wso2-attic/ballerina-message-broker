@@ -18,6 +18,7 @@
 package io.ballerina.messaging.broker.client.output;
 
 import io.ballerina.messaging.broker.client.resources.Binding;
+import io.ballerina.messaging.broker.client.resources.Consumer;
 import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.resources.Queue;
@@ -72,5 +73,12 @@ public interface ResponseFormatter {
      *
      * @param bindings array of bindings.
      */
-    void printBindingsExchange(Binding[] bindings);
+    void printExchangeBindings(Binding[] bindings);
+
+    /**
+     * Print an array of Queue consumers into a desired output format.
+     *
+     * @param consumers array of consumers.
+     */
+    void printConsumers(Consumer[] consumers);
 }

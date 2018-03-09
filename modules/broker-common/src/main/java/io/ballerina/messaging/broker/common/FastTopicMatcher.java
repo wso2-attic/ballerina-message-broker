@@ -62,7 +62,7 @@ public class FastTopicMatcher {
     /**
      * Subscribed topics broken down into constituents and indexed.
      */
-    private final Map<Integer, String[]> subscribedTopicConstituentsMap;
+    private final List<String[]> subscribedTopicConstituentsMap;
 
     /**
      * Set of all the bit maps.
@@ -72,14 +72,14 @@ public class FastTopicMatcher {
     public FastTopicMatcher() {
         subscribedTopicList = new ArrayList<>();
         constituentTables = new ArrayList<>();
-        subscribedTopicConstituentsMap = new HashMap<>();
+        subscribedTopicConstituentsMap = new ArrayList<>();
     }
 
     public void add(String topicPattern) {
         if (!subscribedTopicList.contains(topicPattern)) {
             subscribedTopicList.add(topicPattern);
             String[] constituents = topicPattern.split(Pattern.quote(DELIMITER), -1);
-            subscribedTopicConstituentsMap.put(subscribedTopicList.size() - 1, constituents);
+            subscribedTopicConstituentsMap.add(subscribedTopicList.size() - 1, constituents);
 
             for (int constituentIndex = 0; constituentIndex < constituents.length; constituentIndex++) {
                 String constituent = constituents[constituentIndex];
@@ -210,11 +210,11 @@ public class FastTopicMatcher {
                 for (int bitIndex = removeIndex; bitIndex < subscribedTopicList.size(); bitIndex++) {
                     BitSet bitSet = entry.getValue();
                     bitSet.set(bitIndex, bitSet.get(bitIndex + 1));
-                    String[] constituents = subscribedTopicConstituentsMap.remove(bitIndex + 1);
-                    subscribedTopicConstituentsMap.put(bitIndex, constituents);
                 }
             }
         }
+
+        subscribedTopicConstituentsMap.remove(removeIndex);
     }
 
     /**

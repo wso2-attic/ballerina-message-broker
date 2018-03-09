@@ -23,8 +23,6 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.ballerina.messaging.broker.amqp.Server;
 import io.ballerina.messaging.broker.auth.AuthManager;
-import io.ballerina.messaging.broker.auth.user.UserStoreManager;
-import io.ballerina.messaging.broker.auth.user.impl.UserStoreManagerImpl;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
@@ -65,7 +63,7 @@ public class Main {
             BrokerCommonConfiguration commonConfig = service.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
                                                                                     BrokerCommonConfiguration.class);
             DataSource dataSource = getDataSource(commonConfig.getDataSource());
-            startupContext.registerService(UserStoreManager.class, new UserStoreManagerImpl());
+
             startupContext.registerService(DataSource.class, dataSource);
             HaStrategy haStrategy;
             //Initializing an HaStrategy implementation only if HA is enabled

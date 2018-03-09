@@ -16,7 +16,7 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authentication.sasl.plain;
+package io.ballerina.messaging.broker.auth.authentication.jaas;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

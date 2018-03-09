@@ -18,6 +18,7 @@
  */
 package io.ballerina.messaging.broker.rest.auth;
 
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.msf4j.security.basic.AbstractBasicAuthSecurityInterceptor;
@@ -38,9 +39,7 @@ public class BasicAuthSecurityInterceptor extends AbstractBasicAuthSecurityInter
     @Override
     protected boolean authenticate(String userName, String password) {
         try {
-            return userName != null
-                    && password != null
-                    && authenticateFunction.authenticate(userName, password.toCharArray());
+            return authenticateFunction.authenticate(userName, password.toCharArray()).isAuthenticated();
         } catch (Exception e) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Error occurred while authenticating user", e);
@@ -63,6 +62,6 @@ public class BasicAuthSecurityInterceptor extends AbstractBasicAuthSecurityInter
          * @param credentials user credentials
          * @throws E if unable to authenticate the user
          */
-        boolean authenticate(String username, char... credentials) throws E;
+        AuthResult authenticate(String username, char... credentials) throws E;
     }
 }

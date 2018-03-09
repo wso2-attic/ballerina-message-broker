@@ -233,6 +233,34 @@ public class QueuesRestApiTest {
 
     @Parameters({"admin-username", "admin-password"})
     @Test
+    public void testPurgeQueue(String username, String password) throws IOException {
+        String queueName = "QueuesRestApiTestTestPurgeQueue";
+
+        // Create a queue to delete.
+        QueueCreateRequest request = new QueueCreateRequest()
+                .name(queueName).durable(false).autoDelete(false);
+
+        HttpPost httpPost = new HttpPost(apiBasePath + "/queues");
+        ClientHelper.setAuthHeader(httpPost, username, password);
+
+        String value = objectMapper.writeValueAsString(request);
+        StringEntity stringEntity = new StringEntity(value, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(stringEntity);
+
+        CloseableHttpResponse response = client.execute(httpPost);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
+
+        // Delete the queue.
+        HttpDelete httpDelete = new HttpDelete(
+                apiBasePath + QueuesApiDelegate.QUEUES_API_PATH + "/" + queueName + "/messages");
+        ClientHelper.setAuthHeader(httpDelete, username, password);
+        response = client.execute(httpDelete);
+
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Parameters({"admin-username", "admin-password"})
+    @Test
     public void testNegativeDeleteQueue(String username, String password) throws IOException {
         String queueName = "testNegativeDeleteQueue";
         HttpDelete httpDelete = new HttpDelete(apiBasePath + QueuesApiDelegate.QUEUES_API_PATH + "/" + queueName);

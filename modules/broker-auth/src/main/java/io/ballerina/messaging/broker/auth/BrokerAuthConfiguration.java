@@ -18,7 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth;
 
-import io.ballerina.messaging.broker.auth.authentication.jaas.BrokerLoginModule;
+import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +50,15 @@ public class BrokerAuthConfiguration {
 
         private boolean enabled = true;
 
-        private JaasConfiguration jaas = new JaasConfiguration();
+        private AuthenticatorConfiguration authenticator = new AuthenticatorConfiguration();
+
+        public AuthenticatorConfiguration getAuthenticator() {
+            return authenticator;
+        }
+
+        public void setAuthenticator(AuthenticatorConfiguration authenticator) {
+            this.authenticator = authenticator;
+        }
 
         public boolean isEnabled() {
             return enabled;
@@ -59,45 +67,31 @@ public class BrokerAuthConfiguration {
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
         }
-
-        public JaasConfiguration getJaas() {
-            return jaas;
-        }
-
-        public void setJaas(JaasConfiguration jaas) {
-            this.jaas = jaas;
-        }
     }
 
     /**
-     * Represents jaas configuration for authentication
+     * Represents authenticator configuration for broker
      */
-    public static class JaasConfiguration {
+    public static class AuthenticatorConfiguration {
 
-        /**
-         * Jaas login module class name
-         */
-        private String loginModule = BrokerLoginModule.class.getCanonicalName();
+        private String className = DefaultAuthenticator.class.getCanonicalName();
 
-        /**
-         * Jaas login module options
-         */
-        private Map<String, Object> options = new HashMap<>();
+        private Map<String, Object> properties = new HashMap<>();
 
-        public String getLoginModule() {
-            return loginModule;
+        public String getClassName() {
+            return className;
         }
 
-        public void setLoginModule(String loginModule) {
-            this.loginModule = loginModule;
+        public void setClassName(String className) {
+            this.className = className;
         }
 
-        public Map<String, Object> getOptions() {
-            return options;
+        public Map<String, Object> getProperties() {
+            return properties;
         }
 
-        public void setOptions(Map<String, Object> options) {
-            this.options = options;
+        public void setProperties(Map<String, Object> properties) {
+            this.properties = properties;
         }
     }
 }

@@ -12,11 +12,12 @@ Once client request  a connection, server will send the supported SASL mechanism
 PLAIN text SASL mechanism.
 
 After that client will send the selected mechanism + auth response data. Server will create SASL server based on the
-client mechanism and then server will evaluate the client authentication data and callback handler will be executed for
- authentication. It will be done using Java Authentication and Authorization Service (JAAS)  as default
- authentication implementation.
+client mechanism and then server will evaluate the client authentication data . Then SASL server will call the 
+registered authenticator for broker. Broker will use Java Authentication and Authorization Service 
+(JAAS) as default authentication implementation. Once authenticator authenticate the plain text username and 
+password, it will response authentication result with authentication Id. 
 
- Users can defined their own JAAS Login module as well.
+ Users can defined their own JAAS Login module or write own custom authenticators as well.
   - [Changing the Default Security Settings](../user/security-settings-guide.md)
 
 If authentication is success, connection will be established or else will send authentication error.

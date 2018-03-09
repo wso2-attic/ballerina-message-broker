@@ -19,13 +19,22 @@
 package io.ballerina.messaging.broker.auth.user;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
+import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Set;
 
 /**
  * Interface provides user store operations required for broker.
  */
-public interface UserStoreManager {
+public interface UserStoreConnector {
+
+    /**
+     * Initiate user store connector with startup context.
+     *
+     * @param startupContext the startup context provides registered services for user store connector functionality.
+     */
+    void initialize(StartupContext startupContext) throws Exception;
 
     /**
      * Authenticate given user with credentials.
@@ -35,7 +44,7 @@ public interface UserStoreManager {
      * @return Authentication result
      * @throws BrokerAuthException Exception throws when authentication failed.
      */
-    boolean authenticate(String userName, char... credentials) throws BrokerAuthException;
+    AuthResult authenticate(String userName, char... credentials) throws BrokerAuthException;
 
     /**
      * Retrieve the list of users for given username.

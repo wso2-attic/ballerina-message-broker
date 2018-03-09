@@ -26,7 +26,6 @@ import io.ballerina.messaging.broker.client.http.HttpClient;
 import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
-import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.resources.Binding;
 import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.utils.BrokerClientException;
@@ -38,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
+import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_GET;
 
 /**
  * Command representing MB binding information retrieval.
@@ -77,22 +77,19 @@ public class ListBindingCmd extends ListCmd {
             throw exception;
         }
 
-        Configuration configuration = Utils.readConfigurationFile();
+        Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
         String urlParamType = !exchangeName.isEmpty() ? Constants.EXCHANGES_URL_PARAM : Constants.QUEUES_URL_PARAM;
         String urlParamName = !exchangeName.isEmpty() ? exchangeName : queueName;
 
         // do GET
         HttpRequest httpRequest = new HttpRequest(urlParamType + urlParamName + Constants.BINDINGS_URL_PARAM);
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, "GET");
-
-        // handle data processing
-        ResponseFormatter responseFormatter = new TableFormatter();
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
 
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             if (!exchangeName.isEmpty()) {
                 Binding[] bindings = processExchangeResponse(response.getPayload(), exchangeName);
-                responseFormatter.printBindingsExchange(bindings);
+                responseFormatter.printExchangeBindings(bindings);
             }
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));

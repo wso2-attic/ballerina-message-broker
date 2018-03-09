@@ -46,6 +46,9 @@ public class ExchangeMetadata   {
   public String getName() {
     return name;
   }
+  public void setName(String name) {
+    this.name = name;
+  }
 
   /**
    * Type of exchange.  for instance amq.direct, amq.topic

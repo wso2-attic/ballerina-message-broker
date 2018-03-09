@@ -38,6 +38,7 @@ public class CliTestParent {
     public void resetStream() {
         // reset the print stream after each test
         PrintStreamHandler.resetStreams();
+        System.clearProperty(TestConstants.CLI_CONFIG_SYSTEM_PROPERTY);
     }
 
     /**

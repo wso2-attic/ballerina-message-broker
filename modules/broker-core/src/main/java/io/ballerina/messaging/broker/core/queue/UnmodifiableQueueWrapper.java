@@ -19,7 +19,6 @@
 
 package io.ballerina.messaging.broker.core.queue;
 
-import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Queue;
 import io.ballerina.messaging.broker.core.QueueHandler;
@@ -84,7 +83,12 @@ public class UnmodifiableQueueWrapper extends Queue {
     }
 
     @Override
-    public void prepareDetach(Xid xid, Message message) throws BrokerException {
+    public void prepareDetach(Xid xid, Message message) {
+        throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
+    }
+
+    @Override
+    public int clear() {
         throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
     }
 }

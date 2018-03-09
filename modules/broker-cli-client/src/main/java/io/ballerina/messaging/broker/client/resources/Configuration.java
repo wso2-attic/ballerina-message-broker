@@ -47,7 +47,7 @@ public class Configuration {
 
     public static boolean validateConfiguration(Configuration configuration) {
         return Objects.nonNull(configuration.getHostname()) && configuration.getPort() != -1 && Objects
-                .nonNull(configuration.getUsername()) && Objects.nonNull(configuration.getPassword());
+                .nonNull(configuration.getUsername());
     }
 
     public String getHostname() {

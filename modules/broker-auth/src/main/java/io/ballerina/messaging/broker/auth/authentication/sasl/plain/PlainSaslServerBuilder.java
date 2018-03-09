@@ -18,8 +18,11 @@
  */
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain;
 
+import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 import io.ballerina.messaging.broker.auth.authentication.sasl.SaslServerBuilder;
 
+import java.util.HashMap;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslServerFactory;
@@ -29,18 +32,24 @@ import javax.security.sasl.SaslServerFactory;
  */
 public class PlainSaslServerBuilder implements SaslServerBuilder {
 
+    private final Map<String, Object> properties = new HashMap<>();
+
+    public PlainSaslServerBuilder(Authenticator authenticator) {
+        properties.put(BrokerAuthConstants.PROPERTY_AUTHENTICATOR_INSTANCE, authenticator);
+    }
+
     public String getMechanismName() {
         return PlainSaslServer.PLAIN_MECHANISM;
     }
 
     @Override
     public CallbackHandler getCallbackHandler() {
-        return new PlainSaslCallbackHandler();
+        return null;
     }
 
     @Override
     public Map<String, ?> getProperties() {
-        return null;
+        return properties;
     }
 
     @Override
