@@ -39,14 +39,19 @@ public class TransactionData {
 
     private final Map<String, QueueDetachEventList> detachMessageMap;
 
+    private final Map<String, List<Message>> preparedDetachEventMap;
+
     private final List<Long> deleteMessageIdList;
 
     private int detachOperationsCount;
+
+    private int preparedDetachEventCount;
 
     TransactionData() {
         enqueueMessages = new HashMap<>();
         detachMessageMap = new HashMap<>();
         deleteMessageIdList = new ArrayList<>();
+        preparedDetachEventMap = new HashMap<>();
         detachOperationsCount = 0;
     }
 
@@ -57,7 +62,7 @@ public class TransactionData {
 
     public void attach(String queueName, long messageInternalId) {
         Message message = enqueueMessages.get(messageInternalId);
-        message.addOwnedQueue(queueName);
+        message.addAttachedDurableQueue(queueName);
     }
 
     public void detach(String queueName, long internalMessageId) {
@@ -66,10 +71,10 @@ public class TransactionData {
         detachOperationsCount++;
     }
 
-    public void detach(String queueName, long internalMessageId, Runnable postCommitAction) {
-        QueueDetachEventList detachList = detachMessageMap.computeIfAbsent(queueName, k -> new QueueDetachEventList());
-        detachList.add(internalMessageId, postCommitAction);
-        detachOperationsCount++;
+    public void prepareForDetach(String queueName, Message message) {
+        List<Message> preparedDetachList = preparedDetachEventMap.computeIfAbsent(queueName, k -> new ArrayList<>());
+        preparedDetachList.add(message);
+        preparedDetachEventCount++;
     }
 
     public void addDeletableMessage(long internalMessageId) {
@@ -84,6 +89,10 @@ public class TransactionData {
         return detachMessageMap;
     }
 
+    public Map<String, List<Message>> getPreparedDetachEventMap() {
+        return preparedDetachEventMap;
+    }
+
     public Collection<Long> getDeletableMessage() {
         return deleteMessageIdList;
     }
@@ -92,7 +101,9 @@ public class TransactionData {
         enqueueMessages.clear();
         deleteMessageIdList.clear();
         detachMessageMap.clear();
+        preparedDetachEventMap.clear();
         detachOperationsCount = 0;
+        preparedDetachEventCount = 0;
     }
 
     public void releaseEnqueueMessages() {
@@ -103,20 +114,12 @@ public class TransactionData {
     }
 
     public boolean isEmpty() {
-        return deleteMessageIdList.isEmpty() && enqueueMessages.isEmpty() && detachMessageMap.isEmpty();
+        return deleteMessageIdList.isEmpty() && enqueueMessages.isEmpty() &&
+                detachMessageMap.isEmpty() && preparedDetachEventMap.isEmpty();
     }
 
     public int size() {
-        return detachOperationsCount + enqueueMessages.size() + deleteMessageIdList.size();
+        return detachOperationsCount + preparedDetachEventCount + enqueueMessages.size() + deleteMessageIdList.size();
     }
 
-    public void completePostCommitActions() {
-        for (Map.Entry<String, QueueDetachEventList> entry: detachMessageMap.entrySet()) {
-            List<Runnable> postTransactionActions = entry.getValue().getPostCommitActions();
-            for (Runnable action: postTransactionActions) {
-                action.run();
-            }
-        }
-
-    }
 }

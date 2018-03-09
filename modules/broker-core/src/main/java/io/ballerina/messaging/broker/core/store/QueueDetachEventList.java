@@ -30,27 +30,16 @@ public class QueueDetachEventList {
 
     private final List<Long> queueDetachRequests;
 
-    private final List<Runnable> postCommitActionList;
-
     QueueDetachEventList() {
         this.queueDetachRequests = new ArrayList<>();
-        this.postCommitActionList = new ArrayList<>();
     }
 
     public void add(long messageId) {
         queueDetachRequests.add(messageId);
     }
 
-    public void add(long messageId, Runnable postTransactionAction) {
-        queueDetachRequests.add(messageId);
-        this.postCommitActionList.add(postTransactionAction);
-    }
-
     public List<Long> getMessageIds() {
         return queueDetachRequests;
     }
 
-    List<Runnable> getPostCommitActions() {
-        return postCommitActionList;
-    }
 }

@@ -47,7 +47,17 @@ public class NullMessageStore extends MessageStore {
     }
 
     @Override
-    void commitTransactionToStore(TransactionData transactionData) {
+    void commit(TransactionData transactionData) {
+        // Do nothing
+    }
+
+    @Override
+    void commit(Xid xid, TransactionData transactionData) {
+        // Do nothing
+    }
+
+    @Override
+    protected void rollback(Xid xid) {
         // Do nothing
     }
 

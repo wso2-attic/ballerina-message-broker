@@ -38,29 +38,54 @@ import javax.transaction.xa.Xid;
  */
 public class Branch implements EnqueueDequeueStrategy {
 
-    private State state;
-
     /**
      * States of a {@link Branch}
      */
     public enum State {
 
         /**
-         * The branch was suspended in a dtx.end
-         */
-        SUSPENDED,
-
-        /**
-         * Branch is registered in DtxRegistry
+         * Branch is registered in {@link Registry}
          */
         ACTIVE,
 
         /**
          * Branch can only be rolled back
          */
-        ROLLBACK_ONLY;
+        ROLLBACK_ONLY,
 
+        /**
+         * Branch received a prepare call and in the process of persisting
+         */
+        PRE_PREPARE,
+
+        /**
+         * Branch was unregistered from {@link Registry}
+         */
+        FORGOTTEN,
+
+        /**
+         * Branch is in prepared state. Branch can only be committed or rolled back after this
+         */
+        PREPARED
     }
+
+    /**
+     * States of associated sessions for the branch.
+     */
+    private enum SessionState {
+
+        /**
+         * Branch is registered in {@link Registry}
+         */
+        ACTIVE,
+        /**
+         * The branch was suspended in a dtx.end
+         */
+        SUSPENDED,
+    }
+
+    private State state;
+
     private Xid xid;
 
     private final MessageStore messageStore;
@@ -69,7 +94,7 @@ public class Branch implements EnqueueDequeueStrategy {
 
     private final Broker broker;
 
-    private final Map<Integer, State> associatedSessions;
+    private final Map<Integer, SessionState> associatedSessions;
 
     Branch(Xid xid, MessageStore messageStore, Broker broker) {
         this.xid = xid;
@@ -78,6 +103,7 @@ public class Branch implements EnqueueDequeueStrategy {
         messageStore.branch(xid);
         this.affectedQueueHandlers = new HashSet<>();
         this.associatedSessions = new HashMap<>();
+        state = State.ACTIVE;
     }
 
     @Override
@@ -96,8 +122,8 @@ public class Branch implements EnqueueDequeueStrategy {
         messageStore.prepare(xid);
     }
 
-    public void commit() throws BrokerException {
-        messageStore.flush(xid);
+    public void commit(boolean onePhase) throws BrokerException {
+        messageStore.flush(xid, onePhase);
         for (QueueHandler queueHandler: affectedQueueHandlers) {
             queueHandler.commit(xid);
         }
@@ -105,6 +131,15 @@ public class Branch implements EnqueueDequeueStrategy {
 
     public void rollback() {
         messageStore.clear(xid);
+        rollbackQueueHandlers();
+    }
+
+    public void dtxRollback() throws BrokerException {
+        messageStore.cancel(xid);
+        rollbackQueueHandlers();
+    }
+
+    private void rollbackQueueHandlers() {
         for (QueueHandler queueHandler: affectedQueueHandlers) {
             queueHandler.rollback(xid);
         }
@@ -128,7 +163,7 @@ public class Branch implements EnqueueDequeueStrategy {
      * @param sessionId session identifier of the session
      */
     public void associateSession(int sessionId) {
-        associatedSessions.put(sessionId, State.ACTIVE);
+        associatedSessions.put(sessionId, SessionState.ACTIVE);
     }
 
     /**
@@ -137,8 +172,8 @@ public class Branch implements EnqueueDequeueStrategy {
      * @param sessionId session identifier of the session
      */
     public void resumeSession(int sessionId) throws ValidationException {
-        if (associatedSessions.containsKey(sessionId) && associatedSessions.get(sessionId) == State.SUSPENDED) {
-            associatedSessions.put(sessionId, State.ACTIVE);
+        if (associatedSessions.containsKey(sessionId) && associatedSessions.get(sessionId) == SessionState.SUSPENDED) {
+            associatedSessions.put(sessionId, SessionState.ACTIVE);
         } else {
             throw new ValidationException("Couldn't resume session for branch with xid " + xid
                                                   + " and session id " + sessionId);
@@ -150,9 +185,9 @@ public class Branch implements EnqueueDequeueStrategy {
     }
 
     public void suspendSession(int sessionId) {
-        State associatedState = associatedSessions.get(sessionId);
-        if (Objects.nonNull(associatedState) && associatedState == State.ACTIVE) {
-            associatedSessions.put(sessionId, State.SUSPENDED);
+        SessionState associatedState = associatedSessions.get(sessionId);
+        if (Objects.nonNull(associatedState) && associatedState == SessionState.ACTIVE) {
+            associatedSessions.put(sessionId, SessionState.SUSPENDED);
         }
     }
 
@@ -164,5 +199,29 @@ public class Branch implements EnqueueDequeueStrategy {
      */
     public boolean isAssociated(int sessionId) {
         return associatedSessions.containsKey(sessionId);
+    }
+
+    public boolean hasAssociatedActiveSessions() {
+        if (hasAssociatedSessions()) {
+            for (SessionState sessionState : associatedSessions.values()) {
+                if (sessionState != SessionState.SUSPENDED) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if there are any associated sessions
+     *
+     * @return True if there are any associated sessions, false otherwise
+     */
+    private boolean hasAssociatedSessions() {
+        return !associatedSessions.isEmpty();
+    }
+
+    public void clearAssociations() {
+        associatedSessions.clear();
     }
 }

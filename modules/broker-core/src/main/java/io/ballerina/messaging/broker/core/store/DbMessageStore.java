@@ -93,8 +93,18 @@ public class DbMessageStore extends MessageStore {
     }
 
     @Override
-    void commitTransactionToStore(TransactionData transactionData) throws BrokerException {
+    void commit(TransactionData transactionData) throws BrokerException {
         messageDao.persist(transactionData);
+    }
+
+    @Override
+    void commit(Xid xid, TransactionData transactionData) throws BrokerException {
+        messageDao.commitPreparedData(xid, transactionData);
+    }
+
+    @Override
+    protected void rollback(Xid xid) throws BrokerException {
+        messageDao.rollbackPreparedData(xid);
     }
 
     @Override

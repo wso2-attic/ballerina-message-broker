@@ -56,7 +56,7 @@ class MessageCrudOperationsDao extends BaseDao {
     @SuppressFBWarnings(
             value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
             justification = "Return value of context.stop() is not required.")
-    public void persist(Connection connection, Collection<Message> messageList) throws SQLException {
+    public void storeMessages(Connection connection, Collection<Message> messageList) throws SQLException {
 
         PreparedStatement metadataStmt = null;
         PreparedStatement contentStmt = null;
@@ -88,7 +88,7 @@ class MessageCrudOperationsDao extends BaseDao {
 
     private void prepareQueueAttachments(PreparedStatement insertToQueueStmt, Message message) throws SQLException {
         long id = message.getInternalId();
-        for (String queueName : message.getAttachedQueues()) {
+        for (String queueName : message.getAttachedDurableQueues()) {
             insertToQueueStmt.setLong(1, id);
             insertToQueueStmt.setString(2, queueName);
             insertToQueueStmt.addBatch();
@@ -115,8 +115,7 @@ class MessageCrudOperationsDao extends BaseDao {
     }
 
     public void detachFromQueue(Connection connection,
-                                Map<String, QueueDetachEventList> detachableMessageMap)
-            throws BrokerException {
+                                Map<String, QueueDetachEventList> detachableMessageMap) throws BrokerException {
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement(RDBMSConstants.PS_DELETE_FROM_QUEUE);
@@ -172,7 +171,7 @@ class MessageCrudOperationsDao extends BaseDao {
             while (resultSet.next()) {
                 long messageId = resultSet.getLong(1);
                 Message message = messageList.computeIfAbsent(messageId, k -> new Message(k, null));
-                message.addOwnedQueue(resultSet.getString(2));
+                message.addAttachedDurableQueue(resultSet.getString(2));
             }
             return messageList.values();
         } catch (SQLException e) {

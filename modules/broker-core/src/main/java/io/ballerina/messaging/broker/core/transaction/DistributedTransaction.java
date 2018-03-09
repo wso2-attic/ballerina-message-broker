@@ -31,7 +31,7 @@ import javax.transaction.xa.Xid;
  */
 public class DistributedTransaction implements BrokerTransaction {
 
-    private static final String SAME_XID_ERROR_MSG = "Branch not found with xid ";
+    public static final String UNKNOWN_XID_ERROR_MSG = "Branch not found with xid ";
 
     private final BranchFactory branchFactory;
 
@@ -39,20 +39,36 @@ public class DistributedTransaction implements BrokerTransaction {
 
     private EnqueueDequeueStrategy enqueueDequeueStrategy;
 
+    private boolean preConditionFailed;
+
+    private StringBuilder errorMessageBuilder;
+
     DistributedTransaction(BranchFactory branchFactory, Registry transactionRegistry) {
         this.branchFactory = branchFactory;
         this.transactionRegistry = transactionRegistry;
         this.enqueueDequeueStrategy = branchFactory.getDirectEnqueueDequeueStrategy();
+        preConditionFailed = false;
+        errorMessageBuilder = new StringBuilder();
     }
 
     @Override
-    public void dequeue(String queue, Message message) throws BrokerException {
-        enqueueDequeueStrategy.dequeue(queue, message);
+    public void dequeue(String queue, Message message) {
+        try {
+            enqueueDequeueStrategy.dequeue(queue, message);
+        } catch (BrokerException e) {
+            preConditionFailed = true;
+            errorMessageBuilder.append(e.getMessage()).append('\n');
+        }
     }
 
     @Override
-    public void enqueue(Message message) throws BrokerException {
-        enqueueDequeueStrategy.enqueue(message);
+    public void enqueue(Message message) {
+        try {
+            enqueueDequeueStrategy.enqueue(message);
+        } catch (BrokerException e) {
+            preConditionFailed = true;
+            errorMessageBuilder.append(e.getMessage()).append('\n');
+        }
     }
 
     @Override
@@ -83,12 +99,12 @@ public class DistributedTransaction implements BrokerTransaction {
         Branch branch = transactionRegistry.getBranch(xid);
         if (join) {
             if (Objects.isNull(branch)) {
-                throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+                throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
             }
             branch.associateSession(sessionId);
         } else if (resume) {
             if (Objects.isNull(branch)) {
-                throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+                throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
             }
             branch.resumeSession(sessionId);
         } else {
@@ -107,7 +123,7 @@ public class DistributedTransaction implements BrokerTransaction {
         Branch branch = transactionRegistry.getBranch(xid);
 
         if (Objects.isNull(branch)) {
-            throw new ValidationException(SAME_XID_ERROR_MSG + xid);
+            throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
         }
 
         if (suspend && fail) {
@@ -129,17 +145,27 @@ public class DistributedTransaction implements BrokerTransaction {
 
     @Override
     public void prepare(Xid xid) throws BrokerException, ValidationException {
+        if (preConditionFailed) {
+            throw new ValidationException("Pre conditions failed for commit. Errors " + errorMessageBuilder.toString());
+        }
         transactionRegistry.prepare(xid);
     }
 
     @Override
-    public void commit(Xid xid, boolean onePhase) {
+    public void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException {
+        transactionRegistry.commit(xid, onePhase);
+        clearErrors();
+    }
 
+    private void clearErrors() {
+        preConditionFailed = false;
+        errorMessageBuilder.setLength(0);
     }
 
     @Override
-    public void rollback(Xid xid) {
-
+    public void rollback(Xid xid) throws ValidationException, BrokerException {
+        transactionRegistry.rollback(xid);
+        clearErrors();
     }
 
     @Override

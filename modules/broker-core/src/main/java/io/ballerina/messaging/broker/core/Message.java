@@ -95,19 +95,19 @@ public class Message {
         contentChunks.stream().map(ContentChunk::shallowCopy).forEach(message::addChunk);
     }
 
-    public void addOwnedQueue(String queueName) {
+    public void addAttachedDurableQueue(String queueName) {
         queueSet.add(queueName);
     }
 
-    public boolean hasAttachedQueues() {
+    public boolean hasAttachedDurableQueues() {
         return !queueSet.isEmpty();
     }
 
-    public void removeAttachedQueue(String queueName) {
+    public void removeAttachedDurableQueue(String queueName) {
         queueSet.remove(queueName);
     }
 
-    public Collection<String> getAttachedQueues() {
+    public Collection<String> getAttachedDurableQueues() {
         return queueSet;
     }
 

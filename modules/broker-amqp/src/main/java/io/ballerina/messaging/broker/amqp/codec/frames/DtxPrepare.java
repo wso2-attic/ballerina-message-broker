@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.amqp.codec.frames;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ChannelException;
+import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.XaResult;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -80,18 +81,18 @@ public class DtxPrepare extends MethodFrame {
                 channel.prepare(new XidImpl(format, branchId.getBytes(), globalId.getBytes()));
                 ctx.writeAndFlush(new DtxPrepareOk(channelId, XaResult.XA_OK.getValue()));
             } catch (BrokerException e) {
+                LOGGER.debug("Error occurred while preparing transaction.", e);
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
                                                    ChannelException.NOT_ALLOWED,
                                                    ShortString.parseString(e.getMessage()),
                                                    CLASS_ID,
                                                    METHOD_ID));
             } catch (ValidationException e) {
-                LOGGER.debug("Validation failure on dtx prepare", e);
-                ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                                   ChannelException.PRECONDITION_FAILED,
-                                                   ShortString.parseString(e.getMessage()),
-                                                   CLASS_ID,
-                                                   METHOD_ID));
+                LOGGER.error("Validation failure on dtx prepare", e);
+                ctx.writeAndFlush(new ConnectionClose(ConnectionException.INTERNAL_ERROR,
+                                                      ShortString.parseString(e.getMessage()),
+                                                      CLASS_ID,
+                                                      METHOD_ID));
             }
         });
     }

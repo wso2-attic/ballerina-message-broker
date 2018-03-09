@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.transaction;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.transaction.xa.Xid;
@@ -76,5 +77,14 @@ public class XidImpl implements Xid {
     @Override
     public int hashCode() {
         return Objects.hash(Arrays.hashCode(branchQualifier), Arrays.hashCode(globalTransactionId));
+    }
+
+    @Override
+    public String toString() {
+        return "XidImpl{" +
+                "formatId=" + formatId +
+                ", branchQualifier=" + new String(branchQualifier, StandardCharsets.UTF_8) +
+                ", globalTransactionId=" + new String(globalTransactionId, StandardCharsets.UTF_8) +
+                '}';
     }
 }

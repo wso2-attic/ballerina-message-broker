@@ -91,7 +91,7 @@ public class LocalTransaction implements BrokerTransaction {
             return;
         }
 
-        branch.commit();
+        branch.commit(true);
         doPostCommit();
         clear();
     }
