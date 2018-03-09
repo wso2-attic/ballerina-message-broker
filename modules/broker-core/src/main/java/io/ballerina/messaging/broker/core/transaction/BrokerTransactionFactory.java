@@ -19,6 +19,9 @@
 
 package io.ballerina.messaging.broker.core.transaction;
 
+import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.store.MessageStore;
+
 /**
  * Factory class to create transaction related objects.
  */
@@ -28,12 +31,16 @@ public class BrokerTransactionFactory {
 
     private final Registry registry;
 
-    public BrokerTransactionFactory(BranchFactory branchFactory) {
-        this.branchFactory = branchFactory;
+    public BrokerTransactionFactory(Broker broker, MessageStore messageStore) {
+        this.branchFactory = new BranchFactory(broker, messageStore);
         this.registry = new Registry();
     }
 
-    public LocalTransaction createLocalTransaction() {
+    public LocalTransaction newLocalTransaction() {
         return new LocalTransaction(registry, branchFactory);
+    }
+
+    public DistributedTransaction newDistributedTransaction() {
+        return new DistributedTransaction(branchFactory, registry);
     }
 }

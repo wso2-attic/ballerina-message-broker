@@ -25,6 +25,7 @@ import io.ballerina.messaging.broker.core.store.TransactionData;
 
 import java.util.Collection;
 import java.util.Map;
+import javax.transaction.xa.Xid;
 
 /**
  * Defines a functionality required for manipulating messages in persistent storage.
@@ -52,4 +53,28 @@ public interface MessageDao {
      * @param readList list of messages.
      */
     Collection<Message> read(Map<Long, Message> readList) throws BrokerException;
+
+    /**
+     * Store transaction data in a separate table until subsequent commit or rollback is issued.
+     *
+     * @param xid {@link Xid} to identify the transaction
+     * @param transactionData relevant data of the transaction
+     */
+    void prepare(Xid xid, TransactionData transactionData) throws BrokerException;
+
+    /**
+     * Move data from prepared data tables to persistence storage.
+     *
+     * @param xid {@link Xid} of the transaction
+     * @param transactionData {@link TransactionData} object relating to the transaction
+     * @throws BrokerException throws exception on persistence failure.
+     */
+    void commitPreparedData(Xid xid, TransactionData transactionData) throws BrokerException;
+
+    /**
+     * If prepared data exist, revert the requested operations in prepare stage.
+     *
+     * @param xid {@link Xid} of the rollback operation related transaction
+     */
+    void rollbackPreparedData(Xid xid) throws BrokerException;
 }

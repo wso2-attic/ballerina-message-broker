@@ -45,7 +45,8 @@ public class DaoFactory {
     }
 
     public MessageDao createMessageDao() {
-        return new MessageDaoImpl(new MessageCrudOperationsDao(dataSource, metricManager));
+        return new MessageDaoImpl(new MessageCrudOperationsDao(dataSource, metricManager),
+                                  new DtxCrudOperationsDao(dataSource));
     }
 
     public ExchangeDao createExchangeDao() {

@@ -72,7 +72,7 @@ public class ExchangesRestApiTest {
     @Parameters({"broker-hostname", "broker-rest-port"})
     @BeforeClass
     public void setUp(String brokerHost, String restPort) throws Exception {
-        apiBasePath = ClientHelper.getRestApiBasePath(brokerHost, restPort);
+        apiBasePath = HttpClientHelper.getRestApiBasePath(brokerHost, restPort);
         objectMapper = new ObjectMapper();
     }
 

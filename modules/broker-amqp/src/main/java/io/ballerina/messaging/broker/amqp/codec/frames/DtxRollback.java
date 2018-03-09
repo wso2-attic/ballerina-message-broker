@@ -19,11 +19,21 @@
 
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
+import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
+import io.ballerina.messaging.broker.amqp.codec.ChannelException;
+import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.XaResult;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.LongString;
+import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.transaction.XidImpl;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for dtx.rollback
@@ -34,6 +44,7 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class DtxRollback extends MethodFrame {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DtxRollback.class);
     private static final short CLASS_ID = 100;
     private static final short METHOD_ID = 90;
     private final int format;
@@ -62,7 +73,28 @@ public class DtxRollback extends MethodFrame {
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         int channelId = getChannel();
-        ctx.writeAndFlush(new DtxRollbackOk(channelId, XaResult.XA_OK.getValue()));
+        AmqpChannel channel = connectionHandler.getChannel(channelId);
+        XidImpl xid = new XidImpl(format, branchId.getBytes(), globalId.getBytes());
+
+        ctx.fireChannelRead((BlockingTask) () -> {
+            try {
+                channel.rollback(xid);
+                ctx.writeAndFlush(new DtxRollbackOk(channelId, XaResult.XA_OK.getValue()));
+            } catch (ValidationException e) {
+                LOGGER.debug("Validation error occurred while rolling back transaction", e);
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.PRECONDITION_FAILED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            } catch (BrokerException e) {
+                LOGGER.error("Error occurred while rolling back transaction for xid " + xid, e);
+                ctx.writeAndFlush(new ConnectionClose(ConnectionException.INTERNAL_ERROR,
+                                                      ShortString.parseString(e.getMessage()),
+                                                      CLASS_ID,
+                                                      METHOD_ID));
+            }
+        });
     }
 
     public static AmqMethodBodyFactory getFactory() {

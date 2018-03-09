@@ -24,6 +24,7 @@ import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.queue.QueueBuffer;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +46,9 @@ public abstract class MessageStore {
 
     public void add(Xid xid, Message message) throws BrokerException {
         TransactionData transactionData = getTransactionData(xid);
-        transactionData.addEnqueueMessage(message);
+        synchronized (transactionData) {
+            transactionData.addEnqueueMessage(message);
+        }
     }
 
     public void attach(String queueName, long messageInternalId) throws BrokerException {
@@ -54,12 +57,14 @@ public abstract class MessageStore {
             throw new BrokerException("Unknown message id " + messageInternalId
                                               + " cannot attach to queue " + queueName);
         }
-        message.addOwnedQueue(queueName);
+        message.addAttachedDurableQueue(queueName);
     }
 
     public void attach(Xid xid, String queueName, long messageInternalId) throws BrokerException {
         TransactionData transactionData = getTransactionData(xid);
-        transactionData.attach(queueName, messageInternalId);
+        synchronized (transactionData) {
+            transactionData.attach(queueName, messageInternalId);
+        }
     }
 
     private TransactionData getTransactionData(Xid xid) throws BrokerException {
@@ -71,8 +76,8 @@ public abstract class MessageStore {
     }
 
     public synchronized void detach(String queueName, final Message message) {
-        message.removeAttachedQueue(queueName);
-        if (!message.hasAttachedQueues()) {
+        message.removeAttachedDurableQueue(queueName);
+        if (!message.hasAttachedDurableQueues()) {
             deleteMessage(message.getInternalId());
         } else {
             detachFromQueue(queueName, message);
@@ -81,11 +86,8 @@ public abstract class MessageStore {
 
     public synchronized void detach(Xid xid, String queueName, Message message) throws BrokerException {
         TransactionData transactionData = getTransactionData(xid);
-        message.removeAttachedQueue(queueName);
-        if (message.hasAttachedQueues()) {
-            transactionData.detach(queueName, message.getInternalId());
-        } else {
-            transactionData.addDeletableMessage(message.getInternalId());
+        synchronized (transactionData) {
+            transactionData.prepareForDetach(queueName, message);
         }
     }
 
@@ -93,8 +95,7 @@ public abstract class MessageStore {
     public void flush(long internalMessageId) {
         Message message = pendingMessages.remove(internalMessageId);
         if (message != null) {
-
-            if (message.hasAttachedQueues()) {
+            if (message.hasAttachedDurableQueues()) {
                 publishMessageToStore(message);
             } else {
                 message.release();
@@ -102,11 +103,38 @@ public abstract class MessageStore {
         }
     }
 
-    public void flush(Xid xid) throws BrokerException {
-        commitTransactionToStore(getTransactionData(xid));
+    public void prepare(Xid xid) throws BrokerException {
+        prepare(xid, getTransactionData(xid));
+    }
+
+    public void flush(Xid xid, boolean onePhase) throws BrokerException {
+        TransactionData transactionData = getTransactionData(xid);
+        updateDeletableMessages(transactionData);
+        if (onePhase) {
+            commit(transactionData);
+        } else {
+            commit(xid, transactionData);
+        }
         clear(xid);
     }
 
+    private void updateDeletableMessages(TransactionData transactionData) {
+        Map<String, List<Message>> preparedDetachEventMap = transactionData.getPreparedDetachEventMap();
+        for (Map.Entry<String, List<Message>> entry: preparedDetachEventMap.entrySet()) {
+            String queueName = entry.getKey();
+            for (Message message: entry.getValue()) {
+                message.removeAttachedDurableQueue(queueName);
+                if (!message.hasAttachedDurableQueues()) {
+                    transactionData.addDeletableMessage(message.getInternalId());
+                }
+            }
+        }
+    }
+
+    public void cancel(Xid xid) throws BrokerException {
+        rollback(xid);
+        clear(xid);
+    }
 
     public void branch(Xid xid) {
         transactionMap.putIfAbsent(xid, new TransactionData());
@@ -124,9 +152,15 @@ public abstract class MessageStore {
 
     abstract void deleteMessage(long messageId);
 
-    abstract void commitTransactionToStore(TransactionData transactionData) throws BrokerException;
+    abstract void commit(TransactionData transactionData) throws BrokerException;
+
+    abstract void commit(Xid xid, TransactionData transactionData) throws BrokerException;
+
+    protected abstract void rollback(Xid xid) throws BrokerException;
 
     public abstract void fillMessageData(QueueBuffer queueBuffer, Message message);
 
     public abstract Collection<Message> readAllMessagesForQueue(String queueName) throws BrokerException;
+
+    public abstract void prepare(Xid xid, TransactionData transactionData) throws BrokerException;
 }

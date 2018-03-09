@@ -80,13 +80,6 @@ public interface BrokerTransaction {
     void addPostTransactionAction(Action postTransactionAction);
 
     /**
-     * Return implementation support transaction
-     *
-     * @return local transactional or not
-     */
-    boolean isTransactional();
-
-    /**
      * Actions to be performed on a transaction close
      */
     void onClose();
@@ -95,26 +88,28 @@ public interface BrokerTransaction {
      * Start a transaction branch
      *
      * @param xid Start any work associated with transaction branch with Xid
+     * @param sessionId unique id for the transaction session
      * @param join Indicate whether this is joining an already associated  Xid
      * @param resume Indicate whether this is resuming a suspended transaction branch
      */
-    void start(Xid xid, boolean join, boolean resume) throws ValidationException;
+    void start(Xid xid, int sessionId, boolean join, boolean resume) throws ValidationException;
 
     /**
      * End a transaction branch
      *
      *  @param xid End any work associated with transaction branch with Xid
+     *  @param sessionId unique id for the transaction session
      *  @param fail Indicate whether the portion of work has failed
      *  @param suspend Indicate that the transaction branch is temporarily suspended in an incomplete state
      */
-    void end(Xid xid, boolean fail, boolean suspend) throws ValidationException;
+    void end(Xid xid, int sessionId, boolean fail, boolean suspend) throws ValidationException;
 
     /**
      * Ask to prepare a transaction branch
      *
      * @param xid Prepare for commitment any work associated with Xid
      */
-    void prepare(Xid xid) throws ValidationException;
+    void prepare(Xid xid) throws ValidationException, BrokerException;
 
     /**
      * Commit the work done on behalf a transaction branch
@@ -122,14 +117,14 @@ public interface BrokerTransaction {
      * @param xid Commit the work associated with Xid
      * @param onePhase Indicate that one-phase optimization must be used
      */
-    void commit(Xid xid, boolean onePhase) throws ValidationException;
+    void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException;
 
     /**
      * Rollback a transaction branch
      *
      * @param xid Rollback any work associated with Xid
      */
-    void rollback(Xid xid) throws ValidationException;
+    void rollback(Xid xid) throws ValidationException, BrokerException;
 
     /**
      * Discard knowledge of a heuristically-completed transaction branch

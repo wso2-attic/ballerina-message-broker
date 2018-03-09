@@ -42,8 +42,14 @@ public class ContentChunk {
     }
 
     @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Data holder class for content chunks.")
-    public ByteBuf getBytes() {
+    public ByteBuf getByteBuf() {
         return content;
+    }
+
+    public byte[] getBytes() {
+        byte[] bytes = new byte[content.readableBytes()];
+        content.getBytes(0, bytes);
+        return bytes;
     }
 
     public void release() {

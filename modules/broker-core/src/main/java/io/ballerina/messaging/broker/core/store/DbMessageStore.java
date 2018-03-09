@@ -33,6 +33,7 @@ import io.ballerina.messaging.broker.core.store.disruptor.SleepingBlockingWaitSt
 import java.util.Collection;
 import java.util.concurrent.ThreadFactory;
 import javax.annotation.concurrent.ThreadSafe;
+import javax.transaction.xa.Xid;
 
 /**
  * Message store class that is used by all the durable queues to persist messages
@@ -92,8 +93,18 @@ public class DbMessageStore extends MessageStore {
     }
 
     @Override
-    void commitTransactionToStore(TransactionData transactionData) throws BrokerException {
+    void commit(TransactionData transactionData) throws BrokerException {
         messageDao.persist(transactionData);
+    }
+
+    @Override
+    void commit(Xid xid, TransactionData transactionData) throws BrokerException {
+        messageDao.commitPreparedData(xid, transactionData);
+    }
+
+    @Override
+    protected void rollback(Xid xid) throws BrokerException {
+        messageDao.rollbackPreparedData(xid);
     }
 
     @Override
@@ -104,5 +115,10 @@ public class DbMessageStore extends MessageStore {
     @Override
     public Collection<Message> readAllMessagesForQueue(String queueName) throws BrokerException {
         return messageDao.readAll(queueName);
+    }
+
+    @Override
+    public void prepare(Xid xid, TransactionData transactionData) throws BrokerException {
+        messageDao.prepare(xid, transactionData);
     }
 }

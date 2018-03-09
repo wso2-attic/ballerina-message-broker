@@ -24,6 +24,7 @@ import io.ballerina.messaging.broker.core.rest.QueuesApiDelegate;
 import io.ballerina.messaging.broker.core.rest.model.ConsumerMetadata;
 import io.ballerina.messaging.broker.core.rest.model.Error;
 import io.ballerina.messaging.broker.integration.util.ClientHelper;
+import io.ballerina.messaging.broker.integration.util.HttpClientHelper;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -61,7 +62,7 @@ public class ConsumersRestApiTest {
     @Parameters({"broker-hostname", "broker-rest-port"})
     @BeforeClass
     public void setUp(String brokerHost, String port) throws Exception {
-        apiBasePath = ClientHelper.getRestApiBasePath(brokerHost, port);
+        apiBasePath = HttpClientHelper.getRestApiBasePath(brokerHost, port);
         objectMapper = new ObjectMapper();
     }
 
