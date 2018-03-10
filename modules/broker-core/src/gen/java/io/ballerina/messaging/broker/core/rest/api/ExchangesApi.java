@@ -25,6 +25,8 @@ import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
 import io.ballerina.messaging.broker.core.SecureBrokerFactory;
+import io.ballerina.messaging.broker.core.rest.model.ExchangeUpdateRequest;
+import io.ballerina.messaging.broker.core.rest.model.ExchangeUpdateResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -48,6 +50,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -144,5 +147,22 @@ public class ExchangesApi {
             @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
     public Response getExchange(@Context Request request, @PathParam("name") @ApiParam("Name of the exchange.") String name) {
         return exchangesApiDelegate.getExchange(name, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+    }
+
+    @PUT
+    @Path("/{name}")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Update authorization of exchange", notes = "Grant permission to perform given action", response = ExchangeUpdateResponse.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Exchange authorization updated.", response = ExchangeUpdateResponse.class),
+            @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
+            @ApiResponse(code = 404, message = "Exchange not found", response = Error.class),
+            @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    public Response updateExchangeAuthorization(@Context Request request, @PathParam("name") @ApiParam("Name of the auth resource") String name, @Valid ExchangeUpdateRequest body) {
+        return Response.ok().entity("magic!").build();
     }
 }

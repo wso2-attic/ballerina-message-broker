@@ -22,32 +22,53 @@ package io.ballerina.messaging.broker.core.rest.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 
-public class MessageDeleteResponse   {
+public class Scope   {
   
-  private @Valid Integer numberOfMessagesDeleted = null;
+  private @Valid String name = null;
+  private @Valid List<String> authoriedUserGroups = new ArrayList<String>();
 
   /**
-   * Response message with number of messages deleted.
+   * Scope name
    **/
-  public MessageDeleteResponse numberOfMessagesDeleted(Integer numberOfMessagesDeleted) {
-    this.numberOfMessagesDeleted = numberOfMessagesDeleted;
+  public Scope name(String name) {
+    this.name = name;
     return this;
   }
 
   
-  @ApiModelProperty(required = true, value = "Response message with number of messages deleted.")
-  @JsonProperty("numberOfMessagesDeleted")
+  @ApiModelProperty(required = true, value = "Scope name")
+  @JsonProperty("name")
   @NotNull
-  public Integer getNumberOfMessagesDeleted() {
-    return numberOfMessagesDeleted;
+  public String getName() {
+    return name;
   }
-  public void setNumberOfMessagesDeleted(Integer numberOfMessagesDeleted) {
-    this.numberOfMessagesDeleted = numberOfMessagesDeleted;
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  /**
+   * User groups of the scope
+   **/
+  public Scope authoriedUserGroups(List<String> authoriedUserGroups) {
+    this.authoriedUserGroups = authoriedUserGroups;
+    return this;
+  }
+
+  
+  @ApiModelProperty(value = "User groups of the scope")
+  @JsonProperty("authoriedUserGroups")
+  public List<String> getAuthoriedUserGroups() {
+    return authoriedUserGroups;
+  }
+  public void setAuthoriedUserGroups(List<String> authoriedUserGroups) {
+    this.authoriedUserGroups = authoriedUserGroups;
   }
 
 
@@ -59,21 +80,23 @@ public class MessageDeleteResponse   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    MessageDeleteResponse messageDeleteResponse = (MessageDeleteResponse) o;
-    return Objects.equals(numberOfMessagesDeleted, messageDeleteResponse.numberOfMessagesDeleted);
+    Scope scope = (Scope) o;
+    return Objects.equals(name, scope.name) &&
+        Objects.equals(authoriedUserGroups, scope.authoriedUserGroups);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(numberOfMessagesDeleted);
+    return Objects.hash(name, authoriedUserGroups);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class MessageDeleteResponse {\n");
+    sb.append("class Scope {\n");
     
-    sb.append("    numberOfMessagesDeleted: ").append(toIndentedString(numberOfMessagesDeleted)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    authoriedUserGroups: ").append(toIndentedString(authoriedUserGroups)).append("\n");
     sb.append("}");
     return sb.toString();
   }

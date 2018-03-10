@@ -14,59 +14,60 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
 
 package io.ballerina.messaging.broker.core.rest.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
-
+import java.util.ArrayList;
+import java.util.List;
+import javax.validation.constraints.*;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+
+
+import io.swagger.annotations.*;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 
-public class Error   {
+public class ActionUserGroupsMapping   {
   
-  private @Valid Long code = null;
-  private @Valid String message = null;
+  private @Valid String action = null;
+  private @Valid List<String> userGroups = new ArrayList<String>();
 
   /**
+   * Resource action
    **/
-  public Error code(Long code) {
-    this.code = code;
+  public ActionUserGroupsMapping action(String action) {
+    this.action = action;
     return this;
   }
 
   
-  @ApiModelProperty(required = true, value = "")
-  @JsonProperty("code")
-  @NotNull
-  public Long getCode() {
-    return code;
+  @ApiModelProperty(value = "Resource action")
+  @JsonProperty("action")
+  public String getAction() {
+    return action;
   }
-  public void setCode(Long code) {
-    this.code = code;
+  public void setAction(String action) {
+    this.action = action;
   }
 
   /**
-   * Error message.
+   * Set of user groups for a scope
    **/
-  public Error message(String message) {
-    this.message = message;
+  public ActionUserGroupsMapping userGroups(List<String> userGroups) {
+    this.userGroups = userGroups;
     return this;
   }
 
   
-  @ApiModelProperty(required = true, value = "Error message.")
-  @JsonProperty("message")
-  @NotNull
-  public String getMessage() {
-    return message;
+  @ApiModelProperty(value = "Set of user groups for a scope")
+  @JsonProperty("userGroups")
+  public List<String> getUserGroups() {
+    return userGroups;
   }
-  public void setMessage(String message) {
-    this.message = message;
+  public void setUserGroups(List<String> userGroups) {
+    this.userGroups = userGroups;
   }
 
 
@@ -78,23 +79,23 @@ public class Error   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Error error = (Error) o;
-    return Objects.equals(code, error.code) &&
-        Objects.equals(message, error.message);
+    ActionUserGroupsMapping actionUserGroupsMapping = (ActionUserGroupsMapping) o;
+    return Objects.equals(action, actionUserGroupsMapping.action) &&
+        Objects.equals(userGroups, actionUserGroupsMapping.userGroups);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(code, message);
+    return Objects.hash(action, userGroups);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Error {\n");
+    sb.append("class ActionUserGroupsMapping {\n");
     
-    sb.append("    code: ").append(toIndentedString(code)).append("\n");
-    sb.append("    message: ").append(toIndentedString(message)).append("\n");
+    sb.append("    action: ").append(toIndentedString(action)).append("\n");
+    sb.append("    userGroups: ").append(toIndentedString(userGroups)).append("\n");
     sb.append("}");
     return sb.toString();
   }

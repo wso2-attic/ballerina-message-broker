@@ -27,27 +27,27 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 
-public class MessageDeleteResponse   {
+public class ExchangeUpdateResponse   {
   
-  private @Valid Integer numberOfMessagesDeleted = null;
+  private @Valid String message = null;
 
   /**
-   * Response message with number of messages deleted.
+   * Response message with status of the Exchange authorization update operation.
    **/
-  public MessageDeleteResponse numberOfMessagesDeleted(Integer numberOfMessagesDeleted) {
-    this.numberOfMessagesDeleted = numberOfMessagesDeleted;
+  public ExchangeUpdateResponse message(String message) {
+    this.message = message;
     return this;
   }
 
   
-  @ApiModelProperty(required = true, value = "Response message with number of messages deleted.")
-  @JsonProperty("numberOfMessagesDeleted")
+  @ApiModelProperty(required = true, value = "Response message with status of the Exchange authorization update operation.")
+  @JsonProperty("message")
   @NotNull
-  public Integer getNumberOfMessagesDeleted() {
-    return numberOfMessagesDeleted;
+  public String getMessage() {
+    return message;
   }
-  public void setNumberOfMessagesDeleted(Integer numberOfMessagesDeleted) {
-    this.numberOfMessagesDeleted = numberOfMessagesDeleted;
+  public void setMessage(String message) {
+    this.message = message;
   }
 
 
@@ -59,21 +59,21 @@ public class MessageDeleteResponse   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    MessageDeleteResponse messageDeleteResponse = (MessageDeleteResponse) o;
-    return Objects.equals(numberOfMessagesDeleted, messageDeleteResponse.numberOfMessagesDeleted);
+    ExchangeUpdateResponse exchangeUpdateResponse = (ExchangeUpdateResponse) o;
+    return Objects.equals(message, exchangeUpdateResponse.message);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(numberOfMessagesDeleted);
+    return Objects.hash(message);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class MessageDeleteResponse {\n");
+    sb.append("class ExchangeUpdateResponse {\n");
     
-    sb.append("    numberOfMessagesDeleted: ").append(toIndentedString(numberOfMessagesDeleted)).append("\n");
+    sb.append("    message: ").append(toIndentedString(message)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -22,51 +22,51 @@ package io.ballerina.messaging.broker.core.rest.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import javax.validation.Valid;
 
 
-public class Error   {
+public class QueueUpdateRequest   {
   
-  private @Valid Long code = null;
-  private @Valid String message = null;
+  private @Valid String owner = null;
+  private @Valid List<ActionUserGroupsMapping> authorizedUserGroups = new ArrayList<ActionUserGroupsMapping>();
 
   /**
+   * Owner of queue
    **/
-  public Error code(Long code) {
-    this.code = code;
+  public QueueUpdateRequest owner(String owner) {
+    this.owner = owner;
     return this;
   }
 
   
-  @ApiModelProperty(required = true, value = "")
-  @JsonProperty("code")
-  @NotNull
-  public Long getCode() {
-    return code;
+  @ApiModelProperty(value = "Owner of queue")
+  @JsonProperty("owner")
+  public String getOwner() {
+    return owner;
   }
-  public void setCode(Long code) {
-    this.code = code;
+  public void setOwner(String owner) {
+    this.owner = owner;
   }
 
   /**
-   * Error message.
+   * Queue action User groups mappings
    **/
-  public Error message(String message) {
-    this.message = message;
+  public QueueUpdateRequest authorizedUserGroups(List<ActionUserGroupsMapping> authorizedUserGroups) {
+    this.authorizedUserGroups = authorizedUserGroups;
     return this;
   }
 
   
-  @ApiModelProperty(required = true, value = "Error message.")
-  @JsonProperty("message")
-  @NotNull
-  public String getMessage() {
-    return message;
+  @ApiModelProperty(value = "Queue action User groups mappings")
+  @JsonProperty("authorizedUserGroups")
+  public List<ActionUserGroupsMapping> getAuthorizedUserGroups() {
+    return authorizedUserGroups;
   }
-  public void setMessage(String message) {
-    this.message = message;
+  public void setAuthorizedUserGroups(List<ActionUserGroupsMapping> authorizedUserGroups) {
+    this.authorizedUserGroups = authorizedUserGroups;
   }
 
 
@@ -78,23 +78,23 @@ public class Error   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Error error = (Error) o;
-    return Objects.equals(code, error.code) &&
-        Objects.equals(message, error.message);
+    QueueUpdateRequest queueUpdateRequest = (QueueUpdateRequest) o;
+    return Objects.equals(owner, queueUpdateRequest.owner) &&
+        Objects.equals(authorizedUserGroups, queueUpdateRequest.authorizedUserGroups);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(code, message);
+    return Objects.hash(owner, authorizedUserGroups);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Error {\n");
+    sb.append("class QueueUpdateRequest {\n");
     
-    sb.append("    code: ").append(toIndentedString(code)).append("\n");
-    sb.append("    message: ").append(toIndentedString(message)).append("\n");
+    sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
+    sb.append("    authorizedUserGroups: ").append(toIndentedString(authorizedUserGroups)).append("\n");
     sb.append("}");
     return sb.toString();
   }

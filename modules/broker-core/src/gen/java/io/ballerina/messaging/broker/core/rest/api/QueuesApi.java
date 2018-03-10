@@ -38,6 +38,8 @@ import io.ballerina.messaging.broker.core.rest.model.MessageDeleteResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueMetadata;
+import io.ballerina.messaging.broker.core.rest.model.QueueUpdateRequest;
+import io.ballerina.messaging.broker.core.rest.model.QueueUpdateResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -53,6 +55,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -243,5 +246,22 @@ public class QueuesApi {
     })
     public Response purgeMessages(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name) {
         return queuesApiDelegate.purgeQueue(name, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+    }
+
+    @PUT
+    @Path("/{name}")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Update authorization of a queue", notes = "Grant permission to perform given action", response = QueueUpdateResponse.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Queue authorization updated.", response = QueueUpdateResponse.class),
+            @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
+            @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
+            @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    public Response updateQueueAuthorization(@Context Request request, @PathParam("name") @ApiParam("Name of the auth resource") String name,@Valid QueueUpdateRequest body) {
+        return Response.ok().entity("magic!").build();
     }
 }
