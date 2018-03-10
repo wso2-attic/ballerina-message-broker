@@ -44,7 +44,7 @@ public interface QueueDao {
     void retrieveAll(QueueCollector queueNameCollector) throws BrokerException;
 
     /**
-     * Queue name collector interface to retrieve all the queues
+     * Queue name collector interface to retrieve all the queues.
      */
     @FunctionalInterface
     interface QueueCollector {

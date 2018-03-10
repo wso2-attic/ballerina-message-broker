@@ -38,7 +38,7 @@ import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
 /**
- * AMQP frame for connection.secure.ok
+ * AMQP frame for connection.secure.ok.
  * Parameter Summary:
  *     1. response (LongString) - security response data
  */

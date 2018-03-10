@@ -26,14 +26,14 @@ import io.ballerina.messaging.broker.core.queue.QueueBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Disruptor related place holder class
+ * Disruptor related place holder class.
  */
 public class DbOperation {
 
     private static final Factory factory = new Factory();
 
     /**
-     * Database operation types related to messages
+     * Database operation types related to messages.
      */
     public enum DbOpType {
         INSERT_MESSAGE,
@@ -54,8 +54,8 @@ public class DbOperation {
     private static final int AVAILABLE = 0;
 
     /**
-     * {@link DbOperation} can be taken from AVAILABLE state or already PROCESSED state to PROCESSING state
-     * Once in processing state no other event handler
+     * {@link DbOperation} can be taken from AVAILABLE state or already PROCESSED state to PROCESSING state.
+     * Once in processing state no other event handler.
      */
     private static final int PROCESSING = 1;
 
@@ -118,14 +118,14 @@ public class DbOperation {
     }
 
     /**
-     * Getter for bareMessage
+     * Getter for bareMessage.
      */
     public Message getBareMessage() {
         return bareMessage;
     }
 
     /**
-     * Getter for queueBuffer
+     * Getter for queueBuffer.
      */
     public QueueBuffer getQueueBuffer() {
         return queueBuffer;
@@ -161,7 +161,7 @@ public class DbOperation {
     }
 
     /**
-     * Factory class to create {@link DbOperation} objects
+     * Factory class to create {@link DbOperation} objects.
      */
     public static final class Factory implements EventFactory<DbOperation> {
 

@@ -89,7 +89,7 @@ class PlainSaslServer implements SaslServer {
     }
 
     /**
-     * Clear the credentials after handling data
+     * Clear the credentials after handling data.
      */
     private void clearCredentials() {
         if (password != null) {

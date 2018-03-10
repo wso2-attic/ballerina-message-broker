@@ -28,7 +28,7 @@ import io.netty.channel.ChannelPromise;
 import java.util.List;
 
 /**
- * Writes {@link AmqpDeliverMessage} to the outbound channel
+ * Writes {@link AmqpDeliverMessage} to the outbound channel.
  */
 public class AmqpMessageWriter extends ChannelOutboundHandlerAdapter {
 

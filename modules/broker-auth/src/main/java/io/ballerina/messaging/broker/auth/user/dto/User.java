@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Class for represent user for file based user manager
+ * Class for represent user for file based user manager.
  */
 public class User {
 

@@ -50,7 +50,7 @@ public class LocalTransaction implements BrokerTransaction {
 
     private final BranchFactory branchFactory;
 
-    public LocalTransaction(Registry registry, BranchFactory branchFactory) {
+    LocalTransaction(Registry registry, BranchFactory branchFactory) {
         this.transactionRegistry = registry;
         preConditionFailed = false;
         this.branchFactory = branchFactory;
@@ -91,7 +91,7 @@ public class LocalTransaction implements BrokerTransaction {
             return;
         }
 
-        branch.commit();
+        branch.commit(true);
         doPostCommit();
         clear();
     }
@@ -108,22 +108,17 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     @Override
-    public boolean isTransactional() {
-        return true;
-    }
-
-    @Override
     public void onClose() {
         rollback();
     }
 
     @Override
-    public void start(Xid xid, boolean join, boolean resume) throws ValidationException {
+    public void start(Xid xid, int sessionId, boolean join, boolean resume) throws ValidationException {
         throw new ValidationException("dtx.start called on local-transactional channel");
     }
 
     @Override
-    public void end(Xid xid, boolean fail, boolean suspend) throws ValidationException {
+    public void end(Xid xid, int sessionId, boolean fail, boolean suspend) throws ValidationException {
         throw new ValidationException("dtx.end called on local-transactional channel");
     }
 
@@ -158,7 +153,7 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     /**
-     * Execute post transaction action after commit
+     * Execute post transaction action after commit.
      */
     private void doPostCommit() {
         for (Action postTransactionAction : postTransactionActions) {
@@ -174,7 +169,7 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     /**
-     * Execute post transaction action after rollback
+     * Execute post transaction action after rollback.
      */
     private void doOnRollback() {
         for (Action postTransactionAction : postTransactionActions) {

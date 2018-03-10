@@ -24,7 +24,7 @@ import io.ballerina.messaging.broker.rest.auth.BasicAuthSecurityInterceptor;
 import org.wso2.msf4j.MicroservicesRunner;
 
 /**
- * {@link BrokerServiceRunner} is used to deploy exposed admin services
+ * {@link BrokerServiceRunner} is used to deploy exposed admin services.
  */
 public class BrokerServiceRunner {
 

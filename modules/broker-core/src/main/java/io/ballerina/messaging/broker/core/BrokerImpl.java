@@ -14,6 +14,7 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package io.ballerina.messaging.broker.core;
@@ -39,8 +40,8 @@ import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
 import io.ballerina.messaging.broker.core.store.MessageStore;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
 import io.ballerina.messaging.broker.core.task.TaskExecutorService;
-import io.ballerina.messaging.broker.core.transaction.BranchFactory;
 import io.ballerina.messaging.broker.core.transaction.BrokerTransactionFactory;
+import io.ballerina.messaging.broker.core.transaction.DistributedTransaction;
 import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
 import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
@@ -79,7 +80,7 @@ public final class BrokerImpl implements Broker {
     public static final String ORIGIN_ROUTING_KEY_HEADER = "x-origin-routing-key";
 
     /**
-     * Used to manage metrics related to broker
+     * Used to manage metrics related to broker.
      */
     private final BrokerMetricManager metricManager;
 
@@ -102,18 +103,13 @@ public final class BrokerImpl implements Broker {
 
     private final MessageStore messageStore;
 
-    /**
-     * In memory message id.
-     */
-    private final MessageIdGenerator messageIdGenerator;
-
     public BrokerImpl(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
         metricManager = getMetricManager(metrics);
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerCoreConfiguration configuration = configProvider.getConfigurationObject(BrokerCoreConfiguration.NAMESPACE,
-                BrokerCoreConfiguration.class);
+                                                                                      BrokerCoreConfiguration.class);
         StoreFactory storeFactory = getStoreFactory(startupContext, configProvider, configuration);
 
         exchangeRegistry = storeFactory.getExchangeRegistry();
@@ -122,11 +118,10 @@ public final class BrokerImpl implements Broker {
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
         this.deliveryTaskService = createTaskExecutorService(configuration);
-        messageIdGenerator = new MessageIdGenerator();
 
         initDefaultDeadLetterQueue();
 
-        this.brokerTransactionFactory = new BrokerTransactionFactory(new BranchFactory(this, storeFactory));
+        this.brokerTransactionFactory = new BrokerTransactionFactory(this, messageStore);
 
         startupContext.registerService(Broker.class, this);
         initRestApi(startupContext);
@@ -164,7 +159,7 @@ public final class BrokerImpl implements Broker {
         if (haStrategy == null) {
             brokerHelper = new BrokerHelper();
         } else {
-            LOGGER.info("BrokerImpl is in PASSIVE mode"); //starts up in passive mode
+            LOGGER.info("Broker is in PASSIVE mode"); //starts up in passive mode
             brokerHelper = new HaEnabledBrokerHelper();
         }
     }
@@ -270,7 +265,7 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public Set<QueueHandler> prepareEnqueue(Xid xid, Message message) throws BrokerException {
+    public Set<QueueHandler> enqueue(Xid xid, Message message) throws BrokerException {
         lock.readLock().lock();
         try {
             Metadata metadata = message.getMetadata();
@@ -296,7 +291,7 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public QueueHandler prepareDequeue(Xid xid, String queueName, Message message) throws BrokerException {
+    public QueueHandler dequeue(Xid xid, String queueName, Message message) throws BrokerException {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
@@ -502,11 +497,6 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public long getNextMessageId() {
-        return messageIdGenerator.getNextId();
-    }
-
-    @Override
     public void requeue(String queueName, Message message) throws BrokerException, ResourceNotFoundException {
         lock.readLock().lock();
         try {
@@ -547,7 +537,7 @@ public final class BrokerImpl implements Broker {
             LOGGER.debug("Moving message to DLC: {}", message);
         }
         try {
-            Message dlcMessage = message.shallowCopyWith(getNextMessageId(),
+            Message dlcMessage = message.shallowCopyWith(Broker.getNextMessageId(),
                     DEFAULT_DEAD_LETTER_QUEUE,
                     ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE);
             dlcMessage.getMetadata().addHeader(ORIGIN_QUEUE_HEADER, queueName);
@@ -600,7 +590,12 @@ public final class BrokerImpl implements Broker {
 
     @Override
     public LocalTransaction newLocalTransaction() {
-        return brokerTransactionFactory.createLocalTransaction();
+        return brokerTransactionFactory.newLocalTransaction();
+    }
+
+    @Override
+    public DistributedTransaction newDistributedTransaction() {
+        return brokerTransactionFactory.newDistributedTransaction();
     }
 
     private class BrokerHelper {
@@ -651,7 +646,7 @@ public final class BrokerImpl implements Broker {
                 LOGGER.error("Error on loading data from the database on becoming active ", e);
             }
             startMessageDeliveryOnBecomingActive();
-            LOGGER.info("BrokerImpl mode changed from PASSIVE to ACTIVE");
+            LOGGER.info("Broker mode changed from PASSIVE to ACTIVE");
         }
 
         /**
@@ -659,7 +654,7 @@ public final class BrokerImpl implements Broker {
          */
         public void deactivate() {
             stopMessageDelivery();
-            LOGGER.info("BrokerImpl mode changed from ACTIVE to PASSIVE");
+            LOGGER.info("Broker mode changed from ACTIVE to PASSIVE");
         }
 
         /**

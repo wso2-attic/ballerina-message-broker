@@ -21,12 +21,10 @@ package io.ballerina.messaging.broker.integration.util;
 
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import org.apache.http.client.methods.HttpRequestBase;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
@@ -42,9 +40,14 @@ public class ClientHelper {
             ".PropertiesFileInitialContextFactory";
 
     /**
-     * Queue connection factory name used
+     * Connection factory name used
      */
     public static final String CONNECTION_FACTORY = "ConnectionFactory";
+
+    /**
+     * XA connection factory name used.
+     */
+    public static final String XA_CONNECTION_FACTORY = "XaConnectionFactory";
 
     /**
      * Basic Authentication type
@@ -56,11 +59,6 @@ public class ClientHelper {
                                                                  String brokerHost,
                                                                  String port) {
         return new InitialContextBuilder(username, password, brokerHost, port);
-    }
-
-
-    public static String getRestApiBasePath(String brokerHost, String port) throws URISyntaxException {
-        return "http://" + brokerHost + ":" + port + BrokerAdminService.API_BASE_PATH;
     }
 
     /**
@@ -89,6 +87,7 @@ public class ClientHelper {
     public static class InitialContextBuilder {
 
         public static final String CONNECTION_FACTORY_PREFIX = "connectionfactory.";
+        public static final String XA_CONNECTION_FACTORY_PREFIX = "xaconnectionfactory.";
         private final Properties contextProperties;
         private final String username;
         private final String password;
@@ -104,6 +103,12 @@ public class ClientHelper {
             contextProperties.put(Context.INITIAL_CONTEXT_FACTORY, ANDES_INITIAL_CONTEXT_FACTORY);
             String connectionString = getBrokerConnectionString();
             contextProperties.put(CONNECTION_FACTORY_PREFIX + CONNECTION_FACTORY, connectionString);
+        }
+
+        public InitialContextBuilder withXaConnectionFactory() {
+            String connectionString = getBrokerConnectionString();
+            contextProperties.put(XA_CONNECTION_FACTORY_PREFIX + XA_CONNECTION_FACTORY, connectionString);
+            return this;
         }
 
         public InitialContextBuilder withQueue(String queueName) {

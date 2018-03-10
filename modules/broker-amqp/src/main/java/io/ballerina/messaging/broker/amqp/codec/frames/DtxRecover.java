@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP frame for dtx.recover
+ * AMQP frame for dtx.recover.
  */
 public class DtxRecover extends MethodFrame {
 

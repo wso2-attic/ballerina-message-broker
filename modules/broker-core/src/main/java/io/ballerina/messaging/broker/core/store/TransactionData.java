@@ -37,16 +37,21 @@ public class TransactionData {
 
     private final Map<Long, Message> enqueueMessages;
 
-    private final Map<String, List<Long>> detachMessageMap;
+    private final Map<String, QueueDetachEventList> detachMessageMap;
+
+    private final Map<String, List<Message>> preparedDetachEventMap;
 
     private final List<Long> deleteMessageIdList;
 
     private int detachOperationsCount;
 
-    public TransactionData() {
+    private int preparedDetachEventCount;
+
+    TransactionData() {
         enqueueMessages = new HashMap<>();
         detachMessageMap = new HashMap<>();
         deleteMessageIdList = new ArrayList<>();
+        preparedDetachEventMap = new HashMap<>();
         detachOperationsCount = 0;
     }
 
@@ -57,13 +62,19 @@ public class TransactionData {
 
     public void attach(String queueName, long messageInternalId) {
         Message message = enqueueMessages.get(messageInternalId);
-        message.addOwnedQueue(queueName);
+        message.addAttachedDurableQueue(queueName);
     }
 
     public void detach(String queueName, long internalMessageId) {
-        List<Long> detachList = detachMessageMap.computeIfAbsent(queueName, k -> new ArrayList<>());
+        QueueDetachEventList detachList = detachMessageMap.computeIfAbsent(queueName, k -> new QueueDetachEventList());
         detachList.add(internalMessageId);
         detachOperationsCount++;
+    }
+
+    public void prepareForDetach(String queueName, Message message) {
+        List<Message> preparedDetachList = preparedDetachEventMap.computeIfAbsent(queueName, k -> new ArrayList<>());
+        preparedDetachList.add(message);
+        preparedDetachEventCount++;
     }
 
     public void addDeletableMessage(long internalMessageId) {
@@ -74,8 +85,12 @@ public class TransactionData {
         return enqueueMessages.values();
     }
 
-    public Map<String, List<Long>> getDetachMessageMap() {
+    public Map<String, QueueDetachEventList> getDetachMessageMap() {
         return detachMessageMap;
+    }
+
+    public Map<String, List<Message>> getPreparedDetachEventMap() {
+        return preparedDetachEventMap;
     }
 
     public Collection<Long> getDeletableMessage() {
@@ -86,7 +101,9 @@ public class TransactionData {
         enqueueMessages.clear();
         deleteMessageIdList.clear();
         detachMessageMap.clear();
+        preparedDetachEventMap.clear();
         detachOperationsCount = 0;
+        preparedDetachEventCount = 0;
     }
 
     public void releaseEnqueueMessages() {
@@ -97,10 +114,12 @@ public class TransactionData {
     }
 
     public boolean isEmpty() {
-        return deleteMessageIdList.isEmpty() && enqueueMessages.isEmpty() && detachMessageMap.isEmpty();
+        return deleteMessageIdList.isEmpty() && enqueueMessages.isEmpty() &&
+                detachMessageMap.isEmpty() && preparedDetachEventMap.isEmpty();
     }
 
     public int size() {
-        return detachOperationsCount + enqueueMessages.size() + deleteMessageIdList.size();
+        return detachOperationsCount + preparedDetachEventCount + enqueueMessages.size() + deleteMessageIdList.size();
     }
+
 }

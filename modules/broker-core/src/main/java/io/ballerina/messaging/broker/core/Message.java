@@ -95,19 +95,19 @@ public class Message {
         contentChunks.stream().map(ContentChunk::shallowCopy).forEach(message::addChunk);
     }
 
-    public void addOwnedQueue(String queueName) {
+    public void addAttachedDurableQueue(String queueName) {
         queueSet.add(queueName);
     }
 
-    public boolean hasAttachedQueues() {
+    public boolean hasAttachedDurableQueues() {
         return !queueSet.isEmpty();
     }
 
-    public void removeAttachedQueue(String queueName) {
+    public void removeAttachedDurableQueue(String queueName) {
         queueSet.remove(queueName);
     }
 
-    public Collection<String> getAttachedQueues() {
+    public Collection<String> getAttachedDurableQueues() {
         return queueSet;
     }
 
@@ -116,7 +116,7 @@ public class Message {
     }
 
     /**
-     * Set redelivery flag
+     * Set redelivery flag.
      */
     public int setRedeliver() {
         redelivered = true;
@@ -124,14 +124,14 @@ public class Message {
     }
 
     /**
-     * Getter for redeliveryCount
+     * Getter for redeliveryCount.
      */
     public int getRedeliveryCount() {
         return redeliveryCount;
     }
 
     /**
-     * Check if redelivery flag is set
+     * Check if redelivery flag is set.
      */
     public boolean isRedelivered() {
         return redelivered;

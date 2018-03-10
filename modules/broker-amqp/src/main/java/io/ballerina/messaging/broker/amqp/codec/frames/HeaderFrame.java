@@ -34,7 +34,7 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.HashMap;
 
 /**
- * AMQP header frame
+ * AMQP header frame.
  */
 public class HeaderFrame extends GeneralFrame {
 

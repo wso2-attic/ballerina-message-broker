@@ -23,11 +23,7 @@ import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.transaction.xa.Xid;
 
 /**
@@ -36,8 +32,6 @@ import javax.transaction.xa.Xid;
  */
 public class AutoCommitTransaction implements BrokerTransaction {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AutoCommitTransaction.class);
-    private final List<Action> postTransactionActions = new ArrayList<>();
     private final Broker broker;
 
     public AutoCommitTransaction(Broker broker) {
@@ -66,12 +60,7 @@ public class AutoCommitTransaction implements BrokerTransaction {
 
     @Override
     public void addPostTransactionAction(Action postTransactionAction) {
-        postTransactionActions.add(postTransactionAction);
-    }
-
-    @Override
-    public boolean isTransactional() {
-        return false;
+        // ignore
     }
 
     @Override
@@ -80,12 +69,12 @@ public class AutoCommitTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void start(Xid xid, boolean join, boolean resume) throws ValidationException {
+    public void start(Xid xid, int sessionId, boolean join, boolean resume) throws ValidationException {
         throw new ValidationException("dtx.start called on non-transactional channel");
     }
 
     @Override
-    public void end(Xid xid, boolean fail, boolean suspend) throws ValidationException {
+    public void end(Xid xid, int sessionId, boolean fail, boolean suspend) throws ValidationException {
         throw new ValidationException("dtx.end called on non-transactional channel");
     }
 

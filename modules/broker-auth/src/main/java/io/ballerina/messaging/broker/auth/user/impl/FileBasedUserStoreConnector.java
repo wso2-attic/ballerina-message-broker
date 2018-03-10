@@ -50,7 +50,7 @@ public class FileBasedUserStoreConnector implements UserStoreConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedUserStoreConnector.class);
 
     /**
-     * Store the map of userRegistry
+     * Store the map of userRegistry.
      */
     private static Map<String, User> userRegistry = new ConcurrentHashMap<>();
 

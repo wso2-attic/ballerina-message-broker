@@ -25,7 +25,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP frame for connection.open
+ * AMQP frame for connection.open.
  * Parameter Summary:
  *     1. virtual­host (path) - virtual host name
  *     2. reserved-1 (byte) - deprecated param

@@ -56,7 +56,7 @@ public class MemQueueImpl extends Queue {
     }
 
     /**
-     * Create an unbounded in memory queue
+     * Create an unbounded in memory queue.
      *
      * @param name       name of the queue
      * @param autoDelete auto delete capability

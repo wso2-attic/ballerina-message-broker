@@ -27,6 +27,7 @@ import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
+import io.ballerina.messaging.broker.core.transaction.DistributedTransaction;
 import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
 
 import java.util.Collection;
@@ -62,13 +63,13 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public Set<QueueHandler> prepareEnqueue(Xid xid, Message message) throws BrokerException {
-        return broker.prepareEnqueue(xid, message);
+    public Set<QueueHandler> enqueue(Xid xid, Message message) throws BrokerException {
+        return broker.enqueue(xid, message);
     }
 
     @Override
-    public QueueHandler prepareDequeue(Xid xid, String queueName, Message message) throws BrokerException {
-        return broker.prepareDequeue(xid, queueName, message);
+    public QueueHandler dequeue(Xid xid, String queueName, Message message) throws BrokerException {
+        return broker.dequeue(xid, queueName, message);
     }
 
     @Override
@@ -150,11 +151,6 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public long getNextMessageId() {
-        return broker.getNextMessageId();
-    }
-
-    @Override
     public void requeue(String queueName, Message message) throws BrokerException, ResourceNotFoundException {
         broker.requeue(queueName, message);
     }
@@ -192,5 +188,10 @@ public class SecureBrokerImpl implements Broker {
     @Override
     public LocalTransaction newLocalTransaction() {
         return broker.newLocalTransaction();
+    }
+
+    @Override
+    public DistributedTransaction newDistributedTransaction() {
+        return broker.newDistributedTransaction();
     }
 }

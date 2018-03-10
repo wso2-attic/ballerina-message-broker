@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AMQP frame for tx.commit
+ * AMQP frame for tx.commit.
  */
 public class TxCommit extends MethodFrame {
 

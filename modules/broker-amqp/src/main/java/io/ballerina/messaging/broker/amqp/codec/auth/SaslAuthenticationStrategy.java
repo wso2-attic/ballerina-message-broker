@@ -35,7 +35,7 @@ import javax.security.sasl.SaslServer;
 
 /**
  * Sasl based Authentication strategy which implements @{@link AuthenticationStrategy} to support sasl mechanisms based
- * authentication to broker client connections
+ * authentication to broker client connections.
  */
 public class SaslAuthenticationStrategy implements AuthenticationStrategy {
 

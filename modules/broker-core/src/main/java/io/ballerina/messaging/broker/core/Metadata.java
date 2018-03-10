@@ -23,6 +23,8 @@ import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.FieldValue;
 import io.ballerina.messaging.broker.common.data.types.ShortShortInt;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,5 +151,15 @@ public class Metadata {
 
     public void addHeader(String name, String value) {
         headers.add(ShortString.parseString(name), FieldValue.parseLongString(value));
+    }
+
+    public byte[] getBytes() {
+        long size = properties.getSize() + headers.getSize();
+        byte[] bytes = new byte[(int) size];
+        ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
+        buffer.resetWriterIndex();
+        properties.write(buffer);
+        headers.write(buffer);
+        return bytes;
     }
 }

@@ -23,6 +23,7 @@ import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
+import io.ballerina.messaging.broker.core.transaction.DistributedTransaction;
 import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
 
 import java.util.Collection;
@@ -34,6 +35,11 @@ import javax.transaction.xa.Xid;
  * Interface represents broker APIs
  */
 public interface Broker {
+
+    /**
+     * In memory message id.
+     */
+    UniqueIdGenerator MESSAGE_ID_GENERATOR = new UniqueIdGenerator();
 
     /**
      * Publish message to queue(s).
@@ -60,7 +66,7 @@ public interface Broker {
      * @return set of subscriptions of the queue
      * @throws BrokerException if message enqueue to unknown exchange
      */
-    Set<QueueHandler> prepareEnqueue(Xid xid, Message message) throws BrokerException;
+    Set<QueueHandler> enqueue(Xid xid, Message message) throws BrokerException;
 
     /**
      * Preparing transaction to dequeue messages
@@ -71,7 +77,7 @@ public interface Broker {
      * @return subscription of the queue
      * @throws BrokerException if  an internal error occurred
      */
-    QueueHandler prepareDequeue(Xid xid, String queueName, Message message) throws BrokerException;
+    QueueHandler dequeue(Xid xid, String queueName, Message message) throws BrokerException;
 
     /**
      * Adds a consumer for a queue. Queue will be the queue returned from {@link Consumer#getQueueName()}
@@ -213,7 +219,9 @@ public interface Broker {
      *
      * @return a message id
      */
-    long getNextMessageId();
+    static long getNextMessageId() {
+        return MESSAGE_ID_GENERATOR.getNextId();
+    }
 
     /**
      * Requeue a given message
@@ -275,4 +283,11 @@ public interface Broker {
      * @return local transactional object
      */
     LocalTransaction newLocalTransaction();
+
+    /**
+     * Start distributed transaction flow.
+     *
+     * @return a new DistributedTransaction object
+     */
+    DistributedTransaction newDistributedTransaction();
 }

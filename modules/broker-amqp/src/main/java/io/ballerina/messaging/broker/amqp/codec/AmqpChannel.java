@@ -52,6 +52,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.transaction.xa.Xid;
 
 /**
  * AMQP channel representation.
@@ -77,6 +78,7 @@ public class AmqpChannel {
     private final Broker broker;
 
     private final int channelId;
+
     private final AmqpMetricManager metricManager;
 
     private final Map<ShortString, AmqpConsumer> consumerMap;
@@ -123,12 +125,12 @@ public class AmqpChannel {
     private final TraceField traceChannelIdField;
 
     /**
-     * Represent the underlying transaction implementation
+     * Represent the underlying transaction implementation.
      */
     private BrokerTransaction transaction;
 
     /**
-     * Max window size
+     * Max window size.
      */
     private int prefetchCount;
 
@@ -141,7 +143,7 @@ public class AmqpChannel {
         this.metricManager = metricManager;
         this.consumerMap = new HashMap<>();
         this.transaction = new AutoCommitTransaction(broker);
-        this.messageAggregator = new InMemoryMessageAggregator(broker, transaction);
+        this.messageAggregator = new InMemoryMessageAggregator(transaction);
         this.flowManager = new ChannelFlowManager(this,
                                                   configuration.getChannelFlow().getLowLimit(),
                                                   configuration.getChannelFlow().getHighLimit());
@@ -245,7 +247,7 @@ public class AmqpChannel {
         }
         if (ackData != null) {
             transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
-            if (!transaction.isTransactional()) {
+            if (isNonTransactional()) {
                 ackData = unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
                 ackData.getMessage().release();
             }
@@ -348,7 +350,7 @@ public class AmqpChannel {
     }
 
     /**
-     * Indicate if the channel is closed by client
+     * Indicate if the channel is closed by client.
      * @return true if channel is closed, false otherwise
      */
     public boolean isClosed() {
@@ -356,7 +358,7 @@ public class AmqpChannel {
     }
 
     /**
-     * Indicate if client enforced flow control is enabled
+     * Indicate if client enforced flow control is enabled.
      *
      * @return true if flow is enabled. false otherwise
      */
@@ -365,7 +367,7 @@ public class AmqpChannel {
     }
 
     /**
-     * Getter for flowManager
+     * Getter for flowManager.
      */
     public ChannelFlowManager getFlowManager() {
         return flowManager;
@@ -390,7 +392,7 @@ public class AmqpChannel {
     }
 
     /**
-     * Start local transaction on the channel
+     * Start local transaction on the channel.
      */
     public void setLocalTransactional() {
         transaction = broker.newLocalTransaction();
@@ -398,17 +400,22 @@ public class AmqpChannel {
     }
 
     /**
-     * Start distributed transaction on the channel
+     * Start distributed transaction on the channel.
      */
     public void setDistributedTransactional() {
-
+        transaction = broker.newDistributedTransaction();
+        messageAggregator.setTransaction(transaction);
     }
 
     /**
-     * Commit the transaction on the channel
+     * Commit the transaction on the channel.
      */
     public void commit() throws ValidationException, BrokerException {
         transaction.commit();
+        releasePendingAcknowledgements();
+    }
+
+    private void releasePendingAcknowledgements() {
         Collection<AckData> acknowledgments = unackedMessageMap.removeMarkedAcknowledgments();
         for (AckData ackData: acknowledgments) {
             ackData.getMessage().release();
@@ -416,7 +423,7 @@ public class AmqpChannel {
     }
 
     /**
-     * Rollback the transaction on the channel
+     * Rollback the transaction on the channel.
      */
     public void rollback() throws ValidationException {
         transaction.rollback();
@@ -424,12 +431,34 @@ public class AmqpChannel {
     }
 
     /**
-     * Check whether the channel start local transaction
+     * Check whether the channel is in a transaction mode.
      *
-     * @return transaction started or not
+     * @return transaction started or not. True if not in a transaction false otherwise
      */
-    public boolean isTransactional () {
-        return transaction.isTransactional();
+    public boolean isNonTransactional() {
+        return transaction instanceof AutoCommitTransaction;
+    }
+
+    public void startDtx(Xid xid, boolean join, boolean resume) throws ValidationException {
+        transaction.start(xid, channelId, join, resume);
+    }
+
+    public void endDtx(Xid xid, boolean fail, boolean suspend) throws ValidationException {
+        transaction.end(xid, channelId,  fail, suspend);
+    }
+
+    public void prepare(Xid xid) throws BrokerException, ValidationException {
+        transaction.prepare(xid);
+    }
+
+    public void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException {
+        transaction.commit(xid, onePhase);
+        releasePendingAcknowledgements();
+    }
+
+    public void rollback(Xid xid) throws ValidationException, BrokerException {
+        transaction.rollback(xid);
+        unackedMessageMap.resetMarkedAcknowledgments();
     }
 
     /**
@@ -439,7 +468,7 @@ public class AmqpChannel {
     private class UnackedMessageMap {
 
         /**
-         * Acknowledgment pending messages
+         * Acknowledgment pending messages.
          */
         private final Map<Long, AckData> pendingAcknowledgments = new LinkedHashMap<>();
 
@@ -449,7 +478,7 @@ public class AmqpChannel {
         private final Map<Long, AckData> markedAcknowledgments = new LinkedHashMap<>();
 
         /**
-         * Mark the specific delivery tag as acknowledgment received and return the specific {@link AckData} object
+         * Mark the specific delivery tag as acknowledgment received and return the specific {@link AckData} object.
          *
          * @param deliveryTag delivery tag of the acknowledged message delivery
          * @return AckData object for the corresponding delivery tag

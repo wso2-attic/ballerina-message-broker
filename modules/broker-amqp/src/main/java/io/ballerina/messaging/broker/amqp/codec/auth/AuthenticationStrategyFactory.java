@@ -21,7 +21,7 @@ package io.ballerina.messaging.broker.amqp.codec.auth;
 import io.ballerina.messaging.broker.auth.AuthManager;
 
 /**
- * Factory Class for provide @{@link AuthenticationStrategy} based on given @{@link AuthManager}
+ * Factory Class for provide @{@link AuthenticationStrategy} based on given @{@link AuthManager}.
  */
 public class AuthenticationStrategyFactory {
 

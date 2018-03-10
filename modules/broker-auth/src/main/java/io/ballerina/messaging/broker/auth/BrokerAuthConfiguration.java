@@ -55,7 +55,7 @@ public class BrokerAuthConfiguration {
     }
 
     /**
-     * Represents authentication configuration for broker
+     * Represents authentication configuration for broker.
      */
     public static class AuthenticationConfiguration {
 
@@ -117,7 +117,7 @@ public class BrokerAuthConfiguration {
     }
 
     /**
-     * Represents authenticator configuration for broker
+     * Represents authenticator configuration for broker.
      */
     public static class AuthenticatorConfiguration {
 

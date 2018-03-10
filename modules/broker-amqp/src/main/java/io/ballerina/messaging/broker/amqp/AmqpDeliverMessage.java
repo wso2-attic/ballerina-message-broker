@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AMQP delivery message which consists of the basic.deliver, ContentHeader and ContentBody frames
+ * AMQP delivery message which consists of the basic.deliver, ContentHeader and ContentBody frames.
  */
 public class AmqpDeliverMessage {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpDeliverMessage.class);
@@ -109,8 +109,8 @@ public class AmqpDeliverMessage {
             ctx.write(headerFrame);
             for (ContentChunk chunk : message.getContentChunks()) {
                 ContentFrame contentFrame = new ContentFrame(channel.getChannelId(),
-                                                             chunk.getBytes().capacity(),
-                                                             chunk.getBytes());
+                                                             chunk.getByteBuf().capacity(),
+                                                             chunk.getByteBuf());
                 ctx.write(contentFrame);
             }
 

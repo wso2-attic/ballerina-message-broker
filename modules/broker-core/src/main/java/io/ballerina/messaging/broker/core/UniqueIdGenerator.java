@@ -22,9 +22,9 @@ package io.ballerina.messaging.broker.core;
 import java.util.UUID;
 
 /**
- * Unique message id generator class
+ * Unique message id generator class.
  */
-public class MessageIdGenerator {
+public class UniqueIdGenerator {
 
     private static final long REFERENCE_START = 41L * 365L * 24L * 60L * 60L * 1000L; //this is 2011
 

@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.core.metrics;
 import org.wso2.carbon.metrics.core.Timer.Context;
 
 /**
- * BrokerMetricManager handles all the metrics related to Broker class
+ * BrokerMetricManager handles all the metrics related to Broker class.
  */
 public interface BrokerMetricManager {
     void markPublish();

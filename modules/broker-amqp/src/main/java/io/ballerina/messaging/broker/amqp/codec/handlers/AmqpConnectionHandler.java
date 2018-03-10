@@ -138,7 +138,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Returns the {@link Broker} for the amq connection
+     * Returns the {@link Broker} for the amq connection.
      *
      * @return Broker
      */
@@ -151,7 +151,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Returns the @{@link AmqpServerConfiguration} for the amq connection
+     * Returns the @{@link AmqpServerConfiguration} for the amq connection.
      *
      * @return Configuration
      */

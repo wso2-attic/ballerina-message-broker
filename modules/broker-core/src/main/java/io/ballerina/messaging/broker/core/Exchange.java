@@ -32,7 +32,7 @@ import java.util.Objects;
 public abstract class Exchange {
 
     /**
-     * Supported exchange types by the broker
+     * Supported exchange types by the broker.
      */
     public enum Type {
         DIRECT("direct"),

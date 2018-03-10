@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AMQP frame for channel.close-ok
+ * AMQP frame for channel.close-ok.
  * Parameter Summary:
  *     No parameters
  */

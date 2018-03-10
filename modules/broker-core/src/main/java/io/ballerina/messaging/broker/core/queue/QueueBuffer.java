@@ -81,7 +81,7 @@ public class QueueBuffer {
     private Node last;
 
     /**
-     * Used to fast lookup the node for a message ID
+     * Used to fast lookup the node for a message ID.
      */
     private Map<Long, Node> keyMap = new ConcurrentHashMap<>();
 

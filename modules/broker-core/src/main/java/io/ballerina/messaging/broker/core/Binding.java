@@ -29,7 +29,7 @@ import io.ballerina.messaging.broker.core.selector.generated.MessageFilter;
 import java.util.Objects;
 
 /**
- * Represents an binding object which binds a {@link Queue} to a given {@link Exchange}
+ * Represents an binding object which binds a {@link Queue} to a given {@link Exchange}.
  */
 public final class Binding {
 
