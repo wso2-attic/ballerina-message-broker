@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP frame for tx.rollback-ok
+ * AMQP frame for tx.rollback-ok.
  */
 public class TxRollbackOk extends MethodFrame {
 

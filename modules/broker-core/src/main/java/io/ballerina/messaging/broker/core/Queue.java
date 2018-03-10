@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.core;
 import javax.transaction.xa.Xid;
 
 /**
- * Abstract class to represent an underlying queue for the broker
+ * Abstract class to represent an underlying queue for the broker.
  */
 public abstract class Queue {
 

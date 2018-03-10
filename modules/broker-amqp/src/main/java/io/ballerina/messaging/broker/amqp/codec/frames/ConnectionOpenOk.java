@@ -24,7 +24,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP frame for connection.open-ok
+ * AMQP frame for connection.open-ok.
  * Parameter Summary:
  *     1. reserved-1 (ShortString) - deprecated param
  */

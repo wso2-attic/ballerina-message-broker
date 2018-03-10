@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AMQP frame for basic.recovery-ok
+ * AMQP frame for basic.recovery-ok.
  * Parameter Summary:
  *     No parameters
  */

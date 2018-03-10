@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.client.utils;
 
 /**
- * Constants of the Broker CLI Client
+ * Constants of the Broker CLI Client.
  */
 public class Constants {
 

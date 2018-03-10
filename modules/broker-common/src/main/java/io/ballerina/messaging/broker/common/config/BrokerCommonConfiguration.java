@@ -24,7 +24,7 @@ package io.ballerina.messaging.broker.common.config;
  */
 public class BrokerCommonConfiguration {
     /**
-     * Namespace used in config file
+     * Namespace used in config file.
      */
     public static final String NAMESPACE = "ballerina.broker";
 
@@ -33,7 +33,7 @@ public class BrokerCommonConfiguration {
     private DataSourceConfiguration dataSource;
 
     /**
-     * Getter for enableInMemoryMode
+     * Getter for enableInMemoryMode.
      */
     public boolean getEnableInMemoryMode() {
         return enableInMemoryMode;

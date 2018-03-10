@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AMQP frame for channel.flow-ok
+ * AMQP frame for channel.flow-ok.
  * Parameter Summary:
  *     1.active (bit) - current flow setting
  */

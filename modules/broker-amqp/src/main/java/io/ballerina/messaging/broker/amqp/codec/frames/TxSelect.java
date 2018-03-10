@@ -26,7 +26,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * AMQP frame for tx.select
+ * AMQP frame for tx.select.
  */
 public class TxSelect extends MethodFrame {
 

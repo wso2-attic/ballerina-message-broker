@@ -27,7 +27,7 @@ import java.util.Collections;
 import javax.transaction.xa.Xid;
 
 /**
- * Null message store object used to avoid calling the database access layer
+ * Null message store object used to avoid calling the database access layer.
  */
 public class NullMessageStore extends MessageStore {
 

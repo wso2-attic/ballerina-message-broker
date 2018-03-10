@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Disruptor exception handler
+ * Disruptor exception handler.
  */
 public class LogExceptionHandler implements ExceptionHandler<DbOperation> {
 

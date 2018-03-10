@@ -118,10 +118,10 @@ public class Main {
     /**
      * Loads configurations during the broker start up.
      * method will try to <br/>
-     *  (1) Load the configuration file specified in 'broker.file' (e.g. -Dbroker.file=<FilePath>). <br/>
+     *  (1) Load the configuration file specified in 'broker.file' (e.g. -Dbroker.file={FilePath}). <br/>
      *  (2) If -Dbroker.file is not specified, the broker.yaml file exists in current directory and load it. <br/>
      *
-     *  <b>Note: </b> if provided configuration file cannot be read broker will not start.
+     * <b>Note: </b> if provided configuration file cannot be read broker will not start.
      * @param startupContext startup context of the broker
      */
     private static void initConfigProvider(StartupContext startupContext) throws ConfigurationException {

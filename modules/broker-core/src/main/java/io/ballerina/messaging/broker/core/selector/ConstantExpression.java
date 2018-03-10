@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.core.selector;
 import java.math.BigDecimal;
 
 /**
- * Represents a constant value in an expression
+ * Represents a constant value in an expression.
  */
 public class ConstantExpression implements Expression<Object> {
 

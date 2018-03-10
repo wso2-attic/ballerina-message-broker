@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.core;
 import java.util.UUID;
 
 /**
- * Unique message id generator class
+ * Unique message id generator class.
  */
 public class UniqueIdGenerator {
 

@@ -51,7 +51,7 @@ public class AckData {
     }
 
     /**
-     * Getter for consumerTag
+     * Getter for consumerTag.
      */
     public ShortString getConsumerTag() {
         return consumerTag;

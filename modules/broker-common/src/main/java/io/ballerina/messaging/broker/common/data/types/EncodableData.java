@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.common.data.types;
 import io.netty.buffer.ByteBuf;
 
 /**
- *
+ * The interface representing encodable data.
  */
 public interface EncodableData {
 

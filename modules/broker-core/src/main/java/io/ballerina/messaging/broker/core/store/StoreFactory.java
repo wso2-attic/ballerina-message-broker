@@ -29,21 +29,21 @@ import io.ballerina.messaging.broker.core.QueueRegistry;
 public interface StoreFactory {
 
     /**
-     * Create exchange registry
+     * Create exchange registry.
      *
      * @return ExchangeRegistry object
      */
     ExchangeRegistry getExchangeRegistry();
 
     /**
-     * Create message registry
+     * Create message registry.
      *
      * @return SharedMessageStore object
      */
     MessageStore getMessageStore();
 
     /**
-     * Create queue registry
+     * Create queue registry.
      *
      * @return QueueRegistry object
      */
