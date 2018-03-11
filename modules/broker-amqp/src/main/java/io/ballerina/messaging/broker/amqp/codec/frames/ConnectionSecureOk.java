@@ -80,7 +80,7 @@ public class ConnectionSecureOk extends MethodFrame {
                         ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
                         Subject subject = new Subject();
                         subject.getPrincipals().add(new UsernamePrincipal(saslServer.getAuthorizationID()));
-                        connectionHandler.secureBroker(subject);
+                        connectionHandler.attachBroker(subject);
                     } else {
                         ctx.channel().attr(AttributeKey.valueOf(SaslAuthenticationStrategy.SASL_SERVER_ATTRIBUTE))
                             .set(null);

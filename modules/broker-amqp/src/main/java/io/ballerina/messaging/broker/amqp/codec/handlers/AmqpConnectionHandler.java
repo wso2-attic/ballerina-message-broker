@@ -146,7 +146,12 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         return broker;
     }
 
-    public void secureBroker(Subject subject) {
+    /**
+     * Attach relevant broker implementation to the amq connection.
+     *
+     * @param subject an entity with {@link io.ballerina.messaging.broker.auth.UsernamePrincipal}
+     */
+    public void attachBroker(Subject subject) {
         broker = brokerFactory.getBroker(subject);
     }
 
