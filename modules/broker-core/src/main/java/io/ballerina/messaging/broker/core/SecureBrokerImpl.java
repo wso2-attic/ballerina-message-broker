@@ -19,9 +19,9 @@
 package io.ballerina.messaging.broker.core;
 
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
-import io.ballerina.messaging.broker.auth.authorization.enums.ResourceActions;
-import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScopes;
-import io.ballerina.messaging.broker.auth.authorization.enums.ResourceTypes;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -109,10 +109,10 @@ public class SecureBrokerImpl implements Broker {
     @Override
     public boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
             throws BrokerException, ValidationException, BrokerAuthException {
-        authHandler.handle(ResourceAuthScopes.QUEUES_CREATE, subject);
+        authHandler.handle(ResourceAuthScope.QUEUES_CREATE, subject);
         boolean succeed = broker.createQueue(queueName, passive, durable, autoDelete);
         if (succeed) {
-            authHandler.createAuthResource(ResourceTypes.QUEUE, queueName, durable, subject);
+            authHandler.createAuthResource(ResourceType.QUEUE, queueName, durable, subject);
         }
         return succeed;
     }
@@ -120,8 +120,8 @@ public class SecureBrokerImpl implements Broker {
     @Override
     public int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException,
             ValidationException, ResourceNotFoundException, BrokerAuthException {
-        authHandler.handle(ResourceTypes.QUEUE, queueName, ResourceActions.DELETE, subject);
-        authHandler.deleteAuthResource(ResourceTypes.QUEUE, queueName);
+        authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.DELETE, subject);
+        authHandler.deleteAuthResource(ResourceType.QUEUE, queueName);
         return broker.deleteQueue(queueName, ifUnused, ifEmpty);
     }
 

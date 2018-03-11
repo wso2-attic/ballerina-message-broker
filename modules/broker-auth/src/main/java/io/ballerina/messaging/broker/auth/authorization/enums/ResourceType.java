@@ -19,20 +19,15 @@
 package io.ballerina.messaging.broker.auth.authorization.enums;
 
 /**
- * Enum used to represent resource auth scopes.
+ * Enum used to represent broker resource types.
  */
-public enum ResourceAuthScopes {
+public enum ResourceType {
 
-    EXCHANGES_CREATE("exchanges:create"),
-    EXCHANGES_DELETE("exchanges:delete"),
-    QUEUES_CREATE("queues:create"),
-    QUEUES_DELETE("queues:delete"),
-    SCOPES_UPDATE("scopes:update"),
-    SCOPES_GET("scopes:get");
+    EXCHANGE("exchange"), QUEUE("queue");
 
     private String name;
 
-    ResourceAuthScopes(String name) {
+    ResourceType(String name) {
         this.name = name;
     }
 
@@ -40,5 +35,4 @@ public enum ResourceAuthScopes {
     public String toString() {
         return name;
     }
-
 }

@@ -111,23 +111,23 @@ public class QueueDeclare extends MethodFrame {
                 ctx.writeAndFlush(new QueueDeclareOk(getChannel(), queue, 0, 0));
             } catch (ValidationException e) {
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
-                        ChannelException.PRECONDITION_FAILED,
-                        ShortString.parseString(e.getMessage()),
-                        CLASS_ID,
-                        METHOD_ID));
+                                                   ChannelException.PRECONDITION_FAILED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
             } catch (BrokerException e) {
                 LOGGER.warn("Error declaring queue.", e);
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
-                        ChannelException.NOT_ALLOWED,
-                        ShortString.parseString(e.getMessage()),
-                        CLASS_ID,
-                        METHOD_ID));
+                                                   ChannelException.NOT_ALLOWED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
             } catch (BrokerAuthException e) {
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
-                        ChannelException.ACCESS_REFUSED,
-                        ShortString.parseString(e.getMessage()),
-                        CLASS_ID,
-                        METHOD_ID));
+                                                   ChannelException.ACCESS_REFUSED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
             }
         });
     }

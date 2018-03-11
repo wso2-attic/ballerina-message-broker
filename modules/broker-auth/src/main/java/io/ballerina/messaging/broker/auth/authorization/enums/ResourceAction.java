@@ -21,7 +21,7 @@ package io.ballerina.messaging.broker.auth.authorization.enums;
 /**
  * Enum used to represent resource actions.
  */
-public enum ResourceActions {
+public enum ResourceAction {
 
     UPDATE("update"),
     DELETE("delete"),
@@ -33,7 +33,7 @@ public enum ResourceActions {
 
     private String name;
 
-    ResourceActions(String name) {
+    ResourceAction(String name) {
         this.name = name;
     }
 
