@@ -35,17 +35,15 @@ public class AuthorizerFactory {
     /**
      * Provides an instance of @{@link Authorizer}
      *
-     * @param authProvider              an authProvider to retrieve authorize information for user.
      * @param commonConfiguration     common Configuration
      * @param startupContext          the startup context provides registered services for authenticator functionality.
      * @param brokerAuthConfiguration the auth configuration
      * @return authProvider for given configuration
      * @throws Exception throws if error occurred while providing new instance of authProvider
      */
-    public Authorizer getAutStore(AuthProvider authProvider,
-                                  BrokerCommonConfiguration commonConfiguration,
-                                  BrokerAuthConfiguration brokerAuthConfiguration,
-                                  StartupContext startupContext) throws Exception {
+    public Authorizer getAuthorizer(BrokerCommonConfiguration commonConfiguration,
+                                    BrokerAuthConfiguration brokerAuthConfiguration,
+                                    StartupContext startupContext) throws Exception {
 
         if (!commonConfiguration.getEnableInMemoryMode() &&
                 brokerAuthConfiguration.getAuthentication().isEnabled() &&
@@ -59,8 +57,7 @@ public class AuthorizerFactory {
 
             Authorizer authorizer = (Authorizer) ClassLoader.getSystemClassLoader()
                                                               .loadClass(authorizerClassName).newInstance();
-            authorizer.initialize(authProvider,
-                                  startupContext,
+            authorizer.initialize(startupContext,
                                   brokerAuthConfiguration.getAuthorization()
                                                         .getAuthorizer()
                                                         .getProperties());

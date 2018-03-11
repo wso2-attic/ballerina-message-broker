@@ -23,8 +23,6 @@ import io.ballerina.messaging.broker.auth.authentication.AuthenticatorFactory;
 import io.ballerina.messaging.broker.auth.authentication.sasl.BrokerSecurityProvider;
 import io.ballerina.messaging.broker.auth.authentication.sasl.SaslServerBuilder;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.PlainSaslServerBuilder;
-import io.ballerina.messaging.broker.auth.authorization.AuthProvider;
-import io.ballerina.messaging.broker.auth.authorization.AuthProviderFactory;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizerFactory;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -77,11 +75,7 @@ public class AuthManager {
         startupContext.registerService(AuthManager.class, this);
         authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
                                                                     brokerAuthConfiguration.getAuthentication());
-        AuthProvider authProvider = new AuthProviderFactory().getAuthorizer(commonConfigs,
-                                                                            brokerAuthConfiguration,
-                                                                            startupContext);
-        authorizer = new AuthorizerFactory().getAutStore(authProvider, commonConfigs,
-                                                         brokerAuthConfiguration, startupContext);
+        authorizer = new AuthorizerFactory().getAuthorizer(commonConfigs, brokerAuthConfiguration, startupContext);
     }
 
     public void start() {

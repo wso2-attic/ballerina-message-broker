@@ -68,6 +68,7 @@ ballerina.broker.auth:
    # Authorizer implementation
    className: io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer
    properties:
+    userStore: io.ballerina.messaging.broker.auth.authorization.provider.UserStoreAuthProvider
   cache:
    # Cache timeout in Minutes
    timeout: 15

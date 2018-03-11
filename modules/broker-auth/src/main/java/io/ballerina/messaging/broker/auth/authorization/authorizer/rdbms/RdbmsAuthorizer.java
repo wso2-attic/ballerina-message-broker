@@ -32,6 +32,7 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.A
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
+import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
@@ -51,6 +52,7 @@ import javax.sql.DataSource;
  */
 public class RdbmsAuthorizer implements Authorizer {
 
+    public static final String USER_STORE_CLASS_PROPERTY_NAME = "userStore";
     private static final Logger LOGGER = LoggerFactory.getLogger(RdbmsAuthorizer.class);
 
     private AuthScopeStore authScopeStore;
@@ -65,14 +67,18 @@ public class RdbmsAuthorizer implements Authorizer {
     private LoadingCache<String, UserCacheEntry> userCache;
 
     @Override
-    public void initialize(AuthProvider authProvider, StartupContext startupContext, Map<String, Object> properties)
+    public void initialize(StartupContext startupContext, Map<String, String> properties)
             throws Exception {
 
-        this.authProvider = authProvider;
         DataSource dataSource = startupContext.getService(DataSource.class);
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerAuthConfiguration brokerAuthConfiguration = configProvider.getConfigurationObject(
                 BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
+
+
+
+        AuthProvider authProvider = createAuthProvider(startupContext, properties);
+
         authResourceStore = new AuthResourceStoreImpl(brokerAuthConfiguration, dataSource, authProvider);
         authScopeStore = new AuthScopeStoreImpl(brokerAuthConfiguration, dataSource);
         userCache = CacheBuilder.newBuilder()
@@ -83,6 +89,20 @@ public class RdbmsAuthorizer implements Authorizer {
                                                                          .getTimeout(),
                                                   TimeUnit.MINUTES)
                                 .build(new UserCacheLoader());
+    }
+
+    private AuthProvider createAuthProvider(StartupContext startupContext, Map<String, String> properties)
+            throws Exception {
+        String userStoreClassName = properties.get(USER_STORE_CLASS_PROPERTY_NAME);
+
+        if (Objects.nonNull(userStoreClassName)) {
+            authProvider = BrokerClassLoader.loadClass(userStoreClassName, AuthProvider.class);
+            authProvider.initialize(startupContext);
+            return authProvider;
+        } else {
+            throw new RuntimeException("Please provide a user store for " + RdbmsAuthorizer.class.getCanonicalName());
+        }
+
     }
 
     @Override

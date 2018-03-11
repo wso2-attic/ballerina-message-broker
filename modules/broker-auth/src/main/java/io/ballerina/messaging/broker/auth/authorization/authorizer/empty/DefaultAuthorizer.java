@@ -18,7 +18,6 @@
  */
 package io.ballerina.messaging.broker.auth.authorization.authorizer.empty;
 
-import io.ballerina.messaging.broker.auth.authorization.AuthProvider;
 import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
@@ -37,8 +36,7 @@ public class DefaultAuthorizer implements Authorizer {
     private AuthScopeStore authScopeStore = new EmptyAuthScopeStore();
 
     @Override
-    public void initialize(AuthProvider authProvider, StartupContext startupContext, Map<String, Object> properties)
-            throws Exception {
+    public void initialize(StartupContext startupContext, Map<String, String> properties) {
         // do nothing
     }
 
