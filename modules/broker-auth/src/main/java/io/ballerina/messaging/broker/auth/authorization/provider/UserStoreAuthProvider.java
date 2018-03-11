@@ -24,7 +24,6 @@ import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
 import io.ballerina.messaging.broker.common.StartupContext;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -36,7 +35,7 @@ public class UserStoreAuthProvider implements AuthProvider {
     private UserStoreConnector userStoreManager;
 
     @Override
-    public void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception {
+    public void initialize(StartupContext startupContext) {
         this.userStoreManager = startupContext.getService(UserStoreConnector.class);
         if (Objects.isNull(userStoreManager)) {
             userStoreManager = new FileBasedUserStoreConnector();

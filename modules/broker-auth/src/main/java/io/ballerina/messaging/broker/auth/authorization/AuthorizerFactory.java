@@ -20,14 +20,17 @@ package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.DefaultAuthorizer;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory class for create new instance of @{@link Authorizer}.
  */
 public class AuthorizerFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizerFactory.class);
 
     /**
      * Provides an instance of @{@link Authorizer}
@@ -47,11 +50,19 @@ public class AuthorizerFactory {
         if (!commonConfiguration.getEnableInMemoryMode() &&
                 brokerAuthConfiguration.getAuthentication().isEnabled() &&
                 brokerAuthConfiguration.getAuthorization().isEnabled()) {
-            Authorizer authorizer = new RdbmsAuthorizer();
+
+            String authorizerClassName = brokerAuthConfiguration.getAuthorization()
+                                                               .getAuthorizer()
+                                                               .getClassName();
+            LOGGER.info("Initializing authProvider: {}", authorizerClassName);
+
+
+            Authorizer authorizer = (Authorizer) ClassLoader.getSystemClassLoader()
+                                                              .loadClass(authorizerClassName).newInstance();
             authorizer.initialize(authProvider,
                                   startupContext,
                                   brokerAuthConfiguration.getAuthorization()
-                                                        .getAuthProvider()
+                                                        .getAuthorizer()
                                                         .getProperties());
             return authorizer;
         } else {
