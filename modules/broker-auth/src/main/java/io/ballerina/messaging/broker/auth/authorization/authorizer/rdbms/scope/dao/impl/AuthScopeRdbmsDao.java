@@ -96,7 +96,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
                     authScopes.put(scopeName, authScope);
                 }
                 if (Objects.nonNull(resultSet.getString(2))) {
-                    authScope.getAuthorizedUserGroups().add(resultSet.getString(2));
+                    authScope.addUserGroup(resultSet.getString(2));
                 }
             }
         } catch (SQLException e) {
@@ -118,7 +118,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
             persistGroups(scopeName, userGroups, connection);
             connection.commit();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting groups for scope for name : " +
+            throw new BrokerAuthServerException("Error occurred while updating groups for scope name : " +
                                                         scopeName, e);
         } finally {
             close(connection);
@@ -137,7 +137,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
             }
             insertUserGroupsStmt.executeBatch();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting groups for scope for name : " +
+            throw new BrokerAuthServerException("Error occurred while persisting groups for scope name : " +
                                                         scopeName, e);
         } finally {
             close(insertUserGroupsStmt);

@@ -75,7 +75,7 @@ public class AuthScopeRdbmsDaoTest {
     public void testRead() throws BrokerAuthServerException {
         AuthScope authScope = authScopeDao.read("exchanges:test");
         Assert.assertEquals(authScope.getScopeName(), "exchanges:test");
-        Assert.assertEquals(authScope.getAuthorizedUserGroups().size(), 1);
+        Assert.assertEquals(authScope.getUserGroups().size(), 1);
     }
 
     @Test
@@ -88,10 +88,10 @@ public class AuthScopeRdbmsDaoTest {
     public void testUpdate() throws BrokerAuthServerException {
         AuthScope authScope = authScopeDao.read("queues:test");
         Assert.assertEquals(authScope.getScopeName(), "queues:test");
-        Assert.assertEquals(authScope.getAuthorizedUserGroups().size(), 1);
+        Assert.assertEquals(authScope.getUserGroups().size(), 1);
         authScopeDao.update("queues:test", Arrays.asList("developer", "manager"));
         authScope = authScopeDao.read("queues:test");
         Assert.assertEquals(authScope.getScopeName(), "queues:test");
-        Assert.assertEquals(authScope.getAuthorizedUserGroups().size(), 2);
+        Assert.assertEquals(authScope.getUserGroups().size(), 2);
     }
 }

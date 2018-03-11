@@ -71,10 +71,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
                              Set<String> userGroups) throws BrokerAuthServerException, BrokerAuthNotFoundException {
         AuthResource authResource = read(resourceType, resourceName);
         return Objects.nonNull(authResource) && (authResource.getOwner().equals(userId) ||
-                authResource.getActionsUserGroupsMap().get(action).stream()
-                            .filter(userGroups::contains)
-                            .findAny()
-                            .isPresent());
+                authResource.getActionsUserGroupsMap().get(action).stream().anyMatch(userGroups::contains));
     }
 
     @Override

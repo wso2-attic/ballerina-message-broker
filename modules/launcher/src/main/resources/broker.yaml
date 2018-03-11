@@ -72,7 +72,7 @@ ballerina.broker.auth:
   cache:
    # Cache timeout in Minutes
    timeout: 15
-   # Maximum Cache size
+   # Maximum Cache size to hold user id
    size: 5000
 
 # AMQP transport related configurations.

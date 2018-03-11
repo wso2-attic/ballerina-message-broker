@@ -27,19 +27,23 @@ public class AuthScope {
 
     private final String scopeName;
 
-    private Set<String> authorizedUserGroups;
+    private final Set<String> userGroups;
 
-    public AuthScope(String scopeName, Set<String> authorizedUserGroups) {
+    public AuthScope(String scopeName, Set<String> userGroups) {
         this.scopeName = scopeName;
-        this.authorizedUserGroups = authorizedUserGroups;
+        this.userGroups = userGroups;
     }
 
     public String getScopeName() {
         return scopeName;
     }
 
-    public Set<String> getAuthorizedUserGroups() {
-        return authorizedUserGroups;
+    public Set<String> getUserGroups() {
+        return userGroups;
+    }
+
+    public void addUserGroup(String userGroup) {
+        userGroups.add(userGroup);
     }
 }
 

@@ -66,10 +66,7 @@ public class AuthScopeStoreImpl implements AuthScopeStore {
             throws BrokerAuthServerException, BrokerAuthNotFoundException {
         try {
             AuthScope authScope = authScopeCache.get(authScopeName);
-            return Objects.nonNull(authScope) && authScope.getAuthorizedUserGroups().stream()
-                                                          .filter(userGroups::contains)
-                                                          .findAny()
-                                                          .isPresent();
+            return Objects.nonNull(authScope) && authScope.getUserGroups().stream().anyMatch(userGroups::contains);
         } catch (ExecutionException e) {
             throw new BrokerAuthNotFoundException("Scope does not found for scope name: " + authScopeName, e);
         }
