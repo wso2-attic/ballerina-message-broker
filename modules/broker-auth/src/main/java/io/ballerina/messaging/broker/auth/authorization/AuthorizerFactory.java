@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.DefaultAuthorizer;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class AuthorizerFactory {
                                                         .getProperties());
             return authorizer;
         } else {
-            return new DefaultAuthorizer();
+            return new NoOpAuthorizer();
         }
     }
 }

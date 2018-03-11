@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Defines empty @{@link Authorizer} when authorization is disabled.
  */
-public class DefaultAuthorizer implements Authorizer {
+public class NoOpAuthorizer implements Authorizer {
 
     private AuthResourceStore authResourceStore = new EmptyAuthResourceStore();
 
