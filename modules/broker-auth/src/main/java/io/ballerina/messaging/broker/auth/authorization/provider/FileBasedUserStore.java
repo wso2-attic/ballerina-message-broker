@@ -18,7 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth.authorization.provider;
 
-import io.ballerina.messaging.broker.auth.authorization.AuthProvider;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
@@ -28,9 +28,9 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Class provides database based @{@link AuthProvider} implementation.
+ * Class provides database based @{@link UserStore} implementation.
  */
-public class UserStoreAuthProvider implements AuthProvider {
+public class FileBasedUserStore implements UserStore {
 
     private UserStoreConnector userStoreManager;
 

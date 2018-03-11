@@ -22,8 +22,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.authorization.AuthProvider;
 import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceDaoFactory;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
@@ -51,12 +51,12 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
 
     private AuthResourceDaoFactory authResourceDaoFactory;
 
-    private AuthProvider authProvider;
+    private UserStore userStore;
 
     public AuthResourceStoreImpl(BrokerAuthConfiguration brokerAuthConfiguration, DataSource dataSource,
-                                 AuthProvider authProvider) {
+                                 UserStore userStore) {
         this.authResourceDaoFactory = new AuthResourceDaoFactory(dataSource);
-        this.authProvider = authProvider;
+        this.userStore = userStore;
         this.authResourceCache = CacheBuilder.newBuilder()
                                              .maximumSize(brokerAuthConfiguration.getAuthorization().getCache()
                                                                                  .getSize())
@@ -153,11 +153,11 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
         List<AuthResource> durableAuthResources =
                 authResourceDaoFactory.getAuthResourceDao(true)
                                       .readAll(resourceType, action, ownerId,
-                                               new ArrayList<>(authProvider.getUserGroupsList(ownerId)));
+                                               new ArrayList<>(userStore.getUserGroupsList(ownerId)));
         List<AuthResource> nonDurableAuthResources =
                 authResourceDaoFactory.getAuthResourceDao(false)
                                       .readAll(resourceType, action, ownerId,
-                                               new ArrayList<>(authProvider.getUserGroupsList(ownerId)));
+                                               new ArrayList<>(userStore.getUserGroupsList(ownerId)));
         if (Objects.nonNull(durableAuthResources) && Objects.nonNull(nonDurableAuthResources)) {
             durableAuthResources.addAll(nonDurableAuthResources);
             return durableAuthResources;

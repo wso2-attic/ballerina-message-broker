@@ -22,10 +22,10 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.authorization.AuthProvider;
 import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResourceStoreImpl;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScopeStoreImpl;
@@ -59,7 +59,7 @@ public class RdbmsAuthorizer implements Authorizer {
 
     private AuthResourceStore authResourceStore;
 
-    private AuthProvider authProvider;
+    private UserStore userStore;
 
     /**
      * Cache which store user id vs  user cache entry
@@ -77,9 +77,9 @@ public class RdbmsAuthorizer implements Authorizer {
 
 
 
-        AuthProvider authProvider = createAuthProvider(startupContext, properties);
+        UserStore userStore = createAuthProvider(startupContext, properties);
 
-        authResourceStore = new AuthResourceStoreImpl(brokerAuthConfiguration, dataSource, authProvider);
+        authResourceStore = new AuthResourceStoreImpl(brokerAuthConfiguration, dataSource, userStore);
         authScopeStore = new AuthScopeStoreImpl(brokerAuthConfiguration, dataSource);
         userCache = CacheBuilder.newBuilder()
                                 .maximumSize(brokerAuthConfiguration.getAuthorization().getCache()
@@ -91,14 +91,14 @@ public class RdbmsAuthorizer implements Authorizer {
                                 .build(new UserCacheLoader());
     }
 
-    private AuthProvider createAuthProvider(StartupContext startupContext, Map<String, String> properties)
+    private UserStore createAuthProvider(StartupContext startupContext, Map<String, String> properties)
             throws Exception {
         String userStoreClassName = properties.get(USER_STORE_CLASS_PROPERTY_NAME);
 
         if (Objects.nonNull(userStoreClassName)) {
-            authProvider = BrokerClassLoader.loadClass(userStoreClassName, AuthProvider.class);
-            authProvider.initialize(startupContext);
-            return authProvider;
+            userStore = BrokerClassLoader.loadClass(userStoreClassName, UserStore.class);
+            userStore.initialize(startupContext);
+            return userStore;
         } else {
             throw new RuntimeException("Please provide a user store for " + RdbmsAuthorizer.class.getCanonicalName());
         }
@@ -190,7 +190,7 @@ public class RdbmsAuthorizer implements Authorizer {
         @Override
         public UserCacheEntry load(@Nonnull String userId) throws BrokerAuthException {
             UserCacheEntry userCacheEntry = new UserCacheEntry();
-            userCacheEntry.setUserGroups(authProvider.getUserGroupsList(userId));
+            userCacheEntry.setUserGroups(userStore.getUserGroupsList(userId));
             return userCacheEntry;
         }
     }

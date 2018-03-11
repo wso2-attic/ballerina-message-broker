@@ -20,7 +20,7 @@ package io.ballerina.messaging.broker.auth;
 
 import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
-import io.ballerina.messaging.broker.auth.authorization.provider.UserStoreAuthProvider;
+import io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -156,7 +156,7 @@ public class BrokerAuthConfiguration {
 
         public AuthorizerConfiguration() {
             properties.put(RdbmsAuthorizer.USER_STORE_CLASS_PROPERTY_NAME,
-                           UserStoreAuthProvider.class.getCanonicalName());
+                           FileBasedUserStore.class.getCanonicalName());
         }
 
         public String getClassName() {
