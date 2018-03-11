@@ -90,12 +90,6 @@ paths:
         type: string
         required: true
         description: Name of the queue
-      - in: body
-        name: body
-        required: true
-        description: Payload of update queue authorization request
-        schema:
-          $ref: '#/definitions/QueueUpdateRequest'
     get:
       operationId: getQueue
       summary: Get a specific queue
@@ -120,6 +114,13 @@ paths:
       operationId: updateQueueAuthorization
       summary: Update authorization of a queue
       description: Grant permission to perform given action
+      parameters:
+      - in: body
+        name: body
+        required: true
+        description: Payload of update queue authorization request
+        schema:
+          $ref: '#/definitions/QueueUpdateRequest'
       consumes:
         - application/json
       responses:
@@ -473,12 +474,6 @@ paths:
         type: string
         required: true
         description: Name of the exchange.
-      - in: body
-        name: body
-        required: true
-        description: Payload of update exchange authorization request
-        schema:
-          $ref: '#/definitions/ExchangeUpdateRequest'
     get:
       operationId: getExchange
       summary: Get a specific exchange
@@ -505,6 +500,13 @@ paths:
       operationId: updateExchangeAuthorization
       summary: Update authorization of exchange
       description: Grant permission to perform given action
+      parameters:
+      - in: body
+        name: body
+        required: true
+        description: Payload of update exchange authorization request
+        schema:
+          $ref: '#/definitions/ExchangeUpdateRequest'
       consumes:
         - application/json
       responses:
