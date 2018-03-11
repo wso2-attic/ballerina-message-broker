@@ -20,8 +20,6 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.empty;
 
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScope;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,23 +31,22 @@ import java.util.Set;
 class EmptyAuthScopeStore implements AuthScopeStore {
 
     @Override
-    public boolean authorize(String authScopeName, Set<String> userGroups)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+    public boolean authorize(String authScopeName, Set<String> userGroups) {
         return true;
     }
 
     @Override
-    public void update(String authScopeName, List<String> userGroups) throws BrokerAuthServerException {
+    public void update(String authScopeName, List<String> userGroups) {
 
     }
 
     @Override
-    public AuthScope read(String authScopeName) throws BrokerAuthServerException {
+    public AuthScope read(String authScopeName) {
         return null;
     }
 
     @Override
-    public List<AuthScope> readAll() throws BrokerAuthServerException {
+    public List<AuthScope> readAll() {
         return Collections.emptyList();
     }
 }

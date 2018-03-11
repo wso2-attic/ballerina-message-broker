@@ -143,11 +143,11 @@ public class RdbmsAuthorizer implements Authorizer {
                 UserCacheEntry userCacheEntry = userCache.get(userId);
                 Set<String> authorizedActions =
                         userCacheEntry.getAuthorizedResourceActions().get(resourceCacheKey);
-                boolean anyMatch = Objects.nonNull(authorizedActions) &&
+                boolean isAuthorize = Objects.nonNull(authorizedActions) &&
                         authorizedActions
                                 .stream()
                                 .anyMatch(s -> s.equals(action));
-                if (anyMatch) {
+                if (isAuthorize) {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("resourceName authorizations are loaded from cache for resourceType : " +
                                 resourceType + " resourceName: " + resourceName);

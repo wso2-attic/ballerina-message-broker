@@ -19,8 +19,7 @@
 package io.ballerina.messaging.broker.auth;
 
 import java.security.Principal;
-import java.util.Set;
-import javax.security.auth.Subject;
+import java.util.Objects;
 
 
 /**
@@ -52,8 +51,7 @@ public class UsernamePrincipal implements Principal {
      */
     @Override
     public int hashCode() {
-        final int prime = 31;
-        return prime * name.hashCode();
+        return Objects.hashCode(name);
     }
 
     /**
@@ -71,16 +69,5 @@ public class UsernamePrincipal implements Principal {
                 return false;
             }
         }
-    }
-    public static UsernamePrincipal getUsernamePrincipalFromSubject(final Subject authSubject) {
-        if (authSubject == null) {
-            throw new IllegalArgumentException("No authenticated subject.");
-        }
-
-        final Set<UsernamePrincipal> principals = authSubject.getPrincipals(UsernamePrincipal.class);
-        if (principals.size() != 1) {
-            throw new IllegalArgumentException("Can't find single UsernamePrincipal in authenticated subject");
-        }
-        return principals.iterator().next();
     }
 }
