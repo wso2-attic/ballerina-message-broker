@@ -24,9 +24,9 @@ import io.ballerina.messaging.broker.common.StartupContext;
 import java.util.Set;
 
 /**
- * Interface represents auth provider for broker users which provide authorization groups..
+ * Interface represents user store for broker users which provide authorization groups..
  */
-public interface AuthProvider {
+public interface UserStore {
 
     /**
      * Initialize authorization strategy based on given auth configuration, user store manager and data source.
