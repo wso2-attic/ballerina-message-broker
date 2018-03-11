@@ -19,11 +19,9 @@
 package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import io.ballerina.messaging.broker.auth.authorization.AuthProvider;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,12 +32,12 @@ public class DefaultAuthProvider implements AuthProvider {
     private Set<String> emptyUserGroupsList = new HashSet<>();
 
     @Override
-    public void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception {
-        // do nothing
+    public void initialize(StartupContext startupContext) {
+        // Do nothing
     }
 
     @Override
-    public Set<String> getUserGroupsList(String userId) throws BrokerAuthException {
+    public Set<String> getUserGroupsList(String userId) {
         return emptyUserGroupsList;
     }
 }

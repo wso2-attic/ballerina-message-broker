@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.auth;
 
 import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
-import io.ballerina.messaging.broker.auth.authorization.provider.UserStoreAuthProvider;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,7 +87,7 @@ public class BrokerAuthConfiguration {
 
         private boolean enabled = true;
 
-        private AuthProviderConfiguration authProvider = new AuthProviderConfiguration();
+        private AuthProviderConfiguration authorizer = new AuthProviderConfiguration();
 
         private CacheConfiguration cache = new CacheConfiguration();
 
@@ -99,12 +99,12 @@ public class BrokerAuthConfiguration {
             this.enabled = enabled;
         }
 
-        public AuthProviderConfiguration getAuthProvider() {
-            return authProvider;
+        public AuthProviderConfiguration getAuthorizer() {
+            return authorizer;
         }
 
-        public void setAuthProvider(AuthProviderConfiguration authProvider) {
-            this.authProvider = authProvider;
+        public void setAuthorizer(AuthProviderConfiguration authorizer) {
+            this.authorizer = authorizer;
         }
 
         public CacheConfiguration getCache() {
@@ -143,11 +143,11 @@ public class BrokerAuthConfiguration {
     }
 
     /**
-     * Represents authProvider configuration for broker
+     * Represents authorizer configuration for broker
      */
     public static class AuthProviderConfiguration {
 
-        private String className = UserStoreAuthProvider.class.getCanonicalName();
+        private String className = RdbmsAuthorizer.class.getCanonicalName();
 
         private Map<String, Object> properties = new HashMap<>();
 

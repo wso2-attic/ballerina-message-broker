@@ -55,7 +55,7 @@ ballerina.broker.auth:
   # Enable the authentication
   enabled: true
   authenticator:
-    # Authenticator implemetation
+    # Authenticator implementation
     className: io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator
     # Optional properties
     properties:
@@ -64,9 +64,9 @@ ballerina.broker.auth:
  authorization:
   # Enable the authorization
   enabled: true
-  authProvider:
-   # AuthProvider implemetation
-   className: io.ballerina.messaging.broker.auth.authorization.provider.UserStoreAuthProvider
+  authorizer:
+   # Authorizer implementation
+   className: io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer
    properties:
   cache:
    # Cache timeout in Minutes

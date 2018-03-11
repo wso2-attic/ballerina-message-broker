@@ -20,18 +20,14 @@ package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.provider.DefaultAuthProvider;
+import io.ballerina.messaging.broker.auth.authorization.provider.UserStoreAuthProvider;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Factory class for create new instance of @{@link AuthProvider}.
  */
 public class AuthProviderFactory {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthProviderFactory.class);
-
     /**
      * Provides an instance of @{@link AuthProvider}
      *
@@ -48,15 +44,8 @@ public class AuthProviderFactory {
         if (!commonConfiguration.getEnableInMemoryMode() &&
                 brokerAuthConfiguration.getAuthentication().isEnabled() &&
                 brokerAuthConfiguration.getAuthorization().isEnabled()) {
-            String authenticatorClass = brokerAuthConfiguration.getAuthorization()
-                                                               .getAuthProvider()
-                                                               .getClassName();
-            LOGGER.info("Initializing authProvider: {}", authenticatorClass);
-            AuthProvider authProvider = (AuthProvider) ClassLoader.getSystemClassLoader()
-                                                                  .loadClass(authenticatorClass).newInstance();
-            authProvider.initialize(startupContext, brokerAuthConfiguration.getAuthorization()
-                                                                           .getAuthProvider()
-                                                                           .getProperties());
+            AuthProvider authProvider = new UserStoreAuthProvider();
+            authProvider.initialize(startupContext);
             return authProvider;
         } else {
             return new DefaultAuthProvider();

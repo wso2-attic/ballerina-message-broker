@@ -21,7 +21,6 @@ package io.ballerina.messaging.broker.auth.authorization;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -33,9 +32,8 @@ public interface AuthProvider {
      * Initialize authorization strategy based on given auth configuration, user store manager and data source.
      *
      * @param startupContext the startup context provides registered services for authorizer
-     * @param properties     set of properties
      */
-    void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception;
+    void initialize(StartupContext startupContext) throws Exception;
 
     /**
      * Get set of user Groups for the user

@@ -135,6 +135,8 @@ public final class BrokerImpl implements Broker {
         BrokerCommonConfiguration commonConfigs
                 = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
                 BrokerCommonConfiguration.class);
+
+        // We use defaults if the common config is not there
         if (Objects.isNull(commonConfigs)) {
             commonConfigs = new BrokerCommonConfiguration();
         }
