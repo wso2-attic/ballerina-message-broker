@@ -21,7 +21,6 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.empty;
 import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -41,13 +40,12 @@ public class DefaultAuthorizer implements Authorizer {
     }
 
     @Override
-    public boolean authorize(String scopeName, String userId) throws BrokerAuthException {
+    public boolean authorize(String scopeName, String userId) {
         return true;
     }
 
     @Override
-    public boolean authorize(String resourceType, String resource, String action, String userId)
-            throws BrokerAuthException {
+    public boolean authorize(String resourceType, String resource, String action, String userId) {
         return true;
     }
 
