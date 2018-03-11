@@ -20,9 +20,12 @@ package io.ballerina.messaging.broker.auth;
 
 import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
+import io.ballerina.messaging.broker.auth.authorization.provider.UserStoreAuthProvider;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents authentication configuration for broker.
@@ -87,7 +90,7 @@ public class BrokerAuthConfiguration {
 
         private boolean enabled = true;
 
-        private AuthProviderConfiguration authorizer = new AuthProviderConfiguration();
+        private AuthorizerConfiguration authorizer = new AuthorizerConfiguration();
 
         private CacheConfiguration cache = new CacheConfiguration();
 
@@ -99,11 +102,11 @@ public class BrokerAuthConfiguration {
             this.enabled = enabled;
         }
 
-        public AuthProviderConfiguration getAuthorizer() {
+        public AuthorizerConfiguration getAuthorizer() {
             return authorizer;
         }
 
-        public void setAuthorizer(AuthProviderConfiguration authorizer) {
+        public void setAuthorizer(AuthorizerConfiguration authorizer) {
             this.authorizer = authorizer;
         }
 
@@ -145,11 +148,16 @@ public class BrokerAuthConfiguration {
     /**
      * Represents authorizer configuration for broker.
      */
-    public static class AuthProviderConfiguration {
+    public static class AuthorizerConfiguration {
 
         private String className = RdbmsAuthorizer.class.getCanonicalName();
 
-        private Map<String, Object> properties = new HashMap<>();
+        private Map<String, String> properties = new HashMap<>();
+
+        public AuthorizerConfiguration() {
+            properties.put(RdbmsAuthorizer.USER_STORE_CLASS_PROPERTY_NAME,
+                           UserStoreAuthProvider.class.getCanonicalName());
+        }
 
         public String getClassName() {
             return className;
@@ -159,11 +167,15 @@ public class BrokerAuthConfiguration {
             this.className = className;
         }
 
-        public Map<String, Object> getProperties() {
-            return properties;
+        public Map<String, String> getProperties() {
+            if (Objects.isNull(properties)) {
+                return Collections.emptyMap();
+            } else {
+                return properties;
+            }
         }
 
-        public void setProperties(Map<String, Object> properties) {
+        public void setProperties(Map<String, String> properties) {
             this.properties = properties;
         }
     }

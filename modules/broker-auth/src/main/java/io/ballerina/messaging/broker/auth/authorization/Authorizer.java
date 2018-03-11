@@ -37,12 +37,10 @@ public interface Authorizer {
     /**
      * Initialize authorization strategy based on given auth configuration, user store manager and data source.
      *
-     * @param authProvider     authProvider
      * @param startupContext the startup context provides registered services for authProvider
      * @param properties     set of properties
      */
-    void initialize(AuthProvider authProvider, StartupContext startupContext, Map<String, Object> properties) throws
-            Exception;
+    void initialize(StartupContext startupContext, Map<String, String> properties) throws Exception;
 
     /**
      * Authorize user with given scope key.
