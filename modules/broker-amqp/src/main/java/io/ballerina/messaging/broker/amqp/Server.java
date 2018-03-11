@@ -115,8 +115,8 @@ public class Server {
             throw new RuntimeException("Could not find the broker class to initialize AMQP server");
         }
 
-        if (startupContext.getService(AuthManager.class).isAuthenticationEnabled() &&
-                startupContext.getService(AuthManager.class).isAuthorizationEnabled()) {
+        AuthManager authManager = startupContext.getService(AuthManager.class);
+        if (null != authManager && authManager.isAuthenticationEnabled() && authManager.isAuthorizationEnabled()) {
             brokerFactory = new SecureBrokerFactory(startupContext);
         } else {
             brokerFactory = new DefaultBrokerFactory(startupContext);

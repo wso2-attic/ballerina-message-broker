@@ -23,6 +23,7 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.A
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -49,6 +50,6 @@ class EmptyAuthScopeStore implements AuthScopeStore {
 
     @Override
     public List<AuthScope> readAll() throws BrokerAuthServerException {
-        return null;
+        return Collections.emptyList();
     }
 }

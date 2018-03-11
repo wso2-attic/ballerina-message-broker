@@ -25,6 +25,7 @@ import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -64,12 +65,12 @@ class EmptyAuthResourceStore implements AuthResourceStore {
 
     @Override
     public List<AuthResource> readAll(String resourceType, String ownerId) throws BrokerAuthServerException {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public List<AuthResource> readAll(String resourceType, String action, String ownerId)
             throws BrokerAuthServerException, BrokerAuthException {
-        return null;
+        return Collections.emptyList();
     }
 }

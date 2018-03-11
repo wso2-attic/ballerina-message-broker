@@ -128,8 +128,10 @@ public class RdbmsAuthorizer implements Authorizer {
                                 .stream()
                                 .anyMatch(s -> s.equals(action));
                 if (anyMatch) {
-                    LOGGER.debug("resourceName authorizations are loaded from cache for resourceType : " +
-                                         resourceType + " resourceName: " + resourceName);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("resourceName authorizations are loaded from cache for resourceType : " +
+                                resourceType + " resourceName: " + resourceName);
+                    }
                     return true;
                 } else {
                     if (authResourceStore.authorize(resourceType, resourceName,

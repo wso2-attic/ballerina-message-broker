@@ -25,6 +25,7 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resourc
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,7 +79,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
                                                                     .equals(ownerId))
                                 .collect(Collectors.toList());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -94,7 +95,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
                                                              userGroups))
                                 .collect(Collectors.toList());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     private boolean checkActionAndGroups(Map<String, Set<String>> actionUserGroupsMap, String action,
@@ -102,9 +103,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
         if (Objects.nonNull(actionUserGroupsMap)) {
             Set<String> authorizedUserGroups = actionUserGroupsMap.get(action);
             return Objects.nonNull(authorizedUserGroups) &&
-                    authorizedUserGroups.stream()
-                                        .filter(userGroups::contains)
-                                        .findAny().isPresent();
+                    authorizedUserGroups.stream().anyMatch(userGroups::contains);
         }
         return false;
     }
