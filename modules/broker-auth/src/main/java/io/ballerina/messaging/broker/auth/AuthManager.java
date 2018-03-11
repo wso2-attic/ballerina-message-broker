@@ -28,6 +28,7 @@ import io.ballerina.messaging.broker.auth.authorization.AuthProviderFactory;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizerFactory;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
@@ -59,7 +60,6 @@ public class AuthManager {
      */
     private Map<String, SaslServerBuilder> saslMechanisms = new HashMap<>();
 
-    private BrokerAuthConfiguration brokerAuthConfiguration;
     /**
      * Authenticator which defines the authentication strategy for auth manager.
      */
@@ -67,9 +67,13 @@ public class AuthManager {
 
     private Authorizer authorizer;
 
+    private final boolean isAuthenticationEnabled;
+
+    private final boolean isAuthorizationEnabled;
+
     public AuthManager(StartupContext startupContext) throws Exception {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        brokerAuthConfiguration = configProvider
+        BrokerAuthConfiguration brokerAuthConfiguration = configProvider
                 .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
         BrokerCommonConfiguration commonConfigs
                 = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
@@ -78,10 +82,21 @@ public class AuthManager {
         authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
                                                                     brokerAuthConfiguration.getAuthentication());
         AuthProvider authProvider = new AuthProviderFactory().getAuthorizer(commonConfigs,
-                                                                            brokerAuthConfiguration,
+                brokerAuthConfiguration,
                                                                             startupContext);
-        authorizer = new AuthorizerFactory().getAutStore(authProvider, commonConfigs,
-                                                         brokerAuthConfiguration, startupContext);
+
+        isAuthenticationEnabled = brokerAuthConfiguration.getAuthentication().isEnabled();
+        isAuthorizationEnabled = brokerAuthConfiguration.getAuthorization().isEnabled();
+
+        if (!isAuthenticationEnabled && isAuthorizationEnabled) {
+            throw new ValidationException("Invalid combination found in the broker.yaml - " +
+                    "authentication enabled: FALSE and authorization enabled: TRUE");
+        } else {
+            authorizer = new AuthorizerFactory().getAutStore(authProvider, commonConfigs,
+                    brokerAuthConfiguration, startupContext);
+        }
+
+
     }
 
     public void start() {
@@ -142,7 +157,7 @@ public class AuthManager {
      * @return broker authentication enabled or not
      */
     public boolean isAuthenticationEnabled() {
-        return brokerAuthConfiguration.getAuthentication().isEnabled();
+        return isAuthenticationEnabled;
     }
 
     /**
@@ -151,7 +166,7 @@ public class AuthManager {
      * @return broker authorization enabled or not
      */
     public boolean isAuthorizationEnabled() {
-        return brokerAuthConfiguration.getAuthorization().isEnabled();
+        return isAuthorizationEnabled;
     }
 
     /**

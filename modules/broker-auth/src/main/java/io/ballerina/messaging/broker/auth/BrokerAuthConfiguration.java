@@ -81,7 +81,7 @@ public class BrokerAuthConfiguration {
     }
 
     /**
-     * Represents authorization configuration for broker
+     * Represents authorization configuration for broker.
      */
     public static class AuthorizationConfiguration {
 
@@ -143,7 +143,7 @@ public class BrokerAuthConfiguration {
     }
 
     /**
-     * Represents authorizer configuration for broker
+     * Represents authorizer configuration for broker.
      */
     public static class AuthProviderConfiguration {
 
@@ -169,16 +169,16 @@ public class BrokerAuthConfiguration {
     }
 
     /**
-     * Represents permission cache configuration required for authorization
+     * Represents permission cache configuration required for authorization.
      */
     public static class CacheConfiguration {
 
         /**
-         * Cache timeout in minutes
+         * Cache timeout in minutes.
          */
         private int timeout = 15;
         /**
-         * Maximum cache size
+         * Maximum cache size.
          */
         private int size = 5000;
 
