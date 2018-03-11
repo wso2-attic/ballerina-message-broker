@@ -16,11 +16,10 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authorization.handler;
+package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.UsernamePrincipal;
-import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceActions;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScopes;
@@ -39,11 +38,9 @@ import javax.security.auth.Subject;
 public class AuthorizationHandler {
 
     private Authorizer authorizer;
-    private UsernamePrincipal userPrincipal;
 
-    public AuthorizationHandler(AuthManager authManager, Subject subject) {
+    public AuthorizationHandler(AuthManager authManager) {
         authorizer = authManager.getAuthorizer();
-        this.userPrincipal = (UsernamePrincipal) subject.getPrincipals().iterator().next();
     }
 
     /**
@@ -56,9 +53,9 @@ public class AuthorizationHandler {
      * @throws BrokerAuthException throws if error occurs while authorizing resource.
      */
     public void handle(ResourceAuthScopes brokerAuthScope, ResourceTypes resourceType, String resourceName,
-                       ResourceActions action) throws BrokerAuthException, ResourceNotFoundException {
-        handle(brokerAuthScope);
-        handle(resourceType, resourceName, action);
+                       ResourceActions action, Subject subject) throws BrokerAuthException, ResourceNotFoundException {
+        handle(brokerAuthScope, subject);
+        handle(resourceType, resourceName, action, subject);
     }
 
     /**
@@ -69,13 +66,13 @@ public class AuthorizationHandler {
      * @param action       action
      * @throws BrokerAuthException throws if error occurs while authorizing resource.
      */
-    public void handle(ResourceTypes resourceType, String resourceName, ResourceActions action)
+    public void handle(ResourceTypes resourceType, String resourceName, ResourceActions action, Subject subject)
             throws BrokerAuthException, ResourceNotFoundException {
         try {
             if (!authorizer.authorize(resourceType.toString(),
                                       resourceName,
                                       action.toString(),
-                                      userPrincipal.getName())) {
+                                      getUserFromSubject(subject))) {
                 throw new BrokerAuthException("Unauthorized action on : " + resourceType.toString() +
                                                       " resourceName: " + resourceName +
                                                       " action: " + action.toString());
@@ -96,11 +93,10 @@ public class AuthorizationHandler {
      * @param authScope authScope
      * @throws BrokerAuthException throws if error occurs while authorizing resource.
      */
-    public void handle(ResourceAuthScopes authScope)
+    public void handle(ResourceAuthScopes authScope, Subject subject)
             throws BrokerAuthException {
         try {
-            if (!authorizer.authorize(authScope.toString(),
-                                      userPrincipal.getName())) {
+            if (!authorizer.authorize(authScope.toString(), getUserFromSubject(subject))) {
                 throw new BrokerAuthException("Unauthorized action on auth scope key : " + authScope.toString());
             }
         } catch (BrokerAuthServerException | BrokerAuthNotFoundException e) {
@@ -117,13 +113,13 @@ public class AuthorizationHandler {
      * @param durable      is durable
      * @throws BrokerAuthException throws if error occurs while authorizing resource.
      */
-    public void createAuthResource(ResourceTypes resourceType, String resourceName, boolean durable)
+    public void createAuthResource(ResourceTypes resourceType, String resourceName, boolean durable, Subject subject)
             throws BrokerAuthException {
         try {
             authorizer.getAuthResourceStore().add(new AuthResource(resourceType.toString(),
                                                                    resourceName,
                                                                    durable,
-                                                                   userPrincipal.getName()));
+                                                                   getUserFromSubject(subject)));
         } catch (BrokerAuthServerException e) {
             throw new BrokerAuthException("Error while creating " + resourceType + " with name : " + resourceName, e);
         } catch (BrokerAuthDuplicateException e) {
@@ -149,5 +145,16 @@ public class AuthorizationHandler {
             throw new ResourceNotFoundException("Error occurred while authorizing due to resource name : " +
                     resourceName + " not found.");
         }
+    }
+
+    /**
+     * Extract username from the {@link Subject}
+     *
+     * @param subject an entity with username
+     * @return username
+     */
+    private String getUserFromSubject(Subject subject) {
+        UsernamePrincipal usernamePrincipal = (UsernamePrincipal) subject.getPrincipals().iterator().next();
+        return usernamePrincipal.getName();
     }
 }

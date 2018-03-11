@@ -18,11 +18,10 @@
 
 package io.ballerina.messaging.broker.core;
 
-import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceActions;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScopes;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceTypes;
-import io.ballerina.messaging.broker.auth.authorization.handler.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -41,15 +40,23 @@ import javax.transaction.xa.Xid;
  */
 public class SecureBrokerImpl implements Broker {
 
-    private Broker broker;
+    /**
+     * Wrapper object of the {@link BrokerImpl}
+     */
+    private final Broker broker;
+    /**
+     * Username entity
+     */
+    private final Subject subject;
     /**
      * The @{@link AuthorizationHandler} to handle authorization.
      */
     private final AuthorizationHandler authHandler;
 
-    public SecureBrokerImpl(Broker broker, AuthManager authManager, Subject subject) {
+    public SecureBrokerImpl(Broker broker, Subject subject, AuthorizationHandler authHandler) {
         this.broker = broker;
-        authHandler = new AuthorizationHandler(authManager, subject);
+        this.subject = subject;
+        this.authHandler = authHandler;
     }
 
     @Override
@@ -102,10 +109,10 @@ public class SecureBrokerImpl implements Broker {
     @Override
     public boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
             throws BrokerException, ValidationException, BrokerAuthException {
-        authHandler.handle(ResourceAuthScopes.QUEUES_CREATE);
+        authHandler.handle(ResourceAuthScopes.QUEUES_CREATE, subject);
         boolean succeed = broker.createQueue(queueName, passive, durable, autoDelete);
         if (succeed) {
-            authHandler.createAuthResource(ResourceTypes.QUEUE, queueName, durable);
+            authHandler.createAuthResource(ResourceTypes.QUEUE, queueName, durable, subject);
         }
         return succeed;
     }
@@ -113,7 +120,7 @@ public class SecureBrokerImpl implements Broker {
     @Override
     public int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException,
             ValidationException, ResourceNotFoundException, BrokerAuthException {
-        authHandler.handle(ResourceTypes.QUEUE, queueName, ResourceActions.DELETE);
+        authHandler.handle(ResourceTypes.QUEUE, queueName, ResourceActions.DELETE, subject);
         authHandler.deleteAuthResource(ResourceTypes.QUEUE, queueName);
         return broker.deleteQueue(queueName, ifUnused, ifEmpty);
     }
