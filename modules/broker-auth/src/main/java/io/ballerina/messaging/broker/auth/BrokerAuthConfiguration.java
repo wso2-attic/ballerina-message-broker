@@ -19,8 +19,8 @@
 package io.ballerina.messaging.broker.auth;
 
 import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler;
 import io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore;
 
 import java.util.Collections;
@@ -91,7 +91,11 @@ public class BrokerAuthConfiguration {
 
         private boolean enabled = true;
 
-        private AuthorizerConfiguration authorizer = new AuthorizerConfiguration();
+        private UserStoreConfiguration userStore = new UserStoreConfiguration();
+
+        private MacConfigurations mandatoryAccessController = new MacConfigurations();
+
+        private DacConfigurations discretionaryAccessController = new DacConfigurations();
 
         private CacheConfiguration cache = new CacheConfiguration();
 
@@ -103,12 +107,34 @@ public class BrokerAuthConfiguration {
             this.enabled = enabled;
         }
 
-        public AuthorizerConfiguration getAuthorizer() {
-            return authorizer;
+        public UserStoreConfiguration getUserStore() {
+            return userStore;
         }
 
-        public void setAuthorizer(AuthorizerConfiguration authorizer) {
-            this.authorizer = authorizer;
+        public void setUserStore(UserStoreConfiguration userStore) {
+            this.userStore = userStore;
+        }
+
+        /**
+         * Getter for mandatoryAccessController
+         */
+        public MacConfigurations getMandatoryAccessController() {
+            return mandatoryAccessController;
+        }
+
+        public void setMandatoryAccessController(MacConfigurations mandatoryAccessController) {
+            this.mandatoryAccessController = mandatoryAccessController;
+        }
+
+        /**
+         * Getter for discretionaryAccessController
+         */
+        public DacConfigurations getDiscretionaryAccessController() {
+            return discretionaryAccessController;
+        }
+
+        public void setDiscretionaryAccessController(DacConfigurations discretionaryAccessController) {
+            this.discretionaryAccessController = discretionaryAccessController;
         }
 
         public CacheConfiguration getCache() {
@@ -147,18 +173,73 @@ public class BrokerAuthConfiguration {
     }
 
     /**
-     * Represents authorizer configuration for broker.
+     * Represents userStore configuration for broker.
      */
-    public static class AuthorizerConfiguration {
+    public static class UserStoreConfiguration {
 
-        private String className = NoOpAuthorizer.class.getCanonicalName();
+        private String className = FileBasedUserStore.class.getCanonicalName();
 
         private Map<String, String> properties = new HashMap<>();
 
-        public AuthorizerConfiguration() {
-            properties.put(RdbmsAuthorizer.USER_STORE_CLASS_PROPERTY_NAME,
-                           FileBasedUserStore.class.getCanonicalName());
+        public String getClassName() {
+            return className;
         }
+
+        public void setClassName(String className) {
+            this.className = className;
+        }
+
+        public Map<String, String> getProperties() {
+            if (Objects.isNull(properties)) {
+                return Collections.emptyMap();
+            } else {
+                return properties;
+            }
+        }
+
+        public void setProperties(Map<String, String> properties) {
+            this.properties = properties;
+        }
+    }
+
+    /**
+     * Represents userStore configuration for broker.
+     */
+    public static class MacConfigurations {
+
+        private String className = DefaultMacHandler.class.getCanonicalName();
+
+        private Map<String, String> properties = new HashMap<>();
+
+        public String getClassName() {
+            return className;
+        }
+
+        public void setClassName(String className) {
+            this.className = className;
+        }
+
+        public Map<String, String> getProperties() {
+            if (Objects.isNull(properties)) {
+                return Collections.emptyMap();
+            } else {
+                return properties;
+            }
+        }
+
+        public void setProperties(Map<String, String> properties) {
+            this.properties = properties;
+        }
+    }
+
+    /**
+     * Represents userStore configuration for broker.
+     */
+    public static class DacConfigurations {
+
+        private String className = DefaultDacHandler.class.getCanonicalName();
+
+        private Map<String, String> properties = new HashMap<>();
 
         public String getClassName() {
             return className;

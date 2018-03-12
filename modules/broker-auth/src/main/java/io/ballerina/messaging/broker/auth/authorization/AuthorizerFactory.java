@@ -21,11 +21,14 @@ package io.ballerina.messaging.broker.auth.authorization;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
+import io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore;
 import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
 
 /**
  * Factory class for create new instance of @{@link Authorizer}.
@@ -43,16 +46,16 @@ public class AuthorizerFactory {
      * @return authProvider for given configuration
      * @throws Exception throws if error occurred while providing new instance of authProvider
      */
+    @Deprecated
     public static Authorizer getAuthorizer(BrokerCommonConfiguration commonConfiguration,
                                     BrokerAuthConfiguration brokerAuthConfiguration,
                                     StartupContext startupContext) throws Exception {
 
-        if (brokerAuthConfiguration.getAuthentication().isEnabled() && brokerAuthConfiguration.getAuthorization()
+        if (!commonConfiguration.getEnableInMemoryMode() && brokerAuthConfiguration.getAuthentication().isEnabled() &&
+                brokerAuthConfiguration.getAuthorization()
                                                                                               .isEnabled()) {
 
-            String authorizerClassName = brokerAuthConfiguration.getAuthorization()
-                                                                .getAuthorizer()
-                                                                .getClassName();
+            String authorizerClassName = RdbmsAuthorizer.class.getCanonicalName();
 
             if (commonConfiguration.getEnableInMemoryMode() && RdbmsAuthorizer.class.getCanonicalName()
                                                                                     .equals(authorizerClassName)) {
@@ -62,10 +65,9 @@ public class AuthorizerFactory {
             LOGGER.info("Initializing authProvider: {}", authorizerClassName);
 
             Authorizer authorizer = BrokerClassLoader.loadClass(authorizerClassName, Authorizer.class);
-            authorizer.initialize(startupContext,
-                                  brokerAuthConfiguration.getAuthorization()
-                                                         .getAuthorizer()
-                                                         .getProperties());
+            HashMap<String, String> properties = new HashMap<>();
+            properties.put(RdbmsAuthorizer.USER_STORE_CLASS_PROPERTY_NAME, FileBasedUserStore.class.getCanonicalName());
+            authorizer.initialize(startupContext, properties);
             return authorizer;
         } else {
             return new NoOpAuthorizer();

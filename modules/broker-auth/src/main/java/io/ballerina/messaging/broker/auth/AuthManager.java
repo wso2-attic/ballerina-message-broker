@@ -25,6 +25,8 @@ import io.ballerina.messaging.broker.auth.authentication.sasl.SaslServerBuilder;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.PlainSaslServerBuilder;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizerFactory;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
@@ -65,6 +67,10 @@ public class AuthManager {
 
     private Authorizer authorizer;
 
+    private final DefaultMacHandler macHandler;
+
+    private final DefaultDacHandler dacHandler;
+
     private final boolean isAuthenticationEnabled;
 
     private final boolean isAuthorizationEnabled;
@@ -88,6 +94,8 @@ public class AuthManager {
                                                   "authentication enabled: FALSE and authorization enabled: TRUE");
         } else {
             authorizer = AuthorizerFactory.getAuthorizer(commonConfigs, brokerAuthConfiguration, startupContext);
+            macHandler = new DefaultMacHandler();
+            dacHandler = new DefaultDacHandler();
         }
     }
 
@@ -177,5 +185,19 @@ public class AuthManager {
      */
     public Authorizer getAuthorizer() {
         return authorizer;
+    }
+
+    /**
+     * Getter for macHandler
+     */
+    public DefaultMacHandler getMacHandler() {
+        return macHandler;
+    }
+
+    /**
+     * Getter for dacHandler
+     */
+    public DefaultDacHandler getDacHandler() {
+        return dacHandler;
     }
 }

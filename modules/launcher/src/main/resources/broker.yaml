@@ -64,11 +64,21 @@ ballerina.broker.auth:
  authorization:
   # Enable the authorization
   enabled: true
-  authorizer:
-   # Authorizer implementation
-   className: io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer
-   properties:
-    userStore: io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore
+
+  # User store used tot lookup user groups that a user belongs.
+  userStore:
+   # User store implementing class
+   className: io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore
+
+  # Configurations related to MAC handler.
+  mandatoryAccessController:
+   # MAC handler implementation.
+   className: io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler
+
+  # Configurations related to DAC handler.
+  discretionaryAccessController:
+   className: io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler
+
   cache:
    # Cache timeout in Minutes
    timeout: 15
