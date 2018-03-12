@@ -40,6 +40,7 @@ import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -99,7 +100,7 @@ public class RdbmsAuthorizer implements Authorizer {
 
         if (Objects.nonNull(userStoreClassName)) {
             userStore = BrokerClassLoader.loadClass(userStoreClassName, UserStore.class);
-            userStore.initialize(startupContext);
+            userStore.initialize(startupContext, new HashMap<>());
             return userStore;
         } else {
             throw new RuntimeException("Please configure a user store for " + RdbmsAuthorizer.class.getCanonicalName());
