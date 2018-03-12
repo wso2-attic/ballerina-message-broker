@@ -461,6 +461,10 @@ public class AmqpChannel {
         unackedMessageMap.resetMarkedAcknowledgments();
     }
 
+    public void forget(Xid xid) throws ValidationException {
+        transaction.forget(xid);
+    }
+
     /**
      * Data-structure to handle unacknowledge messages. This class will update the has room variable depending on the
      * number of messages in the unackedMessageMap.

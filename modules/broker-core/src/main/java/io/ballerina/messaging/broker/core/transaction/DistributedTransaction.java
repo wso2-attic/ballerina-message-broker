@@ -169,8 +169,8 @@ public class DistributedTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void forget(Xid xid) {
-
+    public void forget(Xid xid) throws ValidationException {
+        transactionRegistry.forget(xid);
     }
 
     @Override

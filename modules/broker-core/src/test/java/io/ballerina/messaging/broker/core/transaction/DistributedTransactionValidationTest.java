@@ -34,7 +34,7 @@ import javax.transaction.xa.Xid;
 /**
  * Test class for {@link DistributedTransaction} object
  */
-public class DistributedTransactionTest {
+public class DistributedTransactionValidationTest {
 
     private DistributedTransaction transaction;
 
@@ -82,5 +82,11 @@ public class DistributedTransactionTest {
         transactionRegistry.register(branch);
 
         transaction.start(xid, 1, false, false);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+           expectedExceptionsMessageRegExp = "Branch not found with xid .*")
+    public void testPrepareWithUnknownXid() throws Exception {
+        transaction.prepare(xid);
     }
 }

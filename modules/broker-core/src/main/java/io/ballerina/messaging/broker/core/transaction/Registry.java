@@ -36,6 +36,8 @@ import static io.ballerina.messaging.broker.core.transaction.DistributedTransact
 @ThreadSafe
 public class Registry {
 
+    private static final String ASSOCIATED_XID_ERROR_MSG = "Branch still has associated active sessions for xid ";
+
     private final Map<Xid, Branch> branchMap;
 
     Registry() {
@@ -63,7 +65,7 @@ public class Registry {
         }
 
         if (branch.hasAssociatedActiveSessions()) {
-            throw new ValidationException("Branch still has associated active sessions for xid" + xid);
+            throw new ValidationException(ASSOCIATED_XID_ERROR_MSG + xid);
         }
 
         branch.clearAssociations();
@@ -92,7 +94,7 @@ public class Registry {
         if (Objects.isNull(branch)) {
             throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
         } else if (branch.hasAssociatedActiveSessions()) {
-            throw new ValidationException("Branch still has associated active sessions for xid" + xid);
+            throw new ValidationException(ASSOCIATED_XID_ERROR_MSG + xid);
         } else if (branch.getState() == Branch.State.ROLLBACK_ONLY) {
             throw new ValidationException("Branch is set to rollback only. Can't commit");
         } else if (onePhase && branch.getState() == Branch.State.PREPARED) {
@@ -109,12 +111,33 @@ public class Registry {
         }
 
         if (branch.hasAssociatedActiveSessions()) {
-            throw new ValidationException("Branch still has associated sessions for xid " + xid);
+            throw new ValidationException(ASSOCIATED_XID_ERROR_MSG + xid);
         }
 
         branch.clearAssociations();
         branch.dtxRollback();
         branch.setState(Branch.State.FORGOTTEN);
         unregister(xid);
+    }
+
+    public void forget(Xid xid) throws ValidationException {
+        Branch branch = branchMap.get(xid);
+        if (Objects.isNull(branch)) {
+            throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
+        }
+
+        synchronized (branch) {
+            if (branch.hasAssociatedActiveSessions()) {
+                throw new ValidationException(ASSOCIATED_XID_ERROR_MSG + xid);
+            }
+
+            if (branch.getState() != Branch.State.HEUR_COM && branch.getState() != Branch.State.HEUR_RB) {
+                throw new ValidationException("Branch is not heuristically complete, "
+                                                      + "hence unable to forget. Xid " + xid);
+            }
+
+            branch.setState(Branch.State.FORGOTTEN);
+            unregister(xid);
+        }
     }
 }
