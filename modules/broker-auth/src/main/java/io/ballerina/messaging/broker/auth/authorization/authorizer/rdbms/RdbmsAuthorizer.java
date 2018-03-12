@@ -102,7 +102,7 @@ public class RdbmsAuthorizer implements Authorizer {
             userStore.initialize(startupContext);
             return userStore;
         } else {
-            throw new RuntimeException("Please provide a user store for " + RdbmsAuthorizer.class.getCanonicalName());
+            throw new RuntimeException("Please configure a user store for " + RdbmsAuthorizer.class.getCanonicalName());
         }
 
     }

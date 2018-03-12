@@ -77,7 +77,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
     @Override
     public void add(AuthResource authResource)
             throws BrokerAuthServerException, BrokerAuthDuplicateException {
-        if (isExists(authResource.getResourceType(), authResource.getResourceName(), authResource.isDurable())) {
+        if (isAvailable(authResource.getResourceType(), authResource.getResourceName(), authResource.isDurable())) {
             throw new BrokerAuthDuplicateException("Duplicate resource found for resource type : " +
                                                            authResource.getResourceType() + "  name : " +
                                                            authResource.getResourceName());
@@ -164,7 +164,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
         return nonDurableAuthResources;
     }
 
-    private boolean isExists(String resourceType, String resourceName, boolean durable)
+    private boolean isAvailable(String resourceType, String resourceName, boolean durable)
             throws BrokerAuthServerException {
         return (durable &&
                 Objects.nonNull(authResourceCache.getIfPresent(new ResourceCacheKey(resourceType,

@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.auth.authorization;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
+import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import org.slf4j.Logger;
@@ -60,8 +61,7 @@ public class AuthorizerFactory {
 
             LOGGER.info("Initializing authProvider: {}", authorizerClassName);
 
-            Authorizer authorizer = (Authorizer) ClassLoader.getSystemClassLoader()
-                                                            .loadClass(authorizerClassName).newInstance();
+            Authorizer authorizer = BrokerClassLoader.loadClass(authorizerClassName, Authorizer.class);
             authorizer.initialize(startupContext,
                                   brokerAuthConfiguration.getAuthorization()
                                                          .getAuthorizer()

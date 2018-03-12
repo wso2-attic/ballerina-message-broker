@@ -22,7 +22,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -46,70 +45,66 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
     private Table<String, String, AuthResource> inMemoryResourceMap = HashBasedTable.create();
 
     @Override
-    public void persist(AuthResource authResource) throws BrokerAuthServerException {
-        inMemoryResourceMap.put(authResource.getResourceType(),
-                                authResource.getResourceName(),
-                                authResource);
+    public void persist(AuthResource authResource) {
+        inMemoryResourceMap.put(authResource.getResourceType(), authResource.getResourceName(), authResource);
     }
 
     @Override
-    public void update(AuthResource authResource) throws BrokerAuthServerException {
-        inMemoryResourceMap.put(authResource.getResourceType(),
-                                authResource.getResourceName(),
-                                authResource);
+    public void update(AuthResource authResource) {
+        inMemoryResourceMap.put(authResource.getResourceType(), authResource.getResourceName(), authResource);
     }
 
     @Override
-    public void delete(String resourceType, String resource) throws BrokerAuthServerException {
+    public void delete(String resourceType, String resource) {
         inMemoryResourceMap.remove(resourceType, resource);
     }
 
     @Override
-    public AuthResource read(String resourceType, String resource) throws BrokerAuthServerException {
+    public AuthResource read(String resourceType, String resource) {
         return inMemoryResourceMap.get(resourceType, resource);
     }
 
     @Override
-    public List<AuthResource> readAll(String resourceType, String ownerId) throws BrokerAuthServerException {
+    public List<AuthResource> readAll(String resourceType, String ownerId) {
         Map<String, AuthResource> resourceMap = inMemoryResourceMap.row(resourceType);
         if (Objects.nonNull(resourceMap)) {
             Collection<AuthResource> authResources = resourceMap.values();
             return authResources.stream()
-                                .filter(authResource -> authResource.getOwner()
-                                                                    .equals(ownerId))
+                                .filter(authResource -> authResource.getOwner().equals(ownerId))
                                 .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
 
     @Override
-    public List<AuthResource> readAll(String resourceType, String action, String ownerId, List<String> userGroups)
-            throws BrokerAuthServerException {
+    public List<AuthResource> readAll(String resourceType, String action, String ownerId, List<String> userGroups) {
         Map<String, AuthResource> resourceMap = inMemoryResourceMap.row(resourceType);
         if (Objects.nonNull(resourceMap)) {
             Collection<AuthResource> authResources = resourceMap.values();
             return authResources.stream()
-                                .filter(authResource -> authResource.getOwner().equals(ownerId) ||
-                                        checkActionAndGroups(authResource.getActionsUserGroupsMap(),
-                                                             action,
-                                                             userGroups))
+                                .filter(authResource ->
+                                                authResource.getOwner().equals(ownerId)
+                                                        || checkActionAndGroups(authResource.getActionsUserGroupsMap(),
+                                                                                action,
+                                                                                userGroups))
                                 .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
 
-    private boolean checkActionAndGroups(Map<String, Set<String>> actionUserGroupsMap, String action,
+    private boolean checkActionAndGroups(Map<String, Set<String>> actionUserGroupsMap,
+                                         String action,
                                          List<String> userGroups) {
         if (Objects.nonNull(actionUserGroupsMap)) {
             Set<String> authorizedUserGroups = actionUserGroupsMap.get(action);
-            return Objects.nonNull(authorizedUserGroups) &&
-                    authorizedUserGroups.stream().anyMatch(userGroups::contains);
+            return Objects.nonNull(authorizedUserGroups) && authorizedUserGroups.stream()
+                                                                                .anyMatch(userGroups::contains);
         }
         return false;
     }
 
     @Override
-    public boolean isExists(String resourceType, String resourceName) throws BrokerAuthServerException {
+    public boolean isExists(String resourceType, String resourceName) {
         return inMemoryResourceMap.contains(resourceType, resourceName);
     }
 
