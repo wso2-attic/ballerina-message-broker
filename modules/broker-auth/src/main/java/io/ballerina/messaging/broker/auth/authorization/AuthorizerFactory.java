@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import org.slf4j.Logger;
@@ -41,26 +42,30 @@ public class AuthorizerFactory {
      * @return authProvider for given configuration
      * @throws Exception throws if error occurred while providing new instance of authProvider
      */
-    public Authorizer getAuthorizer(BrokerCommonConfiguration commonConfiguration,
+    public static Authorizer getAuthorizer(BrokerCommonConfiguration commonConfiguration,
                                     BrokerAuthConfiguration brokerAuthConfiguration,
                                     StartupContext startupContext) throws Exception {
 
-        if (!commonConfiguration.getEnableInMemoryMode() &&
-                brokerAuthConfiguration.getAuthentication().isEnabled() &&
-                brokerAuthConfiguration.getAuthorization().isEnabled()) {
+        if (brokerAuthConfiguration.getAuthentication().isEnabled() && brokerAuthConfiguration.getAuthorization()
+                                                                                              .isEnabled()) {
 
             String authorizerClassName = brokerAuthConfiguration.getAuthorization()
-                                                               .getAuthorizer()
-                                                               .getClassName();
+                                                                .getAuthorizer()
+                                                                .getClassName();
+
+            if (commonConfiguration.getEnableInMemoryMode() && RdbmsAuthorizer.class.getCanonicalName()
+                                                                                    .equals(authorizerClassName)) {
+                throw new RuntimeException("Cannot use " + authorizerClassName + " in in-memory mode.");
+            }
+
             LOGGER.info("Initializing authProvider: {}", authorizerClassName);
 
-
             Authorizer authorizer = (Authorizer) ClassLoader.getSystemClassLoader()
-                                                              .loadClass(authorizerClassName).newInstance();
+                                                            .loadClass(authorizerClassName).newInstance();
             authorizer.initialize(startupContext,
                                   brokerAuthConfiguration.getAuthorization()
-                                                        .getAuthorizer()
-                                                        .getProperties());
+                                                         .getAuthorizer()
+                                                         .getProperties());
             return authorizer;
         } else {
             return new NoOpAuthorizer();

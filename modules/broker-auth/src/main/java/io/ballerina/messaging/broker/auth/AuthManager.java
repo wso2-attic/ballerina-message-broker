@@ -87,7 +87,7 @@ public class AuthManager {
             throw new ValidationException("Invalid combination found in the broker.yaml - " +
                                                   "authentication enabled: FALSE and authorization enabled: TRUE");
         } else {
-            authorizer = new AuthorizerFactory().getAuthorizer(commonConfigs, brokerAuthConfiguration, startupContext);
+            authorizer = AuthorizerFactory.getAuthorizer(commonConfigs, brokerAuthConfiguration, startupContext);
         }
     }
 

@@ -19,6 +19,7 @@
 package io.ballerina.messaging.broker.auth;
 
 import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
 import io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore;
 
@@ -150,7 +151,7 @@ public class BrokerAuthConfiguration {
      */
     public static class AuthorizerConfiguration {
 
-        private String className = RdbmsAuthorizer.class.getCanonicalName();
+        private String className = NoOpAuthorizer.class.getCanonicalName();
 
         private Map<String, String> properties = new HashMap<>();
 
