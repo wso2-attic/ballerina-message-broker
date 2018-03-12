@@ -52,8 +52,7 @@ public interface AuthResourceStore {
      * @param authResource an authResource
      * @throws BrokerAuthServerException throws if error occurs while adding resource
      */
-    void add(AuthResource authResource)
-            throws BrokerAuthServerException, BrokerAuthDuplicateException;
+    void add(AuthResource authResource) throws BrokerAuthServerException, BrokerAuthDuplicateException;
 
     /**
      * Update resource to auth resource store.

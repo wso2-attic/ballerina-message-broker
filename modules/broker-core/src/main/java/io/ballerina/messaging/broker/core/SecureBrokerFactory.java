@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.core;
 
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import javax.security.auth.Subject;
@@ -35,7 +36,8 @@ public class SecureBrokerFactory implements BrokerFactory {
     public SecureBrokerFactory(StartupContext startupContext) {
         this.broker = startupContext.getService(Broker.class);
         AuthManager authManager = startupContext.getService(AuthManager.class);
-        this.authorizationHandler = new AuthorizationHandler(authManager);
+        Authorizer authorizer = authManager.getAuthorizer();
+        this.authorizationHandler = new AuthorizationHandler(authorizer);
     }
 
     @Override

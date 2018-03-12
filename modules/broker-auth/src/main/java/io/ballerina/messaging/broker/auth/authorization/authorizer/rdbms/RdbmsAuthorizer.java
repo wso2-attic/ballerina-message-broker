@@ -26,9 +26,11 @@ import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResourceStoreImpl;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScopeStoreImpl;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
@@ -182,8 +184,15 @@ public class RdbmsAuthorizer implements Authorizer {
     }
 
     @Override
-    public AuthResourceStore getAuthResourceStore() {
-        return authResourceStore;
+    public void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
+            throws BrokerAuthServerException, BrokerAuthDuplicateException {
+        authResourceStore.add(new AuthResource(resourceType, resourceName, durable, owner));
+    }
+
+    @Override
+    public void deleteProtectedResource(String resourceType, String resourceName)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        authResourceStore.delete(resourceType, resourceName);
     }
 
     private class UserCacheLoader extends CacheLoader<String, UserCacheEntry> {

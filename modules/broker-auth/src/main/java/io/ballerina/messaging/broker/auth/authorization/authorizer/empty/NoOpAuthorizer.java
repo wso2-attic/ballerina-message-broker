@@ -18,7 +18,6 @@
  */
 package io.ballerina.messaging.broker.auth.authorization.authorizer.empty;
 
-import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -29,8 +28,6 @@ import java.util.Map;
  * Defines empty @{@link Authorizer} when authorization is disabled.
  */
 public class NoOpAuthorizer implements Authorizer {
-
-    private AuthResourceStore authResourceStore = new EmptyAuthResourceStore();
 
     private AuthScopeStore authScopeStore = new EmptyAuthScopeStore();
 
@@ -55,7 +52,12 @@ public class NoOpAuthorizer implements Authorizer {
     }
 
     @Override
-    public AuthResourceStore getAuthResourceStore() {
-        return authResourceStore;
+    public void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner) {
+        // Do nothing
+    }
+
+    @Override
+    public void deleteProtectedResource(String resourceType, String resourceName) {
+        // Do nothing
     }
 }

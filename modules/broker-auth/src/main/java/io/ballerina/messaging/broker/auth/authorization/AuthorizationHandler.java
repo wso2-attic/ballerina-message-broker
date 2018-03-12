@@ -18,9 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
-import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.UsernamePrincipal;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
@@ -39,8 +37,8 @@ public class AuthorizationHandler {
 
     private Authorizer authorizer;
 
-    public AuthorizationHandler(AuthManager authManager) {
-        authorizer = authManager.getAuthorizer();
+    public AuthorizationHandler(Authorizer authorizer) {
+        this.authorizer = authorizer;
     }
 
     /**
@@ -116,15 +114,15 @@ public class AuthorizationHandler {
     public void createAuthResource(ResourceType resourceType, String resourceName, boolean durable, Subject subject)
             throws BrokerAuthException {
         try {
-            authorizer.getAuthResourceStore().add(new AuthResource(resourceType.toString(),
-                                                                   resourceName,
-                                                                   durable,
-                                                                   getUserFromSubject(subject)));
+            authorizer.addProtectedResource(resourceType.toString(),
+                                            resourceName,
+                                            durable,
+                                            getUserFromSubject(subject));
         } catch (BrokerAuthServerException e) {
             throw new BrokerAuthException("Error while creating " + resourceType + " with name : " + resourceName, e);
         } catch (BrokerAuthDuplicateException e) {
-            throw new BrokerAuthException("Duplicate resource found for resource type : " + resourceType +
-                    " with name : " + resourceName, e);
+            throw new BrokerAuthException(
+                    "Duplicate resource found for resource type : " + resourceType + " with name : " + resourceName, e);
         }
     }
 
@@ -138,7 +136,7 @@ public class AuthorizationHandler {
     public void deleteAuthResource(ResourceType resourceType, String resourceName)
             throws BrokerAuthException, ResourceNotFoundException {
         try {
-            authorizer.getAuthResourceStore().delete(resourceType.toString(), resourceName);
+            authorizer.deleteProtectedResource(resourceType.toString(), resourceName);
         } catch (BrokerAuthServerException e) {
             throw new BrokerAuthException("Error while deleting " + resourceType + " with name : " + resourceName, e);
         } catch (BrokerAuthNotFoundException e) {
