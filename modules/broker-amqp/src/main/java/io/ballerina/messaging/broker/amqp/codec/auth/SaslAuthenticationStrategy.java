@@ -55,8 +55,7 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
                     .createSaslServer(connectionHandler.getConfiguration().getHostName(), mechanism.toString());
             byte[] challenge = saslServer.evaluateResponse(response.getBytes());
             if (saslServer.isComplete()) {
-                Subject subject = new Subject();
-                subject.getPrincipals().add(new UsernamePrincipal(saslServer.getAuthorizationID()));
+                Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());
                 connectionHandler.attachBroker(subject);
                 ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
             } else {

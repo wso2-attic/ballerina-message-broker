@@ -77,10 +77,9 @@ public class ConnectionSecureOk extends MethodFrame {
                 if (saslServerAttribute != null && (saslServer = saslServerAttribute.get()) != null) {
                     byte[] challenge = saslServer.evaluateResponse(response.getBytes());
                     if (saslServer.isComplete()) {
-                        ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
-                        Subject subject = new Subject();
-                        subject.getPrincipals().add(new UsernamePrincipal(saslServer.getAuthorizationID()));
+                        Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());
                         connectionHandler.attachBroker(subject);
+                        ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
                     } else {
                         ctx.channel().attr(AttributeKey.valueOf(SaslAuthenticationStrategy.SASL_SERVER_ATTRIBUTE))
                             .set(null);

@@ -20,7 +20,7 @@ package io.ballerina.messaging.broker.auth;
 
 import java.security.Principal;
 import java.util.Objects;
-
+import javax.security.auth.Subject;
 
 /**
  * A principal that is just a wrapper for a simple username
@@ -69,5 +69,17 @@ public class UsernamePrincipal implements Principal {
                 return false;
             }
         }
+    }
+
+    /**
+     * Create subject from the given authorization.
+     *
+     * @param authorizationID authorization ID
+     * @return user subject
+     */
+    public static Subject createSubject(String authorizationID) {
+        Subject subject = new Subject();
+        subject.getPrincipals().add(new UsernamePrincipal(authorizationID));
+        return subject;
     }
 }
