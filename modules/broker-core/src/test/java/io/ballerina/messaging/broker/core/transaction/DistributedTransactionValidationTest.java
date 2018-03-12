@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
 import io.ballerina.messaging.broker.core.store.NullMessageStore;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -42,12 +43,16 @@ public class DistributedTransactionValidationTest {
 
     private Xid xid;
 
+    @BeforeClass
+    public void setXid() {
+        xid = new XidImpl(0, "branchId".getBytes(), "globalId".getBytes());
+    }
+
     @BeforeMethod
     public void setUp() {
         transactionRegistry = new Registry();
         transaction = new DistributedTransaction(new BranchFactory(null, new NullMessageStore()),
                                                  transactionRegistry);
-        xid = new XidImpl(0, "branchId".getBytes(), "globalId".getBytes());
     }
 
     @AfterMethod
@@ -88,5 +93,70 @@ public class DistributedTransactionValidationTest {
            expectedExceptionsMessageRegExp = "Branch not found with xid .*")
     public void testPrepareWithUnknownXid() throws Exception {
         transaction.prepare(xid);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+           expectedExceptionsMessageRegExp = "Branch still has associated active sessions for xid .*")
+    public void testPrepareWithAssociatedActiveSession() throws Exception {
+        transaction.start(xid, 1, false, false);
+        transaction.prepare(xid);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+            expectedExceptionsMessageRegExp = "Branch not found with xid .*")
+    public void testCommitWithUnknownXid() throws Exception {
+        transaction.commit(xid, true);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+            expectedExceptionsMessageRegExp = "Branch still has associated active sessions for xid .*")
+    public void testCommitWithAssociatedActiveSession() throws Exception {
+        transaction.start(xid, 1, false, false);
+        transaction.commit(xid, true);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+           expectedExceptionsMessageRegExp = "Branch is set to rollback only. Can't commit with xid .*")
+    public void testCommitWithRollbackOnlyBranch() throws Exception {
+        StoreFactory storeFactory = new MemBackedStoreFactory(new NullBrokerMetricManager(),
+                                                              new BrokerCoreConfiguration());
+        Branch branch = new Branch(xid, storeFactory.getMessageStore(), null);
+        transactionRegistry.register(branch);
+        branch.setState(Branch.State.ROLLBACK_ONLY);
+        transaction.commit(xid, true);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+            expectedExceptionsMessageRegExp = "Branch not found with xid .*")
+    public void testRollbackWithUnknownXid() throws Exception {
+        transaction.rollback(xid);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+            expectedExceptionsMessageRegExp = "Branch still has associated active sessions for xid .*")
+    public void testRollbackWithAssociatedActiveSession() throws Exception {
+        transaction.start(xid, 1, false, false);
+        transaction.rollback(xid);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+            expectedExceptionsMessageRegExp = "Branch not found with xid .*")
+    public void testForgetWithUnknownXid() throws Exception {
+        transaction.forget(xid);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+           expectedExceptionsMessageRegExp = "Branch still has associated active sessions for xid .*")
+    public void testForgetWithAssociatedActiveSession() throws Exception {
+        transaction.start(xid, 1, false, false);
+        transaction.forget(xid);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+           expectedExceptionsMessageRegExp = "Branch is not heuristically complete, hence unable to forget. Xid .*")
+    public void testForgetWithoutHeuristicCommitOrRollback() throws Exception {
+        transaction.start(xid, 1, false, false);
+        transaction.end(xid, 1, false, false);
+        transaction.forget(xid);
     }
 }

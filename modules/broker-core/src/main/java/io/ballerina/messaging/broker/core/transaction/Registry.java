@@ -96,7 +96,7 @@ public class Registry {
         } else if (branch.hasAssociatedActiveSessions()) {
             throw new ValidationException(ASSOCIATED_XID_ERROR_MSG + xid);
         } else if (branch.getState() == Branch.State.ROLLBACK_ONLY) {
-            throw new ValidationException("Branch is set to rollback only. Can't commit");
+            throw new ValidationException("Branch is set to rollback only. Can't commit with xid " + xid);
         } else if (onePhase && branch.getState() == Branch.State.PREPARED) {
             throw new ValidationException("Cannot call one-phase commit on a prepared branch for xid " + xid);
         } else if (!onePhase && branch.getState() != Branch.State.PREPARED) {
