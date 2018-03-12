@@ -13,9 +13,11 @@ public interface DiscretionaryAccessController {
      * Initialize authorization controller based on given auth configuration, user store.
      *
      * @param startupContext the startup context provides registered services in broker
+     * @param userStore      user store
      * @param properties     properties
      */
-    void initialize(StartupContext startupContext, Map<String, String> properties) throws Exception;
+    void initialize(StartupContext startupContext, UserStore userStore, Map<String, String> properties)
+            throws Exception;
 
     /**
      * Authorize resource with given resource and action.
@@ -23,11 +25,11 @@ public interface DiscretionaryAccessController {
      * @param resourceType resource Type
      * @param resource     resource
      * @param action       action
-     * @param owner        user identifier of owner
+     * @param userId       user identifier of owner
      * @return true if authorised, false otherwise
      * @throws BrokerAuthException throws if error occur during authorization
      */
-    boolean authorize(String resourceType, String resource, String action, String owner) throws BrokerAuthException;
+    boolean authorize(String resourceType, String resource, String action, String userId) throws BrokerAuthException;
 
     /**
      * Create auth resource.
@@ -53,10 +55,12 @@ public interface DiscretionaryAccessController {
      *
      * @param resourceType resource type
      * @param resourceName resource name
+     * @param action       action
      * @param group        group
      * @throws BrokerAuthException throws if error occur during updating resource
      */
-    void addGroupToResource(String resourceType, String resourceName, String group) throws BrokerAuthException;
+    void addGroupToResource(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthException;
 
     /**
      * Create auth resource.
