@@ -142,4 +142,20 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
 
     }
 
+    @Override
+    public void removeGroup(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthNotFoundException {
+        AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
+
+        if (Objects.nonNull(authResource)) {
+            Set<String> userGroups = authResource.getActionsUserGroupsMap()
+                                                 .computeIfAbsent(action, key -> new HashSet<>());
+            userGroups.remove(group);
+        } else {
+            throw new BrokerAuthNotFoundException(
+                    "No auth resource found for resource type (" + resourceType + ") and resource name (" + resourceName
+                            + ")");
+        }
+    }
+
 }

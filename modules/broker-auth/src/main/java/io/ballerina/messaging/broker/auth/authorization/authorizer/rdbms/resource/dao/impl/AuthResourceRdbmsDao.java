@@ -324,6 +324,28 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
 
     }
 
+    @Override
+    public void removeGroup(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthServerException {
+        Connection connection = null;
+        PreparedStatement insertMappingsStmt = null;
+        try {
+            connection = getConnection();
+            insertMappingsStmt = connection.prepareStatement(RdbmsConstants.PS_DELETE_AUTH_RESOURCE_MAPPING);
+            insertMappingsStmt.setString(1, resourceType);
+            insertMappingsStmt.setString(2, resourceName);
+            insertMappingsStmt.setString(3, action);
+            insertMappingsStmt.setString(4, group);
+
+            insertMappingsStmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
+        } finally {
+            close(connection, insertMappingsStmt);
+        }
+    }
+
     private void persistUserGroupMappings(String resourceType, String resource,
                                           Map<String, Set<String>> userGroupsMapping,
                                           Connection connection) throws BrokerAuthServerException {

@@ -29,6 +29,7 @@ import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -47,8 +48,11 @@ public class MemoryDacHandler implements DiscretionaryAccessController {
                              String resource,
                              String action,
                              String userId,
-                             Set<String> userGroups) {
-        return true;
+                             Set<String> userGroups) throws BrokerAuthServerException {
+        AuthResource authResource = resourceDao.read(resourceType, resource);
+        return Objects.nonNull(authResource) && (authResource.getOwner().equals(userId) ||
+                authResource.getActionsUserGroupsMap().get(action).stream().anyMatch(userGroups::contains));
+
     }
 
     @Override
@@ -64,13 +68,15 @@ public class MemoryDacHandler implements DiscretionaryAccessController {
     }
 
     @Override
-    public void addGroupToResource(String resourceType, String resourceName, String action, String group) {
-        //do nothing as authorization disabled
+    public void addGroupToResource(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        resourceDao.addGroup(resourceType, resourceName, action, group);
     }
 
     @Override
-    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group) {
-        // Do nothing
+    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        resourceDao.removeGroup(resourceType, resourceName, action, group);
     }
 
     @Override

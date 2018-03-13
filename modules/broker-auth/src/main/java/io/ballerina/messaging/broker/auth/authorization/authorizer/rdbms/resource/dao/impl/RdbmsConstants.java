@@ -50,6 +50,12 @@ final class RdbmsConstants {
                     + "WHERE RESOURCE_ID IN "
                     + "( SELECT RESOURCE_ID FROM MB_AUTH_RESOURCE WHERE RESOURCE_TYPE = ? AND RESOURCE_NAME = ? )";
 
+    static final String PS_DELETE_AUTH_RESOURCE_MAPPING =
+            "DELETE FROM MB_AUTH_RESOURCE_MAPPING "
+                    + "WHERE RESOURCE_ID IN "
+                    + "( SELECT RESOURCE_ID FROM MB_AUTH_RESOURCE WHERE RESOURCE_TYPE = ? AND RESOURCE_NAME = ? ) AND"
+                    + " RESOURCE_ACTION = ? AND USER_GROUP_ID = ?";
+
     static final String PS_SELECT_AUTH_RESOURCE =
             "SELECT RESOURCE_ID FROM MB_AUTH_RESOURCE WHERE RESOURCE_TYPE = ? AND RESOURCE_NAME = ?";
 

@@ -82,10 +82,11 @@ public interface DiscretionaryAccessController {
      * @param resourceName resource name
      * @param action       action
      * @param group        group
-     * @throws BrokerAuthException throws if error occur during updating resource
+     * @throws BrokerAuthServerException throws if an server error occurred
+     * @throws BrokerAuthNotFoundException throws if the resource is not found
      */
     void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthException;
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
      * Create auth resource.

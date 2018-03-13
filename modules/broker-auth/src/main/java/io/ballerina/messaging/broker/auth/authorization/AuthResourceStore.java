@@ -125,4 +125,16 @@ public interface AuthResourceStore {
      */
     void addGroup(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthNotFoundException, BrokerAuthServerException;
+
+    /**
+     * Remove a group mapping from the given auth resource.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param action       action
+     * @param group        group to add
+     */
+    void removeGroup(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+
 }

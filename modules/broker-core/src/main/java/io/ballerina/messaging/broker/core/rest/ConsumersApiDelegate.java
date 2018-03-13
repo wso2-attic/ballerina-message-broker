@@ -71,11 +71,13 @@ public class ConsumersApiDelegate {
     }
 
     public Response getAllConsumers(String queueName, Subject subject) {
-        QueueHandler queueHandler = null;
+        QueueHandler queueHandler;
         try {
             queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
-        } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
+        } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (BrokerAuthNotFoundException e) {
+            throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
         }
         if (Objects.isNull(queueHandler)) {
             throw new NotFoundException("Unknown queue Name " + queueName);

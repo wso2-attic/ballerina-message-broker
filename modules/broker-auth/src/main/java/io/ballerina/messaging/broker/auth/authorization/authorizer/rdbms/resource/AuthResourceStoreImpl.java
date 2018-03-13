@@ -179,6 +179,13 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
         authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
     }
 
+    @Override
+    public void removeGroup(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        authResourceDaoFactory.getAuthResourceDao(true).removeGroup(resourceType, resourceName, action, group);
+        authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+    }
+
     private boolean isAvailable(String resourceType, String resourceName, boolean durable)
             throws BrokerAuthServerException {
         return (durable &&
