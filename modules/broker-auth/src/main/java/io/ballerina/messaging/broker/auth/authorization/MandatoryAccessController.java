@@ -11,11 +11,13 @@ import java.util.Map;
 public interface MandatoryAccessController {
     /**
      * Initialize authorization controller based on given auth configuration, user store.
-     *
-     * @param startupContext the startup context provides registered services in broker
+     *  @param startupContext the startup context provides registered services in broker
+     * @param userStore
      * @param properties properties
      */
-    void initialize(StartupContext startupContext, Map<String, String> properties) throws Exception;
+    void initialize(StartupContext startupContext,
+                    UserStore userStore,
+                    Map<String, String> properties) throws Exception;
 
     /**
      * Authorize user with given scope key.

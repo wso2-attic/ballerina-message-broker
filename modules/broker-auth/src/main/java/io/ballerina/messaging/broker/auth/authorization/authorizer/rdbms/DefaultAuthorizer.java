@@ -25,6 +25,8 @@ import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
+import io.ballerina.messaging.broker.auth.authorization.MandatoryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResourceStoreImpl;
@@ -34,15 +36,12 @@ import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
-import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -53,10 +52,9 @@ import javax.sql.DataSource;
 /**
  * Class provides database based @{@link Authorizer} implementation.
  */
-public class RdbmsAuthorizer implements Authorizer {
+public class DefaultAuthorizer implements Authorizer {
 
-    public static final String USER_STORE_CLASS_PROPERTY_NAME = "userStore";
-    private static final Logger LOGGER = LoggerFactory.getLogger(RdbmsAuthorizer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAuthorizer.class);
 
     private AuthScopeStore authScopeStore;
 
@@ -68,19 +66,23 @@ public class RdbmsAuthorizer implements Authorizer {
      * Cache which store user id vs  user cache entry
      */
     private LoadingCache<String, UserCacheEntry> userCache;
+    private DiscretionaryAccessController dacHandler;
+    private MandatoryAccessController macHandler;
+
+    public DefaultAuthorizer(DiscretionaryAccessController dacHandler,
+                             MandatoryAccessController macHandler,
+                             UserStore userStore) {
+        this.dacHandler = dacHandler;
+        this.macHandler = macHandler;
+        this.userStore = userStore;
+    }
 
     @Override
-    public void initialize(StartupContext startupContext, Map<String, String> properties)
-            throws Exception {
-
+    public void initialize(StartupContext startupContext) throws Exception {
         DataSource dataSource = startupContext.getService(DataSource.class);
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerAuthConfiguration brokerAuthConfiguration = configProvider.getConfigurationObject(
                 BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
-
-
-
-        UserStore userStore = createAuthProvider(startupContext, properties);
 
         authResourceStore = new AuthResourceStoreImpl(brokerAuthConfiguration, dataSource, userStore);
         authScopeStore = new AuthScopeStoreImpl(brokerAuthConfiguration, dataSource);
@@ -94,19 +96,7 @@ public class RdbmsAuthorizer implements Authorizer {
                                 .build(new UserCacheLoader());
     }
 
-    private UserStore createAuthProvider(StartupContext startupContext, Map<String, String> properties)
-            throws Exception {
-        String userStoreClassName = properties.get(USER_STORE_CLASS_PROPERTY_NAME);
 
-        if (Objects.nonNull(userStoreClassName)) {
-            userStore = BrokerClassLoader.loadClass(userStoreClassName, UserStore.class);
-            userStore.initialize(startupContext, new HashMap<>());
-            return userStore;
-        } else {
-            throw new RuntimeException("Please configure a user store for " + RdbmsAuthorizer.class.getCanonicalName());
-        }
-
-    }
 
     @Override
     public boolean authorize(String scopeName, String userId)

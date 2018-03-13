@@ -22,8 +22,6 @@ import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
 
-import java.util.Map;
-
 /**
  * Defines empty @{@link Authorizer} when authorization is disabled.
  */
@@ -32,7 +30,7 @@ public class NoOpAuthorizer implements Authorizer {
     private AuthScopeStore authScopeStore = new EmptyAuthScopeStore();
 
     @Override
-    public void initialize(StartupContext startupContext, Map<String, String> properties) {
+    public void initialize(StartupContext startupContext) {
         // do nothing
     }
 

@@ -24,8 +24,6 @@ import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
-import java.util.Map;
-
 /**
  * Interface represents authorization for broker resources.
  * This will provide two functions.
@@ -37,11 +35,9 @@ public interface Authorizer {
 
     /**
      * Initialize authorization strategy based on given auth configuration, user store manager and data source.
-     *
-     * @param startupContext the startup context provides registered services for authProvider
-     * @param properties     set of properties
-     */
-    void initialize(StartupContext startupContext, Map<String, String> properties) throws Exception;
+     *  @param startupContext the startup context provides registered services for authProvider
+     * */
+    void initialize(StartupContext startupContext) throws Exception;
 
     /**
      * Authorize user with given scope key.

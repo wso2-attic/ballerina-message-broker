@@ -1,6 +1,7 @@
 package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import io.ballerina.messaging.broker.auth.authorization.MandatoryAccessController;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
@@ -11,7 +12,9 @@ import java.util.Map;
  */
 public class DefaultMacHandler implements MandatoryAccessController {
     @Override
-    public void initialize(StartupContext startupContext, Map<String, String> properties) throws Exception {
+    public void initialize(StartupContext startupContext,
+                           UserStore userStore,
+                           Map<String, String> properties) throws Exception {
         // TODO implement logic
     }
 

@@ -18,17 +18,18 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.RdbmsAuthorizer;
-import io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.DefaultAuthorizer;
 import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Factory class for create new instance of @{@link Authorizer}.
@@ -41,36 +42,99 @@ public class AuthorizerFactory {
      * Provides an instance of @{@link Authorizer}
      *
      * @param commonConfiguration     common Configuration
-     * @param startupContext          the startup context provides registered services for authenticator functionality.
      * @param brokerAuthConfiguration the auth configuration
+     * @param startupContext          the startup context provides registered services for authenticator functionality.
      * @return authProvider for given configuration
      * @throws Exception throws if error occurred while providing new instance of authProvider
      */
-    @Deprecated
     public static Authorizer getAuthorizer(BrokerCommonConfiguration commonConfiguration,
-                                    BrokerAuthConfiguration brokerAuthConfiguration,
-                                    StartupContext startupContext) throws Exception {
+                                           BrokerAuthConfiguration brokerAuthConfiguration,
+                                           StartupContext startupContext) throws Exception {
 
-        if (!commonConfiguration.getEnableInMemoryMode() && brokerAuthConfiguration.getAuthentication().isEnabled() &&
-                brokerAuthConfiguration.getAuthorization()
-                                                                                              .isEnabled()) {
+        // TODO remove in-memory check
+        if (!commonConfiguration.getEnableInMemoryMode() && brokerAuthConfiguration.getAuthentication().isEnabled()
+                && brokerAuthConfiguration.getAuthorization().isEnabled()) {
 
-            String authorizerClassName = RdbmsAuthorizer.class.getCanonicalName();
+            UserStore userStore = createUserStore(startupContext, brokerAuthConfiguration);
 
-            if (commonConfiguration.getEnableInMemoryMode() && RdbmsAuthorizer.class.getCanonicalName()
-                                                                                    .equals(authorizerClassName)) {
-                throw new RuntimeException("Cannot use " + authorizerClassName + " in in-memory mode.");
-            }
+            DiscretionaryAccessController dacHandler = getDac(brokerAuthConfiguration,
+                                                              startupContext,
+                                                              userStore);
 
-            LOGGER.info("Initializing authProvider: {}", authorizerClassName);
-
-            Authorizer authorizer = BrokerClassLoader.loadClass(authorizerClassName, Authorizer.class);
-            HashMap<String, String> properties = new HashMap<>();
-            properties.put(RdbmsAuthorizer.USER_STORE_CLASS_PROPERTY_NAME, FileBasedUserStore.class.getCanonicalName());
-            authorizer.initialize(startupContext, properties);
+            MandatoryAccessController macHandler = getMandatoryAccessController(brokerAuthConfiguration,
+                                                                                startupContext,
+                                                                                userStore);
+            Authorizer authorizer = new DefaultAuthorizer(dacHandler, macHandler, userStore);
+            authorizer.initialize(startupContext);
             return authorizer;
         } else {
             return new NoOpAuthorizer();
         }
+    }
+
+    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Not a issue since a RuntimeException is thrown")
+    private static MandatoryAccessController getMandatoryAccessController(BrokerAuthConfiguration
+                                                                                  brokerAuthConfiguration,
+                                                                          StartupContext startupContext,
+                                                                          UserStore userStore) {
+        String macHandlerClassName = brokerAuthConfiguration.getAuthorization()
+                                                            .getMandatoryAccessController()
+                                                            .getClassName();
+
+        LOGGER.info("Initializing Mandatory Access Controller {}", macHandlerClassName);
+
+        try {
+            MandatoryAccessController macHandler = BrokerClassLoader.loadClass(macHandlerClassName,
+                                                                               MandatoryAccessController.class);
+            Map<String, String> macProperties = brokerAuthConfiguration.getAuthorization()
+                                                                       .getMandatoryAccessController()
+                                                                       .getProperties();
+            macHandler.initialize(startupContext, userStore, macProperties);
+            return macHandler;
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot initialize Mandatory Access Controller", e);
+        }
+    }
+
+    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Not a issue since a RuntimeException is thrown")
+    private static DiscretionaryAccessController getDac(BrokerAuthConfiguration brokerAuthConfiguration,
+                                                        StartupContext startupContext,
+                                                        UserStore userStore) {
+        String dacHandlerClassName = brokerAuthConfiguration.getAuthorization()
+                                                            .getDiscretionaryAccessController()
+                                                            .getClassName();
+
+        LOGGER.info("Initializing DAC handler {}", dacHandlerClassName);
+
+        try {
+            DiscretionaryAccessController dacHandler = BrokerClassLoader.loadClass(dacHandlerClassName,
+                                                                                   DiscretionaryAccessController.class);
+            Map<String, String> dacProperties = brokerAuthConfiguration.getAuthorization()
+                                                                       .getDiscretionaryAccessController()
+                                                                       .getProperties();
+            dacHandler.initialize(startupContext, userStore, dacProperties);
+            return dacHandler;
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot initialize Discretionary Access Controller", e);
+        }
+    }
+
+    private static UserStore createUserStore(StartupContext startupContext,
+                                             BrokerAuthConfiguration brokerAuthConfiguration) {
+        String userStoreClassName = brokerAuthConfiguration.getAuthorization().getUserStore().getClassName();
+        Map<String, String> properties = brokerAuthConfiguration.getAuthorization().getUserStore().getProperties();
+
+        if (Objects.nonNull(userStoreClassName)) {
+            try {
+                UserStore userStore = BrokerClassLoader.loadClass(userStoreClassName, UserStore.class);
+                userStore.initialize(startupContext, properties);
+                return userStore;
+            } catch (Exception e) {
+                throw new RuntimeException("Cannot initialize user store", e);
+            }
+        } else {
+            throw new RuntimeException("Please configure a user store for ");
+        }
+
     }
 }
