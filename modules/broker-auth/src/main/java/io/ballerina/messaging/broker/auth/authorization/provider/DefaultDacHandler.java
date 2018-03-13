@@ -2,6 +2,7 @@ package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
@@ -42,5 +43,10 @@ public class DefaultDacHandler implements DiscretionaryAccessController {
     @Override
     public void changeResourceOwner(String resourceType, String resourceName, String owner) throws BrokerAuthException {
         // TODO Implement logic
+    }
+
+    @Override
+    public AuthResource getAuthResource(String resourceType, String resourceName) {
+        return null;
     }
 }

@@ -19,12 +19,16 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
+import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.QueueHandler;
+import io.ballerina.messaging.broker.core.rest.model.ActionUserGroupsMapping;
 import io.ballerina.messaging.broker.core.rest.model.MessageDeleteResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateResponse;
@@ -37,7 +41,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.security.auth.Subject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
@@ -56,8 +62,11 @@ public class QueuesApiDelegate {
 
     private final BrokerFactory brokerFactory;
 
-    public QueuesApiDelegate(BrokerFactory brokerFactory) {
+    private final DiscretionaryAccessController dacHandler;
+
+    public QueuesApiDelegate(BrokerFactory brokerFactory, DiscretionaryAccessController dacHandler) {
         this.brokerFactory = brokerFactory;
+        this.dacHandler = dacHandler;
     }
 
     public Response createQueue(QueueCreateRequest requestBody, Subject subject) {
@@ -131,13 +140,32 @@ public class QueuesApiDelegate {
     }
 
     private QueueMetadata toQueueMetadata(QueueHandler queueHandler) {
-        return new QueueMetadata()
-                .name(queueHandler.getQueue().getName())
+        QueueMetadata queueMetadata = new QueueMetadata();
+        queueMetadata.name(queueHandler.getQueue().getName())
                 .durable(queueHandler.getQueue().isDurable())
                 .autoDelete(queueHandler.getQueue().isAutoDelete())
                 .capacity(queueHandler.getQueue().capacity())
                 .consumerCount(queueHandler.consumerCount())
                 .size(queueHandler.size());
+        AuthResource authResource = dacHandler.getAuthResource(ResourceType.QUEUE.toString(),
+                queueHandler.getQueue().getName());
+        if (Objects.nonNull(authResource)) {
+            queueMetadata.owner(authResource.getOwner())
+                    .permissions(toActionUserGroupsMapping(authResource.getActionsUserGroupsMap()));
+        }
+        return queueMetadata;
+    }
+
+    private ArrayList<ActionUserGroupsMapping> toActionUserGroupsMapping(
+            Map<String, Set<String>> actionsUserGroupsMap) {
+
+        ArrayList<ActionUserGroupsMapping> actionUserGroupsMappings = new ArrayList<>(actionsUserGroupsMap.size());
+        actionsUserGroupsMap.forEach((action, userGroups) -> {
+            ActionUserGroupsMapping actionUserGroupsMapping = new ActionUserGroupsMapping();
+            actionUserGroupsMapping.setAction(action);
+            actionUserGroupsMapping.setUserGroups(new ArrayList<>(userGroups));
+        });
+        return actionUserGroupsMappings;
     }
 
     public Response purgeQueue(String queueName, Subject subject) {

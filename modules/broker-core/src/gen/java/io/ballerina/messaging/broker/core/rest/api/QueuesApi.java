@@ -21,6 +21,9 @@ package io.ballerina.messaging.broker.core.rest.api;
 
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.NoOpDacHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
@@ -75,16 +78,18 @@ public class QueuesApi {
 
     private final BindingsApiDelegate bindingsApiDelegate;
 
-    private final BrokerFactory brokerFactory;
-
     public QueuesApi(StartupContext startupContext) {
-        if (startupContext.getService(AuthManager.class).isAuthenticationEnabled() &&
-                startupContext.getService(AuthManager.class).isAuthorizationEnabled()) {
+        AuthManager authManager = startupContext.getService(AuthManager.class);
+        BrokerFactory brokerFactory;
+        DiscretionaryAccessController dacHandler;
+        if (null != authManager && authManager.isAuthenticationEnabled() && authManager.isAuthorizationEnabled()) {
             brokerFactory = new SecureBrokerFactory(startupContext);
+            dacHandler = authManager.getDacHandler();
         } else {
             brokerFactory = new DefaultBrokerFactory(startupContext);
+            dacHandler = new NoOpDacHandler();
         }
-        this.queuesApiDelegate = new QueuesApiDelegate(brokerFactory);
+        this.queuesApiDelegate = new QueuesApiDelegate(brokerFactory, dacHandler);
         this.consumersApiDelegate = new ConsumersApiDelegate(brokerFactory);
         this.bindingsApiDelegate = new BindingsApiDelegate(brokerFactory);
     }
