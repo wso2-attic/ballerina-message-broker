@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.empty;
 
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 /**
@@ -57,5 +58,10 @@ public class NoOpAuthorizer implements Authorizer {
     @Override
     public void deleteProtectedResource(String resourceType, String resourceName) {
         // Do nothing
+    }
+
+    @Override
+    public AuthResource getAuthResource(String s, String name) {
+        return null;
     }
 }

@@ -19,10 +19,12 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
-import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
@@ -62,11 +64,11 @@ public class QueuesApiDelegate {
 
     private final BrokerFactory brokerFactory;
 
-    private final DiscretionaryAccessController dacHandler;
+    private final Authorizer authorizer;
 
-    public QueuesApiDelegate(BrokerFactory brokerFactory, DiscretionaryAccessController dacHandler) {
+    public QueuesApiDelegate(BrokerFactory brokerFactory, Authorizer authorizer) {
         this.brokerFactory = brokerFactory;
-        this.dacHandler = dacHandler;
+        this.authorizer = authorizer;
     }
 
     public Response createQueue(QueueCreateRequest requestBody, Subject subject) {
@@ -147,8 +149,14 @@ public class QueuesApiDelegate {
                 .capacity(queueHandler.getQueue().capacity())
                 .consumerCount(queueHandler.consumerCount())
                 .size(queueHandler.size());
-        AuthResource authResource = dacHandler.getAuthResource(ResourceType.QUEUE.toString(),
-                queueHandler.getQueue().getName());
+        AuthResource authResource = null;
+        try {
+            authResource = authorizer.getAuthResource(ResourceType.QUEUE.toString(),
+                                                      queueHandler.getQueue().getName());
+        } catch (BrokerAuthServerException | BrokerAuthNotFoundException e) {
+            // TODO handle error correctly
+            LOGGER.error("Error while querying auth resource", e);
+        }
         if (Objects.nonNull(authResource)) {
             queueMetadata.owner(authResource.getOwner())
                     .permissions(toActionUserGroupsMapping(authResource.getActionsUserGroupsMap()));

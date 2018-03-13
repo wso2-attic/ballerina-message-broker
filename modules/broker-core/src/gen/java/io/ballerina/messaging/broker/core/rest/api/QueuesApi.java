@@ -21,9 +21,8 @@ package io.ballerina.messaging.broker.core.rest.api;
 
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
-import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
-import io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler;
-import io.ballerina.messaging.broker.auth.authorization.provider.NoOpDacHandler;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
@@ -81,13 +80,13 @@ public class QueuesApi {
     public QueuesApi(StartupContext startupContext) {
         AuthManager authManager = startupContext.getService(AuthManager.class);
         BrokerFactory brokerFactory;
-        DiscretionaryAccessController dacHandler;
+        Authorizer dacHandler;
         if (null != authManager && authManager.isAuthenticationEnabled() && authManager.isAuthorizationEnabled()) {
             brokerFactory = new SecureBrokerFactory(startupContext);
-            dacHandler = authManager.getDacHandler();
+            dacHandler = authManager.getAuthorizer();
         } else {
             brokerFactory = new DefaultBrokerFactory(startupContext);
-            dacHandler = new NoOpDacHandler();
+            dacHandler = new NoOpAuthorizer();
         }
         this.queuesApiDelegate = new QueuesApiDelegate(brokerFactory, dacHandler);
         this.consumersApiDelegate = new ConsumersApiDelegate(brokerFactory);

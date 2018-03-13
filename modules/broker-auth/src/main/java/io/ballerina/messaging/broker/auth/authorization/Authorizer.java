@@ -18,6 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
@@ -86,6 +87,8 @@ public interface Authorizer {
      */
     void deleteProtectedResource(String resourceType, String resourceName)
             throws BrokerAuthServerException, BrokerAuthNotFoundException;
+
+    AuthResource getAuthResource(String s, String name) throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
      * Returns auth scope store for auth store

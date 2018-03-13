@@ -175,6 +175,12 @@ public class DefaultAuthorizer implements Authorizer {
     }
 
     @Override
+    public AuthResource getAuthResource(String resourceType, String resourceName)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        return authResourceStore.read(resourceType, resourceName);
+    }
+
+    @Override
     public void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
             throws BrokerAuthServerException, BrokerAuthDuplicateException {
         authResourceStore.add(new AuthResource(resourceType, resourceName, durable, owner));
