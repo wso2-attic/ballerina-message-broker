@@ -112,7 +112,7 @@ public class QueuesApiDelegate {
             throw new InternalServerErrorException(e.getMessage(), e);
         } catch (ResourceNotFoundException e) {
             throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
-        } catch (BrokerAuthException e) {
+        } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
         }
     }

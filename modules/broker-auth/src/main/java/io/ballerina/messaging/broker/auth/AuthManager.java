@@ -76,19 +76,20 @@ public class AuthManager {
         BrokerCommonConfiguration commonConfigs
                 = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
                                                         BrokerCommonConfiguration.class);
-        startupContext.registerService(AuthManager.class, this);
         authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
                                                                     brokerAuthConfiguration.getAuthentication());
-        
+
         isAuthenticationEnabled = brokerAuthConfiguration.getAuthentication().isEnabled();
         isAuthorizationEnabled = brokerAuthConfiguration.getAuthorization().isEnabled();
 
         if (!isAuthenticationEnabled && isAuthorizationEnabled) {
-            throw new ValidationException("Invalid combination found in the broker.yaml - " +
+            throw new ValidationException("Invalid combination found in the configuration - " +
                                                   "authentication enabled: FALSE and authorization enabled: TRUE");
         } else {
             authorizer = AuthorizerFactory.getAuthorizer(commonConfigs, brokerAuthConfiguration, startupContext);
         }
+
+        startupContext.registerService(AuthManager.class, this);
     }
 
     public void start() {

@@ -23,6 +23,7 @@ import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
@@ -119,10 +120,11 @@ public class SecureBrokerImpl implements Broker {
 
     @Override
     public int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException,
-            ValidationException, ResourceNotFoundException, BrokerAuthException {
+            ValidationException, ResourceNotFoundException, BrokerAuthException, BrokerAuthNotFoundException {
         authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.DELETE, subject);
+        int messageCount = broker.deleteQueue(queueName, ifUnused, ifEmpty);
         authHandler.deleteAuthResource(ResourceType.QUEUE, queueName);
-        return broker.deleteQueue(queueName, ifUnused, ifEmpty);
+        return messageCount;
     }
 
     @Override

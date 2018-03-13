@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.core;
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -123,7 +124,8 @@ public class BrokerAPITest {
            description = "Test non existing queue delete.",
            expectedExceptions = {ResourceNotFoundException.class})
     public void testNonExistingQueueDelete(String queueName)
-            throws BrokerException, ResourceNotFoundException, ValidationException, BrokerAuthException {
+            throws BrokerException, ResourceNotFoundException, ValidationException, BrokerAuthException,
+            BrokerAuthNotFoundException {
         broker.deleteQueue(queueName, false, false);
     }
 

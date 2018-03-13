@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core;
 
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
@@ -153,13 +154,14 @@ public interface Broker {
      * @param ifUnused  queue has consumers
      * @param ifEmpty   queue has messages
      * @return successfully deleted or not
-     * @throws BrokerException           if an internal error occurred
-     * @throws ValidationException       if not empty and the ifEmpty parameter is set
-     * @throws ResourceNotFoundException if queue not found
-     * @throws BrokerAuthException       if authorization failed
+     * @throws BrokerException             if an internal error occurred
+     * @throws ValidationException         if not empty and the ifEmpty parameter is set
+     * @throws BrokerAuthNotFoundException if queue not found
+     * @throws BrokerAuthException         if authorization failed
      */
     int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty)
-            throws BrokerException, ValidationException, ResourceNotFoundException, BrokerAuthException;
+            throws BrokerException, ValidationException, BrokerAuthException, BrokerAuthNotFoundException,
+            ResourceNotFoundException;
 
     /**
      * Bind queue to exchange

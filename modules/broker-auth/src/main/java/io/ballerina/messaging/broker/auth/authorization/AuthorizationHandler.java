@@ -51,7 +51,8 @@ public class AuthorizationHandler {
      * @throws BrokerAuthException throws if error occurs while authorizing resource.
      */
     public void handle(ResourceAuthScope brokerAuthScope, ResourceType resourceType, String resourceName,
-                       ResourceAction action, Subject subject) throws BrokerAuthException, ResourceNotFoundException {
+                       ResourceAction action, Subject subject)
+            throws BrokerAuthException, BrokerAuthNotFoundException {
         handle(brokerAuthScope, subject);
         handle(resourceType, resourceName, action, subject);
     }
@@ -65,7 +66,7 @@ public class AuthorizationHandler {
      * @throws BrokerAuthException throws if error occurs while authorizing resource.
      */
     public void handle(ResourceType resourceType, String resourceName, ResourceAction action, Subject subject)
-            throws BrokerAuthException, ResourceNotFoundException {
+            throws BrokerAuthException, BrokerAuthNotFoundException {
         try {
             if (!authorizer.authorize(resourceType.toString(),
                                       resourceName,
@@ -79,9 +80,6 @@ public class AuthorizationHandler {
             throw new BrokerAuthException("Error occurred while authorizing on : " + resourceType.toString() +
                                                   " resourceName: " + resourceName +
                                                   " action: " + action.toString(), e);
-        } catch (BrokerAuthNotFoundException e) {
-            throw new ResourceNotFoundException("Error occurred while authorizing due to resource name : " +
-                                                  resourceName + " not found.");
         }
     }
 

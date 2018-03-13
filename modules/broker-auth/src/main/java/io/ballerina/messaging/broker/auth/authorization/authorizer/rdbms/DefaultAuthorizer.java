@@ -22,14 +22,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.MandatoryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResourceStoreImpl;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScopeStoreImpl;
 import io.ballerina.messaging.broker.auth.authorization.provider.MemoryDacHandler;
@@ -60,8 +58,6 @@ public class DefaultAuthorizer implements Authorizer {
 
     private AuthScopeStore authScopeStore;
 
-    private AuthResourceStore authResourceStore;
-
     private UserStore userStore;
 
     /**
@@ -87,7 +83,6 @@ public class DefaultAuthorizer implements Authorizer {
         BrokerAuthConfiguration brokerAuthConfiguration = configProvider.getConfigurationObject(
                 BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
 
-        authResourceStore = new AuthResourceStoreImpl(brokerAuthConfiguration, dataSource, userStore);
         authScopeStore = new AuthScopeStoreImpl(brokerAuthConfiguration, dataSource);
         userCache = CacheBuilder.newBuilder()
                                 .maximumSize(brokerAuthConfiguration.getAuthorization().getCache()
@@ -220,14 +215,6 @@ public class DefaultAuthorizer implements Authorizer {
         getDacHandler(durable).addResource(resourceType, resourceName, owner);
     }
 
-    private DiscretionaryAccessController getDacHandler(boolean durable) {
-        if (durable) {
-            return externalDacHandler;
-        } else {
-            return memoryDacHandler;
-        }
-    }
-
     @Override
     public void deleteProtectedResource(String resourceType, String resourceName)
             throws BrokerAuthServerException, BrokerAuthNotFoundException {
@@ -242,6 +229,14 @@ public class DefaultAuthorizer implements Authorizer {
             UserCacheEntry userCacheEntry = new UserCacheEntry();
             userCacheEntry.setUserGroups(userStore.getUserGroupsList(userId));
             return userCacheEntry;
+        }
+    }
+
+    private DiscretionaryAccessController getDacHandler(boolean durable) {
+        if (durable) {
+            return externalDacHandler;
+        } else {
+            return memoryDacHandler;
         }
     }
 }
