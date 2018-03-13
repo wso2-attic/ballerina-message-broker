@@ -89,7 +89,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
     }
 
     @Override
-    public void delete(String resourceType, String resource) throws BrokerAuthServerException {
+    public boolean delete(String resourceType, String resource) throws BrokerAuthServerException {
         Connection connection = null;
         PreparedStatement deleteAuthResourceStmt = null;
         try {
@@ -97,8 +97,9 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             deleteAuthResourceStmt = connection.prepareStatement(RdbmsConstants.PS_DELETE_AUTH_RESOURCE);
             deleteAuthResourceStmt.setString(1, resourceType);
             deleteAuthResourceStmt.setString(2, resource);
-            deleteAuthResourceStmt.execute();
+            int affectedRows = deleteAuthResourceStmt.executeUpdate();
             connection.commit();
+            return affectedRows != 0;
         } catch (SQLException e) {
             throw new BrokerAuthServerException("Error occurred while deleting resource.", e);
         } finally {

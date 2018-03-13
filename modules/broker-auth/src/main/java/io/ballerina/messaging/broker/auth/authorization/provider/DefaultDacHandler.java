@@ -1,37 +1,55 @@
 package io.ballerina.messaging.broker.auth.authorization.provider;
 
+import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
+import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
 import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResourceStoreImpl;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 
 import java.util.Map;
+import java.util.Set;
+import javax.sql.DataSource;
 
 /**
  * Default implementation of DAC handler.
  */
 public class DefaultDacHandler implements DiscretionaryAccessController {
+    private AuthResourceStore authResourceStore;
+
     @Override
     public void initialize(StartupContext startupContext, UserStore userStore, Map<String, String> properties)
             throws Exception {
-        // TODO Implement logic
+        DataSource dataSource = startupContext.getService(DataSource.class);
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        BrokerAuthConfiguration brokerAuthConfiguration = configProvider.getConfigurationObject(
+                BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
+
+        authResourceStore = new AuthResourceStoreImpl(brokerAuthConfiguration, dataSource, userStore);
     }
 
     @Override
-    public boolean authorize(String resourceType, String resource, String action, String userId)
-            throws BrokerAuthException {
-        return true;
+    public boolean authorize(String resourceType, String resource, String action, String userId, Set<String> userGroups)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+            return authResourceStore.authorize(resourceType, resource, action, userId, userGroups);
     }
 
     @Override
-    public void addResource(String resourceType, String resourceName, String owner) throws BrokerAuthException {
-        // TODO Implement logic
+    public void addResource(String resourceType, String resourceName, String owner)
+            throws BrokerAuthServerException, BrokerAuthDuplicateException {
+            authResourceStore.add(new AuthResource(resourceType, resourceName, true, owner));
     }
 
     @Override
-    public void deleteResource(String resourceType, String resourceName) throws BrokerAuthException {
-        // TODO Implement logic
+    public boolean deleteResource(String resourceType, String resourceName)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        return authResourceStore.delete(resourceType, resourceName);
     }
 
     @Override

@@ -1,10 +1,14 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Used to manage permissions for dynamic resources.
@@ -27,10 +31,13 @@ public interface DiscretionaryAccessController {
      * @param resource     resource
      * @param action       action
      * @param userId       user identifier of owner
+     * @param userGroups   user groups of the user
      * @return true if authorised, false otherwise
-     * @throws BrokerAuthException throws if error occur during authorization
+     * @throws BrokerAuthServerException throws if an server error occurred
+     * @throws BrokerAuthNotFoundException throws if the resource is not found
      */
-    boolean authorize(String resourceType, String resource, String action, String userId) throws BrokerAuthException;
+    boolean authorize(String resourceType, String resource, String action, String userId, Set<String> userGroups)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
      * Create auth resource.
@@ -38,18 +45,22 @@ public interface DiscretionaryAccessController {
      * @param resourceType resource type
      * @param resourceName resource name
      * @param owner        resource owner
-     * @throws BrokerAuthException throws if error occur during adding resource
+     * @throws BrokerAuthServerException throws if an server error occurred
+     * @throws BrokerAuthDuplicateException throws if the resource already exists
      */
-    void addResource(String resourceType, String resourceName, String owner) throws BrokerAuthException;
+    void addResource(String resourceType, String resourceName, String owner)
+            throws BrokerAuthServerException, BrokerAuthDuplicateException;
 
     /**
      * Delete auth resource.
      *
      * @param resourceType resource type
      * @param resourceName resource name
-     * @throws BrokerAuthException throws if error occur during deleting resource
+     * @throws BrokerAuthServerException throws if an server error occurred
+     * @throws BrokerAuthNotFoundException throws if the resource is not found
      */
-    void deleteResource(String resourceType, String resourceName) throws BrokerAuthException;
+    boolean deleteResource(String resourceType, String resourceName)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
      * Create auth resource.

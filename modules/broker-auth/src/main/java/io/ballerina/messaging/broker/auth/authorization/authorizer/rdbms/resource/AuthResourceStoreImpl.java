@@ -100,14 +100,15 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
     }
 
     @Override
-    public void delete(String resourceType, String resourceName)
+    public boolean delete(String resourceType, String resourceName)
             throws BrokerAuthServerException, BrokerAuthNotFoundException {
         AuthResource existingResource = read(resourceType, resourceName);
         if (Objects.nonNull(existingResource)) {
             authResourceDaoFactory.getAuthResourceDao(existingResource.isDurable()).delete(resourceType, resourceName);
             authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
-
         }
+
+        return true;
     }
 
     @Override

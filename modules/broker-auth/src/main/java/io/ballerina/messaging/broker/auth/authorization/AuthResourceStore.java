@@ -69,7 +69,8 @@ public interface AuthResourceStore {
      * @param resourceName resource
      * @throws BrokerAuthServerException throws if error occurs while deleting resource
      */
-    void delete(String resourceType, String resourceName) throws BrokerAuthServerException, BrokerAuthNotFoundException;
+    boolean delete(String resourceType, String resourceName)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
      * Read resource from auth resource store.

@@ -52,7 +52,7 @@ public interface AuthResourceDao {
      * @param resource     resource
      * @throws BrokerAuthServerException when database operation failed.
      */
-    void delete(String resourceType, String resource) throws BrokerAuthServerException;
+    boolean delete(String resourceType, String resource) throws BrokerAuthServerException;
 
     /**
      * Get resource for given resource type and name.

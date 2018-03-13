@@ -22,6 +22,9 @@ package io.ballerina.messaging.broker.auth.authorization.provider;
 import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceInMemoryDao;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -30,7 +33,8 @@ import java.util.Set;
 /**
  * This implementation used when there is no auth manager set to the startup context.
  */
-public class NoOpDacHandler implements DiscretionaryAccessController {
+public class MemoryDacHandler implements DiscretionaryAccessController {
+    private AuthResourceDao resourceDao = new AuthResourceInMemoryDao();
 
     @Override
     public void initialize(StartupContext startupContext, UserStore userStore, Map<String, String> properties) {
@@ -47,13 +51,15 @@ public class NoOpDacHandler implements DiscretionaryAccessController {
     }
 
     @Override
-    public void addResource(String resourceType, String resourceName, String owner) {
+    public void addResource(String resourceType, String resourceName, String owner) throws BrokerAuthServerException {
         //do nothing as authorization disabled
+        resourceDao.persist(new AuthResource(resourceType, resourceName, false, owner));
     }
 
     @Override
-    public boolean deleteResource(String resourceType, String resourceName) {
-        return true;
+    public boolean deleteResource(String resourceType, String resourceName) throws BrokerAuthServerException {
+        //do nothing as authorization disabled
+        return resourceDao.delete(resourceType, resourceName);
     }
 
     @Override

@@ -32,6 +32,7 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resourc
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResourceStoreImpl;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScopeStoreImpl;
+import io.ballerina.messaging.broker.auth.authorization.provider.MemoryDacHandler;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
@@ -55,6 +56,7 @@ import javax.sql.DataSource;
 public class DefaultAuthorizer implements Authorizer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAuthorizer.class);
+    private final MemoryDacHandler memoryDacHandler;
 
     private AuthScopeStore authScopeStore;
 
@@ -66,13 +68,14 @@ public class DefaultAuthorizer implements Authorizer {
      * Cache which store user id vs  user cache entry
      */
     private LoadingCache<String, UserCacheEntry> userCache;
-    private DiscretionaryAccessController dacHandler;
+    private DiscretionaryAccessController externalDacHandler;
     private MandatoryAccessController macHandler;
 
-    public DefaultAuthorizer(DiscretionaryAccessController dacHandler,
+    public DefaultAuthorizer(DiscretionaryAccessController externalDacHandler,
                              MandatoryAccessController macHandler,
                              UserStore userStore) {
-        this.dacHandler = dacHandler;
+        this.externalDacHandler = externalDacHandler;
+        this.memoryDacHandler = new MemoryDacHandler();
         this.macHandler = macHandler;
         this.userStore = userStore;
     }
@@ -95,8 +98,6 @@ public class DefaultAuthorizer implements Authorizer {
                                                   TimeUnit.MINUTES)
                                 .build(new UserCacheLoader());
     }
-
-
 
     @Override
     public boolean authorize(String scopeName, String userId)
@@ -136,19 +137,20 @@ public class DefaultAuthorizer implements Authorizer {
                 UserCacheEntry userCacheEntry = userCache.get(userId);
                 Set<String> authorizedActions =
                         userCacheEntry.getAuthorizedResourceActions().get(resourceCacheKey);
-                boolean isAuthorize = Objects.nonNull(authorizedActions) &&
+                boolean authorized = Objects.nonNull(authorizedActions) &&
                         authorizedActions
                                 .stream()
                                 .anyMatch(s -> s.equals(action));
-                if (isAuthorize) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("resourceName authorizations are loaded from cache for resourceType : " +
-                                resourceType + " resourceName: " + resourceName);
-                    }
+                if (authorized) {
+                    LOGGER.debug(
+                            "resourceName authorizations are loaded from cache for resourceType : {} resourceName: {}",
+                            resourceType,
+                            resourceName);
                     return true;
                 } else {
-                    if (authResourceStore.authorize(resourceType, resourceName,
-                                                    action, userId, userCacheEntry.getUserGroups())) {
+                    authorized = authorizeInDac(resourceType, resourceName, action, userId, userCacheEntry);
+
+                    if (authorized) {
                         if (Objects.isNull(authorizedActions)) {
                             authorizedActions = new HashSet<>();
                             userCacheEntry.getAuthorizedResourceActions().put(resourceCacheKey, authorizedActions);
@@ -169,6 +171,32 @@ public class DefaultAuthorizer implements Authorizer {
         }
     }
 
+    private boolean authorizeInDac(String resourceType,
+                                   String resourceName,
+                                   String action,
+                                   String userId,
+                                   UserCacheEntry userCacheEntry)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        boolean authorized;
+
+        // First authorize in the in-memory DAC
+        authorized = memoryDacHandler.authorize(resourceType,
+                                                resourceName,
+                                                action,
+                                                userId,
+                                                userCacheEntry.getUserGroups());
+        // Then in the external DAC
+        if (!authorized) {
+            authorized = externalDacHandler.authorize(resourceType,
+                                                      resourceName,
+                                                      action,
+                                                      userId,
+                                                      userCacheEntry.getUserGroups());
+        }
+
+        return authorized;
+    }
+
     @Override
     public AuthScopeStore getAuthScopeStore() {
         return authScopeStore;
@@ -183,13 +211,23 @@ public class DefaultAuthorizer implements Authorizer {
     @Override
     public void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
             throws BrokerAuthServerException, BrokerAuthDuplicateException {
-        authResourceStore.add(new AuthResource(resourceType, resourceName, durable, owner));
+        getDacHandler(durable).addResource(resourceType, resourceName, owner);
+    }
+
+    private DiscretionaryAccessController getDacHandler(boolean durable) {
+        if (durable) {
+            return externalDacHandler;
+        } else {
+            return memoryDacHandler;
+        }
     }
 
     @Override
     public void deleteProtectedResource(String resourceType, String resourceName)
             throws BrokerAuthServerException, BrokerAuthNotFoundException {
-        authResourceStore.delete(resourceType, resourceName);
+        if (!memoryDacHandler.deleteResource(resourceType, resourceName)) {
+            externalDacHandler.deleteResource(resourceType, resourceName);
+        }
     }
 
     private class UserCacheLoader extends CacheLoader<String, UserCacheEntry> {

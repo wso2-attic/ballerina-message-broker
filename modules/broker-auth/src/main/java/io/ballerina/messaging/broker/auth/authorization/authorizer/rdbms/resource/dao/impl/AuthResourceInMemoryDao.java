@@ -55,8 +55,9 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
     }
 
     @Override
-    public void delete(String resourceType, String resource) {
-        inMemoryResourceMap.remove(resourceType, resource);
+    public boolean delete(String resourceType, String resource) {
+        AuthResource removedItem = inMemoryResourceMap.remove(resourceType, resource);
+        return removedItem != null;
     }
 
     @Override

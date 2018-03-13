@@ -61,7 +61,8 @@ public class NoOpAuthorizer implements Authorizer {
     }
 
     @Override
-    public AuthResource getAuthResource(String s, String name) {
+    public AuthResource getAuthResource(String resourceType, String resourceName) {
+        // Maybe we should return an auth resource which has public access.
         return null;
     }
 }
