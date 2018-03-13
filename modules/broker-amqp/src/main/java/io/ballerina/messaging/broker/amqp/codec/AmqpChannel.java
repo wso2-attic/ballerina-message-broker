@@ -151,12 +151,13 @@ public class AmqpChannel {
         traceChannelIdField = new TraceField(CHANNEL_ID_FIELD_NAME, channelId);
     }
 
-    public void declareExchange(String exchangeName, String exchangeType,
-                                boolean passive, boolean durable) throws BrokerException, ValidationException {
+    public void declareExchange(String exchangeName, String exchangeType, boolean passive, boolean durable)
+            throws BrokerException, ValidationException, BrokerAuthException {
         broker.declareExchange(exchangeName, exchangeType, passive, durable);
     }
 
-    public void deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException, ValidationException {
+    public void deleteExchange(String exchangeName, boolean ifUnused)
+            throws BrokerException, ValidationException, ResourceNotFoundException, BrokerAuthException {
         broker.deleteExchange(exchangeName, ifUnused);
     }
 

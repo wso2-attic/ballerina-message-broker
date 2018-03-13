@@ -105,8 +105,8 @@ public interface Broker {
      * @throws BrokerException     if unable to add exchange
      * @throws ValidationException if exchange name is empty
      */
-    void declareExchange(String exchangeName, String type,
-                         boolean passive, boolean durable) throws BrokerException, ValidationException;
+    void declareExchange(String exchangeName, String type, boolean passive, boolean durable)
+            throws BrokerException, ValidationException, BrokerAuthException;
 
     /**
      * Create an exchange with given parameters
@@ -118,7 +118,7 @@ public interface Broker {
      * @throws ValidationException if exchange already exist
      */
     void createExchange(String exchangeName, String type, boolean durable) throws BrokerException,
-            ValidationException;
+            ValidationException, BrokerAuthException;
 
     /**
      * Delete given exchange
@@ -129,7 +129,8 @@ public interface Broker {
      * @throws BrokerException     if exchange has bindings
      * @throws ValidationException if exchange is built-in
      */
-    boolean deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException, ValidationException;
+    boolean deleteExchange(String exchangeName, boolean ifUnused)
+            throws BrokerException, ValidationException, BrokerAuthException, ResourceNotFoundException;
 
     /**
      * Create given queue
@@ -214,7 +215,7 @@ public interface Broker {
      * @param queueName queue name
      * @return selected queue
      */
-    QueueHandler getQueue(String queueName);
+    QueueHandler getQueue(String queueName) throws BrokerAuthNotFoundException, BrokerAuthException;
 
     /**
      * Generate unique message id
@@ -239,7 +240,7 @@ public interface Broker {
      *
      * @return collection of queue
      */
-    Collection<QueueHandler> getAllQueues();
+    Collection<QueueHandler> getAllQueues() throws BrokerAuthException;
 
     /**
      * Send a signal to stop delivering messages to consumers
@@ -251,7 +252,7 @@ public interface Broker {
      *
      * @return collection of exchange
      */
-    Collection<Exchange> getAllExchanges();
+    Collection<Exchange> getAllExchanges() throws BrokerAuthException;
 
     /**
      * Move given message to dead letter channel
@@ -277,7 +278,7 @@ public interface Broker {
      * @param exchangeName exchange name
      * @return selected exchange
      */
-    Exchange getExchange(String exchangeName);
+    Exchange getExchange(String exchangeName) throws BrokerAuthNotFoundException, BrokerAuthException;
 
     /**
      * Start local transaction flow

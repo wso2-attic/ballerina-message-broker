@@ -118,7 +118,12 @@ public class QueuesApiDelegate {
     }
 
     public Response getQueue(String queueName, Subject subject) {
-        QueueHandler queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
+        QueueHandler queueHandler;
+        try {
+            queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
+        } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        }
 
         if (Objects.isNull(queueHandler)) {
             throw new NotFoundException("Queue " + queueName + " not found");
@@ -130,7 +135,12 @@ public class QueuesApiDelegate {
 
     public Response getAllQueues(Boolean durable, Subject subject) {
         boolean filterByDurability = Objects.nonNull(durable);
-        Collection<QueueHandler> queueHandlers = brokerFactory.getBroker(subject).getAllQueues();
+        Collection<QueueHandler> queueHandlers;
+        try {
+            queueHandlers = brokerFactory.getBroker(subject).getAllQueues();
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        }
         List<QueueMetadata> queueArray = new ArrayList<>(queueHandlers.size());
         for (QueueHandler handler : queueHandlers) {
             // Add if filter is not set or durability equals to filer value.
