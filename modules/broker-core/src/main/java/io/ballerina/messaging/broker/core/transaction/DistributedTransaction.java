@@ -24,6 +24,7 @@ import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.Xid;
 
 /**
@@ -174,7 +175,7 @@ public class DistributedTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void setTimeout(Xid xid, long timeout) {
-
+    public void setTimeout(Xid xid, long timeout, TimeUnit timeUnit) throws ValidationException {
+        transactionRegistry.setTimeout(xid, timeout, timeUnit);
     }
 }
