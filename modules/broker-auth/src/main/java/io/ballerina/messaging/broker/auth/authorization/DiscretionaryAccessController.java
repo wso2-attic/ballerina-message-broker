@@ -1,5 +1,6 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
@@ -71,5 +72,14 @@ public interface DiscretionaryAccessController {
      * @throws BrokerAuthException throws if error occur during updating resource
      */
     void changeResourceOwner(String resourceType, String resourceName, String owner) throws BrokerAuthException;
+
+    /**
+     * Get auth resource.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @return permission data of the resource
+     */
+    AuthResource getAuthResource(String resourceType, String resourceName);
 
 }
