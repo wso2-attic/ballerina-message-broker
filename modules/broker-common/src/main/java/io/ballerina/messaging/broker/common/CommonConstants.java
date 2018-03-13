@@ -24,4 +24,7 @@ package io.ballerina.messaging.broker.common;
  */
 public class CommonConstants {
     public static final String MESSAGE_BROKER_HOME_PROPERTY = "message.broker.home";
+
+    private CommonConstants() {
+    }
 }

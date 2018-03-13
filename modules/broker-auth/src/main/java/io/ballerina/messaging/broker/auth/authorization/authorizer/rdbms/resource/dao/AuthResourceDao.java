@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao;
 
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.util.List;
@@ -97,4 +98,26 @@ public interface AuthResourceDao {
      * @throws BrokerAuthServerException when database operation failed.
      */
     boolean isExists(String resourceType, String resource) throws BrokerAuthServerException;
+
+    /**
+     * Update owner of the given resource.
+     * @param resourceType
+     * @param resourceName
+     * @param newOwner
+     * @throws BrokerAuthServerException
+     */
+    void updateOwner(String resourceType, String resourceName, String newOwner)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+
+
+    /**
+     * Add a group mapping to the given auth resource.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param action       action
+     * @param group        group to add
+     */
+    void addGroup(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthNotFoundException, BrokerAuthServerException;
 }

@@ -165,6 +165,20 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
         return nonDurableAuthResources;
     }
 
+    @Override
+    public void updateOwner(String resourceType, String resourceName, String newOwner)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        authResourceDaoFactory.getAuthResourceDao(true).updateOwner(resourceType, resourceName, newOwner);
+        authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+    }
+
+    @Override
+    public void addGroup(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        authResourceDaoFactory.getAuthResourceDao(true).addGroup(resourceType, resourceName, action, group);
+        authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+    }
+
     private boolean isAvailable(String resourceType, String resourceName, boolean durable)
             throws BrokerAuthServerException {
         return (durable &&

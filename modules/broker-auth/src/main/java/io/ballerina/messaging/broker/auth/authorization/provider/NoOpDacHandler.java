@@ -62,6 +62,11 @@ public class NoOpDacHandler implements DiscretionaryAccessController {
     }
 
     @Override
+    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group) {
+        // Do nothing
+    }
+
+    @Override
     public void changeResourceOwner(String resourceType, String resourceName, String owner) {
         //do nothing as authorization disabled
     }

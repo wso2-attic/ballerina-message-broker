@@ -22,9 +22,11 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -107,6 +109,37 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
     @Override
     public boolean isExists(String resourceType, String resourceName) {
         return inMemoryResourceMap.contains(resourceType, resourceName);
+    }
+
+    @Override
+    public void updateOwner(String resourceType, String resourceName, String newOwner)
+            throws BrokerAuthNotFoundException {
+        AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
+
+        if (Objects.nonNull(authResource)) {
+            authResource.setOwner(newOwner);
+        } else {
+            throw new BrokerAuthNotFoundException(
+                    "No auth resource found for resource type (" + resourceType + ") and resource name (" + resourceName
+                            + ")");
+        }
+    }
+
+    @Override
+    public void addGroup(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthNotFoundException {
+        AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
+
+        if (Objects.nonNull(authResource)) {
+            Set<String> userGroups = authResource.getActionsUserGroupsMap()
+                                              .computeIfAbsent(action, key -> new HashSet<>());
+            userGroups.add(group);
+        } else {
+            throw new BrokerAuthNotFoundException(
+                    "No auth resource found for resource type (" + resourceType + ") and resource name (" + resourceName
+                            + ")");
+        }
+
     }
 
 }

@@ -54,13 +54,20 @@ public class DefaultDacHandler implements DiscretionaryAccessController {
 
     @Override
     public void addGroupToResource(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthException {
-        // TODO Implement logic
+            throws BrokerAuthNotFoundException, BrokerAuthServerException {
+        authResourceStore.addGroup(resourceType, resourceName, action, group);
     }
 
     @Override
-    public void changeResourceOwner(String resourceType, String resourceName, String owner) throws BrokerAuthException {
-        // TODO Implement logic
+    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthException {
+
+    }
+
+    @Override
+    public void changeResourceOwner(String resourceType, String resourceName, String newOwner)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        authResourceStore.updateOwner(resourceType, resourceName, newOwner);
     }
 
     @Override

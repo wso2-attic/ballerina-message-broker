@@ -63,7 +63,20 @@ public interface DiscretionaryAccessController {
             throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
-     * Create auth resource.
+     * Allow given group to access the given resource.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param action       action
+     * @param group        group
+     * @throws BrokerAuthException throws if error occur during updating resource
+     * @throws BrokerAuthNotFoundException throws if the resource is not found
+     */
+    void addGroupToResource(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthException, BrokerAuthNotFoundException, BrokerAuthServerException;
+
+    /**
+     * Revoke access from the given group.
      *
      * @param resourceType resource type
      * @param resourceName resource name
@@ -71,7 +84,7 @@ public interface DiscretionaryAccessController {
      * @param group        group
      * @throws BrokerAuthException throws if error occur during updating resource
      */
-    void addGroupToResource(String resourceType, String resourceName, String action, String group)
+    void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthException;
 
     /**
@@ -80,9 +93,11 @@ public interface DiscretionaryAccessController {
      * @param resourceType resource type
      * @param resourceName resource name
      * @param owner        newOwner
-     * @throws BrokerAuthException throws if error occur during updating resource
+     * @throws BrokerAuthServerException throws if an server error occurred
+     * @throws BrokerAuthNotFoundException throws if the resource is not found
      */
-    void changeResourceOwner(String resourceType, String resourceName, String owner) throws BrokerAuthException;
+    void changeResourceOwner(String resourceType, String resourceName, String owner)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
      * Get auth resource.

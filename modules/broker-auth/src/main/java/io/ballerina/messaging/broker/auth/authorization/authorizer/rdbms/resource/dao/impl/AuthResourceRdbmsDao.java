@@ -74,7 +74,10 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
         Connection connection = null;
         try {
             connection = getConnection();
-            updateOwner(authResource, connection);
+            updateOwner(connection,
+                        authResource.getResourceType(),
+                        authResource.getResourceName(),
+                        authResource.getOwner());
             deleteUserGroupMappings(authResource.getResourceType(), authResource.getResourceName(), connection);
             persistUserGroupMappings(authResource.getResourceType(),
                                      authResource.getResourceName(),
@@ -268,19 +271,57 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
         return Objects.nonNull(resourceId);
     }
 
-    private void updateOwner(AuthResource authResource, Connection connection) throws BrokerAuthServerException {
+    private void updateOwner(Connection connection, String resourceType, String resourceName, String newOwner)
+            throws BrokerAuthServerException {
         PreparedStatement updateResourceOwnerStmt = null;
         try {
             updateResourceOwnerStmt = connection.prepareStatement(RdbmsConstants.PS_UPDATE_AUTH_RESOURCE_OWNER);
-            updateResourceOwnerStmt.setString(1, authResource.getOwner());
-            updateResourceOwnerStmt.setString(2, authResource.getResourceType());
-            updateResourceOwnerStmt.setString(3, authResource.getResourceName());
+            updateResourceOwnerStmt.setString(1, newOwner);
+            updateResourceOwnerStmt.setString(2, resourceType);
+            updateResourceOwnerStmt.setString(3, resourceName);
             updateResourceOwnerStmt.execute();
         } catch (SQLException e) {
             throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
         } finally {
             close(updateResourceOwnerStmt);
         }
+    }
+
+    @Override
+    public void updateOwner(String resourceType, String resourceName, String newOwner) throws
+            BrokerAuthServerException {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            updateOwner(connection, resourceType, resourceName, newOwner);
+        } catch (SQLException e) {
+            throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
+        } finally {
+            close(connection);
+        }
+    }
+
+    @Override
+    public void addGroup(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthServerException {
+        Connection connection = null;
+        PreparedStatement insertMappingsStmt = null;
+        try {
+            connection = getConnection();
+            insertMappingsStmt = connection.prepareStatement(RdbmsConstants.PS_INSERT_AUTH_RESOURCE_MAPPING);
+            insertMappingsStmt.setString(1, action);
+            insertMappingsStmt.setString(2, group);
+            insertMappingsStmt.setString(3, resourceType);
+            insertMappingsStmt.setString(4, resourceName);
+
+            insertMappingsStmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
+        } finally {
+            close(connection, insertMappingsStmt);
+        }
+
     }
 
     private void persistUserGroupMappings(String resourceType, String resource,

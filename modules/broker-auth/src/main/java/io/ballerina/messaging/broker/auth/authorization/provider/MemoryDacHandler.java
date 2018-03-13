@@ -24,6 +24,7 @@ import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceInMemoryDao;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
@@ -68,8 +69,14 @@ public class MemoryDacHandler implements DiscretionaryAccessController {
     }
 
     @Override
-    public void changeResourceOwner(String resourceType, String resourceName, String owner) {
-        //do nothing as authorization disabled
+    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group) {
+        // Do nothing
+    }
+
+    @Override
+    public void changeResourceOwner(String resourceType, String resourceName, String owner)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        resourceDao.updateOwner(resourceType, resourceName, owner);
     }
 
     @Override
