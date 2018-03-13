@@ -205,7 +205,13 @@ public class DefaultAuthorizer implements Authorizer {
     @Override
     public AuthResource getAuthResource(String resourceType, String resourceName)
             throws BrokerAuthServerException, BrokerAuthNotFoundException {
-        return authResourceStore.read(resourceType, resourceName);
+        AuthResource authResource = memoryDacHandler.getAuthResource(resourceType, resourceName);
+
+        if (Objects.nonNull(authResource)) {
+            return authResource;
+        } else {
+            return externalDacHandler.getAuthResource(resourceType, resourceName);
+        }
     }
 
     @Override

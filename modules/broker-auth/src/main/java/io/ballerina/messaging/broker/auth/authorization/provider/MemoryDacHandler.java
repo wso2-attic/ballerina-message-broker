@@ -73,7 +73,7 @@ public class MemoryDacHandler implements DiscretionaryAccessController {
     }
 
     @Override
-    public AuthResource getAuthResource(String resourceType, String resourceName) {
-        return null;
+    public AuthResource getAuthResource(String resourceType, String resourceName) throws BrokerAuthServerException {
+        return resourceDao.read(resourceType, resourceName);
     }
 }

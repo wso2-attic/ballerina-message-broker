@@ -64,7 +64,8 @@ public class DefaultDacHandler implements DiscretionaryAccessController {
     }
 
     @Override
-    public AuthResource getAuthResource(String resourceType, String resourceName) {
-        return null;
+    public AuthResource getAuthResource(String resourceType, String resourceName)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        return authResourceStore.read(resourceType, resourceName);
     }
 }

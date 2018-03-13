@@ -90,7 +90,10 @@ public interface DiscretionaryAccessController {
      * @param resourceType resource type
      * @param resourceName resource name
      * @return permission data of the resource
+     * @throws BrokerAuthServerException throws if an server error occurred
+     * @throws BrokerAuthNotFoundException throws if the resource is not found
      */
-    AuthResource getAuthResource(String resourceType, String resourceName);
+    AuthResource getAuthResource(String resourceType, String resourceName)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
 }
