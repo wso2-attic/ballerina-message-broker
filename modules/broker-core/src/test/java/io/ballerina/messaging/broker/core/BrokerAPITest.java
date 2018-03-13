@@ -131,7 +131,8 @@ public class BrokerAPITest {
 
     @Test (dataProvider = "nonExistingExchanges",
            description = "Test non existing exchange delete. This shouldn't throw an exception")
-    public void testNonExistingExchangeDelete(String exchangeName) throws BrokerException, ValidationException {
+    public void testNonExistingExchangeDelete(String exchangeName)
+            throws BrokerException, ValidationException, ResourceNotFoundException, BrokerAuthException {
         broker.deleteExchange(exchangeName, false);
     }
 

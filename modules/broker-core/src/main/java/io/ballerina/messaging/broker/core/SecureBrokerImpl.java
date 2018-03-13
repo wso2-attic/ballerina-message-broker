@@ -91,20 +91,32 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public void declareExchange(String exchangeName, String type, boolean passive, boolean durable) throws
-            BrokerException, ValidationException {
+    public void declareExchange(String exchangeName, String type, boolean passive, boolean durable)
+            throws BrokerException, ValidationException, BrokerAuthException {
+        authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
         broker.declareExchange(exchangeName, type, passive, durable);
+        if (!passive) {
+            authHandler.createAuthResource(ResourceType.EXCHANGE, exchangeName, durable, subject);
+        }
     }
 
     @Override
-    public void createExchange(String exchangeName, String type, boolean durable) throws
-            BrokerException, ValidationException {
+    public void createExchange(String exchangeName, String type, boolean durable)
+            throws BrokerException, ValidationException, BrokerAuthException {
+        authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
         broker.createExchange(exchangeName, type, durable);
+        authHandler.createAuthResource(ResourceType.EXCHANGE, exchangeName, durable, subject);
     }
 
     @Override
-    public boolean deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException, ValidationException {
-        return broker.deleteExchange(exchangeName, ifUnused);
+    public boolean deleteExchange(String exchangeName, boolean ifUnused)
+            throws BrokerException, ValidationException, BrokerAuthException, ResourceNotFoundException {
+        authHandler.handle(ResourceAuthScope.EXCHANGES_DELETE, subject);
+        boolean success = broker.deleteExchange(exchangeName, ifUnused);
+        if (success) {
+            authHandler.deleteAuthResource(ResourceType.EXCHANGE, exchangeName);
+        }
+        return success;
     }
 
     @Override
@@ -165,12 +177,14 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public Collection<QueueHandler> getAllQueues() {
+    public Collection<QueueHandler> getAllQueues() throws BrokerAuthException {
+        authHandler.handle(ResourceAuthScope.QUEUES_GET, subject);
         return broker.getAllQueues();
     }
 
     @Override
-    public QueueHandler getQueue(String queueName) {
+    public QueueHandler getQueue(String queueName) throws BrokerAuthNotFoundException, BrokerAuthException {
+        authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.GET, subject);
         return broker.getQueue(queueName);
     }
 
@@ -180,7 +194,8 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public Collection<Exchange> getAllExchanges() {
+    public Collection<Exchange> getAllExchanges() throws BrokerAuthException {
+        authHandler.handle(ResourceAuthScope.SCOPES_GET, subject);
         return broker.getAllExchanges();
     }
 
@@ -190,7 +205,8 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public Exchange getExchange(String exchangeName) {
+    public Exchange getExchange(String exchangeName) throws BrokerAuthNotFoundException, BrokerAuthException {
+        authHandler.handle(ResourceType.EXCHANGE, exchangeName, ResourceAction.GET, subject);
         return broker.getExchange(exchangeName);
     }
 

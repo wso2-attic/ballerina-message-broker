@@ -19,6 +19,9 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
+import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.BrokerFactory;
@@ -38,6 +41,7 @@ import java.util.Objects;
 import javax.security.auth.Subject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -76,6 +80,8 @@ public class ExchangesApiDelegate {
             String message = "Error occurred while creating exchange.";
             LOGGER.error(message, e);
             throw new InternalServerErrorException(message, e);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
         }
     }
 
@@ -92,11 +98,20 @@ public class ExchangesApiDelegate {
             throw new InternalServerErrorException(message, e);
         } catch (ValidationException e) {
             throw new BadRequestException(e.getMessage(), e);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (ResourceNotFoundException e) {
+            throw new NotFoundException("Exchange " + exchangeName + " doesn't exist.", e);
         }
     }
 
     public Response getAllExchanges(Subject subject) {
-        Collection<Exchange> exchangeList = brokerFactory.getBroker(subject).getAllExchanges();
+        Collection<Exchange> exchangeList;
+        try {
+            exchangeList = brokerFactory.getBroker(subject).getAllExchanges();
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        }
         List<ExchangeMetadata> exchangeMetadataList = new ArrayList<>(exchangeList.size());
         for (Exchange exchange : exchangeList) {
             exchangeMetadataList.add(new ExchangeMetadata().name(exchange.getName())
@@ -108,7 +123,12 @@ public class ExchangesApiDelegate {
 
     public Response getExchange(String exchangeName, Subject subject) {
 
-        Exchange exchange = brokerFactory.getBroker(subject).getExchange(exchangeName);
+        Exchange exchange;
+        try {
+            exchange = brokerFactory.getBroker(subject).getExchange(exchangeName);
+        } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        }
         if (Objects.isNull(exchange)) {
             throw new NotFoundException("Exchange '" + exchangeName + "' not found.");
         }
