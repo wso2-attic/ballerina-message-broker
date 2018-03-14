@@ -383,7 +383,7 @@ paths:
       summary: Change the owner of the queue
       parameters:
         - in: body
-          name: body
+          name: Change owner request
           required: true
           description: Payload with the name of the new owner username
           schema:
@@ -397,10 +397,8 @@ paths:
       produces:
         - application/json
       responses:
-        '201':
+        '204':
           description: Queue owner updated.
-          schema:
-            $ref: '#/definitions/ResponseMessage'
         '400':
           description: Bad Request. Invalid request or validation error.
           schema:

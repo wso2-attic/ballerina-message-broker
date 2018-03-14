@@ -22,8 +22,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.DefaultAuthorizer;
-import io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler;
 import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.RdbmsDacHandler;
 import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
@@ -116,8 +116,8 @@ public class AuthorizerFactory {
         String dacHandlerClassName = brokerAuthConfiguration.getAuthorization()
                                                             .getDiscretionaryAccessController()
                                                             .getClassName();
-        if (commonConfiguration.getEnableInMemoryMode() && DefaultDacHandler.class.getCanonicalName()
-                                                                                  .equals(dacHandlerClassName)) {
+        if (commonConfiguration.getEnableInMemoryMode() && RdbmsDacHandler.class.getCanonicalName()
+                                                                                .equals(dacHandlerClassName)) {
             throw new RuntimeException("Cannot use " + dacHandlerClassName + " with in-memory mode.");
         }
 

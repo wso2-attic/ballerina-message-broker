@@ -18,7 +18,6 @@
  */
 package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl;
 
-import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.DbUtil;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
@@ -51,7 +50,7 @@ public class AuthResourceRdbmsDaoTest {
     private AuthResourceDao authResourceDao;
 
     @BeforeClass
-    public void beforeTest() throws AuthException, SQLException {
+    public void beforeTest() {
         dataSource = DbUtil.getDataSource();
         authResourceDao = new AuthResourceRdbmsDao(dataSource);
     }

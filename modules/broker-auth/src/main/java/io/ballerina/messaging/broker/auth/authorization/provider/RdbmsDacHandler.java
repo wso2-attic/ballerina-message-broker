@@ -16,21 +16,23 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource;
+package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
+import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceRdbmsDao;
+import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -39,9 +41,9 @@ import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 /**
- * Class provides implementation of @{@link AuthResourceStore} with database based auth resource store.
+ * Class provides implementation of @{@link DiscretionaryAccessController} with database based auth resource store.
  */
-public class AuthResourceStoreImpl implements AuthResourceStore {
+public class RdbmsDacHandler implements DiscretionaryAccessController {
 
     /**
      * User cache which contains authResource Key vs cache entry.
@@ -52,10 +54,18 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
 
     private UserStore userStore;
 
-    public AuthResourceStoreImpl(BrokerAuthConfiguration brokerAuthConfiguration, DataSource dataSource,
-                                 UserStore userStore) {
+    @Override
+    public void initialize(StartupContext startupContext, UserStore userStore, Map<String, String> properties)
+            throws Exception {
+        DataSource dataSource = startupContext.getService(DataSource.class);
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        BrokerAuthConfiguration brokerAuthConfiguration = configProvider.getConfigurationObject(
+                BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
+
         this.authResourceDao = new AuthResourceRdbmsDao(dataSource);
+
         this.userStore = userStore;
+
         this.authResourceCache = CacheBuilder.newBuilder()
                                              .maximumSize(brokerAuthConfiguration.getAuthorization().getCache()
                                                                                  .getSize())
@@ -68,34 +78,20 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
     @Override
     public boolean authorize(String resourceType, String resourceName, String action, String userId,
                              Set<String> userGroups) throws AuthNotFoundException {
-        AuthResource authResource = read(resourceType, resourceName);
+        AuthResource authResource = getAuthResource(resourceType, resourceName);
         return Objects.nonNull(authResource) && (authResource.getOwner().equals(userId) ||
                 authResource.getActionsUserGroupsMap().get(action).stream().anyMatch(userGroups::contains));
     }
 
     @Override
-    public void add(AuthResource authResource) throws AuthServerException {
-        authResourceDao.persist(authResource);
+    public void addResource(String resourceType, String resourceName, String owner) throws AuthServerException {
+        authResourceDao.persist(new AuthResource(resourceType, resourceName, true, owner));
     }
 
     @Override
-    public void update(AuthResource authResource) throws AuthServerException, AuthNotFoundException {
-        AuthResource existingResource = read(authResource.getResourceType(),
-                                             authResource.getResourceName());
-        if (Objects.isNull(existingResource)) {
-            throw new AuthNotFoundException("Resource not found for resource type : " +
-                                                          authResource.getResourceType() + "  name : " +
-                                                          authResource.getResourceName());
-        }
-        authResourceDao.update(authResource);
-        authResourceCache.invalidate(
-                new ResourceCacheKey(authResource.getResourceType(), authResource.getResourceName()));
-    }
-
-    @Override
-    public boolean delete(String resourceType, String resourceName)
+    public boolean deleteResource(String resourceType, String resourceName)
             throws AuthServerException, AuthNotFoundException {
-        AuthResource existingResource = read(resourceType, resourceName);
+        AuthResource existingResource = getAuthResource(resourceType, resourceName);
         if (Objects.nonNull(existingResource)) {
             authResourceDao.delete(resourceType, resourceName);
             authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
@@ -105,7 +101,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
     }
 
     @Override
-    public AuthResource read(String resourceType, String resourceName)
+    public AuthResource getAuthResource(String resourceType, String resourceName)
             throws AuthNotFoundException {
         try {
             return authResourceCache.get(new ResourceCacheKey(resourceType, resourceName));
@@ -116,21 +112,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
     }
 
     @Override
-    public List<AuthResource> readAll(String resourceType, String ownerId) throws AuthServerException {
-        return authResourceDao.readAll(resourceType, ownerId);
-    }
-
-    @Override
-    public List<AuthResource> readAll(String resourceType, String action, String ownerId) throws
-            AuthServerException, AuthException {
-        return authResourceDao.readAll(resourceType,
-                                       action,
-                                       ownerId,
-                                       new ArrayList<>(userStore.getUserGroupsList(ownerId)));
-    }
-
-    @Override
-    public boolean updateOwner(String resourceType, String resourceName, String newOwner)
+    public boolean changeResourceOwner(String resourceType, String resourceName, String newOwner)
             throws AuthServerException {
         boolean success = authResourceDao.updateOwner(resourceType, resourceName, newOwner);
 
@@ -142,7 +124,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
     }
 
     @Override
-    public boolean addGroup(String resourceType, String resourceName, String action, String group)
+    public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
             throws AuthServerException {
         boolean success = authResourceDao.addGroup(resourceType, resourceName, action, group);
         if (success) {
@@ -153,7 +135,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
     }
 
     @Override
-    public boolean removeGroup(String resourceType, String resourceName, String action, String group)
+    public boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
             throws AuthServerException {
         boolean success = authResourceDao.removeGroup(resourceType, resourceName, action, group);
         if (success) {

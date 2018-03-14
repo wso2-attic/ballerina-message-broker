@@ -19,10 +19,14 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
+import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -67,9 +71,12 @@ public class QueuesApiDelegate {
 
     private final Authorizer authorizer;
 
+    private final AuthorizationHandler authorizationHandler;
+
     public QueuesApiDelegate(BrokerFactory brokerFactory, Authorizer authorizer) {
         this.brokerFactory = brokerFactory;
         this.authorizer = authorizer;
+        authorizationHandler = new AuthorizationHandler(authorizer);
     }
 
     public Response createQueue(QueueCreateRequest requestBody, Subject subject) {
@@ -199,4 +206,22 @@ public class QueuesApiDelegate {
             throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
         }
     }
+
+    public Response changeQueueOwner(String queueName, String owner, Subject subject) {
+        try {
+            authorizationHandler.handle(ResourceAuthScope.QUEUES_DELETE, ResourceType.QUEUE, queueName,
+                                        ResourceAction.GRANT_PERMISSION, subject);
+            authorizer.changeResourceOwner(ResourceType.QUEUE.toString(), queueName, owner);
+            return Response.created(new URI(BrokerAdminService.API_BASE_PATH + QUEUES_API_PATH
+                                                    + "/" + queueName)).build();
+        } catch (AuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new NotFoundException(e.getMessage(), e);
+        } catch (AuthServerException | URISyntaxException  e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
+    }
+
+
 }
