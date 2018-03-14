@@ -220,8 +220,8 @@ public class QueuesApi {
         @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
         @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
         @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response deleteUserGroup(@PathParam("queueName") @ApiParam("Name of the queue.") String queueName,@PathParam("action") @ApiParam("Name of the action.") String action,@PathParam("groupName") @ApiParam("Name of the user group") String groupName) {
-        return Response.ok().entity("magic!").build();
+    public Response deleteUserGroup(@Context Request request, @PathParam("queueName") @ApiParam("Name of the queue.") String queueName,@PathParam("action") @ApiParam("Name of the action.") String action,@PathParam("groupName") @ApiParam("Name of the user group") String groupName) {
+        return queuesApiDelegate.removeUserGroup(queueName, action, groupName, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET

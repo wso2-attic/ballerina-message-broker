@@ -245,4 +245,19 @@ public class QueuesApiDelegate {
             throw new InternalServerErrorException(e.getMessage(), e);
         }
     }
+
+    public Response removeUserGroup(String queueName, String action, String groupName, Subject subject) {
+        try {
+            authorizationHandler.handle(ResourceAuthScope.RESOURCE_GRANT_PERMISSION, ResourceType.QUEUE, queueName,
+                                       ResourceAction.GRANT_PERMISSION, subject);
+            authorizer.removeGroupFromResource(ResourceType.QUEUE.toString(), queueName, action, groupName);
+            return Response.ok().entity(new ResponseMessage().message("User group successfully removed.")).build();
+        } catch (AuthException e) {
+            throw new ForbiddenException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new NotFoundException(e.getMessage(), e);
+        } catch (AuthServerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
+    }
 }
