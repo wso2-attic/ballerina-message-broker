@@ -19,7 +19,6 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
@@ -73,10 +72,9 @@ public interface Authorizer {
      * @param durable      is durable
      * @param owner        resource owner
      * @throws BrokerAuthServerException    throws if error occurs while authorizing resource
-     * @throws BrokerAuthDuplicateException throws if error occurs while authorizing resource
      */
     void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
-            throws BrokerAuthServerException, BrokerAuthDuplicateException;
+            throws BrokerAuthServerException;
 
     /**
      * Delete auth resource.

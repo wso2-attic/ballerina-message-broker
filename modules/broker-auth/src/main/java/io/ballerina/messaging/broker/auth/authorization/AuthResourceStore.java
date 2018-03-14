@@ -19,7 +19,6 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
@@ -52,7 +51,7 @@ public interface AuthResourceStore {
      * @param authResource an authResource
      * @throws BrokerAuthServerException throws if error occurs while adding resource
      */
-    void add(AuthResource authResource) throws BrokerAuthServerException, BrokerAuthDuplicateException;
+    void add(AuthResource authResource) throws BrokerAuthServerException;
 
     /**
      * Update resource to auth resource store.

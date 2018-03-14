@@ -1,7 +1,6 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
@@ -46,10 +45,8 @@ public interface DiscretionaryAccessController {
      * @param resourceName resource name
      * @param owner        resource owner
      * @throws BrokerAuthServerException throws if an server error occurred
-     * @throws BrokerAuthDuplicateException throws if the resource already exists
      */
-    void addResource(String resourceType, String resourceName, String owner)
-            throws BrokerAuthServerException, BrokerAuthDuplicateException;
+    void addResource(String resourceType, String resourceName, String owner) throws BrokerAuthServerException;
 
     /**
      * Delete auth resource.

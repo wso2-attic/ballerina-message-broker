@@ -22,7 +22,6 @@ import io.ballerina.messaging.broker.auth.UsernamePrincipal;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
@@ -118,9 +117,6 @@ public class AuthorizationHandler {
                                             getUserFromSubject(subject));
         } catch (BrokerAuthServerException e) {
             throw new BrokerAuthException("Error while creating " + resourceType + " with name : " + resourceName, e);
-        } catch (BrokerAuthDuplicateException e) {
-            throw new BrokerAuthException(
-                    "Duplicate resource found for resource type : " + resourceType + " with name : " + resourceName, e);
         }
     }
 

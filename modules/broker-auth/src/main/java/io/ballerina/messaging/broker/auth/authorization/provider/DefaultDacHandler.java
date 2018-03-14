@@ -6,7 +6,6 @@ import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessContr
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResourceStoreImpl;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -41,7 +40,7 @@ public class DefaultDacHandler implements DiscretionaryAccessController {
 
     @Override
     public void addResource(String resourceType, String resourceName, String owner)
-            throws BrokerAuthServerException, BrokerAuthDuplicateException {
+            throws BrokerAuthServerException {
             authResourceStore.add(new AuthResource(resourceType, resourceName, true, owner));
     }
 

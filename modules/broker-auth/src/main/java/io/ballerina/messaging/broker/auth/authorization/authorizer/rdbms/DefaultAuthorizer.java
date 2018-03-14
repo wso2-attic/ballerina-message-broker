@@ -29,7 +29,6 @@ import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
 import io.ballerina.messaging.broker.auth.authorization.provider.MemoryDacHandler;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
@@ -199,7 +198,7 @@ public class DefaultAuthorizer implements Authorizer {
 
     @Override
     public void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
-            throws BrokerAuthServerException, BrokerAuthDuplicateException {
+            throws BrokerAuthServerException {
         getDacHandler(durable).addResource(resourceType, resourceName, owner);
     }
 
