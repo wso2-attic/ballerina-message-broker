@@ -215,8 +215,8 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
                                               + "( rm.RESOURCE_ACTION = ? AND rm.USER_GROUP_ID IN (" + userGroupsList
                                               + "))");
             statement.setString(1, resourceType);
-            statement.setString(2, action);
-            statement.setString(3, ownerId);
+            statement.setString(2, ownerId);
+            statement.setString(3, action);
             for (int i = 0; i < userGroups.size(); i++) {
                 statement.setString(i + 4, userGroups.get(i));
             }

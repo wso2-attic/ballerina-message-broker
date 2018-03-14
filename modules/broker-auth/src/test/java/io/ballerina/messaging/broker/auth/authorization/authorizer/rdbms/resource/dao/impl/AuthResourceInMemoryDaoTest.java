@@ -43,7 +43,7 @@ import javax.sql.DataSource;
 /**
  * Test class for @{@link AuthResourceRdbmsDao}.
  */
-public class AuthResourceRdbmsDaoTest {
+public class AuthResourceInMemoryDaoTest {
 
     private DataSource dataSource;
 
@@ -52,7 +52,7 @@ public class AuthResourceRdbmsDaoTest {
     @BeforeClass
     public void beforeTest() {
         dataSource = DbUtil.getDataSource();
-        authResourceDao = new AuthResourceRdbmsDao(dataSource);
+        authResourceDao = new AuthResourceInMemoryDao();
     }
 
     @AfterClass
@@ -83,8 +83,7 @@ public class AuthResourceRdbmsDaoTest {
         authResourceDao.persist(exchange2);
     }
 
-    @Test(priority = 1,
-          expectedExceptions = BrokerAuthServerException.class)
+    @Test(priority = 1, expectedExceptions = BrokerAuthServerException.class)
     public void testDuplicate() throws BrokerAuthServerException {
         AuthResource queue = new AuthResource(ResourceType.QUEUE.toString(), "queue1", true, "customer");
         authResourceDao.persist(queue);
