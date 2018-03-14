@@ -308,7 +308,6 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/Error'
-
   /queues/{name}/bindings/{bindingPattern}:
     parameters:
         - in: path
@@ -686,7 +685,7 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/Error'
-  '/exchanges/{name}/bindings':
+  /exchanges/{name}/bindings:
     parameters:
       - in: path
         name: name
@@ -715,6 +714,169 @@ paths:
           headers:
             WWW_Authenticate:
               type: string
+          schema:
+            $ref: '#/definitions/Error'
+  /exchanges/{name}/permissions/owner/:
+    parameters:
+      - in: path
+        name: name
+        type: string
+        required: true
+        description: Name of the exchange
+    put:
+      operationId: changeExchangeOwner
+      summary: Change the owner of the exchange
+      parameters:
+        - in: body
+          name: Change owner request
+          required: true
+          description: Payload with the name of the new owner username
+          schema:
+            type: object
+            properties:
+              owner:
+                type: string
+                description: Username of the new owner
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Exchange owner updated.
+        '400':
+          description: Bad Request. Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: >-
+            Unsupported media type. The entity of the request was in a not
+            supported format.
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Duplicate resource
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Requested action unauthorized.
+          schema:
+            $ref: '#/definitions/Error'
+  /exchanges/{name}/permissions/actions/{action}/groups:
+    parameters:
+      - in: path
+        name: name
+        type: string
+        required: true
+        description: Name of the exchange.
+      - in: path
+        name: action
+        type: string
+        required: true
+        description: Name of the action.
+    post:
+      operationId: addExchangeActionUserGroups
+      summary: Add new user group(s) for a particular action on the exchange.
+      description: Grant exchange permission for new user group(s).
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          description: Payload with set of user groups.
+          schema:
+            $ref: '#/definitions/UserGroupList'
+      responses:
+        '200':
+          description: User groups added.
+          schema:
+            $ref: '#/definitions/ResponseMessage'
+        '400':
+          description: Bad Request. Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: >-
+            Unsupported media type. The entity of the request was in a not
+            supported format.
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Duplicate resource
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Requested action unauthorized.
+          schema:
+            $ref: '#/definitions/Error'
+  /exchanges/{exchangeName}/permissions/actions/{action}/groups/{groupName}:
+    parameters:
+      - in: path
+        name: exchangeName
+        type: string
+        required: true
+        description: Name of the exchange.
+      - in: path
+        name: action
+        type: string
+        required: true
+        description: Name of the action.
+      - in: path
+        name: groupName
+        type: string
+        required: true
+        description: Name of the user group
+    delete:
+      operationId: deleteUserGroup
+      summary: Remove permission to an action from a user group for an exchange.
+      description: Revoke permissions for a user group from invoking a particular action on a specific exchange.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: User group removed.
+          schema:
+            $ref: '#/definitions/ResponseMessage'
+        '400':
+          description: Bad Request. Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: >-
+            Unsupported media type. The entity of the request was in a not
+            supported format.
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Duplicate resource
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Authentication Data is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Requested action unauthorized.
           schema:
             $ref: '#/definitions/Error'
   /scopes:

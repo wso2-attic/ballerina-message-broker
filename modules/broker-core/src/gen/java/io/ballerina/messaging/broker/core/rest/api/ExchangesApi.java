@@ -27,6 +27,8 @@ import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
 import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeUpdateRequest;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeUpdateResponse;
+import io.ballerina.messaging.broker.core.rest.model.ResponseMessage;
+import io.ballerina.messaging.broker.core.rest.model.UserGroupList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -37,6 +39,7 @@ import io.ballerina.messaging.broker.core.rest.BindingsApiDelegate;
 import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
 import io.ballerina.messaging.broker.core.rest.ExchangesApiDelegate;
 import io.ballerina.messaging.broker.core.rest.model.BindingSetInfo;
+import io.ballerina.messaging.broker.core.rest.model.ChangeOwnerRequest;
 import io.ballerina.messaging.broker.core.rest.model.Error;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateResponse;
@@ -80,6 +83,43 @@ public class ExchangesApi {
     }
 
     @POST
+    @Path("/{name}/permissions/actions/{action}/groups")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Add new user group(s) for a particular action on the exchange.", notes = "Grant exchange permission for new user group(s).", response = ResponseMessage.class, authorizations = {
+        @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "User groups added.", response = ResponseMessage.class),
+        @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+        @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
+        @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
+        @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
+        @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    public Response addExchangeActionUserGroups(@PathParam("name") @ApiParam("Name of the exchange.") String name,@PathParam("action") @ApiParam("Name of the action.") String action,@Valid
+            UserGroupList body) {
+        return Response.ok().entity("magic!").build();
+    }
+
+    @PUT
+    @Path("/{name}/permissions/owner/")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Change the owner of the exchange", notes = "", response = Void.class, authorizations = {
+        @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+        @ApiResponse(code = 204, message = "Exchange owner updated.", response = Void.class),
+        @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+        @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
+        @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
+        @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
+        @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    public Response changeExchangeOwner(@PathParam("name") @ApiParam("Name of the exchange") String name,@Valid ChangeOwnerRequest changeOwnerRequest) {
+        return Response.ok().entity("magic!").build();
+    }
+
+   @POST
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
     @ApiOperation(value = "Create an exchange", notes = "", response = ExchangeCreateResponse.class, authorizations = {
@@ -107,6 +147,23 @@ public class ExchangesApi {
             @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
     public Response deleteExchange(@Context Request request, @PathParam("name") @ApiParam("Name of the exchange.") String name, @DefaultValue("true") @QueryParam("ifUnused")  @ApiParam("Delete if the exchange has no bindings.")  Boolean ifUnused) {
         return exchangesApiDelegate.deleteExchange(name, ifUnused, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+    }
+
+    @DELETE
+    @Path("/{exchangeName}/permissions/actions/{action}/groups/{groupName}")
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Remove permission to an action from a user group for an exchange.", notes = "Revoke permissions for a user group from invoking a particular action on a specific exchange.", response = ResponseMessage.class, authorizations = {
+        @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "User group removed.", response = ResponseMessage.class),
+        @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+        @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
+        @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
+        @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
+        @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    public Response deleteUserGroup(@PathParam("exchangeName") @ApiParam("Name of the exchange.") String exchangeName,@PathParam("action") @ApiParam("Name of the action.") String action,@PathParam("groupName") @ApiParam("Name of the user group") String groupName) {
+        return Response.ok().entity("magic!").build();
     }
 
     @GET
