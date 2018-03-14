@@ -18,11 +18,11 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
+import io.ballerina.messaging.broker.auth.AuthDuplicateException;
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.util.List;
 import java.util.Set;
@@ -41,36 +41,36 @@ public interface AuthResourceStore {
      * @param userId       an user identifier
      * @param userGroups   set of user groups of user
      * @return is authorized or not
-     * @throws BrokerAuthServerException throws if error occurs while authorization
+     * @throws AuthServerException throws if error occurs while authorization
      */
     boolean authorize(String resourceType, String resourceName, String action, String userId, Set<String> userGroups)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthServerException, AuthNotFoundException;
 
     /**
      * Add resource to auth resource store.
      *
      * @param authResource an authResource
-     * @throws BrokerAuthServerException throws if error occurs while adding resource
+     * @throws AuthServerException throws if error occurs while adding resource
      */
-    void add(AuthResource authResource) throws BrokerAuthServerException, BrokerAuthDuplicateException;
+    void add(AuthResource authResource) throws AuthServerException, AuthDuplicateException;
 
     /**
      * Update resource to auth resource store.
      *
      * @param authResource an authResource
-     * @throws BrokerAuthServerException throws if error occurs while updating resource
+     * @throws AuthServerException throws if error occurs while updating resource
      */
-    void update(AuthResource authResource) throws BrokerAuthServerException, BrokerAuthNotFoundException;
+    void update(AuthResource authResource) throws AuthServerException, AuthNotFoundException;
 
     /**
      * Delete resource to auth resource store.
      *
      * @param resourceType resourceType
      * @param resourceName resource
-     * @throws BrokerAuthServerException throws if error occurs while deleting resource
+     * @throws AuthServerException throws if error occurs while deleting resource
      */
     boolean delete(String resourceType, String resourceName)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthServerException, AuthNotFoundException;
 
     /**
      * Read resource from auth resource store.
@@ -78,10 +78,10 @@ public interface AuthResourceStore {
      * @param resourceType resourceType
      * @param resourceName resource
      * @return an authResource
-     * @throws BrokerAuthServerException throws if error occurs while reading resource
+     * @throws AuthServerException throws if error occurs while reading resource
      */
     AuthResource read(String resourceType, String resourceName)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthServerException, AuthNotFoundException;
 
     /**
      * Read all resources for given auth resource type and owner.
@@ -89,9 +89,9 @@ public interface AuthResourceStore {
      * @param resourceType resourceType
      * @param ownerId      resource owner
      * @return a list of all authResource
-     * @throws BrokerAuthServerException throws if error occurs while reading resource
+     * @throws AuthServerException throws if error occurs while reading resource
      */
-    List<AuthResource> readAll(String resourceType, String ownerId) throws BrokerAuthServerException;
+    List<AuthResource> readAll(String resourceType, String ownerId) throws AuthServerException;
 
     /**
      * Read all resources for given auth resource type, owner and action.
@@ -100,10 +100,10 @@ public interface AuthResourceStore {
      * @param ownerId      resource owner
      * @param action       resource action
      * @return a list of all authResource
-     * @throws BrokerAuthServerException throws if error occurs while reading resource
+     * @throws AuthServerException throws if error occurs while reading resource
      */
     List<AuthResource> readAll(String resourceType, String action, String ownerId)
-            throws BrokerAuthServerException, BrokerAuthException;
+            throws AuthServerException, AuthException;
 
     /**
      * Change owner of the given auth resource.
@@ -113,7 +113,7 @@ public interface AuthResourceStore {
      * @param newOwner     user ID of the new owner
      */
     void updateOwner(String resourceType, String resourceName, String newOwner)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthServerException, AuthNotFoundException;
 
     /**
      * Add a group mapping to the given auth resource.
@@ -124,7 +124,7 @@ public interface AuthResourceStore {
      * @param group        group to add
      */
     void addGroup(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthNotFoundException, BrokerAuthServerException;
+            throws AuthNotFoundException, AuthServerException;
 
     /**
      * Remove a group mapping from the given auth resource.
@@ -135,6 +135,6 @@ public interface AuthResourceStore {
      * @param group        group to add
      */
     void removeGroup(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthServerException, AuthNotFoundException;
 
 }

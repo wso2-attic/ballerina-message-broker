@@ -19,9 +19,9 @@
 package io.ballerina.messaging.broker.auth.authentication.jaas;
 
 import com.sun.security.auth.UserPrincipal;
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 
 import java.io.IOException;
@@ -62,16 +62,16 @@ public class UserStoreLoginModule implements LoginModule {
     }
 
     @Override
-    public boolean login() throws BrokerAuthException {
+    public boolean login() throws AuthException {
         NameCallback userNameCallback = new NameCallback("userName");
         PasswordCallback passwordCallback = new PasswordCallback("password", false);
         Callback[] callbacks = { userNameCallback, passwordCallback };
         try {
             callbackHandler.handle(callbacks);
         } catch (UnsupportedCallbackException e) {
-            throw new BrokerAuthException("Callback type does not support. ", e);
+            throw new AuthException("Callback type does not support. ", e);
         } catch (IOException e) {
-            throw new BrokerAuthException("Exception occurred while handling authentication data. ", e);
+            throw new AuthException("Exception occurred while handling authentication data. ", e);
         }
         userName = userNameCallback.getName();
         password = passwordCallback.getPassword();

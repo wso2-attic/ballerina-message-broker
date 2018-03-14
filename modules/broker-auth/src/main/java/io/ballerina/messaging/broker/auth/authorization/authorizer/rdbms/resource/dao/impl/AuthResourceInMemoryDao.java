@@ -20,9 +20,9 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resour
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -113,13 +113,13 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
 
     @Override
     public void updateOwner(String resourceType, String resourceName, String newOwner)
-            throws BrokerAuthNotFoundException {
+            throws AuthNotFoundException {
         AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
 
         if (Objects.nonNull(authResource)) {
             authResource.setOwner(newOwner);
         } else {
-            throw new BrokerAuthNotFoundException(
+            throw new AuthNotFoundException(
                     "No auth resource found for resource type (" + resourceType + ") and resource name (" + resourceName
                             + ")");
         }
@@ -127,7 +127,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
 
     @Override
     public void addGroup(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthNotFoundException {
+            throws AuthNotFoundException {
         AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
 
         if (Objects.nonNull(authResource)) {
@@ -135,7 +135,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
                                               .computeIfAbsent(action, key -> new HashSet<>());
             userGroups.add(group);
         } else {
-            throw new BrokerAuthNotFoundException(
+            throw new AuthNotFoundException(
                     "No auth resource found for resource type (" + resourceType + ") and resource name (" + resourceName
                             + ")");
         }
@@ -144,7 +144,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
 
     @Override
     public void removeGroup(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthNotFoundException {
+            throws AuthNotFoundException {
         AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
 
         if (Objects.nonNull(authResource)) {
@@ -152,7 +152,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
                                                  .computeIfAbsent(action, key -> new HashSet<>());
             userGroups.remove(group);
         } else {
-            throw new BrokerAuthNotFoundException(
+            throw new AuthNotFoundException(
                     "No auth resource found for resource type (" + resourceType + ") and resource name (" + resourceName
                             + ")");
         }

@@ -18,11 +18,11 @@
  */
 package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.dao.impl;
 
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.DbUtil;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScope;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.dao.AuthScopeDao;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -45,7 +45,7 @@ public class AuthScopeRdbmsDaoTest {
     private DataSource dataSource;
 
     @BeforeClass
-    public void beforeTest() throws BrokerAuthException, SQLException {
+    public void beforeTest() throws AuthException, SQLException {
         dataSource = DbUtil.getDataSource();
         authScopeDao = new AuthScopeRdbmsDao(dataSource);
         Connection connection = dataSource.getConnection();
@@ -72,20 +72,20 @@ public class AuthScopeRdbmsDaoTest {
     }
 
     @Test
-    public void testRead() throws BrokerAuthServerException {
+    public void testRead() throws AuthServerException {
         AuthScope authScope = authScopeDao.read("exchanges:test");
         Assert.assertEquals(authScope.getScopeName(), "exchanges:test");
         Assert.assertEquals(authScope.getUserGroups().size(), 1);
     }
 
     @Test
-    public void testReadAll() throws BrokerAuthServerException {
+    public void testReadAll() throws AuthServerException {
         List<AuthScope> authScopes = authScopeDao.readAll();
         Assert.assertEquals(authScopes.size(), 10);
     }
 
     @Test
-    public void testUpdate() throws BrokerAuthServerException {
+    public void testUpdate() throws AuthServerException {
         AuthScope authScope = authScopeDao.read("queues:test");
         Assert.assertEquals(authScope.getScopeName(), "queues:test");
         Assert.assertEquals(authScope.getUserGroups().size(), 1);

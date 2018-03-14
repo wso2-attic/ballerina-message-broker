@@ -19,10 +19,10 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.core.BrokerAuthException;
+import io.ballerina.messaging.broker.core.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.Exchange;
@@ -76,12 +76,12 @@ public class ExchangesApiDelegate {
             String message = "Invalid URI syntax for the location header.";
             LOGGER.error(message, e);
             throw new InternalServerErrorException(e.getMessage(), e);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
         } catch (BrokerException e) {
             String message = "Error occurred while creating exchange.";
             LOGGER.error(message, e);
             throw new InternalServerErrorException(message, e);
-        } catch (BrokerAuthException e) {
-            throw new NotAuthorizedException(e.getMessage(), e);
         }
     }
 
@@ -92,14 +92,14 @@ public class ExchangesApiDelegate {
                 throw new NotFoundException("Exchange " + exchangeName + " not found.");
             }
             return Response.ok().build();
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
         } catch (BrokerException e) {
             String message = "Error occurred while deleting exchange " + exchangeName + ".";
             LOGGER.error(message, e);
             throw new InternalServerErrorException(message, e);
         } catch (ValidationException e) {
             throw new BadRequestException(e.getMessage(), e);
-        } catch (BrokerAuthException e) {
-            throw new NotAuthorizedException(e.getMessage(), e);
         } catch (ResourceNotFoundException e) {
             throw new NotFoundException("Exchange " + exchangeName + " doesn't exist.", e);
         }
@@ -111,6 +111,8 @@ public class ExchangesApiDelegate {
             exchangeList = brokerFactory.getBroker(subject).getAllExchanges();
         } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
         List<ExchangeMetadata> exchangeMetadataList = new ArrayList<>(exchangeList.size());
         for (Exchange exchange : exchangeList) {
@@ -126,8 +128,12 @@ public class ExchangesApiDelegate {
         Exchange exchange;
         try {
             exchange = brokerFactory.getBroker(subject).getExchange(exchangeName);
-        } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
+        } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (BrokerAuthNotFoundException e) {
+            throw new NotFoundException("Exchange " + exchangeName + " doesn't exist.", e);
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
         if (Objects.isNull(exchange)) {
             throw new NotFoundException("Exchange '" + exchangeName + "' not found.");

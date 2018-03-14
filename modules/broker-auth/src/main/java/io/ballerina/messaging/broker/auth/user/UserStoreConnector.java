@@ -18,8 +18,8 @@
  */
 package io.ballerina.messaging.broker.auth.user;
 
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Set;
@@ -42,16 +42,16 @@ public interface UserStoreConnector {
      * @param userName    userName
      * @param credentials credentials
      * @return Authentication result
-     * @throws BrokerAuthException Exception throws when authentication failed.
+     * @throws AuthException Exception throws when authentication failed.
      */
-    AuthResult authenticate(String userName, char... credentials) throws BrokerAuthException;
+    AuthResult authenticate(String userName, char... credentials) throws AuthException;
 
     /**
      * Retrieve the list of users for given username.
      *
      * @param userName user name
      * @return List of roles
-     * @throws BrokerAuthException Exception throws when getting role list from user manager
+     * @throws AuthException Exception throws when getting role list from user manager
      */
-    Set<String> getUserRoleList(String userName) throws BrokerAuthException;
+    Set<String> getUserRoleList(String userName) throws AuthException;
 }

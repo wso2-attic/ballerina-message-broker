@@ -18,11 +18,11 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
+import io.ballerina.messaging.broker.auth.AuthDuplicateException;
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 /**
@@ -47,10 +47,10 @@ public interface Authorizer {
      * @param scopeName a scope key
      * @param userId    an user identifier
      * @return if authorised or not
-     * @throws BrokerAuthException throws if error occur during authorization
+     * @throws AuthException throws if error occur during authorization
      */
     boolean authorize(String scopeName, String userId)
-            throws BrokerAuthException, BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthException, AuthServerException, AuthNotFoundException;
 
     /**
      * Authorize resource with given resource and action.
@@ -60,10 +60,10 @@ public interface Authorizer {
      * @param action       action
      * @param userId       user identifier
      * @return if authorised or not
-     * @throws BrokerAuthException throws if error occur during authorization
+     * @throws AuthException throws if error occur during authorization
      */
     boolean authorize(String resourceType, String resource, String action, String userId)
-            throws BrokerAuthException, BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthException, AuthServerException, AuthNotFoundException;
 
     /**
      * Create auth resource.
@@ -72,22 +72,22 @@ public interface Authorizer {
      * @param resourceName resource name
      * @param durable      is durable
      * @param owner        resource owner
-     * @throws BrokerAuthServerException    throws if error occurs while authorizing resource
-     * @throws BrokerAuthDuplicateException throws if error occurs while authorizing resource
+     * @throws AuthServerException    throws if error occurs while authorizing resource
+     * @throws AuthDuplicateException throws if error occurs while authorizing resource
      */
     void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
-            throws BrokerAuthServerException, BrokerAuthDuplicateException;
+            throws AuthServerException, AuthDuplicateException;
 
     /**
      * Delete auth resource.
      *
      * @param resourceType resource type
      * @param resourceName resource name
-     * @throws BrokerAuthServerException   throws if error occurs while authorizing resource
-     * @throws BrokerAuthNotFoundException throws if auth resource is not found
+     * @throws AuthServerException   throws if error occurs while authorizing resource
+     * @throws AuthNotFoundException throws if auth resource is not found
      */
     void deleteProtectedResource(String resourceType, String resourceName)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthServerException, AuthNotFoundException;
 
     /**
      * Query auth resource.
@@ -95,9 +95,9 @@ public interface Authorizer {
      * @param resourceType resource type
      * @param resourceName resource name
      * @return matching auth resource if exists, null otherwise
-     * @throws BrokerAuthServerException   throws if error occurs while authorizing resource
-     * @throws BrokerAuthNotFoundException throws if auth resource is not found
+     * @throws AuthServerException   throws if error occurs while authorizing resource
+     * @throws AuthNotFoundException throws if auth resource is not found
      */
     AuthResource getAuthResource(String resourceType, String resourceName)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthServerException, AuthNotFoundException;
 }

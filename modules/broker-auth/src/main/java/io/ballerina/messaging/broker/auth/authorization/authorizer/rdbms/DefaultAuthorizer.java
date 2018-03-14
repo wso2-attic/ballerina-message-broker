@@ -21,6 +21,10 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import io.ballerina.messaging.broker.auth.AuthDuplicateException;
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
@@ -29,10 +33,6 @@ import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
 import io.ballerina.messaging.broker.auth.authorization.provider.MemoryDacHandler;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
@@ -89,7 +89,7 @@ public class DefaultAuthorizer implements Authorizer {
 
     @Override
     public boolean authorize(String scopeName, String userId)
-            throws BrokerAuthException, BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws AuthException, AuthServerException, AuthNotFoundException {
         try {
             if (userId != null) {
                 UserCacheEntry userCacheEntry = userCache.get(userId);
@@ -108,17 +108,17 @@ public class DefaultAuthorizer implements Authorizer {
                     }
                 }
             } else {
-                throw new BrokerAuthException("user id cannot be null.");
+                throw new AuthException("user id cannot be null.");
             }
         } catch (ExecutionException e) {
-            throw new BrokerAuthServerException("Error occurred while retrieving authorizations from cache for"
+            throw new AuthServerException("Error occurred while retrieving authorizations from cache for"
                                                         + " scope name : " + scopeName, e);
         }
     }
 
     @Override
     public boolean authorize(String resourceType, String resourceName, String action, String userId)
-            throws BrokerAuthException, BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws AuthException, AuthServerException, AuthNotFoundException {
         ResourceCacheKey resourceCacheKey = new ResourceCacheKey(resourceType, resourceName);
         try {
             if (userId != null) {
@@ -150,10 +150,10 @@ public class DefaultAuthorizer implements Authorizer {
                     }
                 }
             } else {
-                throw new BrokerAuthException("user id cannot be null.");
+                throw new AuthException("user id cannot be null.");
             }
         } catch (ExecutionException e) {
-            throw new BrokerAuthException("Error occurred while retrieving authorizations from cache for "
+            throw new AuthException("Error occurred while retrieving authorizations from cache for "
                                                   + "resourceType : " + resourceType +
                                                   " resourceName: " + resourceName, e);
         }
@@ -164,7 +164,7 @@ public class DefaultAuthorizer implements Authorizer {
                                    String action,
                                    String userId,
                                    UserCacheEntry userCacheEntry)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws AuthServerException, AuthNotFoundException {
         boolean authorized;
 
         // First authorize in the in-memory DAC
@@ -187,7 +187,7 @@ public class DefaultAuthorizer implements Authorizer {
 
     @Override
     public AuthResource getAuthResource(String resourceType, String resourceName)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws AuthServerException, AuthNotFoundException {
         AuthResource authResource = memoryDacHandler.getAuthResource(resourceType, resourceName);
 
         if (Objects.nonNull(authResource)) {
@@ -199,13 +199,13 @@ public class DefaultAuthorizer implements Authorizer {
 
     @Override
     public void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
-            throws BrokerAuthServerException, BrokerAuthDuplicateException {
+            throws AuthServerException, AuthDuplicateException {
         getDacHandler(durable).addResource(resourceType, resourceName, owner);
     }
 
     @Override
     public void deleteProtectedResource(String resourceType, String resourceName)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws AuthServerException, AuthNotFoundException {
         if (!memoryDacHandler.deleteResource(resourceType, resourceName)) {
             externalDacHandler.deleteResource(resourceType, resourceName);
         }
@@ -213,7 +213,7 @@ public class DefaultAuthorizer implements Authorizer {
 
     private class UserCacheLoader extends CacheLoader<String, UserCacheEntry> {
         @Override
-        public UserCacheEntry load(@Nonnull String userId) throws BrokerAuthException {
+        public UserCacheEntry load(@Nonnull String userId) throws AuthException {
             UserCacheEntry userCacheEntry = new UserCacheEntry();
             userCacheEntry.setUserGroups(userStore.getUserGroupsList(userId));
             return userCacheEntry;

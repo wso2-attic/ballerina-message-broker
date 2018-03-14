@@ -18,12 +18,12 @@
  */
 package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl;
 
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.DbUtil;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -51,7 +51,7 @@ public class AuthResourceRdbmsDaoTest {
     private AuthResourceDao authResourceDao;
 
     @BeforeClass
-    public void beforeTest() throws BrokerAuthException, SQLException {
+    public void beforeTest() throws AuthException, SQLException {
         dataSource = DbUtil.getDataSource();
         authResourceDao = new AuthResourceRdbmsDao(dataSource);
     }
@@ -67,7 +67,7 @@ public class AuthResourceRdbmsDaoTest {
     }
 
     @Test
-    public void testPersist() throws BrokerAuthServerException {
+    public void testPersist() throws AuthServerException {
         AuthResource queue = new AuthResource(ResourceType.QUEUE.toString(), "queue1", true, "customer");
         authResourceDao.persist(queue);
 
@@ -85,14 +85,14 @@ public class AuthResourceRdbmsDaoTest {
     }
 
     @Test(priority = 1,
-          expectedExceptions = BrokerAuthServerException.class)
-    public void testDuplicate() throws BrokerAuthServerException {
+          expectedExceptions = AuthServerException.class)
+    public void testDuplicate() throws AuthServerException {
         AuthResource queue = new AuthResource(ResourceType.QUEUE.toString(), "queue1", true, "customer");
         authResourceDao.persist(queue);
     }
 
     @Test(priority = 1)
-    public void testRead() throws BrokerAuthServerException {
+    public void testRead() throws AuthServerException {
         AuthResource queue = authResourceDao.read(ResourceType.QUEUE.toString(), "queue1");
         Assert.assertEquals(queue.getOwner(), "customer");
         Assert.assertEquals(queue.getActionsUserGroupsMap().size(), 0);
@@ -106,7 +106,7 @@ public class AuthResourceRdbmsDaoTest {
     }
 
     @Test(priority = 1)
-    public void testReadAll() throws BrokerAuthServerException {
+    public void testReadAll() throws AuthServerException {
 
         List<AuthResource> customer = authResourceDao.readAll(ResourceType.QUEUE.toString(), "customer");
         List<AuthResource> customerExchange = authResourceDao.readAll(ResourceType.EXCHANGE.toString(), "customer");
@@ -120,7 +120,7 @@ public class AuthResourceRdbmsDaoTest {
     }
 
     @Test(priority = 1)
-    public void testReadAllByGroups() throws BrokerAuthServerException {
+    public void testReadAllByGroups() throws AuthServerException {
         List<AuthResource> exchanges = authResourceDao.readAll(ResourceType.EXCHANGE.toString(), "customer",
                                                                "bind", Collections.singletonList("developer"));
         List<AuthResource> queues = authResourceDao.readAll(ResourceType.QUEUE.toString(), "customer",
@@ -130,7 +130,7 @@ public class AuthResourceRdbmsDaoTest {
     }
 
     @Test(priority = 1)
-    public void testIsExists() throws BrokerAuthServerException {
+    public void testIsExists() throws AuthServerException {
         boolean queue1 = authResourceDao.isExists(ResourceType.QUEUE.toString(), "queue1");
         boolean queue11 = authResourceDao.isExists(ResourceType.QUEUE.toString(), "queue11");
         Assert.assertEquals(queue1, true);
@@ -138,7 +138,7 @@ public class AuthResourceRdbmsDaoTest {
     }
 
     @Test(priority = 2)
-    public void testUpdate() throws BrokerAuthServerException {
+    public void testUpdate() throws AuthServerException {
         Map<String, Set<String>> actionsUserGroupsMap = new HashMap<>();
         actionsUserGroupsMap.put("publish", new HashSet<>(Arrays.asList("architect", "customer", "manager")));
         AuthResource exchange = new AuthResource(ResourceType.EXCHANGE.toString(), "exchange1", true,
@@ -158,7 +158,7 @@ public class AuthResourceRdbmsDaoTest {
     }
 
     @Test(priority = 3)
-    public void testDelete() throws BrokerAuthServerException {
+    public void testDelete() throws AuthServerException {
 
         authResourceDao.delete(ResourceType.EXCHANGE.toString(), "exchange1");
         authResourceDao.delete(ResourceType.EXCHANGE.toString(), "exchange1");

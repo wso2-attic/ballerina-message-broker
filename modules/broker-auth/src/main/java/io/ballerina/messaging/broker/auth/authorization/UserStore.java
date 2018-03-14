@@ -18,7 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -42,7 +42,7 @@ public interface UserStore {
      *
      * @param userId user id
      * @return set of user groups
-     * @throws BrokerAuthException throws if error occurs while authorizing user
+     * @throws AuthException throws if error occurs while authorizing user
      */
-    Set<String> getUserGroupsList(String userId) throws BrokerAuthException;
+    Set<String> getUserGroupsList(String userId) throws AuthException;
 }

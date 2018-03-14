@@ -18,9 +18,9 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScope;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.util.List;
 import java.util.Set;
@@ -37,35 +37,35 @@ public interface AuthScopeStore {
      * @param authScopeName an authScopeName
      * @param userGroups    set of user groups of user
      * @return is authorized or not
-     * @throws BrokerAuthServerException throws if error occurs while authorization
+     * @throws AuthServerException throws if error occurs while authorization
      */
     boolean authorize(String authScopeName, Set<String> userGroups)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+            throws AuthServerException, AuthNotFoundException;
 
     /**
      * Update auth
      *
      * @param authScopeName an authScopeName
      * @param userGroups    set of user groups of user
-     * @throws BrokerAuthServerException throws if error occurs while granting scope.
+     * @throws AuthServerException throws if error occurs while granting scope.
      */
-    void update(String authScopeName, List<String> userGroups) throws BrokerAuthServerException;
+    void update(String authScopeName, List<String> userGroups) throws AuthServerException;
 
     /**
      * Read authScope for given scope key.
      *
      * @param authScopeName an authScopeName
      * @return auth scope
-     * @throws BrokerAuthServerException throws if error occurs while reading scope.
+     * @throws AuthServerException throws if error occurs while reading scope.
      */
-    AuthScope read(String authScopeName) throws BrokerAuthServerException;
+    AuthScope read(String authScopeName) throws AuthServerException;
 
     /**
      * Read all authScopes.
      *
      * @return all auth scopes
-     * @throws BrokerAuthServerException throws if error occurs while reading scope.
+     * @throws AuthServerException throws if error occurs while reading scope.
      */
-    List<AuthScope> readAll() throws BrokerAuthServerException;
+    List<AuthScope> readAll() throws AuthServerException;
 
 }

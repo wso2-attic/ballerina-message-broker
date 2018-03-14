@@ -18,12 +18,12 @@
  */
 package io.ballerina.messaging.broker.auth.authentication.authenticator;
 
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 import io.ballerina.messaging.broker.auth.authentication.jaas.PlainSaslCallbackHandler;
 import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -64,13 +64,13 @@ public class JaasAuthenticator implements Authenticator {
                 Configuration jaasConfig = createJaasConfig(jaasLoginModule.toString(), properties);
                 Configuration.setConfiguration(jaasConfig);
             } else {
-                throw new BrokerAuthException("Jass login module have not been set.");
+                throw new AuthException("Jass login module have not been set.");
             }
         }
     }
 
     @Override
-    public AuthResult authenticate(String username, char[] password) throws BrokerAuthException {
+    public AuthResult authenticate(String username, char[] password) throws AuthException {
         LoginContext loginContext = null;
         try {
             PlainSaslCallbackHandler plainCallbackHandler = new PlainSaslCallbackHandler();
@@ -91,7 +91,7 @@ public class JaasAuthenticator implements Authenticator {
             }
             return new AuthResult(true, userId);
         } catch (LoginException e) {
-            throw new BrokerAuthException("Error while authenticating user with login module", e);
+            throw new AuthException("Error while authenticating user with login module", e);
         } finally {
             if (Objects.nonNull(loginContext)) {
                 try {

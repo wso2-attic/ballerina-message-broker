@@ -18,9 +18,9 @@
  */
 package io.ballerina.messaging.broker.auth.user.impl;
 
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 import io.ballerina.messaging.broker.auth.user.config.UserConfig;
 import io.ballerina.messaging.broker.auth.user.config.UsersFile;
@@ -87,20 +87,20 @@ public class FileBasedUserStoreConnector implements UserStoreConnector {
      * @param userName    userName
      * @param credentials Credentials
      * @return Authentication result
-     * @throws BrokerAuthException Exception throws when authentication failed.
+     * @throws AuthException Exception throws when authentication failed.
      */
     @Override
-    public AuthResult authenticate(String userName, char... credentials) throws BrokerAuthException {
+    public AuthResult authenticate(String userName, char... credentials) throws AuthException {
         User user;
         if (Objects.isNull(userName)) {
-            throw new BrokerAuthException("Username cannot be null.");
+            throw new AuthException("Username cannot be null.");
         } else if (Objects.isNull(user = userRegistry.get(userName))) {
-            throw new BrokerAuthException("User not found for the given username.");
+            throw new AuthException("User not found for the given username.");
         } else {
             if (Arrays.equals(credentials, user.getPassword())) {
                 return new AuthResult(true, userName);
             } else {
-                throw new BrokerAuthException("Password did not match with the configured user");
+                throw new AuthException("Password did not match with the configured user");
             }
         }
     }

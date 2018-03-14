@@ -20,9 +20,9 @@
 package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.BaseDao;
 
 import java.sql.Connection;
@@ -48,7 +48,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
     }
 
     @Override
-    public void persist(AuthResource authResource) throws BrokerAuthServerException {
+    public void persist(AuthResource authResource) throws AuthServerException {
         Connection connection = null;
         PreparedStatement insertAuthResourceStmt = null;
         try {
@@ -63,14 +63,14 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
                                      connection);
             connection.commit();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
+            throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {
             close(connection, insertAuthResourceStmt);
         }
     }
 
     @Override
-    public void update(AuthResource authResource) throws BrokerAuthServerException {
+    public void update(AuthResource authResource) throws AuthServerException {
         Connection connection = null;
         try {
             connection = getConnection();
@@ -85,14 +85,14 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
                                      connection);
             connection.commit();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
+            throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {
             close(connection);
         }
     }
 
     @Override
-    public boolean delete(String resourceType, String resource) throws BrokerAuthServerException {
+    public boolean delete(String resourceType, String resource) throws AuthServerException {
         Connection connection = null;
         PreparedStatement deleteAuthResourceStmt = null;
         try {
@@ -104,14 +104,14 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             connection.commit();
             return affectedRows != 0;
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while deleting resource.", e);
+            throw new AuthServerException("Error occurred while deleting resource.", e);
         } finally {
             close(connection, deleteAuthResourceStmt);
         }
     }
 
     @Override
-    public AuthResource read(String resourceType, String resourceName) throws BrokerAuthServerException {
+    public AuthResource read(String resourceType, String resourceName) throws AuthServerException {
         Map<String, Set<String>> actionUserGroupMap = new HashMap<>();
         String ownerId = null;
         Connection connection = null;
@@ -146,7 +146,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             }
             return null;
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while retrieving auth resource for resource group : " +
+            throw new AuthServerException("Error occurred while retrieving auth resource for resource group : " +
                                                         resourceType + " and resource : " +
                                                         resourceName, e);
         } finally {
@@ -155,7 +155,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
     }
 
     @Override
-    public List<AuthResource> readAll(String resourceType, String ownerId) throws BrokerAuthServerException {
+    public List<AuthResource> readAll(String resourceType, String ownerId) throws AuthServerException {
         Map<String, AuthResource> resourceMap = new HashMap<>();
         String resourceName, action, userGroup;
         Connection connection = null;
@@ -186,7 +186,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
                 }
             }
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while retrieving auth data for resource group : " +
+            throw new AuthServerException("Error occurred while retrieving auth data for resource group : " +
                                                         resourceType, e);
         } finally {
             close(connection, statement, resultSet);
@@ -198,7 +198,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     public List<AuthResource> readAll(String resourceType, String action, String ownerId, List<String> userGroups)
             throws
-            BrokerAuthServerException {
+            AuthServerException {
         Map<String, AuthResource> resourceMap = new HashMap<>();
         String userGroupsList = getSQLFormattedIdList(userGroups.size());
         String resourceName, userGroup;
@@ -239,7 +239,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
                 }
             }
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while retrieving auth data for resource group : " +
+            throw new AuthServerException("Error occurred while retrieving auth data for resource group : " +
                                                         resourceType, e);
         } finally {
             close(connection, statement, resultSet);
@@ -248,7 +248,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
     }
 
     @Override
-    public boolean isExists(String resourceType, String resource) throws BrokerAuthServerException {
+    public boolean isExists(String resourceType, String resource) throws AuthServerException {
         String resourceId = null;
         Connection connection = null;
         PreparedStatement statement = null;
@@ -263,7 +263,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
                 resourceId = resultSet.getString(1);
             }
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while retrieving existence of resource for resource "
+            throw new AuthServerException("Error occurred while retrieving existence of resource for resource "
                                                         + "group : " + resourceType + " and resource : " + resource, e);
         } finally {
             close(connection, statement, resultSet);
@@ -272,7 +272,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
     }
 
     private void updateOwner(Connection connection, String resourceType, String resourceName, String newOwner)
-            throws BrokerAuthServerException {
+            throws AuthServerException {
         PreparedStatement updateResourceOwnerStmt = null;
         try {
             updateResourceOwnerStmt = connection.prepareStatement(RdbmsConstants.PS_UPDATE_AUTH_RESOURCE_OWNER);
@@ -281,7 +281,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             updateResourceOwnerStmt.setString(3, resourceName);
             updateResourceOwnerStmt.execute();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
+            throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {
             close(updateResourceOwnerStmt);
         }
@@ -289,13 +289,13 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
 
     @Override
     public void updateOwner(String resourceType, String resourceName, String newOwner) throws
-            BrokerAuthServerException {
+            AuthServerException {
         Connection connection = null;
         try {
             connection = getConnection();
             updateOwner(connection, resourceType, resourceName, newOwner);
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
+            throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {
             close(connection);
         }
@@ -303,7 +303,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
 
     @Override
     public void addGroup(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthServerException {
+            throws AuthServerException {
         Connection connection = null;
         PreparedStatement insertMappingsStmt = null;
         try {
@@ -317,7 +317,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             insertMappingsStmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
+            throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {
             close(connection, insertMappingsStmt);
         }
@@ -326,7 +326,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
 
     @Override
     public void removeGroup(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthServerException {
+            throws AuthServerException {
         Connection connection = null;
         PreparedStatement insertMappingsStmt = null;
         try {
@@ -340,7 +340,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             insertMappingsStmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting resource.", e);
+            throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {
             close(connection, insertMappingsStmt);
         }
@@ -348,7 +348,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
 
     private void persistUserGroupMappings(String resourceType, String resource,
                                           Map<String, Set<String>> userGroupsMapping,
-                                          Connection connection) throws BrokerAuthServerException {
+                                          Connection connection) throws AuthServerException {
         PreparedStatement insertMappingsStmt = null;
         try {
             insertMappingsStmt = connection.prepareStatement(RdbmsConstants.PS_INSERT_AUTH_RESOURCE_MAPPING);
@@ -364,14 +364,14 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             }
             insertMappingsStmt.executeBatch();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting auth resource user groups.", e);
+            throw new AuthServerException("Error occurred while persisting auth resource user groups.", e);
         } finally {
             close(insertMappingsStmt);
         }
     }
 
     private void deleteUserGroupMappings(String resourceType, String resource, Connection connection)
-            throws BrokerAuthServerException {
+            throws AuthServerException {
         PreparedStatement deleteMappingsStmt = null;
         try {
             deleteMappingsStmt = connection.prepareStatement(RdbmsConstants.PS_DELETE_ALL_AUTH_RESOURCE_MAPPING);
@@ -379,7 +379,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             deleteMappingsStmt.setString(2, resource);
             deleteMappingsStmt.execute();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while deleting auth resource user groups.", e);
+            throw new AuthServerException("Error occurred while deleting auth resource user groups.", e);
         } finally {
             close(deleteMappingsStmt);
         }

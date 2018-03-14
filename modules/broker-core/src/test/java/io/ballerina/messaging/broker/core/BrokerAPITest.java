@@ -21,8 +21,6 @@ package io.ballerina.messaging.broker.core;
 
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -76,7 +74,7 @@ public class BrokerAPITest {
     }
 
     @BeforeMethod
-    public void setup() throws BrokerException, ValidationException, BrokerAuthException {
+    public void setup() throws BrokerException, ValidationException {
         broker.createQueue(DEFAULT_QUEUE_NAME, false, false, false);
         broker.bind(DEFAULT_QUEUE_NAME, DEFAULT_EXCHANGE_NAME, DEFAULT_ROUTING_KEY, FieldTable.EMPTY_TABLE);
     }
@@ -124,15 +122,14 @@ public class BrokerAPITest {
            description = "Test non existing queue delete.",
            expectedExceptions = {ResourceNotFoundException.class})
     public void testNonExistingQueueDelete(String queueName)
-            throws BrokerException, ResourceNotFoundException, ValidationException, BrokerAuthException,
-            BrokerAuthNotFoundException {
+            throws BrokerException, ResourceNotFoundException, ValidationException {
         broker.deleteQueue(queueName, false, false);
     }
 
     @Test (dataProvider = "nonExistingExchanges",
            description = "Test non existing exchange delete. This shouldn't throw an exception")
     public void testNonExistingExchangeDelete(String exchangeName)
-            throws BrokerException, ValidationException, ResourceNotFoundException, BrokerAuthException {
+            throws BrokerException, ValidationException, ResourceNotFoundException {
         broker.deleteExchange(exchangeName, false);
     }
 

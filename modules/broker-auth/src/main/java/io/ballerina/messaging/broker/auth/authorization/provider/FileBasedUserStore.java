@@ -18,8 +18,8 @@
  */
 package io.ballerina.messaging.broker.auth.authorization.provider;
 
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
 import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -44,7 +44,7 @@ public class FileBasedUserStore implements UserStore {
     }
 
     @Override
-    public Set<String> getUserGroupsList(String userId) throws BrokerAuthException {
+    public Set<String> getUserGroupsList(String userId) throws AuthException {
         return userStoreManager.getUserRoleList(userId);
     }
 }
