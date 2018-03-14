@@ -19,9 +19,9 @@
 
 package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.dao.impl;
 
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScope;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.dao.AuthScopeDao;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -46,7 +46,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
     }
 
     @Override
-    public AuthScope read(String scopeName) throws BrokerAuthServerException {
+    public AuthScope read(String scopeName) throws AuthServerException {
         Set<String> userGroups = new HashSet<>();
         String scopeId = null;
         Connection connection = null;
@@ -67,7 +67,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
                 }
             }
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while retrieving scope for name : " + scopeName, e);
+            throw new AuthServerException("Error occurred while retrieving scope for name : " + scopeName, e);
         } finally {
             close(connection, statement, resultSet);
         }
@@ -79,7 +79,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
     }
 
     @Override
-    public List<AuthScope> readAll() throws BrokerAuthServerException {
+    public List<AuthScope> readAll() throws AuthServerException {
         Map<String, AuthScope> authScopes = new HashMap<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -100,7 +100,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
                 }
             }
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while retrieving scopes", e);
+            throw new AuthServerException("Error occurred while retrieving scopes", e);
         } finally {
             close(connection, statement, resultSet);
         }
@@ -110,7 +110,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
     }
 
     @Override
-    public void update(String scopeName, List<String> userGroups) throws BrokerAuthServerException {
+    public void update(String scopeName, List<String> userGroups) throws AuthServerException {
         Connection connection = null;
         try {
             connection = getConnection();
@@ -118,7 +118,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
             persistGroups(scopeName, userGroups, connection);
             connection.commit();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while updating groups for scope name : " +
+            throw new AuthServerException("Error occurred while updating groups for scope name : " +
                                                         scopeName, e);
         } finally {
             close(connection);
@@ -126,7 +126,7 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
     }
 
     private void persistGroups(String scopeName, List<String> userGroups, Connection connection)
-            throws BrokerAuthServerException {
+            throws AuthServerException {
         PreparedStatement insertUserGroupsStmt = null;
         try {
             insertUserGroupsStmt = connection.prepareStatement(RdbmsConstants.PS_INSERT_AUTH_SCOPE_GROUPS);
@@ -137,21 +137,21 @@ public class AuthScopeRdbmsDao extends AuthScopeDao {
             }
             insertUserGroupsStmt.executeBatch();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while persisting groups for scope name : " +
+            throw new AuthServerException("Error occurred while persisting groups for scope name : " +
                                                         scopeName, e);
         } finally {
             close(insertUserGroupsStmt);
         }
     }
 
-    private void deleteGroups(String scopeName, Connection connection) throws BrokerAuthServerException {
+    private void deleteGroups(String scopeName, Connection connection) throws AuthServerException {
         PreparedStatement deleteUserGroupsStmt = null;
         try {
             deleteUserGroupsStmt = connection.prepareStatement(RdbmsConstants.PS_DELETE_ALL_AUTH_SCOPE_GROUPS);
             deleteUserGroupsStmt.setString(1, scopeName);
             deleteUserGroupsStmt.execute();
         } catch (SQLException e) {
-            throw new BrokerAuthServerException("Error occurred while deleting user groups scope for name : " +
+            throw new AuthServerException("Error occurred while deleting user groups scope for name : " +
                                                         scopeName, e);
         } finally {
             close(deleteUserGroupsStmt);

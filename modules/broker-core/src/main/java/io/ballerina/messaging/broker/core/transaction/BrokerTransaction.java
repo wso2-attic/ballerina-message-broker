@@ -19,6 +19,8 @@
 
 package io.ballerina.messaging.broker.core.transaction;
 
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
@@ -60,7 +62,7 @@ public interface BrokerTransaction {
      *
      * @param message A message publish to a routing key
      */
-    void enqueue(Message message) throws BrokerException;
+    void enqueue(Message message) throws BrokerException, AuthException, AuthNotFoundException;
 
     /**
      * Commit the transaction represent by this object.

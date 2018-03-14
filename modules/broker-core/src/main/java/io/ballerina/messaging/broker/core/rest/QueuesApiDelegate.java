@@ -19,14 +19,19 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
+import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.core.BrokerAuthException;
+import io.ballerina.messaging.broker.core.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.QueueHandler;
@@ -66,9 +71,12 @@ public class QueuesApiDelegate {
 
     private final Authorizer authorizer;
 
+    private final AuthorizationHandler authorizationHandler;
+
     public QueuesApiDelegate(BrokerFactory brokerFactory, Authorizer authorizer) {
         this.brokerFactory = brokerFactory;
         this.authorizer = authorizer;
+        authorizationHandler = new AuthorizationHandler(authorizer);
     }
 
     public Response createQueue(QueueCreateRequest requestBody, Subject subject) {
@@ -84,11 +92,11 @@ public class QueuesApiDelegate {
             }
         } catch (ValidationException e) {
             throw new BadRequestException(e.getMessage(), e);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
         } catch (BrokerException | URISyntaxException e) {
             LOGGER.error("Error occurred while generating location URI ", e);
             throw new InternalServerErrorException(e.getMessage(), e);
-        } catch (BrokerAuthException e) {
-            throw new NotAuthorizedException(e.getMessage(), e);
         }
     }
 
@@ -108,12 +116,12 @@ public class QueuesApiDelegate {
                            .build();
         } catch (ValidationException e) {
             throw new BadRequestException(e.getMessage(), e);
-        } catch (BrokerException e) {
-            throw new InternalServerErrorException(e.getMessage(), e);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
         } catch (ResourceNotFoundException | BrokerAuthNotFoundException e) {
             throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
-        } catch (BrokerAuthException  e) {
-            throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
     }
 
@@ -121,10 +129,12 @@ public class QueuesApiDelegate {
         QueueHandler queueHandler;
         try {
             queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
-        } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
+        } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
-        } catch (ResourceNotFoundException e) {
+        } catch (BrokerAuthNotFoundException | ResourceNotFoundException e) {
             throw new NotFoundException("Queue " + queueName + " not found");
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
 
         QueueMetadata queueMetadata = toQueueMetadata(queueHandler);
@@ -136,7 +146,7 @@ public class QueuesApiDelegate {
         Collection<QueueHandler> queueHandlers;
         try {
             queueHandlers = brokerFactory.getBroker(subject).getAllQueues();
-        } catch (BrokerAuthException e) {
+        } catch (BrokerException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
         }
         List<QueueMetadata> queueArray = new ArrayList<>(queueHandlers.size());
@@ -161,7 +171,7 @@ public class QueuesApiDelegate {
         try {
             authResource = authorizer.getAuthResource(ResourceType.QUEUE.toString(),
                                                       queueHandler.getQueue().getName());
-        } catch (BrokerAuthServerException | BrokerAuthNotFoundException e) {
+        } catch (AuthServerException | AuthNotFoundException e) {
             // TODO handle error correctly
             LOGGER.error("Error while querying auth resource", e);
         }
@@ -196,4 +206,22 @@ public class QueuesApiDelegate {
             throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
         }
     }
+
+    public Response changeQueueOwner(String queueName, String owner, Subject subject) {
+        try {
+            authorizationHandler.handle(ResourceAuthScope.QUEUES_DELETE, ResourceType.QUEUE, queueName,
+                                        ResourceAction.GRANT_PERMISSION, subject);
+            authorizer.changeResourceOwner(ResourceType.QUEUE.toString(), queueName, owner);
+            return Response.created(new URI(BrokerAdminService.API_BASE_PATH + QUEUES_API_PATH
+                                                    + "/" + queueName)).build();
+        } catch (AuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new NotFoundException(e.getMessage(), e);
+        } catch (AuthServerException | URISyntaxException  e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
+    }
+
+
 }

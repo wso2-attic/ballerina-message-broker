@@ -18,7 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain.jaas;
 
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.AuthException;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -57,7 +57,7 @@ public class TestLoginModule implements LoginModule {
         try {
             callbackHandler.handle(callbacks);
         } catch (IOException | UnsupportedCallbackException e) {
-            throw new BrokerAuthException("Error while handling callback ", e);
+            throw new AuthException("Error while handling callback ", e);
         }
         String userName = userNameCallback.getName();
         char[] password = passwordCallback.getPassword();

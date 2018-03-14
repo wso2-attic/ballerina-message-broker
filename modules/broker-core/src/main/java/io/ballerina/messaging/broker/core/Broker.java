@@ -19,8 +19,6 @@
 
 package io.ballerina.messaging.broker.core;
 
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
@@ -106,7 +104,7 @@ public interface Broker {
      * @throws ValidationException if exchange name is empty
      */
     void declareExchange(String exchangeName, String type, boolean passive, boolean durable)
-            throws BrokerException, ValidationException, BrokerAuthException;
+            throws BrokerException, ValidationException;
 
     /**
      * Create an exchange with given parameters
@@ -118,7 +116,7 @@ public interface Broker {
      * @throws ValidationException if exchange already exist
      */
     void createExchange(String exchangeName, String type, boolean durable) throws BrokerException,
-            ValidationException, BrokerAuthException;
+            ValidationException;
 
     /**
      * Delete given exchange
@@ -130,7 +128,7 @@ public interface Broker {
      * @throws ValidationException if exchange is built-in
      */
     boolean deleteExchange(String exchangeName, boolean ifUnused)
-            throws BrokerException, ValidationException, BrokerAuthException, ResourceNotFoundException;
+            throws BrokerException, ValidationException, ResourceNotFoundException;
 
     /**
      * Create given queue
@@ -143,10 +141,9 @@ public interface Broker {
      * @throws BrokerException     if existing queue does not match parameters or
      *                             could not found when passive set to true
      * @throws ValidationException if queue binding already exist
-     * @throws BrokerAuthException if authorization failed
      */
     boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
-            throws BrokerException, ValidationException, BrokerAuthException;
+            throws BrokerException, ValidationException;
 
     /**
      * Delete given queue
@@ -157,12 +154,9 @@ public interface Broker {
      * @return successfully deleted or not
      * @throws BrokerException             if an internal error occurred
      * @throws ValidationException         if not empty and the ifEmpty parameter is set
-     * @throws BrokerAuthNotFoundException if queue not found
-     * @throws BrokerAuthException         if authorization failed
      */
     int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty)
-            throws BrokerException, ValidationException, BrokerAuthException, BrokerAuthNotFoundException,
-            ResourceNotFoundException;
+            throws BrokerException, ValidationException, ResourceNotFoundException;
 
     /**
      * Check if a queue exists with the given name.
@@ -223,8 +217,7 @@ public interface Broker {
      * @param queueName queue name
      * @return selected queue
      */
-    QueueHandler getQueue(String queueName)
-            throws BrokerAuthNotFoundException, BrokerAuthException, ResourceNotFoundException;
+    QueueHandler getQueue(String queueName) throws BrokerException, ResourceNotFoundException;
 
     /**
      * Generate unique message id
@@ -249,7 +242,7 @@ public interface Broker {
      *
      * @return collection of queue
      */
-    Collection<QueueHandler> getAllQueues() throws BrokerAuthException;
+    Collection<QueueHandler> getAllQueues() throws BrokerException;
 
     /**
      * Send a signal to stop delivering messages to consumers
@@ -261,7 +254,7 @@ public interface Broker {
      *
      * @return collection of exchange
      */
-    Collection<Exchange> getAllExchanges() throws BrokerAuthException;
+    Collection<Exchange> getAllExchanges() throws BrokerException;
 
     /**
      * Move given message to dead letter channel
@@ -287,7 +280,7 @@ public interface Broker {
      * @param exchangeName exchange name
      * @return selected exchange
      */
-    Exchange getExchange(String exchangeName) throws BrokerAuthNotFoundException, BrokerAuthException;
+    Exchange getExchange(String exchangeName) throws BrokerException;
 
     /**
      * Start local transaction flow

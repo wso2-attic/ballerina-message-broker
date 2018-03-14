@@ -20,6 +20,8 @@
 package io.ballerina.messaging.broker.amqp.codec;
 
 import io.ballerina.messaging.broker.amqp.AmqpException;
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.FieldValue;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
@@ -102,7 +104,7 @@ public class InMemoryMessageAggregator {
         receivedPayloadSize = 0;
     }
 
-    public void publish(Message message) throws BrokerException {
+    public void publish(Message message) throws BrokerException, AuthNotFoundException, AuthException {
         if (MessageTracer.isTraceEnabled()) {
             MessageTracer.trace(message, PUBLISH_MESSAGE);
         }

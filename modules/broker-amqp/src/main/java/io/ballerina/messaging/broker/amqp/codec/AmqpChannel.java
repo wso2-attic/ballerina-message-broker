@@ -25,7 +25,6 @@ import io.ballerina.messaging.broker.amqp.AmqpDeliverMessage;
 import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.amqp.codec.flow.ChannelFlowManager;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
@@ -152,18 +151,18 @@ public class AmqpChannel {
     }
 
     public void declareExchange(String exchangeName, String exchangeType, boolean passive, boolean durable)
-            throws BrokerException, ValidationException, BrokerAuthException {
+            throws BrokerException, ValidationException {
         broker.declareExchange(exchangeName, exchangeType, passive, durable);
     }
 
     public void deleteExchange(String exchangeName, boolean ifUnused)
-            throws BrokerException, ValidationException, ResourceNotFoundException, BrokerAuthException {
+            throws BrokerException, ValidationException, ResourceNotFoundException {
         broker.deleteExchange(exchangeName, ifUnused);
     }
 
     public void declareQueue(ShortString queue, boolean passive,
                              boolean durable, boolean autoDelete)
-            throws BrokerException, ValidationException, BrokerAuthException {
+            throws BrokerException, ValidationException {
         broker.createQueue(queue.toString(), passive, durable, autoDelete);
     }
 

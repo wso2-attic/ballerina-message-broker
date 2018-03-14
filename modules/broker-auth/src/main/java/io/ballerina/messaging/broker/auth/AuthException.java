@@ -16,31 +16,23 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authorization.enums;
+package io.ballerina.messaging.broker.auth;
+
+import javax.security.auth.login.LoginException;
 
 /**
- * Enum used to represent resource actions.
+ * This Exception class represents login failures.
  */
-public enum ResourceAction {
+public class AuthException extends LoginException {
 
-    UPDATE("update"),
-    DELETE("delete"),
-    GET("get"),
-    CONSUME("consume"),
-    PUBLISH("publish"),
-    BIND("bind"),
-    UNBIND("unbind"),
-    GRANT_PERMISSION("grantPermission");
+    private static final long serialVersionUID = 1414511165553802816L;
 
-    private String name;
-
-    ResourceAction(String name) {
-        this.name = name;
+    public AuthException(String message) {
+        super(message);
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public AuthException(String message, Throwable throwable) {
+        super(message);
+        initCause(throwable);
     }
-
 }

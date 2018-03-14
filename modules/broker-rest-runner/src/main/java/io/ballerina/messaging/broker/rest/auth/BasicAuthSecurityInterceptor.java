@@ -18,10 +18,10 @@
  */
 package io.ballerina.messaging.broker.rest.auth;
 
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.UsernamePrincipal;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.msf4j.Request;
@@ -45,9 +45,9 @@ public class BasicAuthSecurityInterceptor implements RequestInterceptor {
 
     private static final int AUTH_TYPE_BASIC_LENGTH = AUTH_TYPE_BASIC.length();
 
-    private AuthenticateFunction<BrokerAuthException> authenticateFunction;
+    private AuthenticateFunction<AuthException> authenticateFunction;
 
-    public BasicAuthSecurityInterceptor(AuthenticateFunction<BrokerAuthException> authenticateFunction) {
+    public BasicAuthSecurityInterceptor(AuthenticateFunction<AuthException> authenticateFunction) {
         this.authenticateFunction = authenticateFunction;
     }
 

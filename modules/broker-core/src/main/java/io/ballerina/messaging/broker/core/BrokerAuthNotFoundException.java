@@ -16,31 +16,16 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authorization.enums;
+
+package io.ballerina.messaging.broker.core;
 
 /**
- * Enum used to represent resource actions.
+ * Represents the authorization resource not found of the broker.
  */
-public enum ResourceAction {
+public class BrokerAuthNotFoundException extends BrokerException {
 
-    UPDATE("update"),
-    DELETE("delete"),
-    GET("get"),
-    CONSUME("consume"),
-    PUBLISH("publish"),
-    BIND("bind"),
-    UNBIND("unbind"),
-    GRANT_PERMISSION("grantPermission");
-
-    private String name;
-
-    ResourceAction(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
+    public BrokerAuthNotFoundException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 
 }

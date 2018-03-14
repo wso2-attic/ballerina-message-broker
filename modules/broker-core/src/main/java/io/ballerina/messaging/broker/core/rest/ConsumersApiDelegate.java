@@ -19,9 +19,10 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
+import io.ballerina.messaging.broker.core.BrokerAuthException;
+import io.ballerina.messaging.broker.core.BrokerAuthNotFoundException;
+import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.Consumer;
 import io.ballerina.messaging.broker.core.QueueHandler;
@@ -32,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import javax.security.auth.Subject;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -51,10 +53,12 @@ public class ConsumersApiDelegate {
         QueueHandler queue;
         try {
             queue = brokerFactory.getBroker(subject).getQueue(queueName);
-        } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
+        } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
-        } catch (ResourceNotFoundException e) {
+        } catch (BrokerAuthNotFoundException | ResourceNotFoundException e) {
             throw new NotFoundException("Unknown queue name " + queueName);
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
 
         Consumer matchingConsumer = null;
@@ -79,6 +83,8 @@ public class ConsumersApiDelegate {
             throw new NotAuthorizedException(e.getMessage(), e);
         } catch (BrokerAuthNotFoundException | ResourceNotFoundException e) {
             throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
         if (Objects.isNull(queueHandler)) {
             throw new NotFoundException("Unknown queue Name " + queueName);

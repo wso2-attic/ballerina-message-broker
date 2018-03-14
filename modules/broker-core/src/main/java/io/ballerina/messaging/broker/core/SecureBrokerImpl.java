@@ -18,12 +18,12 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
@@ -83,7 +83,14 @@ public class SecureBrokerImpl implements Broker {
 
     @Override
     public void addConsumer(Consumer consumer) throws BrokerException {
-        broker.addConsumer(consumer);
+        try {
+            authHandler.handle(ResourceType.QUEUE, consumer.getQueueName(), ResourceAction.CONSUME, subject);
+            broker.addConsumer(consumer);
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new BrokerAuthNotFoundException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -93,42 +100,58 @@ public class SecureBrokerImpl implements Broker {
 
     @Override
     public void declareExchange(String exchangeName, String type, boolean passive, boolean durable)
-            throws BrokerException, ValidationException, BrokerAuthException {
-        authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
-        broker.declareExchange(exchangeName, type, passive, durable);
-        if (!passive) {
-            authHandler.createAuthResource(ResourceType.EXCHANGE, exchangeName, durable, subject);
+            throws BrokerException, ValidationException {
+        try {
+            authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
+            broker.declareExchange(exchangeName, type, passive, durable);
+            if (!passive) {
+                authHandler.createAuthResource(ResourceType.EXCHANGE, exchangeName, durable, subject);
+            }
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
         }
     }
 
     @Override
     public void createExchange(String exchangeName, String type, boolean durable)
-            throws BrokerException, ValidationException, BrokerAuthException {
-        authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
-        broker.createExchange(exchangeName, type, durable);
-        authHandler.createAuthResource(ResourceType.EXCHANGE, exchangeName, durable, subject);
+            throws BrokerException, ValidationException {
+        try {
+            authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
+            broker.createExchange(exchangeName, type, durable);
+            authHandler.createAuthResource(ResourceType.EXCHANGE, exchangeName, durable, subject);
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
+        }
     }
 
     @Override
     public boolean deleteExchange(String exchangeName, boolean ifUnused)
-            throws BrokerException, ValidationException, BrokerAuthException, ResourceNotFoundException {
-        authHandler.handle(ResourceAuthScope.EXCHANGES_DELETE, subject);
-        boolean success = broker.deleteExchange(exchangeName, ifUnused);
-        if (success) {
-            authHandler.deleteAuthResource(ResourceType.EXCHANGE, exchangeName);
+            throws BrokerException, ValidationException, ResourceNotFoundException {
+        try {
+            authHandler.handle(ResourceAuthScope.EXCHANGES_DELETE, subject);
+            boolean success = broker.deleteExchange(exchangeName, ifUnused);
+            if (success) {
+                authHandler.deleteAuthResource(ResourceType.EXCHANGE, exchangeName);
+            }
+            return success;
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
         }
-        return success;
     }
 
     @Override
     public boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
-            throws BrokerException, ValidationException, BrokerAuthException {
-        authHandler.handle(ResourceAuthScope.QUEUES_CREATE, subject);
-        boolean succeed = broker.createQueue(queueName, passive, durable, autoDelete);
-        if (succeed) {
-            authHandler.createAuthResource(ResourceType.QUEUE, queueName, durable, subject);
+            throws BrokerException, ValidationException {
+        try {
+            authHandler.handle(ResourceAuthScope.QUEUES_CREATE, subject);
+            boolean succeed = broker.createQueue(queueName, passive, durable, autoDelete);
+            if (succeed) {
+                authHandler.createAuthResource(ResourceType.QUEUE, queueName, durable, subject);
+            }
+            return succeed;
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
         }
-        return succeed;
     }
 
     @Override
@@ -139,10 +162,16 @@ public class SecureBrokerImpl implements Broker {
             throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
         }
 
-        authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.DELETE, subject);
-        int messageCount = broker.deleteQueue(queueName, ifUnused, ifEmpty);
-        authHandler.deleteAuthResource(ResourceType.QUEUE, queueName);
-        return messageCount;
+        try {
+            authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.DELETE, subject);
+            int messageCount = broker.deleteQueue(queueName, ifUnused, ifEmpty);
+            authHandler.deleteAuthResource(ResourceType.QUEUE, queueName);
+            return messageCount;
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new BrokerAuthNotFoundException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -188,21 +217,30 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public Collection<QueueHandler> getAllQueues() throws BrokerAuthException {
-        authHandler.handle(ResourceAuthScope.QUEUES_GET, subject);
-        return broker.getAllQueues();
+    public Collection<QueueHandler> getAllQueues() throws BrokerException {
+        try {
+            authHandler.handle(ResourceAuthScope.QUEUES_GET, subject);
+            return broker.getAllQueues();
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
+        }
     }
 
     @Override
-    public QueueHandler getQueue(String queueName)
-            throws BrokerAuthNotFoundException, BrokerAuthException, ResourceNotFoundException {
+    public QueueHandler getQueue(String queueName) throws BrokerException, ResourceNotFoundException {
         QueueHandler queue = broker.getQueue(queueName);
 
         if (Objects.isNull(queue)) {
             throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
         }
-        authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.GET, subject);
-        return broker.getQueue(queueName);
+        try {
+            authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.GET, subject);
+            return broker.getQueue(queueName);
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new BrokerAuthNotFoundException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -211,9 +249,13 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public Collection<Exchange> getAllExchanges() throws BrokerAuthException {
-        authHandler.handle(ResourceAuthScope.SCOPES_GET, subject);
-        return broker.getAllExchanges();
+    public Collection<Exchange> getAllExchanges() throws BrokerException {
+        try {
+            authHandler.handle(ResourceAuthScope.SCOPES_GET, subject);
+            return broker.getAllExchanges();
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -222,9 +264,15 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public Exchange getExchange(String exchangeName) throws BrokerAuthNotFoundException, BrokerAuthException {
-        authHandler.handle(ResourceType.EXCHANGE, exchangeName, ResourceAction.GET, subject);
-        return broker.getExchange(exchangeName);
+    public Exchange getExchange(String exchangeName) throws BrokerException {
+        try {
+            authHandler.handle(ResourceType.EXCHANGE, exchangeName, ResourceAction.GET, subject);
+            return broker.getExchange(exchangeName);
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new BrokerAuthNotFoundException(e.getMessage(), e);
+        }
     }
 
     @Override

@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory;
  */
 public class BasicPublish extends MethodFrame {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicPublish.class);
+    public static final short CLASS_ID = 60;
+    public static final short METHOD_ID = 40;
 
     private final ShortString exchange;
     private final ShortString routingKey;
@@ -46,7 +48,7 @@ public class BasicPublish extends MethodFrame {
 
     public BasicPublish(int channel, ShortString exchange, ShortString routingKey, boolean mandatory,
             boolean immediate) {
-        super(channel, (short) 60, (short) 40);
+        super(channel, CLASS_ID, METHOD_ID);
         this.exchange = exchange;
         this.routingKey = routingKey;
         this.mandatory = mandatory;

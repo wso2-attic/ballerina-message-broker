@@ -22,8 +22,12 @@ package io.ballerina.messaging.broker.amqp.codec.frames;
 import io.ballerina.messaging.broker.amqp.AmqpException;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
+import io.ballerina.messaging.broker.amqp.codec.ChannelException;
 import io.ballerina.messaging.broker.amqp.codec.InMemoryMessageAggregator;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.netty.buffer.ByteBuf;
@@ -87,6 +91,12 @@ public class ContentFrame extends GeneralFrame {
                     ctx.executor().submit(() -> channel.getFlowManager().notifyMessageRemoval(ctx));
                 } catch (BrokerException e) {
                     LOGGER.warn("Content receiving failed", e);
+                } catch (AuthException | AuthNotFoundException e) {
+                    ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                       ChannelException.ACCESS_REFUSED,
+                                                       ShortString.parseString(e.getMessage()),
+                                                       BasicPublish.CLASS_ID,
+                                                       BasicPublish.METHOD_ID));
                 }
             });
         }

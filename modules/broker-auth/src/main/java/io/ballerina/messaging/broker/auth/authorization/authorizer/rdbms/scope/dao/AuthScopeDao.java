@@ -19,8 +19,8 @@
 
 package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.dao;
 
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScope;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.BaseDao;
 
 import java.util.List;
@@ -40,26 +40,26 @@ public abstract class AuthScopeDao extends BaseDao {
      *
      * @param scopeName  scope name
      * @param userGroups user groups
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws AuthServerException when database operation failed.
      */
     public abstract void update(String scopeName, List<String> userGroups)
-            throws BrokerAuthServerException;
+            throws AuthServerException;
 
     /**
      * Read scope for given scope name
      *
      * @param scopeName scope name
      * @return group of users
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws AuthServerException when database operation failed.
      */
-    public abstract AuthScope read(String scopeName) throws BrokerAuthServerException;
+    public abstract AuthScope read(String scopeName) throws AuthServerException;
 
     /**
      * Read all scopes
      *
      * @return list of scopes
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws AuthServerException when database operation failed.
      */
-    public abstract List<AuthScope> readAll() throws BrokerAuthServerException;
+    public abstract List<AuthScope> readAll() throws AuthServerException;
 
 }

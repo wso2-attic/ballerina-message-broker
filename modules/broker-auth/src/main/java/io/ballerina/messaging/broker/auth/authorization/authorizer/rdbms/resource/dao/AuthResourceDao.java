@@ -19,9 +19,9 @@
 
 package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao;
 
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.util.List;
 
@@ -34,26 +34,26 @@ public interface AuthResourceDao {
      * Persist resource in the database
      *
      * @param authResource authResource
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws AuthServerException when database operation failed.
      */
-    void persist(AuthResource authResource) throws BrokerAuthServerException;
+    void persist(AuthResource authResource) throws AuthServerException;
 
     /**
      * Update resource owner in the database
      *
      * @param authResource authResource
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws AuthServerException when database operation failed.
      */
-    void update(AuthResource authResource) throws BrokerAuthServerException;
+    void update(AuthResource authResource) throws AuthServerException;
 
     /**
      * Delete resource from database on given given resource type and name and user groups.
      *
      * @param resourceType resource Type
      * @param resource     resource
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws AuthServerException when database operation failed.
      */
-    boolean delete(String resourceType, String resource) throws BrokerAuthServerException;
+    boolean delete(String resourceType, String resource) throws AuthServerException;
 
     /**
      * Get resource for given resource type and name.
@@ -61,9 +61,9 @@ public interface AuthResourceDao {
      * @param resourceType resource Type
      * @param resource     resource
      * @return user id
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws AuthServerException when database operation failed.
      */
-    AuthResource read(String resourceType, String resource) throws BrokerAuthServerException;
+    AuthResource read(String resourceType, String resource) throws AuthServerException;
 
     /**
      * Get all resource for given resource type.
@@ -72,9 +72,9 @@ public interface AuthResourceDao {
      * @param ownerId      owner
      *                     user id
      * @return user id
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws AuthServerException when database operation failed.
      */
-    List<AuthResource> readAll(String resourceType, String ownerId) throws BrokerAuthServerException;
+    List<AuthResource> readAll(String resourceType, String ownerId) throws AuthServerException;
 
     /**
      * Get all resource for given resource type.
@@ -84,10 +84,10 @@ public interface AuthResourceDao {
      * @param ownerId      owner user id
      * @param userGroups   user groups
      * @return user id
-     * @throws BrokerAuthServerException when database operation failed
+     * @throws AuthServerException when database operation failed.
      */
     List<AuthResource> readAll(String resourceType, String action, String ownerId, List<String> userGroups)
-            throws BrokerAuthServerException;
+            throws AuthServerException;
 
     /**
      * Check resource existence for given resource type and name.
@@ -95,9 +95,9 @@ public interface AuthResourceDao {
      * @param resourceType resource Type
      * @param resource     resource
      * @return is resource exist or not
-     * @throws BrokerAuthServerException when database operation failed
+     * @throws AuthServerException when database operation failed.
      */
-    boolean isExists(String resourceType, String resource) throws BrokerAuthServerException;
+    boolean isExists(String resourceType, String resource) throws AuthServerException;
 
     /**
      * Update owner of the given resource.
@@ -105,11 +105,12 @@ public interface AuthResourceDao {
      * @param resourceType resource type
      * @param resourceName resource name
      * @param newOwner     user ID of the new owner
-     * @throws BrokerAuthServerException when database operation failed
+     * @throws AuthServerException when database operation failed
      * @return true if resource was updated
      */
     boolean updateOwner(String resourceType, String resourceName, String newOwner)
-            throws BrokerAuthServerException;
+            throws AuthServerException;
+
 
     /**
      * Add a group mapping to the given auth resource.
@@ -121,7 +122,7 @@ public interface AuthResourceDao {
      * @return true if resource was updated
      */
     boolean addGroup(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthNotFoundException, BrokerAuthServerException;
+            throws AuthNotFoundException, AuthServerException;
 
     /**
      * Remove a group mapping from the given auth resource.
@@ -133,5 +134,5 @@ public interface AuthResourceDao {
      * @return true if resource was updated
      */
     boolean removeGroup(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthNotFoundException, BrokerAuthServerException;
+            throws AuthNotFoundException, AuthServerException;
 }

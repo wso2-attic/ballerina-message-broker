@@ -1,6 +1,6 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -26,7 +26,7 @@ public interface MandatoryAccessController {
      * @param scopeName  a scope key
      * @param userGroups set of user groups to check
      * @return if authorised or not
-     * @throws BrokerAuthNotFoundException throws if scope is not found
+     * @throws AuthNotFoundException throws if scope is not found
      */
-    boolean authorize(String scopeName, Set<String> userGroups) throws BrokerAuthNotFoundException;
+    boolean authorize(String scopeName, Set<String> userGroups) throws AuthNotFoundException;
 }

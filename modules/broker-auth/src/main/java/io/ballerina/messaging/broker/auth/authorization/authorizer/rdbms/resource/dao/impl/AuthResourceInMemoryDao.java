@@ -20,9 +20,9 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resour
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -47,13 +47,13 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
     private Table<String, String, AuthResource> inMemoryResourceMap = HashBasedTable.create();
 
     @Override
-    public void persist(AuthResource authResource) throws BrokerAuthServerException {
+    public void persist(AuthResource authResource) throws AuthServerException {
         String resourceType = authResource.getResourceType();
         String resourceName = authResource.getResourceName();
         if (!inMemoryResourceMap.contains(resourceType, resourceName)) {
             inMemoryResourceMap.put(resourceType, resourceName, authResource);
         } else {
-            throw new BrokerAuthServerException(
+            throw new AuthServerException(
                     "Auth resource already exists [" + resourceType + ", " + resourceName + "]");
         }
     }

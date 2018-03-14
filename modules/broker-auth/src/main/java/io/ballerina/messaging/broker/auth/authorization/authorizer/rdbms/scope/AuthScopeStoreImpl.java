@@ -21,12 +21,12 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.dao.AuthScopeDao;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.dao.impl.AuthScopeRdbmsDao;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 
 import java.util.List;
 import java.util.Objects;
@@ -63,39 +63,39 @@ public class AuthScopeStoreImpl implements AuthScopeStore {
 
     @Override
     public boolean authorize(String authScopeName, Set<String> userGroups)
-            throws BrokerAuthNotFoundException {
+            throws AuthNotFoundException {
         try {
             AuthScope authScope = authScopeCache.get(authScopeName);
             return Objects.nonNull(authScope) && authScope.getUserGroups().stream().anyMatch(userGroups::contains);
         } catch (ExecutionException e) {
-            throw new BrokerAuthNotFoundException("Scope does not found for scope name: " + authScopeName, e);
+            throw new AuthNotFoundException("Scope does not found for scope name: " + authScopeName, e);
         }
     }
 
     @Override
-    public void update(String authScopeName, List<String> userGroups) throws BrokerAuthServerException {
+    public void update(String authScopeName, List<String> userGroups) throws AuthServerException {
         authScopeDao.update(authScopeName, userGroups);
         authScopeCache.invalidate(authScopeName);
     }
 
     @Override
-    public AuthScope read(String authScopeName) throws BrokerAuthServerException {
+    public AuthScope read(String authScopeName) throws AuthServerException {
         return authScopeDao.read(authScopeName);
     }
 
     @Override
-    public List<AuthScope> readAll() throws BrokerAuthServerException {
+    public List<AuthScope> readAll() throws AuthServerException {
         return authScopeDao.readAll();
     }
 
     private class AuthScopeCacheLoader extends CacheLoader<String, AuthScope> {
         @Override
-        public AuthScope load(@Nonnull String scopeName) throws BrokerAuthNotFoundException, BrokerAuthServerException {
+        public AuthScope load(@Nonnull String scopeName) throws AuthNotFoundException, AuthServerException {
             AuthScope authScope = read(scopeName);
             if (Objects.nonNull(authScope)) {
                 return authScope;
             } else {
-                throw new BrokerAuthNotFoundException("Scope does not found");
+                throw new AuthNotFoundException("Scope does not found");
             }
         }
     }

@@ -1,10 +1,10 @@
 package io.ballerina.messaging.broker.auth.authorization.provider;
 
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.MandatoryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScopeStoreImpl;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 
@@ -34,7 +34,7 @@ public class DefaultMacHandler implements MandatoryAccessController {
 
     @Override
     public boolean authorize(String scopeName, Set<String> userGroups)
-            throws BrokerAuthNotFoundException {
+            throws AuthNotFoundException {
         return authScopeStore.authorize(scopeName, userGroups);
     }
 }

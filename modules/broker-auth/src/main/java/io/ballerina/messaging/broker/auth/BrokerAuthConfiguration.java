@@ -19,8 +19,8 @@
 package io.ballerina.messaging.broker.auth;
 
 import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMemoryDacHandler;
 import io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore;
-import io.ballerina.messaging.broker.auth.authorization.provider.MemoryDacHandler;
 import io.ballerina.messaging.broker.auth.authorization.provider.NoOpMacHandler;
 
 import java.util.Collections;
@@ -237,7 +237,7 @@ public class BrokerAuthConfiguration {
      */
     public static class DacConfigurations {
 
-        private String className = MemoryDacHandler.class.getCanonicalName();
+        private String className = DefaultMemoryDacHandler.class.getCanonicalName();
 
         private Map<String, String> properties = new HashMap<>();
 

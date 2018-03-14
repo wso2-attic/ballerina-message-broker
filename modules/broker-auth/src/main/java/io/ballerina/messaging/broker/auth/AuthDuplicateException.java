@@ -16,31 +16,17 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authorization.enums;
+package io.ballerina.messaging.broker.auth;
 
 /**
- * Enum used to represent resource actions.
+ * This Exception class represents login failures.
  */
-public enum ResourceAction {
+public class AuthDuplicateException extends Exception {
 
-    UPDATE("update"),
-    DELETE("delete"),
-    GET("get"),
-    CONSUME("consume"),
-    PUBLISH("publish"),
-    BIND("bind"),
-    UNBIND("unbind"),
-    GRANT_PERMISSION("grantPermission");
+    private static final long serialVersionUID = -798841825247224307L;
 
-    private String name;
-
-    ResourceAction(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
+    public AuthDuplicateException(String message) {
+        super(message);
     }
 
 }

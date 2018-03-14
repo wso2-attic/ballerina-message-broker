@@ -18,7 +18,7 @@
  */
 package io.ballerina.messaging.broker.auth.authentication;
 
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -45,7 +45,7 @@ public interface Authenticator {
      * @param username an username
      * @param password the password of the user
      * @return authentication result with user information
-     * @throws BrokerAuthException if error occurred while authenticating user.
+     * @throws AuthException if error occurred while authenticating user.
      */
-    AuthResult authenticate(String username, char[] password) throws BrokerAuthException;
+    AuthResult authenticate(String username, char[] password) throws AuthException;
 }

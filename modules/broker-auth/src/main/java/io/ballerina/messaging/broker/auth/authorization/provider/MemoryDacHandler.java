@@ -19,13 +19,13 @@
 
 package io.ballerina.messaging.broker.auth.authorization.provider;
 
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceInMemoryDao;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -48,7 +48,7 @@ public class MemoryDacHandler implements DiscretionaryAccessController {
                              String resource,
                              String action,
                              String userId,
-                             Set<String> userGroups) throws BrokerAuthServerException {
+                             Set<String> userGroups) throws AuthServerException {
         AuthResource authResource = resourceDao.read(resourceType, resource);
         return Objects.nonNull(authResource) && (authResource.getOwner().equals(userId) ||
                 authResource.getActionsUserGroupsMap().get(action).stream().anyMatch(userGroups::contains));
@@ -56,37 +56,37 @@ public class MemoryDacHandler implements DiscretionaryAccessController {
     }
 
     @Override
-    public void addResource(String resourceType, String resourceName, String owner) throws BrokerAuthServerException {
+    public void addResource(String resourceType, String resourceName, String owner) throws AuthServerException {
         //do nothing as authorization disabled
         resourceDao.persist(new AuthResource(resourceType, resourceName, false, owner));
     }
 
     @Override
-    public boolean deleteResource(String resourceType, String resourceName) throws BrokerAuthServerException {
+    public boolean deleteResource(String resourceType, String resourceName) throws AuthServerException {
         //do nothing as authorization disabled
         return resourceDao.delete(resourceType, resourceName);
     }
 
     @Override
     public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws AuthServerException, AuthNotFoundException {
         return resourceDao.addGroup(resourceType, resourceName, action, group);
     }
 
     @Override
     public boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws AuthServerException, AuthNotFoundException {
         return resourceDao.removeGroup(resourceType, resourceName, action, group);
     }
 
     @Override
     public boolean changeResourceOwner(String resourceType, String resourceName, String owner)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws AuthServerException, AuthNotFoundException {
         return resourceDao.updateOwner(resourceType, resourceName, owner);
     }
 
     @Override
-    public AuthResource getAuthResource(String resourceType, String resourceName) throws BrokerAuthServerException {
+    public AuthResource getAuthResource(String resourceType, String resourceName) throws AuthServerException {
         return resourceDao.read(resourceType, resourceName);
     }
 }

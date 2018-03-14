@@ -23,10 +23,10 @@ import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ChannelException;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerAuthException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -115,16 +115,16 @@ public class QueueDeclare extends MethodFrame {
                                                    ShortString.parseString(e.getMessage()),
                                                    CLASS_ID,
                                                    METHOD_ID));
+            } catch (BrokerAuthException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.ACCESS_REFUSED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
             } catch (BrokerException e) {
                 LOGGER.warn("Error declaring queue.", e);
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
                                                    ChannelException.NOT_ALLOWED,
-                                                   ShortString.parseString(e.getMessage()),
-                                                   CLASS_ID,
-                                                   METHOD_ID));
-            } catch (BrokerAuthException e) {
-                ctx.writeAndFlush(new ChannelClose(getChannel(),
-                                                   ChannelException.ACCESS_REFUSED,
                                                    ShortString.parseString(e.getMessage()),
                                                    CLASS_ID,
                                                    METHOD_ID));

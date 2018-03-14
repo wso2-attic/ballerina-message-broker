@@ -16,17 +16,19 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource;
+package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceRdbmsDao;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 
@@ -75,20 +77,20 @@ public class RdbmsDacHandler implements DiscretionaryAccessController {
 
     @Override
     public boolean authorize(String resourceType, String resourceName, String action, String userId,
-                             Set<String> userGroups) throws BrokerAuthNotFoundException {
+                             Set<String> userGroups) throws AuthNotFoundException {
         AuthResource authResource = getAuthResource(resourceType, resourceName);
         return Objects.nonNull(authResource) && (authResource.getOwner().equals(userId) ||
                 authResource.getActionsUserGroupsMap().get(action).stream().anyMatch(userGroups::contains));
     }
 
     @Override
-    public void addResource(String resourceType, String resourceName, String owner) throws BrokerAuthServerException {
+    public void addResource(String resourceType, String resourceName, String owner) throws AuthServerException {
         authResourceDao.persist(new AuthResource(resourceType, resourceName, true, owner));
     }
 
     @Override
     public boolean deleteResource(String resourceType, String resourceName)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws AuthServerException, AuthNotFoundException {
         AuthResource existingResource = getAuthResource(resourceType, resourceName);
         if (Objects.nonNull(existingResource)) {
             authResourceDao.delete(resourceType, resourceName);
@@ -100,18 +102,18 @@ public class RdbmsDacHandler implements DiscretionaryAccessController {
 
     @Override
     public AuthResource getAuthResource(String resourceType, String resourceName)
-            throws BrokerAuthNotFoundException {
+            throws AuthNotFoundException {
         try {
             return authResourceCache.get(new ResourceCacheKey(resourceType, resourceName));
         } catch (ExecutionException e) {
-            throw new BrokerAuthNotFoundException("Error occurred while retrieving resource from cache for type : "
+            throw new AuthNotFoundException("Error occurred while retrieving resource from cache for type : "
                                                           + resourceType + "  name : " + resourceName, e);
         }
     }
 
     @Override
     public boolean changeResourceOwner(String resourceType, String resourceName, String newOwner)
-            throws BrokerAuthServerException {
+            throws AuthServerException {
         boolean success = authResourceDao.updateOwner(resourceType, resourceName, newOwner);
 
         if (success) {
@@ -123,7 +125,7 @@ public class RdbmsDacHandler implements DiscretionaryAccessController {
 
     @Override
     public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthServerException {
+            throws AuthServerException {
         boolean success = authResourceDao.addGroup(resourceType, resourceName, action, group);
         if (success) {
             authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
@@ -134,7 +136,7 @@ public class RdbmsDacHandler implements DiscretionaryAccessController {
 
     @Override
     public boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
-            throws BrokerAuthServerException {
+            throws AuthServerException {
         boolean success = authResourceDao.removeGroup(resourceType, resourceName, action, group);
         if (success) {
             authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
@@ -145,14 +147,14 @@ public class RdbmsDacHandler implements DiscretionaryAccessController {
 
     private class AuthResourceCacheLoader extends CacheLoader<ResourceCacheKey, AuthResource> {
         @Override
-        public AuthResource load(@Nonnull ResourceCacheKey resourceCacheKey) throws BrokerAuthNotFoundException,
-                BrokerAuthServerException {
+        public AuthResource load(@Nonnull ResourceCacheKey resourceCacheKey) throws AuthNotFoundException,
+                AuthServerException {
             AuthResource authResource = authResourceDao.read(resourceCacheKey.getResourceType(),
                                                              resourceCacheKey.getResourceName());
             if (Objects.nonNull(authResource)) {
                 return authResource;
             } else {
-                throw new BrokerAuthNotFoundException("Resource does not found");
+                throw new AuthNotFoundException("Resource does not found");
             }
         }
     }
