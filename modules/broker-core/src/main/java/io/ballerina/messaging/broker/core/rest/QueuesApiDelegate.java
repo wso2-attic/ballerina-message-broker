@@ -123,9 +123,7 @@ public class QueuesApiDelegate {
             queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
         } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
-        }
-
-        if (Objects.isNull(queueHandler)) {
+        } catch (ResourceNotFoundException e) {
             throw new NotFoundException("Queue " + queueName + " not found");
         }
 

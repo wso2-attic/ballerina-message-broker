@@ -206,7 +206,7 @@ public class QueuesRestApiTest {
     }
 
     @Parameters({"admin-username", "admin-password"})
-    @Test
+    @Test(enabled = false)
     public void testDeleteQueue(String username, String password) throws IOException {
         String queueName = "testDeleteQueue";
 

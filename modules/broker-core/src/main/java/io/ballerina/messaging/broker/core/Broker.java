@@ -165,6 +165,14 @@ public interface Broker {
             ResourceNotFoundException;
 
     /**
+     * Check if a queue exists with the given name.
+     *
+     * @param queueName name of the queue
+     * @return true if queue exists, false otherwise
+     */
+    boolean queueExists(String queueName);
+
+    /**
      * Bind queue to exchange
      *
      * @param queueName    queue name
@@ -215,7 +223,8 @@ public interface Broker {
      * @param queueName queue name
      * @return selected queue
      */
-    QueueHandler getQueue(String queueName) throws BrokerAuthNotFoundException, BrokerAuthException;
+    QueueHandler getQueue(String queueName)
+            throws BrokerAuthNotFoundException, BrokerAuthException, ResourceNotFoundException;
 
     /**
      * Generate unique message id

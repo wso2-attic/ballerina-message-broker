@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.rest;
 
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
+import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.Consumer;
 import io.ballerina.messaging.broker.core.QueueHandler;
@@ -47,15 +48,15 @@ public class ConsumersApiDelegate {
     }
 
     public Response getConsumer(String queueName, Integer consumerId, Subject subject) {
-        QueueHandler queue = null;
+        QueueHandler queue;
         try {
             queue = brokerFactory.getBroker(subject).getQueue(queueName);
         } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
-        }
-        if (Objects.isNull(queue)) {
+        } catch (ResourceNotFoundException e) {
             throw new NotFoundException("Unknown queue name " + queueName);
         }
+
         Consumer matchingConsumer = null;
         for (Consumer consumer : queue.getConsumers()) {
             if (consumer.getId() == consumerId) {
@@ -76,7 +77,7 @@ public class ConsumersApiDelegate {
             queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
         } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
-        } catch (BrokerAuthNotFoundException e) {
+        } catch (BrokerAuthNotFoundException | ResourceNotFoundException e) {
             throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
         }
         if (Objects.isNull(queueHandler)) {
