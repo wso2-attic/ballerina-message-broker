@@ -52,9 +52,9 @@ public class TransactionTimeoutTest {
 
     @BeforeMethod
     public void setUp() throws ValidationException {
-        Registry transactionRegistry = new Registry();
-        transaction = new DistributedTransaction(new BranchFactory(null, new NullMessageStore()),
-                                                 transactionRegistry);
+        BranchFactory branchFactory = new BranchFactory(null, new NullMessageStore());
+        Registry transactionRegistry = new Registry(branchFactory);
+        transaction = new DistributedTransaction(branchFactory, transactionRegistry);
         StoreFactory storeFactory = new MemBackedStoreFactory(new NullBrokerMetricManager(),
                                                               new BrokerCoreConfiguration());
         branch = new Branch(xid, storeFactory.getMessageStore(), null);
@@ -75,7 +75,7 @@ public class TransactionTimeoutTest {
     @Test
     public void testTransactionAfterTimeout() throws Exception {
         transaction.setTimeout(xid, 2, TimeUnit.MILLISECONDS);
-        TimeUnit.MILLISECONDS.sleep(4);
+        TimeUnit.MILLISECONDS.sleep(10);
         Assert.assertEquals(branch.isExpired(), true);
         Assert.assertEquals(branch.getState(), Branch.State.TIMED_OUT);
     }
@@ -91,7 +91,7 @@ public class TransactionTimeoutTest {
     public void testTimeoutForAlreadyPreparedBranch() throws Exception {
         branch.setState(Branch.State.PREPARED);
         transaction.setTimeout(xid, 2, TimeUnit.MILLISECONDS);
-        TimeUnit.MILLISECONDS.sleep(4);
+        TimeUnit.MILLISECONDS.sleep(10);
 
         Assert.assertEquals(branch.isExpired(), false);
         Assert.assertEquals(branch.getState(), Branch.State.PREPARED);

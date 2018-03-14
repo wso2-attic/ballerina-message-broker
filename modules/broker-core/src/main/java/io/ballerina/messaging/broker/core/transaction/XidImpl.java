@@ -37,12 +37,19 @@ public class XidImpl implements Xid {
 
     private final byte[] globalTransactionId;
 
+    private long internalXid;
+
     @SuppressFBWarnings(value = {"EI_EXPOSE_REP2", "EI_EXPOSE_REP2"},
             justification = "Data holder of global transaction identifier and branch qualifier")
     public XidImpl(int formatId, byte[] branchQualifier, byte[] globalTransactionId) {
         this.branchQualifier = branchQualifier;
         this.formatId = formatId;
         this.globalTransactionId = globalTransactionId;
+    }
+
+    public XidImpl(long internalXid, int formatId, byte[] branchQualifier, byte[] globalTransactionId) {
+        this(formatId, branchQualifier, globalTransactionId);
+        this.internalXid = internalXid;
     }
 
     @Override
@@ -86,5 +93,9 @@ public class XidImpl implements Xid {
                 ", branchQualifier=" + new String(branchQualifier, StandardCharsets.UTF_8) +
                 ", globalTransactionId=" + new String(globalTransactionId, StandardCharsets.UTF_8) +
                 '}';
+    }
+
+    public long getInternalXid() {
+        return this.internalXid;
     }
 }

@@ -20,15 +20,18 @@
 package io.ballerina.messaging.broker.core.store.dao.impl;
 
 import io.ballerina.messaging.broker.common.DaoException;
+import io.ballerina.messaging.broker.common.util.function.ThrowingConsumer;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.TransactionData;
 import io.ballerina.messaging.broker.core.store.dao.MessageDao;
 
+import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import javax.transaction.xa.Xid;
 
 /**
@@ -74,10 +77,8 @@ class MessageDaoImpl implements MessageDao {
     public void prepare(Xid xid, TransactionData transactionData) throws DaoException {
         dtxCrudOperationsDao.transaction(connection -> {
             long internalXid = dtxCrudOperationsDao.storeXid(connection, xid);
-            dtxCrudOperationsDao.prepareEnqueueMessages(connection, internalXid,
-                    transactionData.getEnqueueMessages());
-            dtxCrudOperationsDao.prepareDetachMessages(connection, internalXid,
-                    transactionData.getDetachMessageMap());
+            dtxCrudOperationsDao.prepareEnqueueMessages(connection, internalXid, transactionData.getEnqueueMessages());
+            dtxCrudOperationsDao.prepareDetachMessages(connection, internalXid, transactionData.getDetachMessageMap());
             crudOperationsDao.detachFromQueue(connection, transactionData.getDetachMessageMap());
             xidToInternalIdMap.put(xid, internalXid);
         });
@@ -105,6 +106,24 @@ class MessageDaoImpl implements MessageDao {
             }
         });
         xidToInternalIdMap.remove(xid);
+    }
+
+    @Override
+    public void retrieveAllStoredXids(Consumer<Xid> xidConsumer) throws DaoException {
+        dtxCrudOperationsDao.transaction((ThrowingConsumer<Connection, Exception>) connection ->
+                dtxCrudOperationsDao.retrieveAllXids(connection, xid -> {
+                    xidToInternalIdMap.put(xid, xid.getInternalXid());
+                    xidConsumer.accept(xid);
+                }));
+    }
+
+    @Override
+    public Collection<Message> retrieveAllEnqueuedMessages(Xid xid) throws DaoException {
+        return dtxCrudOperationsDao.selectAndGetOperation(connection ->
+                                    dtxCrudOperationsDao.retrieveEnqueuedMessages(connection, getInternalXid(xid))
+                                                         );
+
+
     }
 
     private long getInternalXid(Xid xid) {

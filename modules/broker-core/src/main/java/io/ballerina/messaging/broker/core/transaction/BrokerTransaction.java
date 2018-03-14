@@ -47,6 +47,7 @@ public interface BrokerTransaction {
          */
         void onRollback();
 
+
     }
     /**
      * Dequeue a message from queue.
@@ -55,7 +56,6 @@ public interface BrokerTransaction {
      * @param message An acknowledgement message
      */
     void dequeue(String queue, Message message) throws BrokerException;
-
     /**
      * Enqueue a message to a queue.
      *
@@ -145,4 +145,11 @@ public interface BrokerTransaction {
      * @param timeUnit {@link TimeUnit} of the provided timeout
      */
     void setTimeout(Xid xid, long timeout, TimeUnit timeUnit) throws ValidationException;
+
+    /**
+     * Returns true if the transaction object is within a transaction block.
+     *
+     * @return true if within a transaction block, false otherwise.
+     */
+    boolean inTransactionBlock();
 }

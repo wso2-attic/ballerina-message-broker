@@ -21,17 +21,24 @@ package io.ballerina.messaging.broker.core.store.dao.impl;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.ballerina.messaging.broker.common.BaseDao;
+import io.ballerina.messaging.broker.common.DaoException;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.ContentChunk;
 import io.ballerina.messaging.broker.core.Message;
+import io.ballerina.messaging.broker.core.Metadata;
 import io.ballerina.messaging.broker.core.store.QueueDetachEventList;
+import io.ballerina.messaging.broker.core.transaction.XidImpl;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.sql.DataSource;
 import javax.transaction.xa.Xid;
 
@@ -106,7 +113,7 @@ public class DtxCrudOperationsDao extends BaseDao {
         insertMetadataStatement.setString(3, message.getMetadata().getExchangeName());
         insertMetadataStatement.setString(4, message.getMetadata().getRoutingKey());
         insertMetadataStatement.setLong(5, message.getMetadata().getContentLength());
-        insertMetadataStatement.setBytes(6, message.getMetadata().getBytes());
+        insertMetadataStatement.setBytes(6, message.getMetadata().getPropertiesAsBytes());
         insertMetadataStatement.addBatch();
     }
 
@@ -162,27 +169,6 @@ public class DtxCrudOperationsDao extends BaseDao {
         }
     }
 
-    public long getInternalXid(Connection connection, Xid xid) throws SQLException {
-
-        PreparedStatement selectInternalXidStatement = null;
-        ResultSet resultSet = null;
-        long internalXid = -1;
-        try {
-            selectInternalXidStatement = connection.prepareStatement(RDBMSConstants.PS_DTX_SELECT_INTERNAL_XID);
-            selectInternalXidStatement.setInt(1, xid.getFormatId());
-            selectInternalXidStatement.setBytes(2, xid.getGlobalTransactionId());
-            selectInternalXidStatement.setBytes(3, xid.getBranchQualifier());
-            resultSet = selectInternalXidStatement.executeQuery();
-            if (resultSet.first()) {
-                internalXid = resultSet.getLong(1);
-            }
-            return internalXid;
-        } finally {
-            close(resultSet);
-            close(selectInternalXidStatement);
-        }
-    }
-
     public void removePreparedData(Connection connection, long internalXid) throws SQLException {
         PreparedStatement deleteXidStatement = null;
         try {
@@ -202,6 +188,111 @@ public class DtxCrudOperationsDao extends BaseDao {
             preparedStatement.executeUpdate();
         } finally {
             close(preparedStatement);
+        }
+    }
+
+    public void retrieveAllXids(Connection connection, Consumer<XidImpl> xidConsumer) throws SQLException {
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = connection.prepareStatement(RDBMSConstants.PS_DTX_SELECT_ALL_XIDS);
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                XidImpl xid = new XidImpl(
+                        resultSet.getLong(1),
+                        resultSet.getInt(2),
+                        resultSet.getBytes(3),
+                        resultSet.getBytes(4)
+                );
+                xidConsumer.accept(xid);
+            }
+        } finally {
+            close(resultSet);
+            close(statement);
+        }
+    }
+
+    public Collection<Message> retrieveEnqueuedMessages(Connection connection, long internalXid)
+            throws DaoException {
+        HashMap<Long, Message> enqueuedMessages = new HashMap<>();
+        try {
+            populateMetadata(connection, internalXid, enqueuedMessages);
+            populateContent(connection, internalXid, enqueuedMessages);
+            updateQueueMapping(connection, internalXid, enqueuedMessages);
+            return enqueuedMessages.values();
+        } catch (Exception e) {
+            throw new DaoException("Error occurred while retrieving enqueued dtx messages", e);
+        }
+    }
+
+    private void updateQueueMapping(Connection connection, long internalXid, HashMap<Long, Message> enqueuedMessages)
+            throws SQLException {
+        PreparedStatement queueMappingStmt = null;
+        ResultSet resultSet = null;
+
+        try {
+            queueMappingStmt = connection.prepareStatement(RDBMSConstants.PS_DTX_SELECT_QUEUE_MAPPING);
+            queueMappingStmt.setLong(1, internalXid);
+
+            resultSet = queueMappingStmt.executeQuery();
+            while (resultSet.next()) {
+                long messageId = resultSet.getLong("MESSAGE_ID");
+                String queueName = resultSet.getString("QUEUE_NAME");
+                Message message = enqueuedMessages.get(messageId);
+                message.addAttachedDurableQueue(queueName);
+            }
+        } finally {
+            close(resultSet);
+            close(queueMappingStmt);
+        }
+    }
+
+    private void populateContent(Connection connection, long internalXid, HashMap<Long, Message> enqueuedMessages)
+            throws SQLException {
+        PreparedStatement retrieveContentStmt = null;
+        ResultSet resultSet = null;
+        try {
+            retrieveContentStmt = connection.prepareStatement(RDBMSConstants.PS_DTX_SELECT_ENQUEUED_CONTENT);
+            retrieveContentStmt.setLong(1, internalXid);
+
+            resultSet = retrieveContentStmt.executeQuery();
+
+            while (resultSet.next()) {
+                long messageId = resultSet.getLong("MESSAGE_ID");
+                Message message = enqueuedMessages.get(messageId);
+                long offset = resultSet.getLong("CONTENT_OFFSET");
+                byte[] contentBytes = resultSet.getBytes("MESSAGE_CONTENT");
+                ByteBuf byteBuf = Unpooled.wrappedBuffer(contentBytes);
+                message.addChunk(new ContentChunk(offset, byteBuf));
+            }
+        } finally {
+            close(resultSet);
+            close(retrieveContentStmt);
+        }
+    }
+
+    private void populateMetadata(Connection connection, long internalXid, HashMap<Long, Message> enqueuedMessages)
+            throws Exception {
+        PreparedStatement retrieveMetadataStmt = null;
+        ResultSet resultSet = null;
+        try {
+            retrieveMetadataStmt = connection.prepareStatement(RDBMSConstants.PS_DTX_SELECT_ENQUEUED_METADATA);
+            retrieveMetadataStmt.setLong(1, internalXid);
+
+            resultSet = retrieveMetadataStmt.executeQuery();
+            while (resultSet.next()) {
+                Metadata metadata = new Metadata(resultSet.getString("ROUTING_KEY"),
+                                                 resultSet.getString("EXCHANGE_NAME"),
+                                                 resultSet.getLong("CONTENT_LENGTH"),
+                                                 resultSet.getBytes("MESSAGE_METADATA")
+                );
+
+                Message message = new Message(resultSet.getLong("MESSAGE_ID"), metadata);
+                enqueuedMessages.put(message.getInternalId(), message);
+            }
+        } finally {
+            close(resultSet);
+            close(retrieveMetadataStmt);
         }
     }
 }

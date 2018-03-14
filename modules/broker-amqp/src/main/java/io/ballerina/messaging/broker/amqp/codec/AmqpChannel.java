@@ -248,7 +248,7 @@ public class AmqpChannel {
         }
         if (ackData != null) {
             transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
-            if (isNonTransactional()) {
+            if (!transaction.inTransactionBlock()) {
                 ackData = unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
                 ackData.getMessage().release();
             }

@@ -80,6 +80,15 @@ public class Metadata {
         this.headers = FieldTable.EMPTY_TABLE;
     }
 
+    public Metadata(String routingKey, String exchangeName, long contentLength, byte[] propertyBytes) throws Exception {
+        this.routingKey = routingKey;
+        this.exchangeName = exchangeName;
+        this.contentLength = contentLength;
+        this.properties = FieldTable.EMPTY_TABLE;
+        this.headers = FieldTable.EMPTY_TABLE;
+        setPropertiesFromBytes(propertyBytes);
+    }
+
     public String getRoutingKey() {
         return routingKey;
     }
@@ -101,7 +110,6 @@ public class Metadata {
         metadata.properties = properties;
         metadata.headers = headers;
         return metadata;
-
     }
 
     @Override
@@ -153,7 +161,7 @@ public class Metadata {
         headers.add(ShortString.parseString(name), FieldValue.parseLongString(value));
     }
 
-    public byte[] getBytes() {
+    public byte[] getPropertiesAsBytes() {
         long size = properties.getSize() + headers.getSize();
         byte[] bytes = new byte[(int) size];
         ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
@@ -161,5 +169,11 @@ public class Metadata {
         properties.write(buffer);
         headers.write(buffer);
         return bytes;
+    }
+
+    private void setPropertiesFromBytes(byte[] bytes) throws Exception {
+        ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
+        properties = FieldTable.parse(buffer);
+        headers = FieldTable.parse(buffer);
     }
 }

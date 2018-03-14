@@ -294,4 +294,11 @@ public interface Broker {
      * @return a new DistributedTransaction object
      */
     BrokerTransaction newDistributedTransaction();
+
+    /**
+     * Restore enqueued data that is already in prepared state.
+     * @param xid
+     * @param messages
+     */
+    Set<QueueHandler> restoreDtxPreparedMessages(Xid xid, Collection<Message> messages) throws BrokerException;
 }

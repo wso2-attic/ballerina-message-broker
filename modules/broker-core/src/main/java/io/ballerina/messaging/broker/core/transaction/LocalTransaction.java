@@ -149,6 +149,11 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     @Override
+    public boolean inTransactionBlock() {
+        return true;
+    }
+
+    @Override
     public void addPostTransactionAction(Action postTransactionAction) {
         postTransactionActions.add(postTransactionAction);
     }

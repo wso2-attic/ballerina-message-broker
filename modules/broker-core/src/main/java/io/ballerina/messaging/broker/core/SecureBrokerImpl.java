@@ -299,4 +299,9 @@ public class SecureBrokerImpl implements Broker {
     public BrokerTransaction newDistributedTransaction() {
         return new SecureBrokerTransaction(broker.newDistributedTransaction(), subject, authHandler);
     }
+
+    @Override
+    public Set<QueueHandler> restoreDtxPreparedMessages(Xid xid, Collection<Message> messages) throws BrokerException {
+        return broker.restoreDtxPreparedMessages(xid, messages);
+    }
 }

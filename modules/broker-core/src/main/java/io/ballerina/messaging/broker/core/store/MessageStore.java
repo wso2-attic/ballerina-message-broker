@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import javax.transaction.xa.Xid;
 
 /**
@@ -131,7 +132,7 @@ public abstract class MessageStore {
         }
     }
 
-    public void cancel(Xid xid) throws BrokerException {
+    public void remove(Xid xid) throws BrokerException {
         rollback(xid);
         clear(xid);
     }
@@ -142,8 +143,10 @@ public abstract class MessageStore {
 
     public void clear(Xid xid) {
         TransactionData transactionData = transactionMap.remove(xid);
-        transactionData.releaseEnqueueMessages();
-        transactionData.clear();
+        if (Objects.nonNull(transactionData)) {
+            transactionData.releaseEnqueueMessages();
+            transactionData.clear();
+        }
     }
 
     abstract void publishMessageToStore(Message message);
@@ -156,11 +159,15 @@ public abstract class MessageStore {
 
     abstract void commit(Xid xid, TransactionData transactionData) throws BrokerException;
 
-    protected abstract void rollback(Xid xid) throws BrokerException;
+    public abstract void rollback(Xid xid) throws BrokerException;
 
     public abstract void fillMessageData(QueueBuffer queueBuffer, Message message);
 
     public abstract Collection<Message> readAllMessagesForQueue(String queueName) throws BrokerException;
 
     public abstract void prepare(Xid xid, TransactionData transactionData) throws BrokerException;
+
+    public abstract void retrieveStoredXids(Consumer<Xid> consumer) throws BrokerException;
+
+    public abstract Collection<Message> recoverEnqueuedMessages(Xid xid) throws BrokerException;
 }

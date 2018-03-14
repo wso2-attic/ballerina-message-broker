@@ -21,14 +21,12 @@ package io.ballerina.messaging.broker.core.store.dao.impl;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.ballerina.messaging.broker.common.BaseDao;
-import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.ContentChunk;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.QueueDetachEventList;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.wso2.carbon.metrics.core.Timer.Context;
 
@@ -112,7 +110,7 @@ class MessageCrudOperationsDao extends BaseDao {
         metadataStmt.setString(2, metadata.getExchangeName());
         metadataStmt.setString(3, metadata.getRoutingKey());
         metadataStmt.setLong(4, metadata.getContentLength());
-        metadataStmt.setBytes(5, metadata.getBytes());
+        metadataStmt.setBytes(5, metadata.getPropertiesAsBytes());
         metadataStmt.addBatch();
     }
 
@@ -222,11 +220,8 @@ class MessageCrudOperationsDao extends BaseDao {
                 String routingKey = metadataResultSet.getString(3);
                 long contentLength = metadataResultSet.getLong(4);
                 byte[] bytes = metadataResultSet.getBytes(5);
-                ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
                 try {
-                    Metadata metadata = new Metadata(routingKey, exchangeName, contentLength);
-                    metadata.setProperties(FieldTable.parse(buffer));
-                    metadata.setHeaders(FieldTable.parse(buffer));
+                    Metadata metadata = new Metadata(routingKey, exchangeName, contentLength, bytes);
 
                     List<Message> messages = messageMap.get(messageId);
                     for (Message message : messages) {
@@ -236,8 +231,6 @@ class MessageCrudOperationsDao extends BaseDao {
                     }
                 } catch (Exception e) {
                     throw new BrokerException("Error occurred while parsing metadata properties", e);
-                } finally {
-                    buffer.release();
                 }
             }
         } finally {
@@ -273,7 +266,7 @@ class MessageCrudOperationsDao extends BaseDao {
                 List<Message> messages = messageMap.get(messageId);
                 for (Message message : messages) {
                     if (Objects.nonNull(message)) {
-                        message.addChunk(new ContentChunk(offset, Unpooled.copiedBuffer(bytes)));
+                        message.addChunk(new ContentChunk(offset, Unpooled.wrappedBuffer(bytes)));
                     }
                 }
             }

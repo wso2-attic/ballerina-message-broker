@@ -37,6 +37,7 @@ public class BranchFactory {
     private final MessageStore messageStore;
     private final EnqueueDequeueStrategy enqueueDequeueStrategy;
 
+
     BranchFactory(Broker broker, MessageStore messageStore) {
         this.broker = broker;
         this.messageStore = messageStore;

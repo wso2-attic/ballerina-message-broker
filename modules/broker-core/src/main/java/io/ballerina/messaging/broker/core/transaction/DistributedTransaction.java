@@ -178,4 +178,9 @@ public class DistributedTransaction implements BrokerTransaction {
     public void setTimeout(Xid xid, long timeout, TimeUnit timeUnit) throws ValidationException {
         transactionRegistry.setTimeout(xid, timeout, timeUnit);
     }
+
+    @Override
+    public boolean inTransactionBlock() {
+        return enqueueDequeueStrategy instanceof Branch;
+    }
 }

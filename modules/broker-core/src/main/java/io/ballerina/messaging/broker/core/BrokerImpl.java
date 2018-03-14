@@ -124,6 +124,7 @@ public final class BrokerImpl implements Broker {
         initDefaultDeadLetterQueue();
 
         this.brokerTransactionFactory = new BrokerTransactionFactory(this, messageStore);
+        brokerTransactionFactory.syncWithMessageStore(messageStore);
 
         startupContext.registerService(Broker.class, this);
         initRestApi(startupContext);
@@ -625,6 +626,29 @@ public final class BrokerImpl implements Broker {
         return brokerTransactionFactory.newDistributedTransaction();
     }
 
+    @Override
+    public Set<QueueHandler> restoreDtxPreparedMessages(Xid xid, Collection<Message> messages) throws BrokerException {
+        Set<QueueHandler> queueHandlers = new HashSet<>();
+        lock.readLock().lock();
+        try {
+            for (Message message : messages) {
+                try {
+                    messageStore.add(xid, message.shallowCopy());
+                    for (String queueName : message.getAttachedDurableQueues()) {
+                        QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+                        queueHandler.prepareForEnqueue(xid, message.shallowCopy());
+                        queueHandlers.add(queueHandler);
+                    }
+                } finally {
+                    message.release();
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+        return queueHandlers;
+    }
+
     private class BrokerHelper {
 
         public void startMessageDelivery() {
@@ -669,6 +693,7 @@ public final class BrokerImpl implements Broker {
             try {
                 queueRegistry.reloadQueuesOnBecomingActive();
                 exchangeRegistry.reloadExchangesOnBecomingActive(queueRegistry);
+                brokerTransactionFactory.syncWithMessageStore(messageStore);
             } catch (BrokerException e) {
                 LOGGER.error("Error on loading data from the database on becoming active ", e);
             }

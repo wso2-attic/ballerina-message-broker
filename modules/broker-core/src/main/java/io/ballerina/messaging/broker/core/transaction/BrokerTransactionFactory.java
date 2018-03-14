@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.store.MessageStore;
 
 /**
@@ -31,9 +32,13 @@ public class BrokerTransactionFactory {
 
     private final Registry registry;
 
-    public BrokerTransactionFactory(Broker broker, MessageStore messageStore) {
+    public BrokerTransactionFactory(Broker broker, MessageStore messageStore) throws BrokerException {
         this.branchFactory = new BranchFactory(broker, messageStore);
-        this.registry = new Registry();
+        this.registry = new Registry(branchFactory);
+    }
+
+    public void syncWithMessageStore(MessageStore messageStore) throws BrokerException {
+        registry.syncWithMessageStore(messageStore);
     }
 
     public LocalTransaction newLocalTransaction() {
