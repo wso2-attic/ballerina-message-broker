@@ -24,24 +24,27 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 /**
- * Exception mapper for 500 HTTP INTERNAL SERVER ERROR.
+ * Exception mapper for 403 HTTP FORBIDDEN. This is thrown when a resource is not authorized.
  */
-public class InternalServerErrorExceptionMapper implements ExceptionMapper<InternalServerErrorException> {
+public class ForbiddenExceptionMapper implements ExceptionMapper<ForbiddenException> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InternalServerErrorExceptionMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ForbiddenException.class);
 
     @Override
-    public Response toResponse(InternalServerErrorException exception) {
-        LOGGER.error("Internal server error.", exception);
+    public Response toResponse(ForbiddenException exception) {
+        LOGGER.debug("Resource access is unauthorised.", exception);
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("message", exception.getMessage());
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse)
-                       .type(MediaType.APPLICATION_JSON_TYPE).build();
+        return Response.status(Response.Status.FORBIDDEN)
+                       .entity(errorResponse)
+                       .type(MediaType.APPLICATION_JSON_TYPE)
+                       .build();
     }
 }
+

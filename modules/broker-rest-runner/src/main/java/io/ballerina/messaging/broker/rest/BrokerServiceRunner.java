@@ -36,7 +36,8 @@ public class BrokerServiceRunner {
                     new BasicAuthSecurityInterceptor(authManager.getAuthenticator()::authenticate));
         }
         runner.addExceptionMapper(new ResourceNotFoundMapper(), new BadRequestMapper(),
-                                  new InternalServerErrorExceptionMapper());
+                                  new InternalServerErrorExceptionMapper(), new ForbiddenExceptionMapper(),
+                                  new NotAuthorizedExceptionMapper());
         this.runner = runner;
     }
 
