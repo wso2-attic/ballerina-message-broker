@@ -22,14 +22,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.authorization.AuthScopeStore;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.MandatoryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.scope.AuthScopeStoreImpl;
 import io.ballerina.messaging.broker.auth.authorization.provider.MemoryDacHandler;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthDuplicateException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
@@ -46,7 +44,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
-import javax.sql.DataSource;
 
 /**
  * Class provides database based @{@link Authorizer} implementation.
@@ -55,8 +52,6 @@ public class DefaultAuthorizer implements Authorizer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAuthorizer.class);
     private final MemoryDacHandler memoryDacHandler;
-
-    private AuthScopeStore authScopeStore;
 
     private UserStore userStore;
 
@@ -78,12 +73,10 @@ public class DefaultAuthorizer implements Authorizer {
 
     @Override
     public void initialize(StartupContext startupContext) throws Exception {
-        DataSource dataSource = startupContext.getService(DataSource.class);
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerAuthConfiguration brokerAuthConfiguration = configProvider.getConfigurationObject(
                 BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
 
-        authScopeStore = new AuthScopeStoreImpl(brokerAuthConfiguration, dataSource);
         userCache = CacheBuilder.newBuilder()
                                 .maximumSize(brokerAuthConfiguration.getAuthorization().getCache()
                                                                     .getSize())
@@ -107,7 +100,7 @@ public class DefaultAuthorizer implements Authorizer {
                     LOGGER.debug("Scopes are loaded from cache for auth scope key : {} ", scopeName);
                     return true;
                 } else {
-                    if (authScopeStore.authorize(scopeName, userCacheEntry.getUserGroups())) {
+                    if (macHandler.authorize(scopeName, userCacheEntry.getUserGroups())) {
                         userCacheEntry.getAuthorizedScopes().add(scopeName);
                         return true;
                     } else {
@@ -190,11 +183,6 @@ public class DefaultAuthorizer implements Authorizer {
         }
 
         return authorized;
-    }
-
-    @Override
-    public AuthScopeStore getAuthScopeStore() {
-        return authScopeStore;
     }
 
     @Override

@@ -63,7 +63,7 @@ public class AuthScopeStoreImpl implements AuthScopeStore {
 
     @Override
     public boolean authorize(String authScopeName, Set<String> userGroups)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+            throws BrokerAuthNotFoundException {
         try {
             AuthScope authScope = authScopeCache.get(authScopeName);
             return Objects.nonNull(authScope) && authScope.getUserGroups().stream().anyMatch(userGroups::contains);

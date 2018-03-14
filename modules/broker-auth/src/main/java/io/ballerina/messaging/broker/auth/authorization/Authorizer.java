@@ -36,8 +36,9 @@ public interface Authorizer {
 
     /**
      * Initialize authorization strategy based on given auth configuration, user store manager and data source.
-     *  @param startupContext the startup context provides registered services for authProvider
-     * */
+     *
+     * @param startupContext the startup context provides registered services for authProvider
+     */
     void initialize(StartupContext startupContext) throws Exception;
 
     /**
@@ -71,8 +72,8 @@ public interface Authorizer {
      * @param resourceName resource name
      * @param durable      is durable
      * @param owner        resource owner
-     * @throws BrokerAuthServerException    throws if error occurs while authorizing resource.
-     * @throws BrokerAuthDuplicateException throws if error occurs while authorizing resource.
+     * @throws BrokerAuthServerException    throws if error occurs while authorizing resource
+     * @throws BrokerAuthDuplicateException throws if error occurs while authorizing resource
      */
     void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
             throws BrokerAuthServerException, BrokerAuthDuplicateException;
@@ -82,18 +83,21 @@ public interface Authorizer {
      *
      * @param resourceType resource type
      * @param resourceName resource name
-     * @throws BrokerAuthServerException   throws if error occurs while authorizing resource.
-     * @throws BrokerAuthNotFoundException throws if error occurs while authorizing resource.
+     * @throws BrokerAuthServerException   throws if error occurs while authorizing resource
+     * @throws BrokerAuthNotFoundException throws if auth resource is not found
      */
     void deleteProtectedResource(String resourceType, String resourceName)
             throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
-    AuthResource getAuthResource(String s, String name) throws BrokerAuthServerException, BrokerAuthNotFoundException;
-
     /**
-     * Returns auth scope store for auth store
+     * Query auth resource.
      *
-     * @return auth scope store
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @return matching auth resource if exists, null otherwise
+     * @throws BrokerAuthServerException   throws if error occurs while authorizing resource
+     * @throws BrokerAuthNotFoundException throws if auth resource is not found
      */
-    AuthScopeStore getAuthScopeStore();
+    AuthResource getAuthResource(String resourceType, String resourceName)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
 }
