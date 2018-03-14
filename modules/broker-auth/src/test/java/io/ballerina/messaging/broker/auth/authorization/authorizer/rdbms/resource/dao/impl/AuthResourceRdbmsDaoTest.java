@@ -22,7 +22,6 @@ import io.ballerina.messaging.broker.auth.DbUtil;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
-import io.ballerina.messaging.broker.auth.exception.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -51,7 +50,7 @@ public class AuthResourceRdbmsDaoTest {
     private AuthResourceDao authResourceDao;
 
     @BeforeClass
-    public void beforeTest() throws BrokerAuthException, SQLException {
+    public void beforeTest() {
         dataSource = DbUtil.getDataSource();
         authResourceDao = new AuthResourceRdbmsDao(dataSource);
     }

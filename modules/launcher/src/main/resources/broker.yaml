@@ -77,7 +77,7 @@ ballerina.broker.auth:
 
   # Configurations related to DAC handler.
   discretionaryAccessController:
-   className: io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler
+   className: io.ballerina.messaging.broker.auth.authorization.provider.RdbmsDacHandler
 
   cache:
    # Cache timeout in Minutes
