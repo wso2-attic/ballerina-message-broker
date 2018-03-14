@@ -16,7 +16,7 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource;
+package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -24,6 +24,8 @@ import com.google.common.cache.LoadingCache;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.DiscretionaryAccessController;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.ResourceCacheKey;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceRdbmsDao;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.auth.exception.BrokerAuthServerException;
