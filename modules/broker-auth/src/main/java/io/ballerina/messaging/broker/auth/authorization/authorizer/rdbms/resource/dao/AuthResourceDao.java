@@ -84,7 +84,7 @@ public interface AuthResourceDao {
      * @param ownerId      owner user id
      * @param userGroups   user groups
      * @return user id
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws BrokerAuthServerException when database operation failed
      */
     List<AuthResource> readAll(String resourceType, String action, String ownerId, List<String> userGroups)
             throws BrokerAuthServerException;
@@ -95,20 +95,21 @@ public interface AuthResourceDao {
      * @param resourceType resource Type
      * @param resource     resource
      * @return is resource exist or not
-     * @throws BrokerAuthServerException when database operation failed.
+     * @throws BrokerAuthServerException when database operation failed
      */
     boolean isExists(String resourceType, String resource) throws BrokerAuthServerException;
 
     /**
      * Update owner of the given resource.
-     * @param resourceType
-     * @param resourceName
-     * @param newOwner
-     * @throws BrokerAuthServerException
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param newOwner     user ID of the new owner
+     * @throws BrokerAuthServerException when database operation failed
+     * @return true if resource was updated
      */
-    void updateOwner(String resourceType, String resourceName, String newOwner)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException;
-
+    boolean updateOwner(String resourceType, String resourceName, String newOwner)
+            throws BrokerAuthServerException;
 
     /**
      * Add a group mapping to the given auth resource.
@@ -117,8 +118,9 @@ public interface AuthResourceDao {
      * @param resourceName resource name
      * @param action       action
      * @param group        group to add
+     * @return true if resource was updated
      */
-    void addGroup(String resourceType, String resourceName, String action, String group)
+    boolean addGroup(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthNotFoundException, BrokerAuthServerException;
 
     /**
@@ -128,7 +130,8 @@ public interface AuthResourceDao {
      * @param resourceName resource name
      * @param action       action
      * @param group        group to add
+     * @return true if resource was updated
      */
-    void removeGroup(String resourceType, String resourceName, String action, String group)
+    boolean removeGroup(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthNotFoundException, BrokerAuthServerException;
 }

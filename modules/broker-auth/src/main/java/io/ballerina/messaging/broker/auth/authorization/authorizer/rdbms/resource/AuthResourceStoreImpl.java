@@ -166,24 +166,40 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
     }
 
     @Override
-    public void updateOwner(String resourceType, String resourceName, String newOwner)
-            throws BrokerAuthServerException, BrokerAuthNotFoundException {
-        authResourceDaoFactory.getAuthResourceDao(true).updateOwner(resourceType, resourceName, newOwner);
-        authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+    public boolean updateOwner(String resourceType, String resourceName, String newOwner)
+            throws BrokerAuthServerException {
+        boolean success = authResourceDaoFactory.getAuthResourceDao(true)
+                                                .updateOwner(resourceType, resourceName, newOwner);
+
+        if (success) {
+            authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+        }
+
+        return success;
     }
 
     @Override
-    public void addGroup(String resourceType, String resourceName, String action, String group)
+    public boolean addGroup(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthServerException, BrokerAuthNotFoundException {
-        authResourceDaoFactory.getAuthResourceDao(true).addGroup(resourceType, resourceName, action, group);
-        authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+        boolean success = authResourceDaoFactory.getAuthResourceDao(true)
+                                                .addGroup(resourceType, resourceName, action, group);
+        if (success) {
+            authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+        }
+
+        return success;
     }
 
     @Override
-    public void removeGroup(String resourceType, String resourceName, String action, String group)
+    public boolean removeGroup(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthServerException, BrokerAuthNotFoundException {
-        authResourceDaoFactory.getAuthResourceDao(true).removeGroup(resourceType, resourceName, action, group);
-        authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+        boolean success = authResourceDaoFactory.getAuthResourceDao(true)
+                                          .removeGroup(resourceType, resourceName, action, group);
+        if (success) {
+            authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+        }
+
+        return success;
     }
 
     private boolean isAvailable(String resourceType, String resourceName, boolean durable)

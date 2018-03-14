@@ -72,7 +72,7 @@ public interface DiscretionaryAccessController {
      * @throws BrokerAuthException throws if error occur during updating resource
      * @throws BrokerAuthNotFoundException throws if the resource is not found
      */
-    void addGroupToResource(String resourceType, String resourceName, String action, String group)
+    boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthException, BrokerAuthNotFoundException, BrokerAuthServerException;
 
     /**
@@ -85,7 +85,7 @@ public interface DiscretionaryAccessController {
      * @throws BrokerAuthServerException throws if an server error occurred
      * @throws BrokerAuthNotFoundException throws if the resource is not found
      */
-    void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+    boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
@@ -97,7 +97,7 @@ public interface DiscretionaryAccessController {
      * @throws BrokerAuthServerException throws if an server error occurred
      * @throws BrokerAuthNotFoundException throws if the resource is not found
      */
-    void changeResourceOwner(String resourceType, String resourceName, String owner)
+    boolean changeResourceOwner(String resourceType, String resourceName, String owner)
             throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**

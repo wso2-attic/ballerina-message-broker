@@ -211,6 +211,30 @@ public class DefaultAuthorizer implements Authorizer {
         }
     }
 
+    @Override
+    public void addGroupToResource(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthException, BrokerAuthNotFoundException, BrokerAuthServerException {
+        if (!memoryDacHandler.addGroupToResource(resourceType, resourceName, action, group)) {
+            externalDacHandler.addGroupToResource(resourceType, resourceName, action, group);
+        }
+    }
+
+    @Override
+    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        if (!memoryDacHandler.removeGroupFromResource(resourceType, resourceName, action, group)) {
+            externalDacHandler.removeGroupFromResource(resourceType, resourceName, action, group);
+        }
+    }
+
+    @Override
+    public void changeResourceOwner(String resourceType, String resourceName, String owner)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException {
+        if (!memoryDacHandler.changeResourceOwner(resourceType, resourceName, owner)) {
+            externalDacHandler.changeResourceOwner(resourceType, resourceName, owner);
+        }
+    }
+
     private class UserCacheLoader extends CacheLoader<String, UserCacheEntry> {
         @Override
         public UserCacheEntry load(@Nonnull String userId) throws BrokerAuthException {

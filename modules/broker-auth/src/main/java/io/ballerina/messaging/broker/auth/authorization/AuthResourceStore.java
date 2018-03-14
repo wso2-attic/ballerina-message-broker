@@ -107,34 +107,31 @@ public interface AuthResourceStore {
 
     /**
      * Change owner of the given auth resource.
-     *
-     * @param resourceType resource type
+     *  @param resourceType resource type
      * @param resourceName name of the resource
      * @param newOwner     user ID of the new owner
      */
-    void updateOwner(String resourceType, String resourceName, String newOwner)
+    boolean updateOwner(String resourceType, String resourceName, String newOwner)
             throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
      * Add a group mapping to the given auth resource.
-     *
-     * @param resourceType resource type
+     *  @param resourceType resource type
      * @param resourceName resource name
      * @param action       action
      * @param group        group to add
      */
-    void addGroup(String resourceType, String resourceName, String action, String group)
+    boolean addGroup(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthNotFoundException, BrokerAuthServerException;
 
     /**
      * Remove a group mapping from the given auth resource.
-     *
-     * @param resourceType resource type
+     *  @param resourceType resource type
      * @param resourceName resource name
      * @param action       action
      * @param group        group to add
      */
-    void removeGroup(String resourceType, String resourceName, String action, String group)
+    boolean removeGroup(String resourceType, String resourceName, String action, String group)
             throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
 }

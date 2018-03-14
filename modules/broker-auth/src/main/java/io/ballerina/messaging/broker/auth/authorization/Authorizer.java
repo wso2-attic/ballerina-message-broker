@@ -90,6 +90,44 @@ public interface Authorizer {
             throws BrokerAuthServerException, BrokerAuthNotFoundException;
 
     /**
+     * Allow given group to access the given resource.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param action       action
+     * @param group        group
+     * @throws BrokerAuthException         throws if error occur during updating resource
+     * @throws BrokerAuthNotFoundException throws if the resource is not found
+     */
+    void addGroupToResource(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthException, BrokerAuthNotFoundException, BrokerAuthServerException;
+
+    /**
+     * Revoke access from the given group.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param action       action
+     * @param group        group
+     * @throws BrokerAuthServerException   throws if an server error occurred
+     * @throws BrokerAuthNotFoundException throws if the resource is not found
+     */
+    void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+
+    /**
+     * Create auth resource.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param owner        newOwner
+     * @throws BrokerAuthServerException   throws if an server error occurred
+     * @throws BrokerAuthNotFoundException throws if the resource is not found
+     */
+    void changeResourceOwner(String resourceType, String resourceName, String owner)
+            throws BrokerAuthServerException, BrokerAuthNotFoundException;
+
+    /**
      * Query auth resource.
      *
      * @param resourceType resource type
