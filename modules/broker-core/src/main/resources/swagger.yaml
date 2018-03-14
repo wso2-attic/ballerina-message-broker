@@ -437,7 +437,7 @@ paths:
         required: true
         description: Name of the action.
     post:
-      operationId: addQueueActionUserGroup
+      operationId: addQueueActionUserGroups
       summary: Add new user group(s) for a particular action on the queue.
       description: Grant queue permission for new user group(s).
       consumes:
@@ -452,8 +452,8 @@ paths:
           schema:
             $ref: '#/definitions/UserGroupList'
       responses:
-        '201':
-          description: Queue owner updated.
+        '200':
+          description: User groups added.
           schema:
             $ref: '#/definitions/ResponseMessage'
         '400':

@@ -99,17 +99,18 @@ public class QueuesApi {
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
     @ApiOperation(value = "Add new user group(s) for a particular action on the queue.", notes = "Grant queue permission for new user group(s).", response = ResponseMessage.class, authorizations = {
-        @Authorization(value = "basicAuth")
+            @Authorization(value = "basicAuth")
     }, tags={  })
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Queue owner updated.", response = ResponseMessage.class),
-        @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
-        @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
-        @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
-        @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
-        @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response addQueueActionUserGroup(@Context Request request, @PathParam("name") @ApiParam("Name of the queue.") String name,@PathParam("action") @ApiParam("Name of the action.") String action,@Valid UserGroupList body) {
-        return Response.ok().entity("magic!").build();
+            @ApiResponse(code = 200, message = "User groups added.", response = ResponseMessage.class),
+            @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
+            @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
+            @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
+            @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    public Response addQueueActionUserGroups(@Context Request request, @PathParam("name") @ApiParam("Name of the queue.") String name,@PathParam("action") @ApiParam("Name of the action.") String action,@Valid UserGroupList body) {
+        return queuesApiDelegate.addQueueActionUserGroups(name, action, body, (Subject) request.getSession()
+                                                                                               .getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @PUT

@@ -68,7 +68,7 @@ public class AuthScopeStoreImpl implements AuthScopeStore {
             AuthScope authScope = authScopeCache.get(authScopeName);
             return Objects.nonNull(authScope) && authScope.getUserGroups().stream().anyMatch(userGroups::contains);
         } catch (ExecutionException e) {
-            throw new AuthNotFoundException("Scope does not found for scope name: " + authScopeName, e);
+            throw new AuthNotFoundException("Scope not found for scope name: " + authScopeName, e);
         }
     }
 

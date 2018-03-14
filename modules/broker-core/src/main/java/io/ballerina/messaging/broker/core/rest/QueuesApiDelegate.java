@@ -40,6 +40,8 @@ import io.ballerina.messaging.broker.core.rest.model.MessageDeleteResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueMetadata;
+import io.ballerina.messaging.broker.core.rest.model.ResponseMessage;
+import io.ballerina.messaging.broker.core.rest.model.UserGroupList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.security.auth.Subject;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
@@ -209,7 +212,7 @@ public class QueuesApiDelegate {
 
     public Response changeQueueOwner(String queueName, String owner, Subject subject) {
         try {
-            authorizationHandler.handle(ResourceAuthScope.QUEUES_DELETE, ResourceType.QUEUE, queueName,
+            authorizationHandler.handle(ResourceAuthScope.RESOURCE_GRANT_PERMISSION, ResourceType.QUEUE, queueName,
                                         ResourceAction.GRANT_PERMISSION, subject);
             authorizer.changeResourceOwner(ResourceType.QUEUE.toString(), queueName, owner);
             return Response.created(new URI(BrokerAdminService.API_BASE_PATH + QUEUES_API_PATH
@@ -223,5 +226,23 @@ public class QueuesApiDelegate {
         }
     }
 
+    public Response addQueueActionUserGroups(String queueName, String action, UserGroupList userGroupList,
+                                             Subject subject) {
+        try {
+            authorizationHandler.handle(ResourceAuthScope.RESOURCE_GRANT_PERMISSION, ResourceType.QUEUE, queueName,
+                                               ResourceAction.GRANT_PERMISSION, subject);
 
+            List<String> userGroups = userGroupList.getUserGroups();
+            for (String userGroup: userGroups) {
+                authorizer.addGroupToResource(ResourceType.QUEUE.toString(), queueName, action, userGroup);
+            }
+            return Response.ok(new ResponseMessage().message("User groups successfully added.")).build();
+        } catch (AuthException e) {
+            throw new ForbiddenException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new NotFoundException(e.getMessage(), e);
+        } catch (AuthServerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
+    }
 }
