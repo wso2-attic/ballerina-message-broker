@@ -19,9 +19,9 @@
 package io.ballerina.messaging.broker.auth;
 
 import io.ballerina.messaging.broker.auth.authentication.authenticator.DefaultAuthenticator;
-import io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler;
-import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMemoryDacHandler;
 import io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore;
+import io.ballerina.messaging.broker.auth.authorization.provider.NoOpMacHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -207,7 +207,7 @@ public class BrokerAuthConfiguration {
      */
     public static class MacConfigurations {
 
-        private String className = DefaultMacHandler.class.getCanonicalName();
+        private String className = NoOpMacHandler.class.getCanonicalName();
 
         private Map<String, String> properties = new HashMap<>();
 
@@ -237,7 +237,7 @@ public class BrokerAuthConfiguration {
      */
     public static class DacConfigurations {
 
-        private String className = DefaultDacHandler.class.getCanonicalName();
+        private String className = DefaultMemoryDacHandler.class.getCanonicalName();
 
         private Map<String, String> properties = new HashMap<>();
 

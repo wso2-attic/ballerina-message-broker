@@ -20,7 +20,6 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resour
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
 
@@ -112,49 +111,43 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
     }
 
     @Override
-    public void updateOwner(String resourceType, String resourceName, String newOwner)
-            throws AuthNotFoundException {
+    public boolean updateOwner(String resourceType, String resourceName, String newOwner) {
         AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
 
         if (Objects.nonNull(authResource)) {
             authResource.setOwner(newOwner);
+
+            return true;
         } else {
-            throw new AuthNotFoundException(
-                    "No auth resource found for resource type (" + resourceType + ") and resource name (" + resourceName
-                            + ")");
+            return false;
         }
     }
 
     @Override
-    public void addGroup(String resourceType, String resourceName, String action, String group)
-            throws AuthNotFoundException {
+    public boolean addGroup(String resourceType, String resourceName, String action, String group) {
         AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
 
         if (Objects.nonNull(authResource)) {
             Set<String> userGroups = authResource.getActionsUserGroupsMap()
-                                              .computeIfAbsent(action, key -> new HashSet<>());
+                                                 .computeIfAbsent(action, key -> new HashSet<>());
             userGroups.add(group);
+            return true;
         } else {
-            throw new AuthNotFoundException(
-                    "No auth resource found for resource type (" + resourceType + ") and resource name (" + resourceName
-                            + ")");
+            return false;
         }
-
     }
 
     @Override
-    public void removeGroup(String resourceType, String resourceName, String action, String group)
-            throws AuthNotFoundException {
+    public boolean removeGroup(String resourceType, String resourceName, String action, String group) {
         AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
 
         if (Objects.nonNull(authResource)) {
             Set<String> userGroups = authResource.getActionsUserGroupsMap()
                                                  .computeIfAbsent(action, key -> new HashSet<>());
             userGroups.remove(group);
+            return true;
         } else {
-            throw new AuthNotFoundException(
-                    "No auth resource found for resource type (" + resourceType + ") and resource name (" + resourceName
-                            + ")");
+            return false;
         }
     }
 

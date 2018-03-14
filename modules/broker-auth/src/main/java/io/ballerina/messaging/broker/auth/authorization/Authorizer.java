@@ -18,7 +18,6 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
-import io.ballerina.messaging.broker.auth.AuthDuplicateException;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
@@ -73,10 +72,9 @@ public interface Authorizer {
      * @param durable      is durable
      * @param owner        resource owner
      * @throws AuthServerException    throws if error occurs while authorizing resource
-     * @throws AuthDuplicateException throws if error occurs while authorizing resource
      */
     void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
-            throws AuthServerException, AuthDuplicateException;
+            throws AuthServerException;
 
     /**
      * Delete auth resource.
@@ -87,6 +85,44 @@ public interface Authorizer {
      * @throws AuthNotFoundException throws if auth resource is not found
      */
     void deleteProtectedResource(String resourceType, String resourceName)
+            throws AuthServerException, AuthNotFoundException;
+
+    /**
+     * Allow given group to access the given resource.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param action       action
+     * @param group        group
+     * @throws AuthException         throws if error occur during updating resource
+     * @throws AuthNotFoundException throws if the resource is not found
+     */
+    void addGroupToResource(String resourceType, String resourceName, String action, String group)
+            throws AuthException, AuthNotFoundException, AuthServerException;
+
+    /**
+     * Revoke access from the given group.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param action       action
+     * @param group        group
+     * @throws AuthServerException   throws if an server error occurred
+     * @throws AuthNotFoundException throws if the resource is not found
+     */
+    void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+            throws AuthServerException, AuthNotFoundException;
+
+    /**
+     * Create auth resource.
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param owner        newOwner
+     * @throws AuthServerException   throws if an server error occurred
+     * @throws AuthNotFoundException throws if the resource is not found
+     */
+    void changeResourceOwner(String resourceType, String resourceName, String owner)
             throws AuthServerException, AuthNotFoundException;
 
     /**

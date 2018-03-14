@@ -271,7 +271,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
         return Objects.nonNull(resourceId);
     }
 
-    private void updateOwner(Connection connection, String resourceType, String resourceName, String newOwner)
+    private boolean updateOwner(Connection connection, String resourceType, String resourceName, String newOwner)
             throws AuthServerException {
         PreparedStatement updateResourceOwnerStmt = null;
         try {
@@ -279,7 +279,9 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             updateResourceOwnerStmt.setString(1, newOwner);
             updateResourceOwnerStmt.setString(2, resourceType);
             updateResourceOwnerStmt.setString(3, resourceName);
-            updateResourceOwnerStmt.execute();
+            int updateRows = updateResourceOwnerStmt.executeUpdate();
+
+            return updateRows != 0;
         } catch (SQLException e) {
             throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {
@@ -288,12 +290,12 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
     }
 
     @Override
-    public void updateOwner(String resourceType, String resourceName, String newOwner) throws
+    public boolean updateOwner(String resourceType, String resourceName, String newOwner) throws
             AuthServerException {
         Connection connection = null;
         try {
             connection = getConnection();
-            updateOwner(connection, resourceType, resourceName, newOwner);
+            return updateOwner(connection, resourceType, resourceName, newOwner);
         } catch (SQLException e) {
             throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {
@@ -302,7 +304,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
     }
 
     @Override
-    public void addGroup(String resourceType, String resourceName, String action, String group)
+    public boolean addGroup(String resourceType, String resourceName, String action, String group)
             throws AuthServerException {
         Connection connection = null;
         PreparedStatement insertMappingsStmt = null;
@@ -314,8 +316,9 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             insertMappingsStmt.setString(3, resourceType);
             insertMappingsStmt.setString(4, resourceName);
 
-            insertMappingsStmt.executeUpdate();
+            int updateRows = insertMappingsStmt.executeUpdate();
 
+            return updateRows != 0;
         } catch (SQLException e) {
             throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {
@@ -325,7 +328,7 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
     }
 
     @Override
-    public void removeGroup(String resourceType, String resourceName, String action, String group)
+    public boolean removeGroup(String resourceType, String resourceName, String action, String group)
             throws AuthServerException {
         Connection connection = null;
         PreparedStatement insertMappingsStmt = null;
@@ -337,8 +340,9 @@ public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
             insertMappingsStmt.setString(3, action);
             insertMappingsStmt.setString(4, group);
 
-            insertMappingsStmt.executeUpdate();
+            int updateRows = insertMappingsStmt.executeUpdate();
 
+            return updateRows != 0;
         } catch (SQLException e) {
             throw new AuthServerException("Error occurred while persisting resource.", e);
         } finally {

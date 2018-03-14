@@ -1,6 +1,5 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
-import io.ballerina.messaging.broker.auth.AuthDuplicateException;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
@@ -46,10 +45,8 @@ public interface DiscretionaryAccessController {
      * @param resourceName resource name
      * @param owner        resource owner
      * @throws AuthServerException throws if an server error occurred
-     * @throws AuthDuplicateException throws if the resource already exists
      */
-    void addResource(String resourceType, String resourceName, String owner)
-            throws AuthServerException, AuthDuplicateException;
+    void addResource(String resourceType, String resourceName, String owner) throws AuthServerException;
 
     /**
      * Delete auth resource.
@@ -72,7 +69,7 @@ public interface DiscretionaryAccessController {
      * @throws AuthException throws if error occur during updating resource
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    void addGroupToResource(String resourceType, String resourceName, String action, String group)
+    boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
             throws AuthException, AuthNotFoundException, AuthServerException;
 
     /**
@@ -85,7 +82,7 @@ public interface DiscretionaryAccessController {
      * @throws AuthServerException throws if an server error occurred
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+    boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
             throws AuthServerException, AuthNotFoundException;
 
     /**
@@ -97,7 +94,7 @@ public interface DiscretionaryAccessController {
      * @throws AuthServerException throws if an server error occurred
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    void changeResourceOwner(String resourceType, String resourceName, String owner)
+    boolean changeResourceOwner(String resourceType, String resourceName, String owner)
             throws AuthServerException, AuthNotFoundException;
 
     /**

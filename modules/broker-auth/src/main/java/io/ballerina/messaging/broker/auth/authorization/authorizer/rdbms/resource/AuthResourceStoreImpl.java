@@ -21,14 +21,13 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resour
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import io.ballerina.messaging.broker.auth.AuthDuplicateException;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.AuthResourceStore;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceDaoFactory;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceRdbmsDao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,13 +48,13 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
      */
     private LoadingCache<ResourceCacheKey, AuthResource> authResourceCache;
 
-    private AuthResourceDaoFactory authResourceDaoFactory;
+    private AuthResourceRdbmsDao authResourceDao;
 
     private UserStore userStore;
 
     public AuthResourceStoreImpl(BrokerAuthConfiguration brokerAuthConfiguration, DataSource dataSource,
                                  UserStore userStore) {
-        this.authResourceDaoFactory = new AuthResourceDaoFactory(dataSource);
+        this.authResourceDao = new AuthResourceRdbmsDao(dataSource);
         this.userStore = userStore;
         this.authResourceCache = CacheBuilder.newBuilder()
                                              .maximumSize(brokerAuthConfiguration.getAuthorization().getCache()
@@ -68,21 +67,15 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
 
     @Override
     public boolean authorize(String resourceType, String resourceName, String action, String userId,
-                             Set<String> userGroups) throws AuthServerException, AuthNotFoundException {
+                             Set<String> userGroups) throws AuthNotFoundException {
         AuthResource authResource = read(resourceType, resourceName);
         return Objects.nonNull(authResource) && (authResource.getOwner().equals(userId) ||
                 authResource.getActionsUserGroupsMap().get(action).stream().anyMatch(userGroups::contains));
     }
 
     @Override
-    public void add(AuthResource authResource)
-            throws AuthServerException, AuthDuplicateException {
-        if (isAvailable(authResource.getResourceType(), authResource.getResourceName(), authResource.isDurable())) {
-            throw new AuthDuplicateException("Duplicate resource found for resource type : " +
-                                                           authResource.getResourceType() + "  name : " +
-                                                           authResource.getResourceName());
-        }
-        authResourceDaoFactory.getAuthResourceDao(authResource.isDurable()).persist(authResource);
+    public void add(AuthResource authResource) throws AuthServerException {
+        authResourceDao.persist(authResource);
     }
 
     @Override
@@ -94,7 +87,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
                                                           authResource.getResourceType() + "  name : " +
                                                           authResource.getResourceName());
         }
-        authResourceDaoFactory.getAuthResourceDao(existingResource.isDurable()).update(authResource);
+        authResourceDao.update(authResource);
         authResourceCache.invalidate(
                 new ResourceCacheKey(authResource.getResourceType(), authResource.getResourceName()));
     }
@@ -104,7 +97,7 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
             throws AuthServerException, AuthNotFoundException {
         AuthResource existingResource = read(resourceType, resourceName);
         if (Objects.nonNull(existingResource)) {
-            authResourceDaoFactory.getAuthResourceDao(existingResource.isDurable()).delete(resourceType, resourceName);
+            authResourceDao.delete(resourceType, resourceName);
             authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
         }
 
@@ -113,94 +106,69 @@ public class AuthResourceStoreImpl implements AuthResourceStore {
 
     @Override
     public AuthResource read(String resourceType, String resourceName)
-            throws AuthServerException, AuthNotFoundException {
-        /*
-         * Auth resources can be durable or non durable. So first we try to read from memory for non durable resources.
-         * Then read from cache for durable resources.
-         */
-        AuthResource authResource = authResourceDaoFactory.getAuthResourceDao(false).read(resourceType, resourceName);
-        if (Objects.isNull(authResource)) {
-            try {
-                authResource = authResourceCache.get(new ResourceCacheKey(resourceType, resourceName));
-            } catch (ExecutionException e) {
-                throw new AuthNotFoundException("Error occurred while retrieving resource from cache for type : "
-                                                              + resourceType + "  name : " + resourceName, e);
-            }
+            throws AuthNotFoundException {
+        try {
+            return authResourceCache.get(new ResourceCacheKey(resourceType, resourceName));
+        } catch (ExecutionException e) {
+            throw new AuthNotFoundException("Error occurred while retrieving resource from cache for type : "
+                                                          + resourceType + "  name : " + resourceName, e);
         }
-        return authResource;
     }
 
     @Override
     public List<AuthResource> readAll(String resourceType, String ownerId) throws AuthServerException {
-        List<AuthResource> durableAuthResources = authResourceDaoFactory.getAuthResourceDao(true).readAll
-                (resourceType, ownerId);
-        List<AuthResource> nonDurableAuthResources = authResourceDaoFactory.getAuthResourceDao(false).readAll
-                (resourceType, ownerId);
-        if (Objects.nonNull(durableAuthResources) && Objects.nonNull(nonDurableAuthResources)) {
-            durableAuthResources.addAll(nonDurableAuthResources);
-            return durableAuthResources;
-        } else if (Objects.nonNull(durableAuthResources)) {
-            return durableAuthResources;
-        }
-        return nonDurableAuthResources;
+        return authResourceDao.readAll(resourceType, ownerId);
     }
 
     @Override
     public List<AuthResource> readAll(String resourceType, String action, String ownerId) throws
             AuthServerException, AuthException {
-        List<AuthResource> durableAuthResources =
-                authResourceDaoFactory.getAuthResourceDao(true)
-                                      .readAll(resourceType, action, ownerId,
-                                               new ArrayList<>(userStore.getUserGroupsList(ownerId)));
-        List<AuthResource> nonDurableAuthResources =
-                authResourceDaoFactory.getAuthResourceDao(false)
-                                      .readAll(resourceType, action, ownerId,
-                                               new ArrayList<>(userStore.getUserGroupsList(ownerId)));
-        if (Objects.nonNull(durableAuthResources) && Objects.nonNull(nonDurableAuthResources)) {
-            durableAuthResources.addAll(nonDurableAuthResources);
-            return durableAuthResources;
-        } else if (Objects.nonNull(durableAuthResources)) {
-            return durableAuthResources;
-        }
-        return nonDurableAuthResources;
+        return authResourceDao.readAll(resourceType,
+                                       action,
+                                       ownerId,
+                                       new ArrayList<>(userStore.getUserGroupsList(ownerId)));
     }
 
     @Override
-    public void updateOwner(String resourceType, String resourceName, String newOwner)
-            throws AuthServerException, AuthNotFoundException {
-        authResourceDaoFactory.getAuthResourceDao(true).updateOwner(resourceType, resourceName, newOwner);
-        authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
-    }
-
-    @Override
-    public void addGroup(String resourceType, String resourceName, String action, String group)
-            throws AuthServerException, AuthNotFoundException {
-        authResourceDaoFactory.getAuthResourceDao(true).addGroup(resourceType, resourceName, action, group);
-        authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
-    }
-
-    @Override
-    public void removeGroup(String resourceType, String resourceName, String action, String group)
-            throws AuthServerException, AuthNotFoundException {
-        authResourceDaoFactory.getAuthResourceDao(true).removeGroup(resourceType, resourceName, action, group);
-        authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
-    }
-
-    private boolean isAvailable(String resourceType, String resourceName, boolean durable)
+    public boolean updateOwner(String resourceType, String resourceName, String newOwner)
             throws AuthServerException {
-        return (durable &&
-                Objects.nonNull(authResourceCache.getIfPresent(new ResourceCacheKey(resourceType,
-                                                                                    resourceName)))) ||
-                Objects.nonNull(authResourceDaoFactory.getAuthResourceDao(durable).read(resourceType, resourceName));
+        boolean success = authResourceDao.updateOwner(resourceType, resourceName, newOwner);
+
+        if (success) {
+            authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+        }
+
+        return success;
+    }
+
+    @Override
+    public boolean addGroup(String resourceType, String resourceName, String action, String group)
+            throws AuthServerException {
+        boolean success = authResourceDao.addGroup(resourceType, resourceName, action, group);
+        if (success) {
+            authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+        }
+
+        return success;
+    }
+
+    @Override
+    public boolean removeGroup(String resourceType, String resourceName, String action, String group)
+            throws AuthServerException {
+        boolean success = authResourceDao.removeGroup(resourceType, resourceName, action, group);
+        if (success) {
+            authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
+        }
+
+        return success;
     }
 
     private class AuthResourceCacheLoader extends CacheLoader<ResourceCacheKey, AuthResource> {
         @Override
         public AuthResource load(@Nonnull ResourceCacheKey resourceCacheKey) throws AuthNotFoundException,
                 AuthServerException {
-            AuthResource authResource =
-                    authResourceDaoFactory.getAuthResourceDao(true).read(resourceCacheKey.getResourceType(),
-                                                                         resourceCacheKey.getResourceName());
+            AuthResource authResource = authResourceDao.read(resourceCacheKey.getResourceType(),
+                                                             resourceCacheKey.getResourceName());
             if (Objects.nonNull(authResource)) {
                 return authResource;
             } else {

@@ -124,14 +124,10 @@ public class QueuesApiDelegate {
             queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
         } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
-        } catch (BrokerAuthNotFoundException e) {
-            throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
+        } catch (BrokerAuthNotFoundException | ResourceNotFoundException e) {
+            throw new NotFoundException("Queue " + queueName + " not found");
         } catch (BrokerException e) {
             throw new InternalServerErrorException(e.getMessage(), e);
-        }
-
-        if (Objects.isNull(queueHandler)) {
-            throw new NotFoundException("Queue " + queueName + " not found");
         }
 
         QueueMetadata queueMetadata = toQueueMetadata(queueHandler);

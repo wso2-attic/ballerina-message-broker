@@ -21,7 +21,6 @@ package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import io.ballerina.messaging.broker.auth.AuthDuplicateException;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
@@ -199,7 +198,7 @@ public class DefaultAuthorizer implements Authorizer {
 
     @Override
     public void addProtectedResource(String resourceType, String resourceName, boolean durable, String owner)
-            throws AuthServerException, AuthDuplicateException {
+            throws AuthServerException {
         getDacHandler(durable).addResource(resourceType, resourceName, owner);
     }
 
@@ -208,6 +207,30 @@ public class DefaultAuthorizer implements Authorizer {
             throws AuthServerException, AuthNotFoundException {
         if (!memoryDacHandler.deleteResource(resourceType, resourceName)) {
             externalDacHandler.deleteResource(resourceType, resourceName);
+        }
+    }
+
+    @Override
+    public void addGroupToResource(String resourceType, String resourceName, String action, String group)
+            throws AuthException, AuthNotFoundException, AuthServerException {
+        if (!memoryDacHandler.addGroupToResource(resourceType, resourceName, action, group)) {
+            externalDacHandler.addGroupToResource(resourceType, resourceName, action, group);
+        }
+    }
+
+    @Override
+    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+            throws AuthServerException, AuthNotFoundException {
+        if (!memoryDacHandler.removeGroupFromResource(resourceType, resourceName, action, group)) {
+            externalDacHandler.removeGroupFromResource(resourceType, resourceName, action, group);
+        }
+    }
+
+    @Override
+    public void changeResourceOwner(String resourceType, String resourceName, String owner)
+            throws AuthServerException, AuthNotFoundException {
+        if (!memoryDacHandler.changeResourceOwner(resourceType, resourceName, owner)) {
+            externalDacHandler.changeResourceOwner(resourceType, resourceName, owner);
         }
     }
 

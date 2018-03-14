@@ -18,7 +18,6 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
-import io.ballerina.messaging.broker.auth.AuthDuplicateException;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
@@ -52,7 +51,7 @@ public interface AuthResourceStore {
      * @param authResource an authResource
      * @throws AuthServerException throws if error occurs while adding resource
      */
-    void add(AuthResource authResource) throws AuthServerException, AuthDuplicateException;
+    void add(AuthResource authResource) throws AuthServerException;
 
     /**
      * Update resource to auth resource store.
@@ -108,11 +107,11 @@ public interface AuthResourceStore {
     /**
      * Change owner of the given auth resource.
      *
-     * @param resourceType resource type
+     *  @param resourceType resource type
      * @param resourceName name of the resource
      * @param newOwner     user ID of the new owner
      */
-    void updateOwner(String resourceType, String resourceName, String newOwner)
+    boolean updateOwner(String resourceType, String resourceName, String newOwner)
             throws AuthServerException, AuthNotFoundException;
 
     /**
@@ -123,7 +122,7 @@ public interface AuthResourceStore {
      * @param action       action
      * @param group        group to add
      */
-    void addGroup(String resourceType, String resourceName, String action, String group)
+    boolean addGroup(String resourceType, String resourceName, String action, String group)
             throws AuthNotFoundException, AuthServerException;
 
     /**
@@ -134,7 +133,7 @@ public interface AuthResourceStore {
      * @param action       action
      * @param group        group to add
      */
-    void removeGroup(String resourceType, String resourceName, String action, String group)
+    boolean removeGroup(String resourceType, String resourceName, String action, String group)
             throws AuthServerException, AuthNotFoundException;
 
 }

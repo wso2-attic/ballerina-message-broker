@@ -26,6 +26,8 @@ import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator;
 import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
@@ -132,6 +134,10 @@ public class BrokerNode {
         authenticatorConfiguration.setProperties(properties);
         authenticationConfiguration.setAuthenticator(authenticatorConfiguration);
         brokerAuthConfiguration.setAuthentication(authenticationConfiguration);
+        brokerAuthConfiguration.getAuthorization().getMandatoryAccessController()
+                .setClassName(DefaultMacHandler.class.getName());
+        brokerAuthConfiguration.getAuthorization().getDiscretionaryAccessController()
+                .setClassName(DefaultDacHandler.class.getName());
         BrokerCommonConfiguration brokerCommonConfiguration = new BrokerCommonConfiguration();
         configProvider.registerConfigurationObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
         configProvider.registerConfigurationObject(BrokerCommonConfiguration.NAMESPACE, brokerCommonConfiguration);

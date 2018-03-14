@@ -18,7 +18,6 @@
  */
 package io.ballerina.messaging.broker.auth.authorization;
 
-import io.ballerina.messaging.broker.auth.AuthDuplicateException;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
@@ -118,9 +117,6 @@ public class AuthorizationHandler {
                                             getUserFromSubject(subject));
         } catch (AuthServerException e) {
             throw new AuthException("Error while creating " + resourceType + " with name : " + resourceName, e);
-        } catch (AuthDuplicateException e) {
-            throw new AuthException(
-                    "Duplicate resource found for resource type : " + resourceType + " with name : " + resourceName, e);
         }
     }
 

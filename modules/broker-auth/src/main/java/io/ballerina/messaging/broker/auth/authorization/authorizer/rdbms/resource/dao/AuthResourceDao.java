@@ -101,13 +101,15 @@ public interface AuthResourceDao {
 
     /**
      * Update owner of the given resource.
-     * @param resourceType
-     * @param resourceName
-     * @param newOwner
-     * @throws AuthServerException
+     *
+     * @param resourceType resource type
+     * @param resourceName resource name
+     * @param newOwner     user ID of the new owner
+     * @throws AuthServerException when database operation failed
+     * @return true if resource was updated
      */
-    void updateOwner(String resourceType, String resourceName, String newOwner)
-            throws AuthServerException, AuthNotFoundException;
+    boolean updateOwner(String resourceType, String resourceName, String newOwner)
+            throws AuthServerException;
 
 
     /**
@@ -117,8 +119,9 @@ public interface AuthResourceDao {
      * @param resourceName resource name
      * @param action       action
      * @param group        group to add
+     * @return true if resource was updated
      */
-    void addGroup(String resourceType, String resourceName, String action, String group)
+    boolean addGroup(String resourceType, String resourceName, String action, String group)
             throws AuthNotFoundException, AuthServerException;
 
     /**
@@ -128,7 +131,8 @@ public interface AuthResourceDao {
      * @param resourceName resource name
      * @param action       action
      * @param group        group to add
+     * @return true if resource was updated
      */
-    void removeGroup(String resourceType, String resourceName, String action, String group)
+    boolean removeGroup(String resourceType, String resourceName, String action, String group)
             throws AuthNotFoundException, AuthServerException;
 }

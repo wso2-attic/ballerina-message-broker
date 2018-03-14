@@ -53,6 +53,21 @@ public class NoOpAuthorizer implements Authorizer {
     }
 
     @Override
+    public void addGroupToResource(String resourceType, String resourceName, String action, String group) {
+        // Do nothing
+    }
+
+    @Override
+    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group) {
+        // Do nothing
+    }
+
+    @Override
+    public void changeResourceOwner(String resourceType, String resourceName, String owner) {
+        // Do nothing
+    }
+
+    @Override
     public AuthResource getAuthResource(String resourceType, String resourceName) {
         // Maybe we should return an auth resource which has public access.
         return null;

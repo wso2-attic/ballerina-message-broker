@@ -1,6 +1,5 @@
 package io.ballerina.messaging.broker.auth.authorization.provider;
 
-import io.ballerina.messaging.broker.auth.AuthDuplicateException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
@@ -41,7 +40,7 @@ public class DefaultDacHandler implements DiscretionaryAccessController {
 
     @Override
     public void addResource(String resourceType, String resourceName, String owner)
-            throws AuthServerException, AuthDuplicateException {
+            throws AuthServerException {
             authResourceStore.add(new AuthResource(resourceType, resourceName, true, owner));
     }
 
@@ -52,21 +51,21 @@ public class DefaultDacHandler implements DiscretionaryAccessController {
     }
 
     @Override
-    public void addGroupToResource(String resourceType, String resourceName, String action, String group)
+    public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
             throws AuthNotFoundException, AuthServerException {
-        authResourceStore.addGroup(resourceType, resourceName, action, group);
+        return authResourceStore.addGroup(resourceType, resourceName, action, group);
     }
 
     @Override
-    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+    public boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
             throws AuthServerException, AuthNotFoundException {
-        authResourceStore.removeGroup(resourceType, resourceName, action, group);
+        return authResourceStore.removeGroup(resourceType, resourceName, action, group);
     }
 
     @Override
-    public void changeResourceOwner(String resourceType, String resourceName, String newOwner)
+    public boolean changeResourceOwner(String resourceType, String resourceName, String newOwner)
             throws AuthServerException, AuthNotFoundException {
-        authResourceStore.updateOwner(resourceType, resourceName, newOwner);
+        return authResourceStore.updateOwner(resourceType, resourceName, newOwner);
     }
 
     @Override

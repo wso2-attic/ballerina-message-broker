@@ -68,21 +68,21 @@ public class MemoryDacHandler implements DiscretionaryAccessController {
     }
 
     @Override
-    public void addGroupToResource(String resourceType, String resourceName, String action, String group)
+    public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
             throws AuthServerException, AuthNotFoundException {
-        resourceDao.addGroup(resourceType, resourceName, action, group);
+        return resourceDao.addGroup(resourceType, resourceName, action, group);
     }
 
     @Override
-    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+    public boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
             throws AuthServerException, AuthNotFoundException {
-        resourceDao.removeGroup(resourceType, resourceName, action, group);
+        return resourceDao.removeGroup(resourceType, resourceName, action, group);
     }
 
     @Override
-    public void changeResourceOwner(String resourceType, String resourceName, String owner)
+    public boolean changeResourceOwner(String resourceType, String resourceName, String owner)
             throws AuthServerException, AuthNotFoundException {
-        resourceDao.updateOwner(resourceType, resourceName, owner);
+        return resourceDao.updateOwner(resourceType, resourceName, owner);
     }
 
     @Override

@@ -422,6 +422,16 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
+    public boolean queueExists(String queueName) {
+        lock.readLock().lock();
+        try {
+            return Objects.nonNull(queueRegistry.getQueueHandler(queueName));
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    @Override
     public void bind(String queueName, String exchangeName,
                      String routingKey, FieldTable arguments) throws BrokerException, ValidationException {
         lock.writeLock().lock();

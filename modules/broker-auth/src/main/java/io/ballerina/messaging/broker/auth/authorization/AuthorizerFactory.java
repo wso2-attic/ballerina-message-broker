@@ -22,6 +22,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.DefaultAuthorizer;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultDacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler;
 import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
@@ -52,16 +54,18 @@ public class AuthorizerFactory {
                                            StartupContext startupContext) throws Exception {
 
         // TODO remove in-memory check
-        if (!commonConfiguration.getEnableInMemoryMode() && brokerAuthConfiguration.getAuthentication().isEnabled()
+        if (brokerAuthConfiguration.getAuthentication().isEnabled()
                 && brokerAuthConfiguration.getAuthorization().isEnabled()) {
 
             UserStore userStore = createUserStore(startupContext, brokerAuthConfiguration);
 
             DiscretionaryAccessController dacHandler = getDac(brokerAuthConfiguration,
+                                                              commonConfiguration,
                                                               startupContext,
                                                               userStore);
 
             MandatoryAccessController macHandler = getMandatoryAccessController(brokerAuthConfiguration,
+                                                                                commonConfiguration,
                                                                                 startupContext,
                                                                                 userStore);
             Authorizer authorizer = new DefaultAuthorizer(dacHandler, macHandler, userStore);
@@ -72,14 +76,21 @@ public class AuthorizerFactory {
         }
     }
 
-    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Not a issue since a RuntimeException is thrown")
+    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION",
+                        justification = "Not an issue since a RuntimeException is thrown")
     private static MandatoryAccessController getMandatoryAccessController(BrokerAuthConfiguration
                                                                                   brokerAuthConfiguration,
+                                                                          BrokerCommonConfiguration commonConfiguration,
                                                                           StartupContext startupContext,
                                                                           UserStore userStore) {
         String macHandlerClassName = brokerAuthConfiguration.getAuthorization()
                                                             .getMandatoryAccessController()
                                                             .getClassName();
+
+        if (commonConfiguration.getEnableInMemoryMode() && DefaultMacHandler.class.getCanonicalName()
+                                                                                  .equals(macHandlerClassName)) {
+            throw new RuntimeException("Cannot use " + macHandlerClassName + " with in-memory mode.");
+        }
 
         LOGGER.info("Initializing Mandatory Access Controller {}", macHandlerClassName);
 
@@ -96,13 +107,19 @@ public class AuthorizerFactory {
         }
     }
 
-    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Not a issue since a RuntimeException is thrown")
+    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION",
+                        justification = "Not an issue since a RuntimeException is thrown")
     private static DiscretionaryAccessController getDac(BrokerAuthConfiguration brokerAuthConfiguration,
+                                                        BrokerCommonConfiguration commonConfiguration,
                                                         StartupContext startupContext,
                                                         UserStore userStore) {
         String dacHandlerClassName = brokerAuthConfiguration.getAuthorization()
                                                             .getDiscretionaryAccessController()
                                                             .getClassName();
+        if (commonConfiguration.getEnableInMemoryMode() && DefaultDacHandler.class.getCanonicalName()
+                                                                                  .equals(dacHandlerClassName)) {
+            throw new RuntimeException("Cannot use " + dacHandlerClassName + " with in-memory mode.");
+        }
 
         LOGGER.info("Initializing DAC handler {}", dacHandlerClassName);
 

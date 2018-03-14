@@ -32,6 +32,7 @@ import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.security.auth.Subject;
 import javax.transaction.xa.Xid;
@@ -155,7 +156,12 @@ public class SecureBrokerImpl implements Broker {
 
     @Override
     public int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException,
-            ValidationException, ResourceNotFoundException {
+            ValidationException, ResourceNotFoundException, BrokerAuthException, BrokerAuthNotFoundException {
+
+        if (!queueExists(queueName)) {
+            throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
+        }
+
         try {
             authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.DELETE, subject);
             int messageCount = broker.deleteQueue(queueName, ifUnused, ifEmpty);
@@ -166,6 +172,11 @@ public class SecureBrokerImpl implements Broker {
         } catch (AuthNotFoundException e) {
             throw new BrokerAuthNotFoundException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public boolean queueExists(String queueName) {
+        return broker.queueExists(queueName);
     }
 
     @Override
@@ -216,7 +227,12 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public QueueHandler getQueue(String queueName) throws BrokerException {
+    public QueueHandler getQueue(String queueName) throws BrokerException, ResourceNotFoundException {
+        QueueHandler queue = broker.getQueue(queueName);
+
+        if (Objects.isNull(queue)) {
+            throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
+        }
         try {
             authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.GET, subject);
             return broker.getQueue(queueName);
