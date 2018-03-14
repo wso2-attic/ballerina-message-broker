@@ -29,7 +29,8 @@ public enum ResourceAction {
     CONSUME("consume"),
     PUBLISH("publish"),
     BIND("bind"),
-    UNBIND("unbind");
+    UNBIND("unbind"),
+    GRANT_PERMISSION("grantPermission");
 
     private String name;
 

@@ -34,14 +34,15 @@ import io.ballerina.messaging.broker.core.rest.QueuesApiDelegate;
 import io.ballerina.messaging.broker.core.rest.model.BindingCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.BindingCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.BindingInfo;
+import io.ballerina.messaging.broker.core.rest.model.ChangeOwnerRequest;
 import io.ballerina.messaging.broker.core.rest.model.ConsumerMetadata;
 import io.ballerina.messaging.broker.core.rest.model.Error;
 import io.ballerina.messaging.broker.core.rest.model.MessageDeleteResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueMetadata;
-import io.ballerina.messaging.broker.core.rest.model.QueueUpdateRequest;
-import io.ballerina.messaging.broker.core.rest.model.QueueUpdateResponse;
+import io.ballerina.messaging.broker.core.rest.model.ResponseMessage;
+import io.ballerina.messaging.broker.core.rest.model.UserGroupList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -93,6 +94,42 @@ public class QueuesApi {
         this.bindingsApiDelegate = new BindingsApiDelegate(brokerFactory);
     }
 
+    @POST
+    @Path("/{name}/permissions/actions/{action}/groups")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Add new user group(s) for a particular action on the queue.", notes = "Grant queue permission for new user group(s).", response = ResponseMessage.class, authorizations = {
+        @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Queue owner updated.", response = ResponseMessage.class),
+        @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+        @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
+        @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
+        @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
+        @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    public Response addQueueActionUserGroup(@Context Request request, @PathParam("name") @ApiParam("Name of the queue.") String name,@PathParam("action") @ApiParam("Name of the action.") String action,@Valid UserGroupList body) {
+        return Response.ok().entity("magic!").build();
+    }
+
+    @PUT
+    @Path("/{name}/permissions/owner/")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Change the owner of the queue", notes = "", response = ResponseMessage.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "Queue owner updated."),
+            @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
+            @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
+            @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
+            @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    public Response changeQueueOwner(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name,@Valid ChangeOwnerRequest changeOwnerRequest) {
+        return queuesApiDelegate.changeQueueOwner(name, changeOwnerRequest.getOwner(), (Subject) request.getSession()
+                                                                                                   .getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+    }
     @POST
     @Path("/{name}/bindings")
     @Consumes({ "application/json" })
@@ -167,6 +204,23 @@ public class QueuesApi {
             @ApiResponse(code = 404, message = "Queue not found", response = Error.class) })
     public Response deleteQueue(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name, @DefaultValue("true")  @QueryParam("ifUnused")  @ApiParam("If set to true, queue will be deleted only if the queue has no active consumers.")  Boolean ifUnused,  @DefaultValue("true") @QueryParam("ifEmpty") @ApiParam("If set to true, queue will be deleted only if the queue is empty.")  Boolean ifEmpty) {
         return queuesApiDelegate.deleteQueue(name, ifUnused, ifEmpty, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+    }
+
+    @DELETE
+    @Path("/{queueName}/permissions/actions/{action}/groups/{groupName}")
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Remove permission to an action from a user group for a queue.", notes = "Revoke permissions for a user group from invoking a particular action on a specific queue.", response = ResponseMessage.class, authorizations = {
+        @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "User group removed.", response = ResponseMessage.class),
+        @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
+        @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
+        @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
+        @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
+        @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
+    public Response deleteUserGroup(@PathParam("queueName") @ApiParam("Name of the queue.") String queueName,@PathParam("action") @ApiParam("Name of the action.") String action,@PathParam("groupName") @ApiParam("Name of the user group") String groupName) {
+        return Response.ok().entity("magic!").build();
     }
 
     @GET
@@ -250,22 +304,5 @@ public class QueuesApi {
     })
     public Response purgeMessages(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name) {
         return queuesApiDelegate.purgeQueue(name, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
-    }
-
-    @PUT
-    @Path("/{name}")
-    @Consumes({ "application/json" })
-    @Produces({ "application/json" })
-    @ApiOperation(value = "Update authorization of a queue", notes = "Grant permission to perform given action", response = QueueUpdateResponse.class, authorizations = {
-            @Authorization(value = "basicAuth")
-    }, tags={  })
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Queue authorization updated.", response = QueueUpdateResponse.class),
-            @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
-            @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
-            @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
-            @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response updateQueueAuthorization(@Context Request request, @PathParam("name") @ApiParam("Name of the auth resource") String name,@Valid QueueUpdateRequest body) {
-        return Response.ok().entity("magic!").build();
     }
 }
