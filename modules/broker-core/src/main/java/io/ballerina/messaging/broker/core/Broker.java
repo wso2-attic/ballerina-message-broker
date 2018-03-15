@@ -22,8 +22,7 @@ package io.ballerina.messaging.broker.core;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
-import io.ballerina.messaging.broker.core.transaction.DistributedTransaction;
-import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
+import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
 
 import java.util.Collection;
 import java.util.Map;
@@ -287,12 +286,12 @@ public interface Broker {
      *
      * @return local transactional object
      */
-    LocalTransaction newLocalTransaction();
+    BrokerTransaction newLocalTransaction();
 
     /**
      * Start distributed transaction flow.
      *
      * @return a new DistributedTransaction object
      */
-    DistributedTransaction newDistributedTransaction();
+    BrokerTransaction newDistributedTransaction();
 }

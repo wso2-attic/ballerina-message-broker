@@ -43,9 +43,8 @@ import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
 import io.ballerina.messaging.broker.core.store.MessageStore;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
 import io.ballerina.messaging.broker.core.task.TaskExecutorService;
+import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
 import io.ballerina.messaging.broker.core.transaction.BrokerTransactionFactory;
-import io.ballerina.messaging.broker.core.transaction.DistributedTransaction;
-import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
 import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
 import org.slf4j.Logger;
@@ -615,12 +614,12 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public LocalTransaction newLocalTransaction() {
+    public BrokerTransaction newLocalTransaction() {
         return brokerTransactionFactory.newLocalTransaction();
     }
 
     @Override
-    public DistributedTransaction newDistributedTransaction() {
+    public BrokerTransaction newDistributedTransaction() {
         return brokerTransactionFactory.newDistributedTransaction();
     }
 
