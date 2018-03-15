@@ -19,6 +19,7 @@
 package io.ballerina.messaging.broker.auth.authentication;
 
 import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -33,11 +34,13 @@ public interface Authenticator {
 
     /**
      * Initiate authenticator with startup context.
-     *
-     * @param startupContext the startup context provides registered services for authenticator functionality.
+     *  @param startupContext the startup context provides registered services for authenticator functionality.
+     * @param userStore
      * @param properties     set of properties
      */
-    void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception;
+    void initialize(StartupContext startupContext,
+                    UserStore userStore,
+                    Map<String, Object> properties) throws Exception;
 
     /**
      * Authenticate given user based on defined authentication strategy.

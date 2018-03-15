@@ -19,6 +19,7 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
 import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -45,4 +46,14 @@ public interface UserStore {
      * @throws AuthException throws if error occurs while authorizing user
      */
     Set<String> getUserGroupsList(String userId) throws AuthException;
+
+    /**
+     * Authenticate given user with credentials.
+     *
+     * @param userName    userName
+     * @param credentials credentials
+     * @return Authentication result
+     * @throws AuthException Exception throws when authentication failed.
+     */
+    AuthResult authenticate(String userName, char... credentials) throws AuthException;
 }

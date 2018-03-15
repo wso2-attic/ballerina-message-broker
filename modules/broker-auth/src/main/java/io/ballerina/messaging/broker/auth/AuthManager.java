@@ -25,6 +25,7 @@ import io.ballerina.messaging.broker.auth.authentication.sasl.SaslServerBuilder;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.PlainSaslServerBuilder;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizerFactory;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
@@ -50,7 +51,7 @@ public class AuthManager {
 
     private static final String AMQP_PROTOCOL_IDENTIFIER = "AMQP";
     /**
-     *  The name for the amq Java Cryptography Architecture (JCA) provider. This will be used to register Sasl servers.
+     * The name for the amq Java Cryptography Architecture (JCA) provider. This will be used to register Sasl servers.
      */
     private static final String PROVIDER_NAME = "AMQSASLProvider";
     /**
@@ -73,20 +74,30 @@ public class AuthManager {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerAuthConfiguration brokerAuthConfiguration = configProvider
                 .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
-        BrokerCommonConfiguration commonConfigs
-                = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
-                                                        BrokerCommonConfiguration.class);
-        authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
-                                                                    brokerAuthConfiguration.getAuthentication());
-
         isAuthenticationEnabled = brokerAuthConfiguration.getAuthentication().isEnabled();
         isAuthorizationEnabled = brokerAuthConfiguration.getAuthorization().isEnabled();
 
-        if (!isAuthenticationEnabled && isAuthorizationEnabled) {
+        if (isAuthenticationEnabled) {
+            UserStore userStore = AuthorizerFactory.createUserStore(startupContext, brokerAuthConfiguration);
+
+            authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
+                                                                        brokerAuthConfiguration.getAuthentication(),
+                                                                        userStore);
+
+            BrokerCommonConfiguration commonConfigs
+                    = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
+                                                            BrokerCommonConfiguration.class);
+
+            if (isAuthorizationEnabled) {
+                authorizer = AuthorizerFactory.getAuthorizer(commonConfigs,
+                                                             brokerAuthConfiguration,
+                                                             userStore,
+                                                             startupContext);
+            }
+        } else if (isAuthorizationEnabled) {
             throw new ValidationException("Invalid combination found in the configuration - " +
                                                   "authentication enabled: FALSE and authorization enabled: TRUE");
-        } else {
-            authorizer = AuthorizerFactory.getAuthorizer(commonConfigs, brokerAuthConfiguration, startupContext);
+
         }
 
         startupContext.registerService(AuthManager.class, this);

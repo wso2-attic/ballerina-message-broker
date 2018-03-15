@@ -51,12 +51,11 @@ public class AuthorizerFactory {
      */
     public static Authorizer getAuthorizer(BrokerCommonConfiguration commonConfiguration,
                                            BrokerAuthConfiguration brokerAuthConfiguration,
+                                           UserStore userStore,
                                            StartupContext startupContext) throws Exception {
 
         if (brokerAuthConfiguration.getAuthentication().isEnabled()
                 && brokerAuthConfiguration.getAuthorization().isEnabled()) {
-
-            UserStore userStore = createUserStore(startupContext, brokerAuthConfiguration);
 
             DiscretionaryAccessController dacHandler = getDac(brokerAuthConfiguration,
                                                               commonConfiguration,
@@ -135,8 +134,8 @@ public class AuthorizerFactory {
         }
     }
 
-    private static UserStore createUserStore(StartupContext startupContext,
-                                             BrokerAuthConfiguration brokerAuthConfiguration) {
+    public static UserStore createUserStore(StartupContext startupContext,
+                                            BrokerAuthConfiguration brokerAuthConfiguration) {
         String userStoreClassName = brokerAuthConfiguration.getAuthorization().getUserStore().getClassName();
         Map<String, String> properties = brokerAuthConfiguration.getAuthorization().getUserStore().getProperties();
 
