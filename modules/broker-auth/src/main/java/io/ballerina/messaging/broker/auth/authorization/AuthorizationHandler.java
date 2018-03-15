@@ -52,8 +52,21 @@ public class AuthorizationHandler {
     public void handle(ResourceAuthScope brokerAuthScope, ResourceType resourceType, String resourceName,
                        ResourceAction action, Subject subject)
             throws AuthException, AuthNotFoundException {
-        handle(brokerAuthScope, subject);
-        handle(resourceType, resourceName, action, subject);
+        try {
+            if (!authorizer.authorize(brokerAuthScope.toString(), getUserFromSubject(subject))
+                    && !authorizer.authorize(resourceType.toString(),
+                                             resourceName,
+                                             action.toString(),
+                                             getUserFromSubject(subject))) {
+                throw new AuthException(
+                        "Unauthorized action on : " + resourceType.toString() + " resourceName: " + resourceName
+                                + " action: " + action.toString());
+            }
+        } catch (AuthServerException e) {
+            throw new AuthException("Error occurred while authorizing on : " + resourceType.toString() +
+                                            " resourceName: " + resourceName +
+                                            " action: " + action.toString(), e);
+        }
     }
 
     /**
@@ -71,14 +84,14 @@ public class AuthorizationHandler {
                                       resourceName,
                                       action.toString(),
                                       getUserFromSubject(subject))) {
-                throw new AuthException("Unauthorized action on : " + resourceType.toString() +
-                                                      " resourceName: " + resourceName +
-                                                      " action: " + action.toString());
+                throw new AuthException(
+                        "Unauthorized action on : " + resourceType.toString() + " resourceName: " + resourceName
+                                + " action: " + action.toString());
             }
         } catch (AuthServerException e) {
-            throw new AuthException("Error occurred while authorizing on : " + resourceType.toString() +
-                                                  " resourceName: " + resourceName +
-                                                  " action: " + action.toString(), e);
+            throw new AuthException(
+                    "Error occurred while authorizing on : " + resourceType.toString() + " resourceName: "
+                            + resourceName + " action: " + action.toString(), e);
         }
     }
 
@@ -95,8 +108,7 @@ public class AuthorizationHandler {
                 throw new AuthException("Unauthorized action on auth scope key : " + authScope.toString());
             }
         } catch (AuthServerException | AuthNotFoundException e) {
-            throw new AuthException("Error occurred while authorizing auth scope key : " +
-                                                  authScope.toString(), e);
+            throw new AuthException("Error occurred while authorizing auth scope key : " + authScope.toString(), e);
         }
     }
 
@@ -134,8 +146,8 @@ public class AuthorizationHandler {
         } catch (AuthServerException e) {
             throw new AuthException("Error while deleting " + resourceType + " with name : " + resourceName, e);
         } catch (AuthNotFoundException e) {
-            throw new ResourceNotFoundException("Error occurred while authorizing due to resource name : " +
-                    resourceName + " not found.");
+            throw new ResourceNotFoundException(
+                    "Error occurred while authorizing due to resource name : " + resourceName + " not found.");
         }
     }
 

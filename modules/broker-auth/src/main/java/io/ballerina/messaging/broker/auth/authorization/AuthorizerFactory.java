@@ -53,7 +53,6 @@ public class AuthorizerFactory {
                                            BrokerAuthConfiguration brokerAuthConfiguration,
                                            StartupContext startupContext) throws Exception {
 
-        // TODO remove in-memory check
         if (brokerAuthConfiguration.getAuthentication().isEnabled()
                 && brokerAuthConfiguration.getAuthorization().isEnabled()) {
 
