@@ -386,11 +386,7 @@ paths:
           required: true
           description: Payload with the name of the new owner username
           schema:
-            type: object
-            properties:
-              owner:
-                type: string
-                description: Username of the new owner
+            $ref: '#/definitions/ChangeOwnerRequest'
       consumes:
         - application/json
       produces:
@@ -732,11 +728,7 @@ paths:
           required: true
           description: Payload with the name of the new owner username
           schema:
-            type: object
-            properties:
-              owner:
-                type: string
-                description: Username of the new owner
+            $ref: '#/definitions/ChangeOwnerRequest'
       consumes:
         - application/json
       produces:
@@ -1281,9 +1273,19 @@ definitions:
           description: Name of the user group.
   ResponseMessage:
     title: General response message
+    type: object
     required:
       - message
     properties:
       message:
         type: string
         description: Descriptive response message.
+  ChangeOwnerRequest:
+    title: Change owner of a Resource.
+    type: object
+    required:
+      - owner
+    properties:
+      owner:
+        type: string
+        description: Username of the new owner
