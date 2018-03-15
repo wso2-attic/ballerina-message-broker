@@ -19,22 +19,11 @@
 
 package io.ballerina.messaging.broker.core.rest.api;
 
-import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
-import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.core.BrokerFactory;
-import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
-import io.ballerina.messaging.broker.core.SecureBrokerFactory;
-import io.ballerina.messaging.broker.core.rest.model.ExchangeUpdateRequest;
-import io.ballerina.messaging.broker.core.rest.model.ExchangeUpdateResponse;
-import io.ballerina.messaging.broker.core.rest.model.ResponseMessage;
-import io.ballerina.messaging.broker.core.rest.model.UserGroupList;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
+import io.ballerina.messaging.broker.core.rest.AuthGrantApiDelegate;
 import io.ballerina.messaging.broker.core.rest.BindingsApiDelegate;
 import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
 import io.ballerina.messaging.broker.core.rest.ExchangesApiDelegate;
@@ -44,6 +33,14 @@ import io.ballerina.messaging.broker.core.rest.model.Error;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeMetadata;
+import io.ballerina.messaging.broker.core.rest.model.ResponseMessage;
+import io.ballerina.messaging.broker.core.rest.model.UserGroupList;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
 import org.wso2.msf4j.Request;
 
 import javax.security.auth.Subject;
@@ -69,17 +66,12 @@ public class ExchangesApi {
 
     private final ExchangesApiDelegate exchangesApiDelegate;
     private final BindingsApiDelegate bindingsApiDelegate;
-    private final BrokerFactory brokerFactory;
+    private final AuthGrantApiDelegate grantApiDelegate;
 
-    public ExchangesApi(StartupContext startupContext) {
-        if (startupContext.getService(AuthManager.class).isAuthenticationEnabled() &&
-                startupContext.getService(AuthManager.class).isAuthorizationEnabled()) {
-            brokerFactory = new SecureBrokerFactory(startupContext);
-        } else {
-            brokerFactory = new DefaultBrokerFactory(startupContext);
-        }
+    public ExchangesApi(BrokerFactory brokerFactory, Authorizer authorizer) {
         this.exchangesApiDelegate = new ExchangesApiDelegate(brokerFactory);
         this.bindingsApiDelegate = new BindingsApiDelegate(brokerFactory);
+        this.grantApiDelegate = new AuthGrantApiDelegate(authorizer);
     }
 
     @POST
@@ -96,9 +88,10 @@ public class ExchangesApi {
         @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
         @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
         @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response addExchangeActionUserGroups(@PathParam("name") @ApiParam("Name of the exchange.") String name,@PathParam("action") @ApiParam("Name of the action.") String action,@Valid
-            UserGroupList body) {
-        return Response.ok().entity("magic!").build();
+    public Response addExchangeActionUserGroups(@Context Request request, @PathParam("name") @ApiParam("Name of the exchange.") String name,@PathParam("action") @ApiParam("Name of the action.") String action,
+                                                @Valid UserGroupList body) {
+        return grantApiDelegate.addUserGroupsToAction(ResourceType.EXCHANGE, name, action, body,
+                                                      (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @PUT
@@ -115,8 +108,10 @@ public class ExchangesApi {
         @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
         @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
         @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response changeExchangeOwner(@PathParam("name") @ApiParam("Name of the exchange") String name,@Valid ChangeOwnerRequest changeOwnerRequest) {
-        return Response.ok().entity("magic!").build();
+    public Response changeExchangeOwner(@Context Request request, @PathParam("name") @ApiParam("Name of the exchange") String name,
+                                        @Valid ChangeOwnerRequest changeOwnerRequest) {
+        return grantApiDelegate.changeOwner(ResourceType.EXCHANGE, name, changeOwnerRequest.getOwner(),
+                                            (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
    @POST
@@ -162,8 +157,9 @@ public class ExchangesApi {
         @ApiResponse(code = 403, message = "Requested action unauthorized.", response = Error.class),
         @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
         @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response deleteUserGroup(@PathParam("exchangeName") @ApiParam("Name of the exchange.") String exchangeName,@PathParam("action") @ApiParam("Name of the action.") String action,@PathParam("groupName") @ApiParam("Name of the user group") String groupName) {
-        return Response.ok().entity("magic!").build();
+    public Response deleteUserGroup(@Context Request request, @PathParam("exchangeName") @ApiParam("Name of the exchange.") String exchangeName,@PathParam("action") @ApiParam("Name of the action.") String action,@PathParam("groupName") @ApiParam("Name of the user group") String groupName) {
+        return grantApiDelegate.removeUserGroup(ResourceType.EXCHANGE, exchangeName, action, groupName,
+                                                (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
@@ -204,22 +200,5 @@ public class ExchangesApi {
             @ApiResponse(code = 404, message = "Exchange not found", response = Error.class) })
     public Response getExchange(@Context Request request, @PathParam("name") @ApiParam("Name of the exchange.") String name) {
         return exchangesApiDelegate.getExchange(name, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
-    }
-
-    @PUT
-    @Path("/{name}")
-    @Consumes({ "application/json" })
-    @Produces({ "application/json" })
-    @ApiOperation(value = "Update authorization of exchange", notes = "Grant permission to perform given action", response = ExchangeUpdateResponse.class, authorizations = {
-            @Authorization(value = "basicAuth")
-    }, tags={  })
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Exchange authorization updated.", response = ExchangeUpdateResponse.class),
-            @ApiResponse(code = 400, message = "Bad Request. Invalid request or validation error.", response = Error.class),
-            @ApiResponse(code = 401, message = "Authentication Data is missing or invalid", response = Error.class),
-            @ApiResponse(code = 404, message = "Exchange not found", response = Error.class),
-            @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
-    public Response updateExchangeAuthorization(@Context Request request, @PathParam("name") @ApiParam("Name of the auth resource") String name, @Valid ExchangeUpdateRequest body) {
-        return Response.ok().entity("magic!").build();
     }
 }

@@ -494,7 +494,7 @@ paths:
         required: true
         description: Name of the user group
     delete:
-      operationId: deleteUserGroup
+      operationId: deleteQueueUserGroup
       summary: Remove permission to an action from a user group for a queue.
       description: Revoke permissions for a user group from invoking a particular action on a specific queue.
       produces:
@@ -608,45 +608,6 @@ paths:
             $ref: '#/definitions/Error'
         '401':
           description: Authentication information is missing or invalid
-          headers:
-            WWW_Authenticate:
-              type: string
-          schema:
-            $ref: '#/definitions/Error'
-    put:
-      operationId: updateExchangeAuthorization
-      summary: Update authorization of exchange
-      description: Grant permission to perform given action
-      parameters:
-      - in: body
-        name: body
-        required: true
-        description: Payload of update exchange authorization request
-        schema:
-          $ref: '#/definitions/ExchangeUpdateRequest'
-      consumes:
-        - application/json
-      responses:
-        '201':
-          description: Exchange authorization updated.
-          schema:
-            $ref: '#/definitions/ExchangeUpdateResponse'
-        '400':
-          description: Bad Request. Invalid request or validation error.
-          schema:
-            $ref: '#/definitions/Error'
-        '404':
-          description: Exchange not found
-          schema:
-            $ref: '#/definitions/Error'
-        '415':
-          description: >-
-            Unsupported media type. The entity of the request was in a not
-            supported format.
-          schema:
-            $ref: '#/definitions/Error'
-        '401':
-          description: Authentication Data is missing or invalid
           headers:
             WWW_Authenticate:
               type: string
@@ -836,7 +797,7 @@ paths:
         required: true
         description: Name of the user group
     delete:
-      operationId: deleteUserGroup
+      operationId: deleteExchangeUserGroup
       summary: Remove permission to an action from a user group for an exchange.
       description: Revoke permissions for a user group from invoking a particular action on a specific exchange.
       produces:

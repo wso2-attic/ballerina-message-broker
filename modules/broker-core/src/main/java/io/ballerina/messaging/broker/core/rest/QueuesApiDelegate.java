@@ -19,14 +19,10 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
-import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
-import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
-import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
-import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -40,8 +36,6 @@ import io.ballerina.messaging.broker.core.rest.model.MessageDeleteResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueMetadata;
-import io.ballerina.messaging.broker.core.rest.model.ResponseMessage;
-import io.ballerina.messaging.broker.core.rest.model.UserGroupList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +49,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.security.auth.Subject;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
@@ -74,12 +67,9 @@ public class QueuesApiDelegate {
 
     private final Authorizer authorizer;
 
-    private final AuthorizationHandler authorizationHandler;
-
     public QueuesApiDelegate(BrokerFactory brokerFactory, Authorizer authorizer) {
         this.brokerFactory = brokerFactory;
         this.authorizer = authorizer;
-        authorizationHandler = new AuthorizationHandler(authorizer);
     }
 
     public Response createQueue(QueueCreateRequest requestBody, Subject subject) {
@@ -174,13 +164,11 @@ public class QueuesApiDelegate {
         try {
             authResource = authorizer.getAuthResource(ResourceType.QUEUE.toString(),
                                                       queueHandler.getQueue().getName());
+            queueMetadata.owner(authResource.getOwner())
+                         .permissions(toActionUserGroupsMapping(authResource.getActionsUserGroupsMap()));
         } catch (AuthServerException | AuthNotFoundException e) {
             // TODO handle error correctly
             LOGGER.error("Error while querying auth resource", e);
-        }
-        if (Objects.nonNull(authResource)) {
-            queueMetadata.owner(authResource.getOwner())
-                    .permissions(toActionUserGroupsMapping(authResource.getActionsUserGroupsMap()));
         }
         return queueMetadata;
     }
@@ -207,57 +195,6 @@ public class QueuesApiDelegate {
             throw new BadRequestException(e.getMessage(), e);
         } catch (ResourceNotFoundException e) {
             throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
-        }
-    }
-
-    public Response changeQueueOwner(String queueName, String owner, Subject subject) {
-        try {
-            authorizationHandler.handle(ResourceAuthScope.RESOURCE_GRANT_PERMISSION, ResourceType.QUEUE, queueName,
-                                        ResourceAction.GRANT_PERMISSION, subject);
-            authorizer.changeResourceOwner(ResourceType.QUEUE.toString(), queueName, owner);
-            return Response.created(new URI(BrokerAdminService.API_BASE_PATH + QUEUES_API_PATH
-                                                    + "/" + queueName)).build();
-        } catch (AuthException e) {
-            throw new NotAuthorizedException(e.getMessage(), e);
-        } catch (AuthNotFoundException e) {
-            throw new NotFoundException(e.getMessage(), e);
-        } catch (AuthServerException | URISyntaxException  e) {
-            throw new InternalServerErrorException(e.getMessage(), e);
-        }
-    }
-
-    public Response addQueueActionUserGroups(String queueName, String action, UserGroupList userGroupList,
-                                             Subject subject) {
-        try {
-            authorizationHandler.handle(ResourceAuthScope.RESOURCE_GRANT_PERMISSION, ResourceType.QUEUE, queueName,
-                                               ResourceAction.GRANT_PERMISSION, subject);
-
-            List<String> userGroups = userGroupList.getUserGroups();
-            for (String userGroup: userGroups) {
-                authorizer.addGroupToResource(ResourceType.QUEUE.toString(), queueName, action, userGroup);
-            }
-            return Response.ok(new ResponseMessage().message("User groups successfully added.")).build();
-        } catch (AuthException e) {
-            throw new ForbiddenException(e.getMessage(), e);
-        } catch (AuthNotFoundException e) {
-            throw new NotFoundException(e.getMessage(), e);
-        } catch (AuthServerException e) {
-            throw new InternalServerErrorException(e.getMessage(), e);
-        }
-    }
-
-    public Response removeUserGroup(String queueName, String action, String groupName, Subject subject) {
-        try {
-            authorizationHandler.handle(ResourceAuthScope.RESOURCE_GRANT_PERMISSION, ResourceType.QUEUE, queueName,
-                                       ResourceAction.GRANT_PERMISSION, subject);
-            authorizer.removeGroupFromResource(ResourceType.QUEUE.toString(), queueName, action, groupName);
-            return Response.ok().entity(new ResponseMessage().message("User group successfully removed.")).build();
-        } catch (AuthException e) {
-            throw new ForbiddenException(e.getMessage(), e);
-        } catch (AuthNotFoundException e) {
-            throw new NotFoundException(e.getMessage(), e);
-        } catch (AuthServerException e) {
-            throw new InternalServerErrorException(e.getMessage(), e);
         }
     }
 }

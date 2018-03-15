@@ -20,6 +20,9 @@
 package io.ballerina.messaging.broker.core;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -152,7 +155,18 @@ public final class BrokerImpl implements Broker {
     private void initRestApi(StartupContext startupContext) {
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         if (Objects.nonNull(serviceRunner)) {
-            serviceRunner.deploy(new QueuesApi(startupContext), new ExchangesApi(startupContext));
+            AuthManager authManager = startupContext.getService(AuthManager.class);
+            BrokerFactory brokerFactory;
+            Authorizer dacHandler;
+            if (null != authManager && authManager.isAuthenticationEnabled() && authManager.isAuthorizationEnabled()) {
+
+                brokerFactory = new SecureBrokerFactory(startupContext);
+                dacHandler = authManager.getAuthorizer();
+            } else {
+                brokerFactory = new DefaultBrokerFactory(startupContext);
+                dacHandler = new NoOpAuthorizer();
+            }
+            serviceRunner.deploy(new QueuesApi(brokerFactory, dacHandler), new ExchangesApi(brokerFactory, dacHandler));
         }
     }
 

@@ -19,14 +19,11 @@
 
 package io.ballerina.messaging.broker.core.rest.api;
 
-import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
-import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
-import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.core.BrokerFactory;
-import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
-import io.ballerina.messaging.broker.core.SecureBrokerFactory;
+import io.ballerina.messaging.broker.core.rest.AuthGrantApiDelegate;
 import io.ballerina.messaging.broker.core.rest.BindingsApiDelegate;
 import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
 import io.ballerina.messaging.broker.core.rest.ConsumersApiDelegate;
@@ -78,18 +75,11 @@ public class QueuesApi {
 
     private final BindingsApiDelegate bindingsApiDelegate;
 
-    public QueuesApi(StartupContext startupContext) {
-        AuthManager authManager = startupContext.getService(AuthManager.class);
-        BrokerFactory brokerFactory;
-        Authorizer dacHandler;
-        if (null != authManager && authManager.isAuthenticationEnabled() && authManager.isAuthorizationEnabled()) {
-            brokerFactory = new SecureBrokerFactory(startupContext);
-            dacHandler = authManager.getAuthorizer();
-        } else {
-            brokerFactory = new DefaultBrokerFactory(startupContext);
-            dacHandler = new NoOpAuthorizer();
-        }
+    private final AuthGrantApiDelegate authGrantApiDelegate;
+
+    public QueuesApi(BrokerFactory brokerFactory, Authorizer dacHandler) {
         this.queuesApiDelegate = new QueuesApiDelegate(brokerFactory, dacHandler);
+        this.authGrantApiDelegate = new AuthGrantApiDelegate(dacHandler);
         this.consumersApiDelegate = new ConsumersApiDelegate(brokerFactory);
         this.bindingsApiDelegate = new BindingsApiDelegate(brokerFactory);
     }
@@ -109,8 +99,8 @@ public class QueuesApi {
             @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
             @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
     public Response addQueueActionUserGroups(@Context Request request, @PathParam("name") @ApiParam("Name of the queue.") String name,@PathParam("action") @ApiParam("Name of the action.") String action,@Valid UserGroupList body) {
-        return queuesApiDelegate.addQueueActionUserGroups(name, action, body, (Subject) request.getSession()
-                                                                                               .getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+        return authGrantApiDelegate.addUserGroupsToAction(ResourceType.QUEUE, name, action, body,
+                                                          (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @PUT
@@ -128,8 +118,8 @@ public class QueuesApi {
             @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
             @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
     public Response changeQueueOwner(@Context Request request, @PathParam("name") @ApiParam("Name of the queue") String name,@Valid ChangeOwnerRequest changeOwnerRequest) {
-        return queuesApiDelegate.changeQueueOwner(name, changeOwnerRequest.getOwner(), (Subject) request.getSession()
-                                                                                                   .getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+        return authGrantApiDelegate.changeOwner(ResourceType.QUEUE, name, changeOwnerRequest.getOwner(),
+                                                (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
     @POST
     @Path("/{name}/bindings")
@@ -221,7 +211,8 @@ public class QueuesApi {
         @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
         @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
     public Response deleteUserGroup(@Context Request request, @PathParam("queueName") @ApiParam("Name of the queue.") String queueName,@PathParam("action") @ApiParam("Name of the action.") String action,@PathParam("groupName") @ApiParam("Name of the user group") String groupName) {
-        return queuesApiDelegate.removeUserGroup(queueName, action, groupName, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+        return authGrantApiDelegate.removeUserGroup(ResourceType.QUEUE, queueName, action, groupName,
+                                                    (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET
