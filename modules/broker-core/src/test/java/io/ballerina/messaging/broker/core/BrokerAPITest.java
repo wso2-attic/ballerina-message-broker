@@ -55,6 +55,7 @@ public class BrokerAPITest {
         testBrokerConfigProvider.addConfigObject(BrokerCoreConfiguration.NAMESPACE, new BrokerCoreConfiguration());
         BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
         BrokerCommonConfiguration brokerCommonConfiguration = new BrokerCommonConfiguration();
+        brokerAuthConfiguration.getAuthentication().setEnabled(false);
         brokerAuthConfiguration.getAuthorization().setEnabled(false);
         testBrokerConfigProvider.addConfigObject(BrokerCommonConfiguration.NAMESPACE, brokerCommonConfiguration);
         testBrokerConfigProvider.addConfigObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);

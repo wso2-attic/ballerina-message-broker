@@ -24,8 +24,7 @@ import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 import io.ballerina.messaging.broker.auth.authentication.jaas.PlainSaslCallbackHandler;
 import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
-import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
-import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.common.StartupContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,9 @@ public class JaasAuthenticator implements Authenticator {
     private static final Logger LOGGER = LoggerFactory.getLogger(JaasAuthenticator.class);
 
     @Override
-    public void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception {
+    public void initialize(StartupContext startupContext,
+                           UserStore userStore,
+                           Map<String, Object> properties) throws Exception {
 
         String jaasConfigPath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_JAAS_CONFIG);
         if (jaasConfigPath == null || jaasConfigPath.trim().isEmpty()) {
@@ -56,10 +57,8 @@ public class JaasAuthenticator implements Authenticator {
             if (Objects.nonNull(jaasLoginModule)) {
                 // Add user store for default login module
                 if (jaasLoginModule.toString().equals(UserStoreLoginModule.class.getCanonicalName())) {
-                    UserStoreConnector userStoreConnector = new FileBasedUserStoreConnector();
-                    userStoreConnector.initialize(startupContext);
                     properties.put(BrokerAuthConstants.PROPERTY_USER_STORE_CONNECTOR,
-                                   userStoreConnector);
+                                   userStore);
                 }
                 Configuration jaasConfig = createJaasConfig(jaasLoginModule.toString(), properties);
                 Configuration.setConfiguration(jaasConfig);

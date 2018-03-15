@@ -19,28 +19,104 @@
 package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
+import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
-import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
-import io.ballerina.messaging.broker.auth.user.impl.FileBasedUserStoreConnector;
+import io.ballerina.messaging.broker.auth.user.config.UserConfig;
+import io.ballerina.messaging.broker.auth.user.config.UsersFile;
+import io.ballerina.messaging.broker.auth.user.dto.User;
 import io.ballerina.messaging.broker.common.StartupContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wso2.carbon.config.ConfigProviderFactory;
+import org.wso2.carbon.config.provider.ConfigProvider;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Class provides database based @{@link UserStore} implementation.
+ * This class implements @{@link UserStore} to connect to file based user store.
  */
 public class FileBasedUserStore implements UserStore {
 
-    private UserStoreConnector userStoreManager;
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedUserStore.class);
+
+    /**
+     * Store the map of userRegistry.
+     */
+    private static Map<String, User> userRegistry = new ConcurrentHashMap<>();
 
     @Override
-    public void initialize(StartupContext startupContext, Map<String, String> properties) {
-        userStoreManager = new FileBasedUserStoreConnector();
+    public void initialize(StartupContext startupContext, Map<String, String> properties) throws Exception {
+        Path usersYamlFile;
+        String usersFilePath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG);
+        if (usersFilePath == null || usersFilePath.trim().isEmpty()) {
+            // use current path.
+            usersYamlFile = Paths.get("", BrokerAuthConstants.USERS_FILE_NAME).toAbsolutePath();
+        } else {
+            usersYamlFile = Paths.get(usersFilePath).toAbsolutePath();
+        }
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(usersYamlFile, null);
+        UsersFile usersFile = configProvider
+                .getConfigurationObject(BrokerAuthConstants.USERS_CONFIG_NAMESPACE, UsersFile.class);
+        if (usersFile != null) {
+            List<UserConfig> usersList = usersFile.getUserConfigs();
+            for (UserConfig userConfig : usersList) {
+                if (userConfig != null && userConfig.getUsername() != null) {
+                    userRegistry.put(userConfig.getUsername(), new User(userConfig.getUsername(),
+                                                                        userConfig.getPassword().toCharArray(),
+                                                                        new HashSet<>(userConfig.getRoles())));
+                } else {
+                    LOGGER.error("User or username can not be null");
+                }
+            }
+        }
     }
 
+    /**
+     * Authenticate given user with credentials.
+     *
+     * @param userName    userName
+     * @param credentials Credentials
+     * @return Authentication result
+     * @throws AuthException Exception throws when authentication failed.
+     */
     @Override
-    public Set<String> getUserGroupsList(String userId) throws AuthException {
-        return userStoreManager.getUserRoleList(userId);
+    public AuthResult authenticate(String userName, char... credentials) throws AuthException {
+        User user;
+        if (Objects.isNull(userName)) {
+            throw new AuthException("Username cannot be null.");
+        } else if (Objects.isNull(user = userRegistry.get(userName))) {
+            throw new AuthException("User not found for the given username.");
+        } else {
+            if (Arrays.equals(credentials, user.getPassword())) {
+                return new AuthResult(true, userName);
+            } else {
+                throw new AuthException("Password did not match with the configured user");
+            }
+        }
+    }
+
+    /**
+     * Retrieve the list of userRegistry for given username.
+     *
+     * @param userName user name
+     * @return List of roles
+     */
+    @Override
+    public Set<String> getUserGroupsList(String userName) {
+        User user = userRegistry.get(userName);
+        if (user != null) {
+            return user.getRoles();
+        }
+        return Collections.emptySet();
     }
 }
