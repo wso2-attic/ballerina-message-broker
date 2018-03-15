@@ -69,7 +69,7 @@ public class ExchangesApi {
     private final AuthGrantApiDelegate grantApiDelegate;
 
     public ExchangesApi(BrokerFactory brokerFactory, Authorizer authorizer) {
-        this.exchangesApiDelegate = new ExchangesApiDelegate(brokerFactory);
+        this.exchangesApiDelegate = new ExchangesApiDelegate(brokerFactory, authorizer);
         this.bindingsApiDelegate = new BindingsApiDelegate(brokerFactory);
         this.grantApiDelegate = new AuthGrantApiDelegate(authorizer);
     }

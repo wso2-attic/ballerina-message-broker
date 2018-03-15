@@ -19,6 +19,11 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerAuthException;
@@ -26,6 +31,7 @@ import io.ballerina.messaging.broker.core.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.Exchange;
+import io.ballerina.messaging.broker.core.rest.model.ActionUserGroupsMapping;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeMetadata;
@@ -37,7 +43,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.security.auth.Subject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
@@ -56,8 +64,11 @@ public class ExchangesApiDelegate {
 
     private final BrokerFactory brokerFactory;
 
-    public ExchangesApiDelegate(BrokerFactory brokerFactory) {
+    private final Authorizer authorizer;
+
+    public ExchangesApiDelegate(BrokerFactory brokerFactory, Authorizer authorizer) {
         this.brokerFactory = brokerFactory;
+        this.authorizer = authorizer;
     }
 
     public Response createExchange(ExchangeCreateRequest requestBody, Subject subject) {
@@ -107,18 +118,17 @@ public class ExchangesApiDelegate {
 
     public Response getAllExchanges(Subject subject) {
         Collection<Exchange> exchangeList;
+        List<ExchangeMetadata> exchangeMetadataList;
         try {
             exchangeList = brokerFactory.getBroker(subject).getAllExchanges();
+            exchangeMetadataList = new ArrayList<>(exchangeList.size());
+            for (Exchange exchange : exchangeList) {
+                exchangeMetadataList.add(toExchangeMetadata(exchange));
+            }
         } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
         } catch (BrokerException e) {
             throw new InternalServerErrorException(e.getMessage(), e);
-        }
-        List<ExchangeMetadata> exchangeMetadataList = new ArrayList<>(exchangeList.size());
-        for (Exchange exchange : exchangeList) {
-            exchangeMetadataList.add(new ExchangeMetadata().name(exchange.getName())
-                                                           .type(exchange.getType().toString())
-                                                           .durable(exchange.isDurable()));
         }
         return Response.ok().entity(exchangeMetadataList).build();
     }
@@ -126,8 +136,13 @@ public class ExchangesApiDelegate {
     public Response getExchange(String exchangeName, Subject subject) {
 
         Exchange exchange;
+        ExchangeMetadata exchangeMetadata;
         try {
             exchange = brokerFactory.getBroker(subject).getExchange(exchangeName);
+            if (Objects.isNull(exchange)) {
+                throw new NotFoundException("Exchange '" + exchangeName + "' not found.");
+            }
+            exchangeMetadata = toExchangeMetadata(exchange);
         } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
         } catch (BrokerAuthNotFoundException e) {
@@ -135,13 +150,37 @@ public class ExchangesApiDelegate {
         } catch (BrokerException e) {
             throw new InternalServerErrorException(e.getMessage(), e);
         }
-        if (Objects.isNull(exchange)) {
-            throw new NotFoundException("Exchange '" + exchangeName + "' not found.");
-        }
-        ExchangeMetadata exchangeMetadata = new ExchangeMetadata().name(exchange.getName())
-                                                                  .type(exchange.getType().toString())
-                                                                  .durable(exchange.isDurable());
-        return Response.ok().entity(exchangeMetadata).build();
 
+        return Response.ok().entity(exchangeMetadata).build();
+    }
+
+    private ExchangeMetadata toExchangeMetadata(Exchange exchange) throws BrokerException {
+        ExchangeMetadata exchangeMetadata = new ExchangeMetadata().name(exchange.getName())
+                .type(exchange.getType().toString())
+                .durable(exchange.isDurable());
+        try {
+            AuthResource authResource = authorizer.getAuthResource(ResourceType.EXCHANGE.toString(),
+                    exchange.getName());
+            if (Objects.nonNull(authResource)) {
+                exchangeMetadata.owner(authResource.getOwner())
+                        .permissions(toActionUserGroupsMapping(authResource.getActionsUserGroupsMap()));
+            }
+        } catch (AuthServerException | AuthNotFoundException e) {
+            throw new BrokerException("Error while querying auth resource", e);
+        }
+        return exchangeMetadata;
+    }
+
+    private ArrayList<ActionUserGroupsMapping> toActionUserGroupsMapping(
+            Map<String, Set<String>> actionsUserGroupsMap) {
+
+        ArrayList<ActionUserGroupsMapping> actionUserGroupsMappings = new ArrayList<>(actionsUserGroupsMap.size());
+        actionsUserGroupsMap.forEach((action, userGroups) -> {
+            ActionUserGroupsMapping actionUserGroupsMapping = new ActionUserGroupsMapping();
+            actionUserGroupsMapping.setAction(action);
+            actionUserGroupsMapping.setUserGroups(new ArrayList<>(userGroups));
+            actionUserGroupsMappings.add(actionUserGroupsMapping);
+        });
+        return actionUserGroupsMappings;
     }
 }

@@ -120,8 +120,10 @@ public class QueuesApiDelegate {
 
     public Response getQueue(String queueName, Subject subject) {
         QueueHandler queueHandler;
+        QueueMetadata queueMetadata;
         try {
             queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
+            queueMetadata = toQueueMetadata(queueHandler);
         } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
         } catch (BrokerAuthNotFoundException | ResourceNotFoundException e) {
@@ -130,29 +132,31 @@ public class QueuesApiDelegate {
             throw new InternalServerErrorException(e.getMessage(), e);
         }
 
-        QueueMetadata queueMetadata = toQueueMetadata(queueHandler);
         return Response.ok().entity(queueMetadata).build();
     }
 
     public Response getAllQueues(Boolean durable, Subject subject) {
         boolean filterByDurability = Objects.nonNull(durable);
         Collection<QueueHandler> queueHandlers;
+        List<QueueMetadata> queueArray;
         try {
             queueHandlers = brokerFactory.getBroker(subject).getAllQueues();
-        } catch (BrokerException e) {
-            throw new NotAuthorizedException(e.getMessage(), e);
-        }
-        List<QueueMetadata> queueArray = new ArrayList<>(queueHandlers.size());
-        for (QueueHandler handler : queueHandlers) {
-            // Add if filter is not set or durability equals to filer value.
-            if (!filterByDurability || durable == handler.getQueue().isDurable()) {
-                queueArray.add(toQueueMetadata(handler));
+            queueArray = new ArrayList<>(queueHandlers.size());
+            for (QueueHandler handler : queueHandlers) {
+                // Add if filter is not set or durability equals to filer value.
+                if (!filterByDurability || durable == handler.getQueue().isDurable()) {
+                    queueArray.add(toQueueMetadata(handler));
+                }
             }
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
         return Response.ok().entity(queueArray).build();
     }
 
-    private QueueMetadata toQueueMetadata(QueueHandler queueHandler) {
+    private QueueMetadata toQueueMetadata(QueueHandler queueHandler) throws BrokerException {
         QueueMetadata queueMetadata = new QueueMetadata();
         queueMetadata.name(queueHandler.getQueue().getName())
                 .durable(queueHandler.getQueue().isDurable())
@@ -160,15 +164,15 @@ public class QueuesApiDelegate {
                 .capacity(queueHandler.getQueue().capacity())
                 .consumerCount(queueHandler.consumerCount())
                 .size(queueHandler.size());
-        AuthResource authResource = null;
         try {
-            authResource = authorizer.getAuthResource(ResourceType.QUEUE.toString(),
+            AuthResource authResource = authorizer.getAuthResource(ResourceType.QUEUE.toString(),
                                                       queueHandler.getQueue().getName());
-            queueMetadata.owner(authResource.getOwner())
-                         .permissions(toActionUserGroupsMapping(authResource.getActionsUserGroupsMap()));
+            if (Objects.nonNull(authResource)) {
+                queueMetadata.owner(authResource.getOwner())
+                        .permissions(toActionUserGroupsMapping(authResource.getActionsUserGroupsMap()));
+            }
         } catch (AuthServerException | AuthNotFoundException e) {
-            // TODO handle error correctly
-            LOGGER.error("Error while querying auth resource", e);
+            throw new BrokerException("Error while querying auth resource", e);
         }
         return queueMetadata;
     }
