@@ -122,6 +122,7 @@ public class Main {
 
         //add grant sub-commands
         addChildCommand(jCommanderGrant, Constants.CMD_QUEUE, commandFactory.createGrantQueueCommand());
+        addChildCommand(jCommanderGrant, Constants.CMD_EXCHANGE, commandFactory.createGrantExchangeCommand());
 
         return jCommanderRoot;
     }

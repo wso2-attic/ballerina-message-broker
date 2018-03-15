@@ -6,12 +6,12 @@ import io.ballerina.messaging.broker.client.resources.Permission;
 import io.ballerina.messaging.broker.client.utils.Constants;
 
 /**
- * Command representing MB queue permission granting.
+ * Command representing MB exchange grant permission.
  */
-@Parameters(commandDescription = "Grant permissions to a queue in the Broker")
-public class GrantQueueCmd extends GrantCmd {
+@Parameters(commandDescription = "Grant permissions to a exchange in the Broker")
+public class GrantExchangeCmd extends GrantCmd {
 
-    @Parameter(description = "name of the queue",
+    @Parameter(description = "name of the exchange",
                required = true)
     private String queueName;
 
@@ -25,7 +25,7 @@ public class GrantQueueCmd extends GrantCmd {
                required = true)
     private String group;
 
-    public GrantQueueCmd(String rootCommand) {
+    public GrantExchangeCmd(String rootCommand) {
         super(rootCommand);
     }
 
@@ -38,7 +38,7 @@ public class GrantQueueCmd extends GrantCmd {
 
         Permission permission = new Permission(action, group);
 
-        String urlSuffix = Constants.QUEUES_URL_PARAM + queueName + Constants.PERMISSIONS_URL_PARAM + action
+        String urlSuffix = Constants.EXCHANGES_URL_PARAM + queueName + Constants.PERMISSIONS_URL_PARAM + action
                 + Constants.PERMISSION_GROUP_URL_PARAM;
 
         performResourceCreationOverHttp(urlSuffix,
@@ -49,6 +49,6 @@ public class GrantQueueCmd extends GrantCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + rootCommand + " grant queue [queue-name]\n");
+        out.append("  " + rootCommand + " grant exchange [exchange-name]\n");
     }
 }
