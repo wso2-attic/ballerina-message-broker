@@ -81,7 +81,7 @@ public class MemoryDacHandler implements DiscretionaryAccessController {
 
     @Override
     public boolean changeResourceOwner(String resourceType, String resourceName, String owner)
-            throws AuthServerException, AuthNotFoundException {
+            throws AuthServerException {
         return resourceDao.updateOwner(resourceType, resourceName, owner);
     }
 

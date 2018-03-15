@@ -120,7 +120,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
 
     @Override
     public boolean updateOwner(String resourceType, String resourceName, String newOwner) {
-        AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
+        AuthResource authResource = inMemoryResourceMap.get(resourceType, resourceName);
 
         if (Objects.nonNull(authResource)) {
             authResource.setOwner(newOwner);
@@ -133,7 +133,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
 
     @Override
     public boolean addGroup(String resourceType, String resourceName, String action, String group) {
-        AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
+        AuthResource authResource = inMemoryResourceMap.get(resourceType, resourceName);
 
         if (Objects.nonNull(authResource)) {
             Set<String> userGroups = authResource.getActionsUserGroupsMap()
@@ -147,7 +147,7 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
 
     @Override
     public boolean removeGroup(String resourceType, String resourceName, String action, String group) {
-        AuthResource authResource = inMemoryResourceMap.get(resourceName, resourceType);
+        AuthResource authResource = inMemoryResourceMap.get(resourceType, resourceName);
 
         if (Objects.nonNull(authResource)) {
             Set<String> userGroups = authResource.getActionsUserGroupsMap()

@@ -119,7 +119,7 @@ public class AuthorizerFactory {
             throw new RuntimeException("Cannot use " + dacHandlerClassName + " with in-memory mode.");
         }
 
-        LOGGER.info("Initializing DAC handler {}", dacHandlerClassName);
+        LOGGER.info("Initializing Discretionary Access Controller {}", dacHandlerClassName);
 
         try {
             DiscretionaryAccessController dacHandler = BrokerClassLoader.loadClass(dacHandlerClassName,

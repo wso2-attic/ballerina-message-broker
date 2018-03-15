@@ -181,6 +181,7 @@ public class QueuesApiDelegate {
             ActionUserGroupsMapping actionUserGroupsMapping = new ActionUserGroupsMapping();
             actionUserGroupsMapping.setAction(action);
             actionUserGroupsMapping.setUserGroups(new ArrayList<>(userGroups));
+            actionUserGroupsMappings.add(actionUserGroupsMapping);
         });
         return actionUserGroupsMappings;
     }
