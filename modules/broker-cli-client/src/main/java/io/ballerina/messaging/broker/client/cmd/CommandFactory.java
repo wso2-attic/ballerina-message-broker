@@ -36,6 +36,7 @@ import io.ballerina.messaging.broker.client.cmd.impl.list.ListConsumerCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListQueueCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeQueueCmd;
 
 /**
@@ -126,5 +127,9 @@ public class CommandFactory {
 
     public RevokeQueueCmd createRevokeQueueCommand() {
         return new RevokeQueueCmd(rootCommand);
+    }
+
+    public MBClientCmd createRevokeExchangeCommand() {
+        return new RevokeExchangeCmd(rootCommand);
     }
 }

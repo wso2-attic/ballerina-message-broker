@@ -13,7 +13,7 @@ public class GrantExchangeCmd extends GrantCmd {
 
     @Parameter(description = "name of the exchange",
                required = true)
-    private String queueName;
+    private String exchangeName;
 
     @Parameter(names = { "--action", "-a" },
                description = "name of the action",
@@ -38,7 +38,7 @@ public class GrantExchangeCmd extends GrantCmd {
 
         Permission permission = new Permission(action, group);
 
-        String urlSuffix = Constants.EXCHANGES_URL_PARAM + queueName + Constants.PERMISSIONS_URL_PARAM + action
+        String urlSuffix = Constants.EXCHANGES_URL_PARAM + exchangeName + Constants.PERMISSIONS_URL_PARAM + action
                 + Constants.PERMISSION_GROUP_URL_PARAM;
 
         performResourceCreationOverHttp(urlSuffix,

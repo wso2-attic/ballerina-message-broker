@@ -18,14 +18,14 @@ import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_
 import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_DELETE;
 
 /**
- * Command representing MB queue permission revoking.
+ * Command representing MB exchange permission revoking.
  */
-@Parameters(commandDescription = "Revoke permissions to a queue in the Broker")
-public class RevokeQueueCmd extends GrantCmd {
+@Parameters(commandDescription = "Revoke permissions to a exchange in the Broker")
+public class RevokeExchangeCmd extends GrantCmd {
 
-    @Parameter(description = "name of the queue",
+    @Parameter(description = "name of the exchange",
                required = true)
-    private String queueName;
+    private String exchangeName;
 
     @Parameter(names = { "--action", "-a" },
                description = "name of the action",
@@ -37,7 +37,7 @@ public class RevokeQueueCmd extends GrantCmd {
                required = true)
     private String group;
 
-    public RevokeQueueCmd(String rootCommand) {
+    public RevokeExchangeCmd(String rootCommand) {
         super(rootCommand);
     }
 
@@ -50,7 +50,7 @@ public class RevokeQueueCmd extends GrantCmd {
 
         Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
-        HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName + Constants
+        HttpRequest httpRequest = new HttpRequest(Constants.EXCHANGES_URL_PARAM + exchangeName + Constants
                 .PERMISSIONS_URL_PARAM + action + Constants.PERMISSION_GROUP_URL_PARAM + "/" + group);
 
         // do DELETE
@@ -58,7 +58,7 @@ public class RevokeQueueCmd extends GrantCmd {
 
         // handle response
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
-            Message message = buildResponseMessage(response, "Queue permission revoked successfully");
+            Message message = buildResponseMessage(response, "Exchange permission revoked successfully");
             ResponseFormatter.printMessage(message);
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));

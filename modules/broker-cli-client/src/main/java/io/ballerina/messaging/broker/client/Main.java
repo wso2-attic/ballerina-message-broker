@@ -128,6 +128,7 @@ public class Main {
 
         // add revoke sub-commands
         addChildCommand(jCommanderRevoke, Constants.CMD_QUEUE, commandFactory.createRevokeQueueCommand());
+        addChildCommand(jCommanderRevoke, Constants.CMD_EXCHANGE, commandFactory.createRevokeExchangeCommand());
 
         return jCommanderRoot;
     }
