@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.rest.api;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.rest.AuthGrantApiDelegate;
@@ -54,6 +55,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -99,8 +101,12 @@ public class QueuesApi {
             @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
             @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
     public Response addQueueActionUserGroups(@Context Request request, @PathParam("name") @ApiParam("Name of the queue.") String name,@PathParam("action") @ApiParam("Name of the action.") String action,@Valid UserGroupList body) {
-        return authGrantApiDelegate.addUserGroupsToAction(ResourceType.QUEUE, name, action, body,
-                                                          (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+        try {
+            return authGrantApiDelegate.addUserGroupsToAction(ResourceType.QUEUE, name, ResourceAction.getResourceAction(action), body,
+                                                              (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
     }
 
     @PUT
@@ -211,8 +217,12 @@ public class QueuesApi {
         @ApiResponse(code = 409, message = "Duplicate resource", response = Error.class),
         @ApiResponse(code = 415, message = "Unsupported media type. The entity of the request was in a not supported format.", response = Error.class) })
     public Response deleteUserGroup(@Context Request request, @PathParam("queueName") @ApiParam("Name of the queue.") String queueName,@PathParam("action") @ApiParam("Name of the action.") String action,@PathParam("groupName") @ApiParam("Name of the user group") String groupName) {
-        return authGrantApiDelegate.removeUserGroup(ResourceType.QUEUE, queueName, action, groupName,
-                                                    (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+        try {
+            return authGrantApiDelegate.removeUserGroup(ResourceType.QUEUE, queueName, ResourceAction.getResourceAction(action), groupName,
+                                                        (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
     }
 
     @GET
