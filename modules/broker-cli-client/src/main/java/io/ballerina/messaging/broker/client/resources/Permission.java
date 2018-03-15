@@ -1,13 +1,20 @@
 package io.ballerina.messaging.broker.client.resources;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Representation of permission in the broker.
  */
 public class Permission {
     private String action;
-    private List<String> userGroups;
+    private List<String> userGroups = new ArrayList<>();
+
+    public Permission(String action, String group) {
+        this.action = action;
+        userGroups.add(group);
+    }
 
     public String getAction() {
         return action;
@@ -23,5 +30,16 @@ public class Permission {
 
     public void setUserGroups(List<String> userGroups) {
         this.userGroups = userGroups;
+    }
+
+    public String getUserGroupsAsJsonString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{\"userGroups\": [");
+
+        builder.append(userGroups.stream().map(group -> "\"" + group + "\"")
+                .collect(Collectors.joining(",")));
+
+        builder.append("]}");
+        return builder.toString();
     }
 }

@@ -33,6 +33,8 @@ public class Constants {
     public static final String BINDINGS_URL_PARAM = "/bindings/";
     public static final String CONSUMERS_URL_PARAM = "/consumers/";
     public static final String EXCHANGES_URL_PARAM = "exchanges/";
+    public static final String PERMISSIONS_URL_PARAM = "/permissions/actions/";
+    public static final String PERMISSION_GROUP_URL_PARAM = "/groups";
     public static final String DEFAULT_CONFIG_FILE_PATH = "cli-config.yml";
 
     // Commands/resource types
@@ -40,6 +42,7 @@ public class Constants {
     public static final String CMD_LIST = "list";
     public static final String CMD_CREATE = "create";
     public static final String CMD_DELETE = "delete";
+    public static final String CMD_GRANT = "grant";
 
     public static final String CMD_EXCHANGE = "exchange";
     public static final String CMD_QUEUE = "queue";
