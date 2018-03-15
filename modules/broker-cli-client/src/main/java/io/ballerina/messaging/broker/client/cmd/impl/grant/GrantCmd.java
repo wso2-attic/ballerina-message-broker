@@ -54,7 +54,7 @@ public class GrantCmd extends AbstractCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + rootCommand + " grant [resource_type] [action] [group]\n");
+        out.append("  " + rootCommand + " grant [resource_type]\n");
     }
 
     /**

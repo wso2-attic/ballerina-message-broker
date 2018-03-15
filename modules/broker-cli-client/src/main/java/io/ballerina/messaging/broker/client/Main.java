@@ -103,6 +103,8 @@ public class Main {
                 commandFactory.createDeleteCommand());
         JCommander jCommanderGrant = addChildCommand(jCommanderRoot, Constants.CMD_GRANT,
                                                       commandFactory.createGrantCommand());
+        JCommander jCommanderRevoke = addChildCommand(jCommanderRoot, Constants.CMD_REVOKE,
+                                                     commandFactory.createRevokeCommand());
 
         // secondary level commands
         // add list sub-commands
@@ -120,9 +122,12 @@ public class Main {
         addChildCommand(jCommanderDelete, Constants.CMD_EXCHANGE, commandFactory.createDeleteExchangeCommand());
         addChildCommand(jCommanderDelete, Constants.CMD_QUEUE, commandFactory.createDeleteQueueCommand());
 
-        //add grant sub-commands
+        // add grant sub-commands
         addChildCommand(jCommanderGrant, Constants.CMD_QUEUE, commandFactory.createGrantQueueCommand());
         addChildCommand(jCommanderGrant, Constants.CMD_EXCHANGE, commandFactory.createGrantExchangeCommand());
+
+        // add revoke sub-commands
+        addChildCommand(jCommanderRevoke, Constants.CMD_QUEUE, commandFactory.createRevokeQueueCommand());
 
         return jCommanderRoot;
     }

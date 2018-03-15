@@ -43,6 +43,7 @@ public class Constants {
     public static final String CMD_CREATE = "create";
     public static final String CMD_DELETE = "delete";
     public static final String CMD_GRANT = "grant";
+    public static final String CMD_REVOKE = "revoke";
 
     public static final String CMD_EXCHANGE = "exchange";
     public static final String CMD_QUEUE = "queue";
