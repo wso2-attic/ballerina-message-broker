@@ -19,6 +19,8 @@
 
 package io.ballerina.messaging.broker.common;
 
+import io.ballerina.messaging.broker.common.util.function.ThrowingConsumer;
+import io.ballerina.messaging.broker.common.util.function.ThrowingFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +28,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
 import javax.sql.DataSource;
 
 /**
@@ -92,5 +95,64 @@ public abstract class BaseDao {
             paramList.append(",?");
         }
         return paramList.toString();
+    }
+
+    protected void rollback(Connection connection, String message) {
+        try {
+            if (Objects.nonNull(connection)) {
+                connection.rollback();
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Error occurred while rolling back. Failed operation " + message, e);
+        }
+    }
+    public <E extends Exception> void transaction(ThrowingConsumer<Connection, E> command) throws DaoException {
+
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            command.accept(connection);
+            connection.commit();
+        } catch (Exception e) {
+            String message = "transaction operation";
+            rollback(connection, message);
+            throw new DaoException("Error occurred while " + message, e);
+        } finally {
+            close(connection);
+        }
+    }
+
+    public <R, E extends Exception> R transaction(ThrowingFunction<Connection, R,  E> command) throws DaoException {
+
+        Connection connection = null;
+        try {
+            R response;
+            connection = getConnection();
+            response = command.apply(connection);
+            connection.commit();
+            return response;
+        } catch (Exception e) {
+            String message = "transaction operation";
+            rollback(connection, message);
+            throw new DaoException("Error occurred while " + message, e);
+        } finally {
+            close(connection);
+        }
+    }
+
+    public <R, E extends Exception> R selectOperation(ThrowingFunction<Connection, R, E> command)
+            throws DaoException {
+
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            return command.apply(connection);
+        } catch (Exception e) {
+            String message = "select operation";
+            rollback(connection, message);
+            throw new DaoException("Error occurred while " + message, e);
+        } finally {
+            close(connection);
+        }
     }
 }

@@ -19,373 +19,130 @@
 
 package io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
-import io.ballerina.messaging.broker.common.BaseDao;
+import io.ballerina.messaging.broker.common.DaoException;
+import io.ballerina.messaging.broker.common.util.function.ThrowingConsumer;
+import io.ballerina.messaging.broker.common.util.function.ThrowingFunction;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import javax.sql.DataSource;
 
 /**
  * Class implements {@link AuthResourceDao} to provide database functionality to manage auth resources.
  */
-public class AuthResourceRdbmsDao extends BaseDao implements AuthResourceDao {
+public class AuthResourceRdbmsDao implements AuthResourceDao {
+
+    private final AuthResourceCrudOperationsDao authResourceCrudOperationsDao;
 
     public AuthResourceRdbmsDao(DataSource dataSource) {
-        super(dataSource);
+        this.authResourceCrudOperationsDao = new AuthResourceCrudOperationsDao(dataSource);
     }
 
     @Override
     public void persist(AuthResource authResource) throws AuthServerException {
-        Connection connection = null;
-        PreparedStatement insertAuthResourceStmt = null;
-        try {
-            connection = getConnection();
-            insertAuthResourceStmt = connection.prepareStatement(RdbmsConstants.PS_INSERT_AUTH_RESOURCE);
-            insertAuthResourceStmt.setString(1, authResource.getResourceType());
-            insertAuthResourceStmt.setString(2, authResource.getResourceName());
-            insertAuthResourceStmt.setString(3, authResource.getOwner());
-            insertAuthResourceStmt.execute();
-            persistUserGroupMappings(authResource.getResourceType(), authResource.getResourceName(),
-                                     authResource.getActionsUserGroupsMap(),
-                                     connection);
-            connection.commit();
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while persisting resource.", e);
-        } finally {
-            close(connection, insertAuthResourceStmt);
-        }
+        transaction(connection -> {
+            authResourceCrudOperationsDao.storeResource(connection, authResource);
+            authResourceCrudOperationsDao.persistUserGroupMappings(connection, authResource.getResourceType(),
+                                                                   authResource.getResourceName(),
+                                                                   authResource.getActionsUserGroupsMap());
+        });
     }
 
     @Override
     public void update(AuthResource authResource) throws AuthServerException {
-        Connection connection = null;
-        try {
-            connection = getConnection();
-            updateOwner(connection,
-                        authResource.getResourceType(),
-                        authResource.getResourceName(),
-                        authResource.getOwner());
-            deleteUserGroupMappings(authResource.getResourceType(), authResource.getResourceName(), connection);
-            persistUserGroupMappings(authResource.getResourceType(),
-                                     authResource.getResourceName(),
-                                     authResource.getActionsUserGroupsMap(),
-                                     connection);
-            connection.commit();
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while persisting resource.", e);
-        } finally {
-            close(connection);
-        }
+        transaction(connection -> {
+            authResourceCrudOperationsDao.updateOwner(connection, authResource.getResourceType(),
+                                                      authResource.getResourceName(), authResource.getOwner());
+
+            authResourceCrudOperationsDao.deleteUserGroupMappings(connection, authResource.getResourceType(),
+                                                                  authResource.getResourceName());
+            authResourceCrudOperationsDao.persistUserGroupMappings(connection, authResource.getResourceType(),
+                                                                   authResource.getResourceName(),
+                                                                   authResource.getActionsUserGroupsMap());
+        });
     }
 
     @Override
     public boolean delete(String resourceType, String resource) throws AuthServerException {
-        Connection connection = null;
-        PreparedStatement deleteAuthResourceStmt = null;
-        try {
-            connection = getConnection();
-            deleteAuthResourceStmt = connection.prepareStatement(RdbmsConstants.PS_DELETE_AUTH_RESOURCE);
-            deleteAuthResourceStmt.setString(1, resourceType);
-            deleteAuthResourceStmt.setString(2, resource);
-            int affectedRows = deleteAuthResourceStmt.executeUpdate();
-            connection.commit();
-            return affectedRows != 0;
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while deleting resource.", e);
-        } finally {
-            close(connection, deleteAuthResourceStmt);
-        }
+        return transaction((ThrowingFunction<Connection, Boolean, Exception>) connection ->
+                authResourceCrudOperationsDao.deleteResource(connection, resourceType, resource));
     }
 
     @Override
     public AuthResource read(String resourceType, String resourceName) throws AuthServerException {
-        Map<String, Set<String>> actionUserGroupMap = new HashMap<>();
-        String ownerId = null;
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(RdbmsConstants.PS_SELECT_AUTH_RESOURCE_MAPPING);
-            statement.setString(1, resourceType);
-            statement.setString(2, resourceName);
-            resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                if (Objects.isNull(ownerId)) {
-                    ownerId = resultSet.getString(1);
-                }
-                String action = resultSet.getString(2);
-                if (Objects.nonNull(action)) {
-                    Set<String> authorisedGroups = actionUserGroupMap.get(action);
-                    if (Objects.isNull(authorisedGroups)) {
-                        authorisedGroups = new HashSet<>();
-                        actionUserGroupMap.put(action, authorisedGroups);
-                    }
-                    authorisedGroups.add(resultSet.getString(3));
-                }
-            }
-            if (Objects.nonNull(ownerId)) {
-                return new AuthResource(resourceType,
-                                        resourceName,
-                                        true,
-                                        ownerId,
-                                        actionUserGroupMap);
-            }
-            return null;
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while retrieving auth resource for resource group : " +
-                                                        resourceType + " and resource : " +
-                                                        resourceName, e);
-        } finally {
-            close(connection, statement, resultSet);
-        }
+
+        return selectOperation(connection ->
+                                       authResourceCrudOperationsDao.read(connection, resourceType, resourceName));
     }
 
     @Override
     public List<AuthResource> readAll(String resourceType, String ownerId) throws AuthServerException {
-        Map<String, AuthResource> resourceMap = new HashMap<>();
-        String resourceName, action, userGroup;
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(RdbmsConstants.PS_SELECT_ALL_AUTH_RESOURCE_MAPPING_BY_TYPE_OWNER);
-            statement.setString(1, resourceType);
-            statement.setString(2, ownerId);
-            resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                resourceName = resultSet.getString(1);
-                action = resultSet.getString(2);
-                userGroup = resultSet.getString(3);
-                AuthResource authResource = resourceMap.get(resourceName);
-                if (Objects.isNull(authResource)) {
-                    authResource = new AuthResource(resourceType, resourceName, true, ownerId);
-                    resourceMap.put(resourceName, authResource);
-                }
-                if (Objects.nonNull(action)) {
-                    Set<String> userGroups = authResource.getActionsUserGroupsMap().get(action);
-                    if (Objects.isNull(userGroups)) {
-                        userGroups = new HashSet<>();
-                        authResource.getActionsUserGroupsMap().put(action, userGroups);
-                    }
-                    userGroups.add(userGroup);
-                }
-            }
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while retrieving auth data for resource group : " +
-                                                        resourceType, e);
-        } finally {
-            close(connection, statement, resultSet);
-        }
-        return new ArrayList<>(resourceMap.values());
+
+        return selectOperation((ThrowingFunction<Connection, List<AuthResource>, Exception>) connection ->
+                authResourceCrudOperationsDao.readAll(connection, resourceType, ownerId));
     }
 
     @Override
-    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
-    public List<AuthResource> readAll(String resourceType, String action, String ownerId, List<String> userGroups)
-            throws
-            AuthServerException {
-        Map<String, AuthResource> resourceMap = new HashMap<>();
-        String userGroupsList = getSQLFormattedIdList(userGroups.size());
-        String resourceName, userGroup;
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = getConnection();
-            statement = connection
-                    .prepareStatement("SELECT r.RESOURCE_NAME, rm.USER_GROUP_ID FROM MB_AUTH_RESOURCE_MAPPING rm "
-                                              + "RIGHT JOIN ( SELECT RESOURCE_NAME, RESOURCE_ID, OWNER_ID "
-                                              + "FROM MB_AUTH_RESOURCE WHERE RESOURCE_TYPE =  ?) as r "
-                                              + "ON r.RESOURCE_ID = rm.RESOURCE_ID WHERE r.OWNER_ID = ? OR "
-                                              + "( rm.RESOURCE_ACTION = ? AND rm.USER_GROUP_ID IN (" + userGroupsList
-                                              + "))");
-            statement.setString(1, resourceType);
-            statement.setString(2, ownerId);
-            statement.setString(3, action);
-            for (int i = 0; i < userGroups.size(); i++) {
-                statement.setString(i + 4, userGroups.get(i));
-            }
-            resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                resourceName = resultSet.getString(1);
-                userGroup = resultSet.getString(2);
-                AuthResource authResource = resourceMap.get(resourceName);
-                if (Objects.isNull(authResource)) {
-                    authResource = new AuthResource(resourceType, resourceName, true, ownerId);
-                    resourceMap.put(resourceName, authResource);
-                }
-                if (Objects.nonNull(userGroup)) {
-                    Set<String> authorizedUserGroups = authResource.getActionsUserGroupsMap().get(action);
-                    if (Objects.isNull(authorizedUserGroups)) {
-                        authorizedUserGroups = new HashSet<>();
-                        authResource.getActionsUserGroupsMap().put(action, authorizedUserGroups);
-                    }
-                    authorizedUserGroups.add(userGroup);
-                }
-            }
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while retrieving auth data for resource group : " +
-                                                        resourceType, e);
-        } finally {
-            close(connection, statement, resultSet);
-        }
-        return new ArrayList<>(resourceMap.values());
+    public List<AuthResource> readAll(String resourceType, String action, String ownerId,
+                                      List<String> userGroups) throws AuthServerException {
+        return selectOperation((ThrowingFunction<Connection, List<AuthResource>, Exception>) connection ->
+                authResourceCrudOperationsDao.readAll(connection, resourceType, action, ownerId, userGroups));
     }
 
     @Override
     public boolean isExists(String resourceType, String resource) throws AuthServerException {
-        String resourceId = null;
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        try {
-            connection = getConnection();
-            statement = connection.prepareStatement(RdbmsConstants.PS_SELECT_AUTH_RESOURCE);
-            statement.setString(1, resourceType);
-            statement.setString(2, resource);
-            resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                resourceId = resultSet.getString(1);
-            }
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while retrieving existence of resource for resource "
-                                                        + "group : " + resourceType + " and resource : " + resource, e);
-        } finally {
-            close(connection, statement, resultSet);
-        }
-        return Objects.nonNull(resourceId);
-    }
-
-    private boolean updateOwner(Connection connection, String resourceType, String resourceName, String newOwner)
-            throws AuthServerException {
-        PreparedStatement updateResourceOwnerStmt = null;
-        try {
-            updateResourceOwnerStmt = connection.prepareStatement(RdbmsConstants.PS_UPDATE_AUTH_RESOURCE_OWNER);
-            updateResourceOwnerStmt.setString(1, newOwner);
-            updateResourceOwnerStmt.setString(2, resourceType);
-            updateResourceOwnerStmt.setString(3, resourceName);
-            int updateRows = updateResourceOwnerStmt.executeUpdate();
-
-            return updateRows != 0;
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while persisting resource.", e);
-        } finally {
-            close(updateResourceOwnerStmt);
-        }
+        return selectOperation(connection ->
+                              authResourceCrudOperationsDao.isExists(connection, resourceType, resource)
+                              );
     }
 
     @Override
-    public boolean updateOwner(String resourceType, String resourceName, String newOwner) throws
-            AuthServerException {
-        Connection connection = null;
-        try {
-            connection = getConnection();
-            return updateOwner(connection, resourceType, resourceName, newOwner);
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while persisting resource.", e);
-        } finally {
-            close(connection);
-        }
+    public boolean updateOwner(String resourceType, String resourceName, String newOwner) throws AuthServerException {
+        return transaction((ThrowingFunction<Connection, Boolean, Exception>) connection ->
+                authResourceCrudOperationsDao.updateOwner(connection, resourceType, resourceName, newOwner));
     }
 
     @Override
     public boolean addGroup(String resourceType, String resourceName, String action, String group)
             throws AuthServerException {
-        Connection connection = null;
-        PreparedStatement insertMappingsStmt = null;
-        try {
-            connection = getConnection();
-            insertMappingsStmt = connection.prepareStatement(RdbmsConstants.PS_INSERT_AUTH_RESOURCE_MAPPING);
-            insertMappingsStmt.setString(1, action);
-            insertMappingsStmt.setString(2, group);
-            insertMappingsStmt.setString(3, resourceType);
-            insertMappingsStmt.setString(4, resourceName);
-
-            int updateRows = insertMappingsStmt.executeUpdate();
-
-            return updateRows != 0;
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while persisting resource.", e);
-        } finally {
-            close(connection, insertMappingsStmt);
-        }
-
+        return transaction((ThrowingFunction<Connection, Boolean, Exception>) connection ->
+                authResourceCrudOperationsDao.addGroup(connection, resourceType, resourceName, action, group));
     }
 
     @Override
     public boolean removeGroup(String resourceType, String resourceName, String action, String group)
             throws AuthServerException {
-        Connection connection = null;
-        PreparedStatement insertMappingsStmt = null;
-        try {
-            connection = getConnection();
-            insertMappingsStmt = connection.prepareStatement(RdbmsConstants.PS_DELETE_AUTH_RESOURCE_MAPPING);
-            insertMappingsStmt.setString(1, resourceType);
-            insertMappingsStmt.setString(2, resourceName);
-            insertMappingsStmt.setString(3, action);
-            insertMappingsStmt.setString(4, group);
-
-            int updateRows = insertMappingsStmt.executeUpdate();
-
-            return updateRows != 0;
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while persisting resource.", e);
-        } finally {
-            close(connection, insertMappingsStmt);
-        }
+        return transaction((ThrowingFunction<Connection, Boolean, Exception>) connection ->
+                authResourceCrudOperationsDao.removeGroup(connection, resourceType, resourceName, action, group));
     }
 
-    private void persistUserGroupMappings(String resourceType, String resource,
-                                          Map<String, Set<String>> userGroupsMapping,
-                                          Connection connection) throws AuthServerException {
-        PreparedStatement insertMappingsStmt = null;
-        try {
-            insertMappingsStmt = connection.prepareStatement(RdbmsConstants.PS_INSERT_AUTH_RESOURCE_MAPPING);
-            for (Map.Entry<String, Set<String>> mapping : userGroupsMapping.entrySet()) {
-                Set<String> userGroups = mapping.getValue();
-                for (String userGroup : userGroups) {
-                    insertMappingsStmt.setString(1, mapping.getKey());
-                    insertMappingsStmt.setString(2, userGroup);
-                    insertMappingsStmt.setString(3, resourceType);
-                    insertMappingsStmt.setString(4, resource);
-                    insertMappingsStmt.addBatch();
-                }
-            }
-            insertMappingsStmt.executeBatch();
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while persisting auth resource user groups.", e);
-        } finally {
-            close(insertMappingsStmt);
-        }
-    }
-
-    private void deleteUserGroupMappings(String resourceType, String resource, Connection connection)
+    private <E extends Exception> void transaction(ThrowingConsumer<Connection, E> command)
             throws AuthServerException {
-        PreparedStatement deleteMappingsStmt = null;
         try {
-            deleteMappingsStmt = connection.prepareStatement(RdbmsConstants.PS_DELETE_ALL_AUTH_RESOURCE_MAPPING);
-            deleteMappingsStmt.setString(1, resourceType);
-            deleteMappingsStmt.setString(2, resource);
-            deleteMappingsStmt.execute();
-        } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while deleting auth resource user groups.", e);
-        } finally {
-            close(deleteMappingsStmt);
+            authResourceCrudOperationsDao.transaction(command);
+        } catch (DaoException e) {
+            throw new AuthServerException("Error occurred while executing transaction", e);
+        }
+    }
+
+    private <R, E extends Exception> R transaction(ThrowingFunction<Connection, R, E> command)
+            throws AuthServerException {
+        try {
+            return authResourceCrudOperationsDao.transaction(command);
+        } catch (DaoException e) {
+            throw new AuthServerException("Error occurred while executing transaction", e);
+        }
+    }
+
+    private  <R, E extends Exception> R selectOperation(ThrowingFunction<Connection, R, E> command)
+            throws AuthServerException {
+        try {
+            return authResourceCrudOperationsDao.selectOperation(command);
+        } catch (DaoException e) {
+            throw new AuthServerException("Error occurred while executing transaction", e);
         }
     }
 }
