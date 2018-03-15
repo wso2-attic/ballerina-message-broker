@@ -19,7 +19,6 @@
 
 package io.ballerina.messaging.broker.core;
 
-import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -62,15 +61,7 @@ public class BrokerAPITest {
 
         startupContext.registerService(BrokerConfigProvider.class, testBrokerConfigProvider);
         startupContext.registerService(DataSource.class, dataSource);
-        AuthManager authManager = new AuthManager(startupContext);
         broker = new BrokerImpl(startupContext);
-        BrokerFactory brokerFactory;
-        if (authManager.isAuthorizationEnabled()) {
-            brokerFactory = new SecureBrokerFactory(startupContext);
-        } else {
-            brokerFactory = new DefaultBrokerFactory(startupContext);
-        }
-        startupContext.registerService(BrokerFactory.class, brokerFactory);
     }
 
     @BeforeMethod

@@ -27,8 +27,8 @@ import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
-import io.ballerina.messaging.broker.core.transaction.DistributedTransaction;
-import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
+import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
+import io.ballerina.messaging.broker.core.transaction.SecureBrokerTransaction;
 
 import java.util.Collection;
 import java.util.Map;
@@ -63,7 +63,12 @@ public class SecureBrokerImpl implements Broker {
 
     @Override
     public void publish(Message message) throws BrokerException {
-        broker.publish(message);
+        try {
+            authHandler.handle(ResourceAuthScope.EXCHANGES_PUBLISH, subject);
+            broker.publish(message);
+        } catch (AuthException e) {
+            throw new BrokerAuthException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -276,12 +281,12 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public LocalTransaction newLocalTransaction() {
-        return broker.newLocalTransaction();
+    public BrokerTransaction newLocalTransaction() {
+        return new SecureBrokerTransaction(broker.newLocalTransaction(), subject, authHandler);
     }
 
     @Override
-    public DistributedTransaction newDistributedTransaction() {
-        return broker.newDistributedTransaction();
+    public BrokerTransaction newDistributedTransaction() {
+        return new SecureBrokerTransaction(broker.newDistributedTransaction(), subject, authHandler);
     }
 }

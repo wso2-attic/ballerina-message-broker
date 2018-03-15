@@ -26,6 +26,7 @@ public enum ResourceAuthScope {
     EXCHANGES_CREATE("exchanges:create"),
     EXCHANGES_DELETE("exchanges:delete"),
     EXCHANGES_GET("exchanges:get"),
+    EXCHANGES_PUBLISH("exchanges:publish"),
     QUEUES_CREATE("queues:create"),
     QUEUES_DELETE("queues:delete"),
     QUEUES_GET("queues:get"),
