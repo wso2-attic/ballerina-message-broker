@@ -47,6 +47,11 @@ public class CsvFormatter implements ResponseFormatter {
     }
 
     @Override
+    public void printExchange(Exchange exchange) {
+        printExchanges(new Exchange[] { exchange });
+    }
+
+    @Override
     public void printQueues(Queue[] queues) {
         if (queues.length == 0) {
             return;

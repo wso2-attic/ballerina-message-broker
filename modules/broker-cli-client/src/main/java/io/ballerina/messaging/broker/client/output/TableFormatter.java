@@ -60,6 +60,28 @@ public class TableFormatter implements ResponseFormatter {
     }
 
     @Override
+    public void printExchange(Exchange exchange) {
+        int maxFieldLength = Exchange.DURABLE.length() + 1;
+        String printTemplate = "%-" + maxFieldLength + "s: %s\n";
+
+        OUT_STREAM.printf(printTemplate, Exchange.NAME, exchange.getName());
+        OUT_STREAM.printf(printTemplate, Exchange.TYPE, exchange.getType());
+        OUT_STREAM.printf(printTemplate, Queue.DURABLE, exchange.isDurable());
+
+        OUT_STREAM.println("\nPermissions");
+        OUT_STREAM.println("===========");
+
+        for (Permission permission : exchange.getPermissions()) {
+            String permissionsList = permission.getUserGroups()
+                                               .stream()
+                                               .map(String::toString)
+                                               .collect(Collectors.joining(","));
+            OUT_STREAM.println(permission.getAction() + ": " + permissionsList);
+
+        }
+    }
+
+    @Override
     public void printQueues(Queue[] queues) {
         if (queues.length == 0) {
             return;
