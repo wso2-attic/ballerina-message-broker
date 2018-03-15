@@ -72,13 +72,13 @@ public class ListQueueCmd extends ListCmd {
 
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             Gson gson = new Gson();
-            Queue[] queues;
             if (queueName.isEmpty()) {
-                queues = gson.fromJson(response.getPayload(), Queue[].class);
+                Queue[] queues = gson.fromJson(response.getPayload(), Queue[].class);
+                responseFormatter.printQueues(queues);
             } else {
-                queues = new Queue[] { gson.fromJson(response.getPayload(), Queue.class) };
+                Queue queue = gson.fromJson(response.getPayload(), Queue.class);
+                responseFormatter.printQueue(queue);
             }
-            responseFormatter.printQueues(queues);
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
         }

@@ -63,6 +63,11 @@ public class CsvFormatter implements ResponseFormatter {
     }
 
     @Override
+    public void printQueue(Queue queues) {
+        printQueues(new Queue[] {queues});
+    }
+
+    @Override
     public void printExchangeBindings(Binding[] bindings) {
         if (bindings.length == 0) {
             return;

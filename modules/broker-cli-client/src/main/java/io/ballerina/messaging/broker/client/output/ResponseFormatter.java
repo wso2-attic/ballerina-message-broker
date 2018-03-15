@@ -69,6 +69,13 @@ public interface ResponseFormatter {
     void printQueues(Queue[] queues);
 
     /**
+     * Print an array of queues into a desired output format.
+     *
+     * @param queues array of exchanges
+     */
+    void printQueue(Queue queues);
+
+    /**
      * Print an array of Bindings under a exchange into a desired output format.
      *
      * @param bindings array of bindings.
