@@ -38,6 +38,29 @@ public enum ResourceAction {
         this.name = name;
     }
 
+    public static String getResourceAction(String action) throws Exception {
+        switch (action) {
+            case "update":
+                return UPDATE.toString();
+            case "delete":
+                return DELETE.toString();
+            case "get":
+                return GET.toString();
+            case "consume":
+                return CONSUME.toString();
+            case "publish":
+                return PUBLISH.toString();
+            case "bind":
+                return BIND.toString();
+            case "unbind":
+                return UNBIND.toString();
+            case "grantPermission":
+                return GRANT_PERMISSION.toString();
+            default:
+                throw new Exception("Unknown resource action : " + action);
+        }
+    }
+
     @Override
     public String toString() {
         return name;
