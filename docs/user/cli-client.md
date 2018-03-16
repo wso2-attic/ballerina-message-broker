@@ -2,7 +2,7 @@
 
 Broker Command Line Interface is used to perform all kinds of administrative operations in the Message Broker. 
 
-Following are are the list of possible operations supported by the Broker CLI 
+Following is the list of possible operations supported by the Broker CLI.
 
 ## Contents
 
@@ -32,12 +32,13 @@ Following are are the list of possible operations supported by the Broker CLI
 Broker's CLI connects to the the Broker's Rest APIs to perform all the administrative tasks. Therefore before using the CLI it should be initialized with connection details to the Rest API and use credentials.
 
 There are two ways you can provide the password,<br/>
-1. Provide it with the init command at CLI client initialization<br/>
-If its provided with init command password will tbe saved in plain text. But the advantage of using this method is you don't have to provide it on execution of each command, as this will be one time thing.<br/>
+1. **Provide it with the init command at CLI client initialization**<br/>
+The password will be saved in plain text when we provide it in the init command. But the advantage of this method
+ is that you don't have to provide it on execution of each command, as this will be one time thing.<br/>
 `./broker-admin.sh -H localhost -P 9000 -u admin -p`<br/>
 (Provide the password in the next line. You can also provide the password following -p flag inline)
 
-2. Provide it with each command<br/>
+2. **Provide it with each command**<br/>
 You can override the password given with the init command if you give it with the execution of each command. As follows,<br/>
 `./broker-admin.sh list exchange -p`<br/>
 (Provide the password in the next line. You can also provide the password following -p flag inline)
@@ -46,10 +47,10 @@ You can override the password given with the init command if you give it with th
 `./broker-admin.sh init ([--hostname|-H] <host_name>)? ([--port|-P] <port>)? ([--username|-u] <username>)? ([--password|-p] <password>?)?`
 
 #### Options:
-hostname (--hostname, -H) (default: localhost)<br/>
-port (--port, -P) (default: 9000)<br/>
-username (--username, -u) (default: admin)<br/>
-password (--password, -p)
+- hostname (--hostname, -H) (default: localhost)
+- port (--port, -P) (default: 9000)
+- username (--username, -u) (default: admin)
+- password (--password, -p)
 
 ## 2. Exchanges related administrative operations
 
@@ -64,14 +65,14 @@ New exchanges can be created in the Broker using CLI.
 `./broker-admin.sh create exchange <exchange_name> ([--type|-t] <ex_type>)? (--durable|-d)? (global_flags)*`
 
 #### Options:
-type of the exchange (--type, -t) (default: direct) (allowed values: direct, topic)<br/>
-durability of the exchange (--durable, -d) (default: false/flag is not set)
+- type of the exchange (--type, -t) (default: direct) (allowed values: direct, topic)
+- durability of the exchange (--durable, -d) (default: false/flag is not set)
 
 #### Sample commands:
-Creating a 'direct' exchange that is 'non-durable'<br/>
+- Creating a 'direct' exchange that is 'non-durable'<br/>
 `./broker-admin.sh create exchange my_direct_ex`
 
-Creating a 'topic' exchange that is 'durable'<br/>
+- Creating a 'topic' exchange that is 'durable'<br/>
 `./broker-admin.sh create exchange my_topic_ex -t topic -d`
 
 ### 2.2. Exchange information retrieval
@@ -86,10 +87,10 @@ Information about an exchange or all the exchanges can be retrieved using the CL
 Result output format (--output, -o) (default: table) (allowed values: table, csv)
 
 #### Sample commands:
-List all the exchanges in the Broker<br/>
+- List all the exchanges in the Broker
 `./broker-admin.sh list exchange`
 
-List a specific exchange info in csv format<br/>
+- List a specific exchange info in csv format
 `./broker-admin.sh list exchange my_exchange -o csv`
 
 
@@ -121,14 +122,13 @@ New queues can be created in the Broker using CLI.
 `./broker-admin.sh create queue <queue_name> (--autoDelete|-a)? (--durable|-d)? (global_flags)*`
 
 #### Options:
-set queue to auto-delete (--autoDelete, -a) (default: false/flag is not set)<br/>
-durability of the queue (--durable, -d) (default: false/flag is not set)
+- set queue to auto-delete (--autoDelete, -a) (default: false/flag is not set)
+- durability of the queue (--durable, -d) (default: false/flag is not set)
 
 #### Sample commands:
-Creating a 'non-autoDelete', 'non-durable' queue<br/>
+- Creating a 'non-autoDelete', 'non-durable' queue<br/>
 `./broker-admin.sh create queue my_queue`
-
-Creating a 'autoDeletable', 'durable' queue<br/>
+- Creating a 'autoDeletable', 'durable' queue<br/>
 `./broker-admin.sh create queue my_queue -a -d`
 
 ### 3.2. Queue information retrieval
@@ -143,10 +143,10 @@ Information about a queue or all the queues can be retrieved using the CLI.
 Result output format (--output, -o) (default: table) (allowed values: table, csv)
 
 #### Sample commands:
-List all queues in the Broker<br/>
+- List all queues in the Broker<br/>
 `./broker-admin.sh list queue`
 
-List a specific queue info in csv format<br/>
+- List a specific queue info in csv format<br/>
 `./broker-admin.sh list queue my_queue -o csv`
 
 
@@ -159,8 +159,8 @@ Queues can be deleted from the Broker using the CLI.
 `./broker-admin.sh delete queue (queue_name)? (--unused|-u)? (--empty|-e)? (global_flags)*`
 
 #### Options:
-Delete only if unused (--unused, -u) (default: false/not set by default)<br/> 
-Delete only if empty (--empty, -e) (default: false/not set by default) 
+- Delete only if unused (--unused, -u) (default: false/not set by default)<br/> 
+- Delete only if empty (--empty, -e) (default: false/not set by default) 
 
 #### Sample commands:
 Delete a specific exchange if its unused<br/>
@@ -179,9 +179,9 @@ New bindings can be created in the Broker using the CLI. Routing key is used to 
 `./broker-admin.sh create binding <routing_key>? ([--queue|-q] <queue_name>) ([--exchange|-e] <exchange_name>) ([--filter|-f <filter_expression>])? (global_flags)*`
 
 #### Options:
-name of the queue (--queue|-q) (mandatory)<br/>
-name of the exchange (--exchange|-e) (mandatory)<br/>
-binding filters (--filter|-f) (default: EMPTY)
+- name of the queue (--queue|-q) (mandatory)
+- name of the exchange (--exchange|-e) (mandatory)
+- binding filters (--filter|-f) (default: EMPTY)
 
 #### Sample commands:
 Creating a binding with routing key between an exchange and a queue<br/>
@@ -197,9 +197,9 @@ Note: Listing queue bindings is still not supported yet.
 `./broker-admin.sh list binding (([--queue|-q] <queue_name>) | ([--exchange|-e] <exchange_name>)) ([--output|-o] <output_format>)? (global_flags)*`
 
 #### Options:
-Name of the exchange (--exchange, -e)<br/>
-Name of the queue (--queue, -q)<br/>
-Result output format (--output, -o) (default: table) (allowed values: table, csv)
+- Name of the exchange (--exchange, -e)
+- Name of the queue (--queue, -q)
+- Result output format (--output, -o) (default: table) (allowed values: table, csv)
 
 #### Sample commands:
 List all bindings of an exchange in the Broker<br/>
@@ -218,8 +218,8 @@ List down message consumers of a queue. If consumer Id is not given, CLI will di
 `./broker-admin.sh list consumer <consumer_id>? ([--queue|-q] <queue_name>) ([--output|-o] <output_format>)? (global_flags)*`
 
 #### Options:
-Name of the queue (--queue, -q) (mandatory)<br/>
-Result output format (--output, -o) (default: table) (allowed values: table, csv)
+- Name of the queue (--queue, -q) (mandatory)<br/>
+- Result output format (--output, -o) (default: table) (allowed values: table, csv)
 
 #### Sample commands:
 List all consumers of queue in the Broker<br/>
@@ -237,8 +237,8 @@ List all exchanges in the broker in csv format<br/>
 
 Following are the global flags supported by the CLI commands,
 
-Ask for help (--help, -h)<br/>
-Set or override the password (--password, -p)
+- Ask for help (--help, -h)<br/>
+- Set or override the password (--password, -p)
 
 ## 8. Change CLI alias
 
@@ -252,14 +252,17 @@ You can add a alias you prefer instead of using the ./broker-admin.sh file direc
 
 ### CLI actions
 
-init<br/>
-create<br/>
-list<br/>
-delete<br/>
+- init
+- create
+- list
+- delete
+- grant
+- revoke
+- transfer
  
 ### CLI resource types
 
-exchange<br/>
-queue<br/>
-binding<br/>
-consumer<br/>
+- exchange
+- queue
+- binding
+- consumer

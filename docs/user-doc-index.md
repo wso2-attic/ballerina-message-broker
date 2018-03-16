@@ -7,3 +7,4 @@
 - [Messaging Metrics](user/messaging-metrics.md)
 - [Using JMS selectors](user/jms-selector-guide.md)
 - [Local Transaction](user/local-transaction.md)
+- [Broker Admin Command Line Interface (CLI)](user/cli-client.md)
