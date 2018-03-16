@@ -67,15 +67,24 @@ These configurations are defined under the namespace `ballerina.broker.failover`
 | options:coordinatorEntryCreationWaitTime | 3000                          | The interval, in milliseconds, to wait prior to confirming election as coordinator (for RdbmsHaStrategy) |
 
 
-### Authentication configurations
+### Auth configurations
 
 These configurations are defined under the namespace `wso2.broker.auth`. 
 
 | Config                                   | Default Value                 | Description                                                                              |
 |------------------------------------------|-------------------------------|------------------------------------------------------------------------------------------|
-| authentication:enabled                   | true           | Whether or not authentication is enabled |
+| authentication:enabled                   | true                          | Whether or not authentication is enabled |
 | authentication:authenticator:className   | io.ballerina.messaging.broker.auth. authentication.authenticator. JaasAuthenticator | The authenticator strategy to use to provide authentication functionality                 |
-| authentication:authenticator:properties |   loginModule: io.ballerina.messaging.broker.auth. authentication.jaas.UserStoreLoginModule  | Set of properties required for authenticator. ex. serverUrl, Jaas login module . |
+| authentication:authenticator:properties  |   loginModule: io.ballerina.messaging.broker.auth. authentication.jaas.UserStoreLoginModule  | Set of properties required for authenticator. ex. serverUrl, Jaas login module . |
+| authorization:enabled                    | false                         | Set this value tro true to enable authorization |
+| authorization:userstore:className        | io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore | full qualified class name of the User store implementation |
+| authorization:userstore:properties       |   - | Optional parameters given to the user store implementation |
+| authorization:mandatoryAccessController:className       | io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler | full qualified name of the MAC implementing class |
+| authorization:mandatoryAccessController:properties       |   - | Optional parameters given to the MAC implementation |
+| authorization:discretionaryAccessController:className       | io.ballerina.messaging.broker.auth.authorization.provider.RdbmsDacHandler | full qualified name of the DAC implementing class |
+| authorization:discretionaryAccessController:properties       |   - | Optional parameters given to the DAC implementation |
+| cache:timeout                            | 15 | Auth cache timeout in Minutes |
+| cache:size                               | 5000 | Maximum Cache size to hold user id |
 
 ## Admin service related configurations (admin-service-transports.yaml)
 
