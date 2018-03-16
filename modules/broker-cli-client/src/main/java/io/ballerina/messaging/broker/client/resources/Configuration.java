@@ -97,6 +97,6 @@ public class Configuration {
      * @return url string (protocol + host + port).
      */
     public String getUrl() {
-        return "http://" + hostname + ":" + String.valueOf(9090);
+        return "https://" + hostname + ":" + String.valueOf(port);
     }
 }

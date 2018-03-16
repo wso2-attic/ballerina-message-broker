@@ -88,7 +88,7 @@ public class HttpClient {
         try {
 
             URL obj = new URL(url + request.getSuffix() + request.getQueryParameters());
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
 
             //add request header
             con.setRequestMethod(httpMethod);
