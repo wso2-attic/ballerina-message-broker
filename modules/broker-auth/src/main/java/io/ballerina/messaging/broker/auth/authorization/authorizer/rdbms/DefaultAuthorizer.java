@@ -211,27 +211,39 @@ public class DefaultAuthorizer implements Authorizer {
     }
 
     @Override
-    public void addGroupToResource(String resourceType, String resourceName, String action, String group)
+    public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
             throws AuthException, AuthNotFoundException, AuthServerException {
-        if (!memoryDacHandler.addGroupToResource(resourceType, resourceName, action, group)) {
-            externalDacHandler.addGroupToResource(resourceType, resourceName, action, group);
+        boolean success = false;
+        if (memoryDacHandler.addGroupToResource(resourceType, resourceName, action, group)) {
+            success = true;
+        } else if (externalDacHandler.addGroupToResource(resourceType, resourceName, action, group)) {
+            success = true;
         }
+        return success;
     }
 
     @Override
-    public void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+    public boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
             throws AuthServerException, AuthNotFoundException {
-        if (!memoryDacHandler.removeGroupFromResource(resourceType, resourceName, action, group)) {
-            externalDacHandler.removeGroupFromResource(resourceType, resourceName, action, group);
+        boolean success = false;
+        if (memoryDacHandler.removeGroupFromResource(resourceType, resourceName, action, group)) {
+            success = true;
+        } else if (externalDacHandler.removeGroupFromResource(resourceType, resourceName, action, group)) {
+            success = true;
         }
+        return success;
     }
 
     @Override
-    public void changeResourceOwner(String resourceType, String resourceName, String owner)
+    public boolean changeResourceOwner(String resourceType, String resourceName, String owner)
             throws AuthServerException, AuthNotFoundException {
-        if (!memoryDacHandler.changeResourceOwner(resourceType, resourceName, owner)) {
-            externalDacHandler.changeResourceOwner(resourceType, resourceName, owner);
+        boolean success = false;
+        if (memoryDacHandler.changeResourceOwner(resourceType, resourceName, owner)) {
+            success = true;
+        } else if (externalDacHandler.changeResourceOwner(resourceType, resourceName, owner)) {
+            success = true;
         }
+        return success;
     }
 
     private class UserCacheLoader extends CacheLoader<String, UserCacheEntry> {
