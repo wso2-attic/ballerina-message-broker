@@ -123,4 +123,62 @@ public class QueueCmdTest extends CliTestParent {
 
         evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
+
+    @Test(groups = "StreamReading",
+          description = "test command 'grant queue'")
+    public void testGrantRevokeQueue() {
+        String queueName = "testGrantQueue";
+        String[] createCmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_QUEUE, queueName, "-d" };
+
+        String[] grantCmd = { CLI_ROOT_COMMAND, Constants.CMD_GRANT, Constants.CMD_QUEUE, queueName, "-a", "get",
+                              "-g", "manager" };
+
+        String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_QUEUE, queueName };
+
+
+        Main.main(createCmd);
+        Main.main(grantCmd);
+        Main.main(checkCmd);
+
+        evalStreamContent(PrintStreamHandler.readOutStream(), "get: manager", grantCmd);
+
+        PrintStreamHandler.resetStreams();
+
+        String[] revokeCmd = { CLI_ROOT_COMMAND, Constants.CMD_REVOKE, Constants.CMD_QUEUE, queueName, "-a", "get",
+                               "-g", "manager" };
+
+        Main.main(revokeCmd);
+
+        evalStreamContent(PrintStreamHandler.readOutStream(), "User group successfully removed.", revokeCmd);
+    }
+
+    @Test(groups = "StreamReading",
+          description = "test command 'grant queue'")
+    public void testGrantRevokeExchange() {
+        String exchangeName = "testGrantExchange";
+        String[] createCmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_EXCHANGE, exchangeName, "-d" };
+
+        String[] grantCmd = { CLI_ROOT_COMMAND, Constants.CMD_GRANT, Constants.CMD_EXCHANGE, exchangeName, "-a", "get",
+                              "-g", "manager" };
+
+        String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE, exchangeName };
+
+
+        Main.main(createCmd);
+        Main.main(grantCmd);
+        Main.main(checkCmd);
+
+        evalStreamContent(PrintStreamHandler.readOutStream(), "get: manager", grantCmd);
+
+        PrintStreamHandler.resetStreams();
+
+        String[] revokeCmd = {
+                CLI_ROOT_COMMAND, Constants.CMD_REVOKE, Constants.CMD_EXCHANGE, exchangeName, "-a", "get", "-g",
+                "manager"
+        };
+
+        Main.main(revokeCmd);
+
+        evalStreamContent(PrintStreamHandler.readOutStream(), "User group successfully removed.", revokeCmd);
+    }
 }
