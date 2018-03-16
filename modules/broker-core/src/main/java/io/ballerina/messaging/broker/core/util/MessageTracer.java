@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import javax.transaction.xa.Xid;
 
 /**
  * Trace messages flowing through the broker.
@@ -46,31 +47,27 @@ public final class MessageTracer {
     public static final String REQUEUE = "Requeue message.";
     public static final String ACKNOWLEDGE = "Acknowledge message.";
     public static final String DELIVER = "Deliver message to transport consumer.";
+    public static final String PREPARE_ENQUEUE = "Prepare to enqueue message.";
+    public static final String PREPARE_DEQUEUE = "Prepare dequeue message event.";
+    public static final String COMMIT = "Transaction commit event.";
+    public static final String ROLLBACK = "Transaction rollback event.";
+    public static final String PREPARED = "Transaction prepared.";
+    public static final String QUEUE_COMMIT = "Committed prepared events on queue.";
+    public static final String QUEUE_ROLLBACK = "Rollbacked prepared events on queue.";
+
+    private MessageTracer() {
+    }
 
     public static void trace(Message message, String description) {
         if (LOGGER.isTraceEnabled() && Objects.nonNull(message)) {
-            TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId())
-                                                          .routingKey(message.getMetadata().getRoutingKey())
-                                                          .exchangeName(message.getMetadata().getExchangeName());
+            TraceBuilder traceBuilder = getTraceBuilder(message);
             LOGGER.trace(traceBuilder.buildTrace(description));
         }
     }
 
     public static void trace(Message message, QueueHandler queueHandler, String description) {
         if (LOGGER.isTraceEnabled() && Objects.nonNull(message) && Objects.nonNull(queueHandler)) {
-            Metadata metadata = message.getMetadata();
-            String queueName = queueHandler.getQueue().getName();
-            TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId());
-
-            // Metadata can be null if we clear message when in-memory queue limit is exceeded
-            if (Objects.nonNull(metadata)) {
-                traceBuilder.routingKey(metadata.getRoutingKey())
-                            .exchangeName(metadata.getExchangeName());
-            }
-            traceBuilder.redeliveryCount(message.getRedeliveryCount())
-                        .isRedelivered(message.isRedelivered())
-                        .queueName(queueName);
-
+            TraceBuilder traceBuilder = getTraceBuilder(message, queueHandler);
             LOGGER.trace(traceBuilder.buildTrace(description));
         }
     }
@@ -128,6 +125,57 @@ public final class MessageTracer {
         return LOGGER.isTraceEnabled();
     }
 
+    public static void trace(Message message, Xid xid, String description) {
+        if (LOGGER.isDebugEnabled() && Objects.nonNull(message)) {
+            TraceBuilder traceBuilder = getTraceBuilder(message);
+            traceBuilder.xid(xid);
+            LOGGER.trace(traceBuilder.buildTrace(description));
+        }
+    }
+
+    private static TraceBuilder getTraceBuilder(Message message) {
+        return new TraceBuilder().internalId(message.getInternalId())
+                                 .routingKey(message.getMetadata().getRoutingKey())
+                                 .exchangeName(message.getMetadata().getExchangeName());
+    }
+
+    public static void trace(Message message, Xid xid, QueueHandler queueHandler, String description) {
+        if (LOGGER.isTraceEnabled() && Objects.nonNull(message) && Objects.nonNull(queueHandler)) {
+            TraceBuilder traceBuilder = getTraceBuilder(message, queueHandler);
+            traceBuilder.xid(xid);
+            LOGGER.trace(traceBuilder.buildTrace(description));
+        }
+    }
+
+    private static TraceBuilder getTraceBuilder(Message message, QueueHandler queueHandler) {
+        Metadata metadata = message.getMetadata();
+        String queueName = queueHandler.getQueue().getName();
+        TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId());
+
+        // Metadata can be null if we clear message when in-memory queue limit is exceeded
+        if (Objects.nonNull(metadata)) {
+            traceBuilder.routingKey(metadata.getRoutingKey())
+                        .exchangeName(metadata.getExchangeName());
+        }
+        traceBuilder.redeliveryCount(message.getRedeliveryCount())
+                    .isRedelivered(message.isRedelivered())
+                    .queueName(queueName);
+        return traceBuilder;
+    }
+
+    public static void trace(Xid xid, QueueHandler queueHandler, String description) {
+        if (LOGGER.isTraceEnabled() && Objects.nonNull(queueHandler)) {
+            TraceBuilder traceBuilder = new TraceBuilder().xid(xid).queueName(queueHandler.getQueue().getName());
+            LOGGER.trace(traceBuilder.buildTrace(description));
+        }
+    }
+
+    public static void trace(Xid xid, String description) {
+        if (LOGGER.isTraceEnabled()) {
+            TraceBuilder traceBuilder = new TraceBuilder().xid(xid);
+            LOGGER.trace(traceBuilder.buildTrace(description));
+        }
+    }
     /**
      * Internal trace message builder class.
      */
@@ -148,7 +196,8 @@ public final class MessageTracer {
         private static final String QUEUE_NAME = "queueName: ";
         private static final String CONSUMER_ID = "consumerId: ";
         private static final String REDELIVERY_COUNT = "redeliveryCount: ";
-        private static final Object REDELIVERED = "isRedelivered: ";
+        private static final String REDELIVERED = "isRedelivered: ";
+        private static final String XID = "xid: ";
 
         private final StringBuilder fields;
 
@@ -163,6 +212,11 @@ public final class MessageTracer {
 
         TraceBuilder exchangeName(String name) {
             fields.append(EXCHANGE_NAME).append(name).append(FIELD_DELIMITER);
+            return this;
+        }
+
+        TraceBuilder xid(Xid xid) {
+            fields.append(XID).append(xid).append(FIELD_DELIMITER);
             return this;
         }
 
