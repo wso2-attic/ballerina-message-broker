@@ -38,6 +38,8 @@ import io.ballerina.messaging.broker.client.cmd.impl.list.ListQueueCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeQueueCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferQueueCmd;
 
 /**
  * Factory class to generate different command instances.
@@ -75,6 +77,10 @@ public class CommandFactory {
 
     public RevokeCmd createRevokeCommand() {
         return new RevokeCmd(rootCommand);
+    }
+
+    public TransferCmd createTransferCommand() {
+        return new TransferCmd(rootCommand);
     }
 
     public ListCmd createListCommand() {
@@ -131,5 +137,9 @@ public class CommandFactory {
 
     public MBClientCmd createRevokeExchangeCommand() {
         return new RevokeExchangeCmd(rootCommand);
+    }
+
+    public TransferQueueCmd createTransferQueueCommand() {
+        return new TransferQueueCmd(rootCommand);
     }
 }

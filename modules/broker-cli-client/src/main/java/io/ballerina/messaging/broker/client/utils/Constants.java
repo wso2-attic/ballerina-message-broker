@@ -33,7 +33,8 @@ public class Constants {
     public static final String BINDINGS_URL_PARAM = "/bindings/";
     public static final String CONSUMERS_URL_PARAM = "/consumers/";
     public static final String EXCHANGES_URL_PARAM = "exchanges/";
-    public static final String PERMISSIONS_URL_PARAM = "/permissions/actions/";
+    public static final String PERMISSIONS_ACTION_URL_PARAM = "/permissions/actions/";
+    public static final String PERMISSIONS_OWNER_URL_PARAM = "/permissions/owner";
     public static final String PERMISSION_GROUP_URL_PARAM = "/groups";
     public static final String DEFAULT_CONFIG_FILE_PATH = "cli-config.yml";
 
@@ -44,6 +45,7 @@ public class Constants {
     public static final String CMD_DELETE = "delete";
     public static final String CMD_GRANT = "grant";
     public static final String CMD_REVOKE = "revoke";
+    public static final String CMD_TRANSFER = "transfer";
 
     public static final String CMD_EXCHANGE = "exchange";
     public static final String CMD_QUEUE = "queue";
@@ -55,5 +57,6 @@ public class Constants {
     // http constants
     public static final String HTTP_GET = "GET";
     public static final String HTTP_POST = "POST";
+    public static final String HTTP_PUT = "PUT";
     public static final String HTTP_DELETE = "DELETE";
 }

@@ -105,6 +105,8 @@ public class Main {
                                                       commandFactory.createGrantCommand());
         JCommander jCommanderRevoke = addChildCommand(jCommanderRoot, Constants.CMD_REVOKE,
                                                      commandFactory.createRevokeCommand());
+        JCommander jCommanderTransfer = addChildCommand(jCommanderRoot, Constants.CMD_TRANSFER,
+                                                      commandFactory.createTransferCommand());
 
         // secondary level commands
         // add list sub-commands
@@ -129,6 +131,9 @@ public class Main {
         // add revoke sub-commands
         addChildCommand(jCommanderRevoke, Constants.CMD_QUEUE, commandFactory.createRevokeQueueCommand());
         addChildCommand(jCommanderRevoke, Constants.CMD_EXCHANGE, commandFactory.createRevokeExchangeCommand());
+
+        // add transfer sub-commands
+        addChildCommand(jCommanderTransfer, Constants.CMD_QUEUE, commandFactory.createTransferQueueCommand());
 
         return jCommanderRoot;
     }

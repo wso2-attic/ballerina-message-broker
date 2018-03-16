@@ -38,7 +38,7 @@ public class GrantQueueCmd extends GrantCmd {
 
         Permission permission = new Permission(action, group);
 
-        String urlSuffix = Constants.QUEUES_URL_PARAM + queueName + Constants.PERMISSIONS_URL_PARAM + action
+        String urlSuffix = Constants.QUEUES_URL_PARAM + queueName + Constants.PERMISSIONS_ACTION_URL_PARAM + action
                 + Constants.PERMISSION_GROUP_URL_PARAM;
 
         performResourceCreationOverHttp(urlSuffix,

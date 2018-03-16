@@ -38,8 +38,8 @@ public class GrantExchangeCmd extends GrantCmd {
 
         Permission permission = new Permission(action, group);
 
-        String urlSuffix = Constants.EXCHANGES_URL_PARAM + exchangeName + Constants.PERMISSIONS_URL_PARAM + action
-                + Constants.PERMISSION_GROUP_URL_PARAM;
+        String urlSuffix = Constants.EXCHANGES_URL_PARAM + exchangeName + Constants.PERMISSIONS_ACTION_URL_PARAM
+                + action + Constants.PERMISSION_GROUP_URL_PARAM;
 
         performResourceCreationOverHttp(urlSuffix,
                                         permission.getUserGroupsAsJsonString(),

@@ -51,7 +51,7 @@ public class RevokeExchangeCmd extends GrantCmd {
         Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
         HttpRequest httpRequest = new HttpRequest(Constants.EXCHANGES_URL_PARAM + exchangeName + Constants
-                .PERMISSIONS_URL_PARAM + action + Constants.PERMISSION_GROUP_URL_PARAM + "/" + group);
+                .PERMISSIONS_ACTION_URL_PARAM + action + Constants.PERMISSION_GROUP_URL_PARAM + "/" + group);
 
         // do DELETE
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_DELETE);

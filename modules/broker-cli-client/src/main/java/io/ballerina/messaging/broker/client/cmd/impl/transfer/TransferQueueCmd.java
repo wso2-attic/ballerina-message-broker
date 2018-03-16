@@ -1,4 +1,4 @@
-package io.ballerina.messaging.broker.client.cmd.impl.revoke;
+package io.ballerina.messaging.broker.client.cmd.impl.transfer;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -15,29 +15,24 @@ import io.ballerina.messaging.broker.client.utils.Utils;
 import java.net.HttpURLConnection;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
-import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_DELETE;
+import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_PUT;
 
 /**
- * Command representing MB queue permission revoking.
+ * Command representing MB queue ownership transferring.
  */
-@Parameters(commandDescription = "Revoke permissions to a queue in the Broker")
-public class RevokeQueueCmd extends GrantCmd {
+@Parameters(commandDescription = "Transfer ownership of a queue in the Broker")
+public class TransferQueueCmd extends GrantCmd {
 
     @Parameter(description = "name of the queue",
                required = true)
     private String queueName;
 
-    @Parameter(names = { "--action", "-a" },
-               description = "name of the action",
+    @Parameter(names = { "--new-owner", "-n" },
+               description = "user id of the new owner",
                required = true)
-    private String action;
+    private String newOwner;
 
-    @Parameter(names = { "--group", "-g" },
-               description = "name of the group",
-               required = true)
-    private String group;
-
-    public RevokeQueueCmd(String rootCommand) {
+    public TransferQueueCmd(String rootCommand) {
         super(rootCommand);
     }
 
@@ -50,20 +45,25 @@ public class RevokeQueueCmd extends GrantCmd {
 
         Configuration configuration = Utils.getConfiguration(password);
         HttpClient httpClient = new HttpClient(configuration);
-        HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName + Constants
-                .PERMISSIONS_ACTION_URL_PARAM + action + Constants.PERMISSION_GROUP_URL_PARAM + "/" + group);
+        HttpRequest httpRequest = new HttpRequest(
+                Constants.QUEUES_URL_PARAM + queueName + Constants.PERMISSIONS_OWNER_URL_PARAM,
+                getJsonRequestPayload());
 
         // do DELETE
-        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_DELETE);
+        HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_PUT);
 
         // handle response
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
-            Message message = buildResponseMessage(response, "Queue permission revoked successfully");
+            Message message = buildResponseMessage(response, "Queue ownership transferred successfully");
             ResponseFormatter.printMessage(message);
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
         }
 
+    }
+
+    private String getJsonRequestPayload() {
+        return "{\"owner\":\"" + newOwner + "\"}";
     }
 
     @Override
