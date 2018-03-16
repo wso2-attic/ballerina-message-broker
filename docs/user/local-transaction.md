@@ -32,3 +32,7 @@ channel.txCommit() or channel.txRollback()
 ```
 
 The broker will conclude transaction completed upon receiving any of above operation.
+
+## Samples
+
+Please refer to the https://docs.wso2.com/display/MB320/Using+Transactional+Sessions for samples.
