@@ -32,6 +32,7 @@ import io.ballerina.messaging.broker.core.rest.model.UserGroupList;
 
 import java.util.List;
 import javax.security.auth.Subject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
@@ -58,7 +59,7 @@ public class AuthGrantApiDelegate {
                                         ResourceAction.GRANT_PERMISSION, subject);
             boolean success = authorizer.changeResourceOwner(resourceType.toString(), resourceName, owner);
             if (!success) {
-                throw new InternalServerErrorException("Error occurred while changing owner." +
+                throw new BadRequestException("Error occurred while changing owner." +
                         " Resource type: " + resourceType.toString() + ", Resource name: " + resourceName +
                         ", Owner: " + owner);
             }
@@ -85,7 +86,7 @@ public class AuthGrantApiDelegate {
                                                                 action,
                                                                 userGroup);
                 if (!success) {
-                    throw new InternalServerErrorException("Error occurred while adding user group to action." +
+                    throw new BadRequestException("Error occurred while adding user group to action." +
                             " Resource type: " + resourceType.toString() + ", Resource name: " + resourceName +
                             ", Action name: " + action + ", User group: " + userGroup);
                 }
@@ -110,7 +111,7 @@ public class AuthGrantApiDelegate {
                                                                  action,
                                                                  groupName);
             if (!success) {
-                throw new InternalServerErrorException("Error occurred while removing user group." +
+                throw new BadRequestException("Error occurred while removing user group." +
                         " Resource type: " + resourceType.toString() + ", Resource name: " + resourceName +
                         ", Action name: " + action + ", Group name: " + groupName);
             }

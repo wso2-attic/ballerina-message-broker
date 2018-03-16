@@ -123,7 +123,7 @@ public interface Authorizer {
      * @throws AuthNotFoundException throws if the resource is not found
      */
     boolean changeResourceOwner(String resourceType, String resourceName, String owner)
-            throws AuthServerException, AuthNotFoundException;
+            throws AuthServerException, AuthNotFoundException, AuthException;
 
     /**
      * Query auth resource.
