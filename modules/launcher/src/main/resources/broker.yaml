@@ -63,7 +63,7 @@ ballerina.broker.auth:
  # Broker authorization related configurations.
  authorization:
   # Enable the authorization
-  enabled: true
+  enabled: false
 
   # User store used tot lookup user groups that a user belongs.
   userStore:
