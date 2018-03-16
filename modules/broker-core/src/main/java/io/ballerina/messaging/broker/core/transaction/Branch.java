@@ -25,6 +25,7 @@ import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.QueueHandler;
 import io.ballerina.messaging.broker.core.store.MessageStore;
+import io.ballerina.messaging.broker.core.util.MessageTracer;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -120,6 +121,7 @@ public class Branch implements EnqueueDequeueStrategy {
 
     public void prepare() throws BrokerException {
         messageStore.prepare(xid);
+        MessageTracer.trace(xid, MessageTracer.PREPARED);
     }
 
     public void commit(boolean onePhase) throws BrokerException {
@@ -127,16 +129,19 @@ public class Branch implements EnqueueDequeueStrategy {
         for (QueueHandler queueHandler: affectedQueueHandlers) {
             queueHandler.commit(xid);
         }
+        MessageTracer.trace(xid, MessageTracer.COMMIT);
     }
 
     public void rollback() {
         messageStore.clear(xid);
         rollbackQueueHandlers();
+        MessageTracer.trace(xid, MessageTracer.ROLLBACK);
     }
 
     public void dtxRollback() throws BrokerException {
         messageStore.cancel(xid);
         rollbackQueueHandlers();
+        MessageTracer.trace(xid, MessageTracer.ROLLBACK);
     }
 
     private void rollbackQueueHandlers() {
