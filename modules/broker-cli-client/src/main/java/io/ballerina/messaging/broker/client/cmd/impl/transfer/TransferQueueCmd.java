@@ -53,8 +53,8 @@ public class TransferQueueCmd extends GrantCmd {
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_PUT);
 
         // handle response
-        if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
-            Message message = buildResponseMessage(response, "Queue ownership transferred successfully");
+        if (response.getStatusCode() == HttpURLConnection.HTTP_NO_CONTENT) {
+            Message message = new Message("Queue ownership transferred successfully");
             ResponseFormatter.printMessage(message);
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));

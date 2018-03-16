@@ -93,14 +93,16 @@ public class TableFormatter implements ResponseFormatter {
 
         int maxColumnSize = Math.max(maxQueueNameLength, Queue.NAME.length());
 
-        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-15s%-15s%-10s%-10s%-10s\n";
+        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING)
+                + "s%-15s%-15s%-10s%-10s%-12s%-10s\n";
 
         OUT_STREAM.printf(printTemplate, Queue.NAME, Queue.CONSUMER_COUNT, Queue.CAPACITY, Queue.SIZE, Queue.DURABLE,
-                          Queue.AUTO_DELETE);
+                          Queue.AUTO_DELETE, Queue.OWNER);
         for (Queue queue : queues) {
             OUT_STREAM.printf(printTemplate, queue.getName(), String.valueOf(queue.getConsumerCount()),
                               String.valueOf(queue.getCapacity()), String.valueOf(queue.getSize()),
-                              String.valueOf(queue.isDurable()), String.valueOf(queue.isAutoDelete()));
+                              String.valueOf(queue.isDurable()), String.valueOf(queue.isAutoDelete()),
+                              queue.getOwner());
         }
     }
 
@@ -115,6 +117,7 @@ public class TableFormatter implements ResponseFormatter {
         OUT_STREAM.printf(printTemplate, Queue.SIZE, queue.getSize());
         OUT_STREAM.printf(printTemplate, Queue.DURABLE, queue.isDurable());
         OUT_STREAM.printf(printTemplate, Queue.AUTO_DELETE, queue.isAutoDelete());
+        OUT_STREAM.printf(printTemplate, Queue.OWNER, queue.getOwner());
 
         OUT_STREAM.println("\nPermissions");
         OUT_STREAM.println("===========");

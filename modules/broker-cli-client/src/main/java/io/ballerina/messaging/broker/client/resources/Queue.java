@@ -32,6 +32,7 @@ public class Queue {
     public static final String CONSUMER_COUNT = "consumerCount";
     public static final String CAPACITY = "capacity";
     public static final String SIZE = "size";
+    public static final String OWNER = "owner";
 
     // required params
 
@@ -48,6 +49,8 @@ public class Queue {
     private int consumerCount;
 
     private int size;
+
+    private String owner;
 
     private List<Permission> permissions = new ArrayList<>();
 
@@ -79,6 +82,10 @@ public class Queue {
 
     public int getSize() {
         return size;
+    }
+
+    public String getOwner() {
+        return owner;
     }
 
     public List<Permission> getPermissions() {
