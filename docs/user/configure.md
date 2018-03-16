@@ -69,7 +69,7 @@ These configurations are defined under the namespace `ballerina.broker.failover`
 
 ### Auth configurations
 
-These configurations are defined under the namespace `wso2.broker.auth`. 
+These configurations are defined under the namespace `ballerina.broker.auth`. 
 
 | Config                                   | Default Value                 | Description                                                                              |
 |------------------------------------------|-------------------------------|------------------------------------------------------------------------------------------|
