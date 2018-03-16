@@ -97,7 +97,7 @@ public interface Authorizer {
      * @throws AuthException         throws if error occur during updating resource
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    void addGroupToResource(String resourceType, String resourceName, String action, String group)
+    boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
             throws AuthException, AuthNotFoundException, AuthServerException;
 
     /**
@@ -110,7 +110,7 @@ public interface Authorizer {
      * @throws AuthServerException   throws if an server error occurred
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    void removeGroupFromResource(String resourceType, String resourceName, String action, String group)
+    boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
             throws AuthServerException, AuthNotFoundException;
 
     /**
@@ -122,7 +122,7 @@ public interface Authorizer {
      * @throws AuthServerException   throws if an server error occurred
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    void changeResourceOwner(String resourceType, String resourceName, String owner)
+    boolean changeResourceOwner(String resourceType, String resourceName, String owner)
             throws AuthServerException, AuthNotFoundException;
 
     /**

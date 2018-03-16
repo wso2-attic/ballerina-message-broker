@@ -56,7 +56,12 @@ public class AuthGrantApiDelegate {
         try {
             authorizationHandler.handle(ResourceAuthScope.RESOURCE_GRANT_PERMISSION, resourceType, resourceName,
                                         ResourceAction.GRANT_PERMISSION, subject);
-            authorizer.changeResourceOwner(resourceType.toString(), resourceName, owner);
+            boolean success = authorizer.changeResourceOwner(resourceType.toString(), resourceName, owner);
+            if (!success) {
+                throw new InternalServerErrorException("Error occurred while changing owner." +
+                        " Resource type: " + resourceType.toString() + ", Resource name: " + resourceName +
+                        ", Owner: " + owner);
+            }
             return Response.noContent().build();
         } catch (AuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
@@ -74,8 +79,16 @@ public class AuthGrantApiDelegate {
                                         ResourceAction.GRANT_PERMISSION, subject);
 
             List<String> userGroups = userGroupList.getUserGroups();
-            for (String userGroup: userGroups) {
-                authorizer.addGroupToResource(resourceType.toString(), resourceName, action, userGroup);
+            for (String userGroup : userGroups) {
+                boolean success = authorizer.addGroupToResource(resourceType.toString(),
+                                                                resourceName,
+                                                                action,
+                                                                userGroup);
+                if (!success) {
+                    throw new InternalServerErrorException("Error occurred while adding user group to action." +
+                            " Resource type: " + resourceType.toString() + ", Resource name: " + resourceName +
+                            ", Action name: " + action + ", User group: " + userGroup);
+                }
             }
             return Response.ok(new ResponseMessage().message("User groups successfully added.")).build();
         } catch (AuthException e) {
@@ -92,7 +105,15 @@ public class AuthGrantApiDelegate {
         try {
             authorizationHandler.handle(ResourceAuthScope.RESOURCE_GRANT_PERMISSION, resourceType, resourceName,
                                         ResourceAction.GRANT_PERMISSION, subject);
-            authorizer.removeGroupFromResource(resourceType.toString(), resourceName, action, groupName);
+            boolean success = authorizer.removeGroupFromResource(resourceType.toString(),
+                                                                 resourceName,
+                                                                 action,
+                                                                 groupName);
+            if (!success) {
+                throw new InternalServerErrorException("Error occurred while removing user group." +
+                        " Resource type: " + resourceType.toString() + ", Resource name: " + resourceName +
+                        ", Action name: " + action + ", Group name: " + groupName);
+            }
             return Response.ok().entity(new ResponseMessage().message("User group successfully removed.")).build();
         } catch (AuthException e) {
             throw new ForbiddenException(e.getMessage(), e);
