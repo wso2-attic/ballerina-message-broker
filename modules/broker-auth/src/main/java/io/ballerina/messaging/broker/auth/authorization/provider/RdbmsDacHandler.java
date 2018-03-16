@@ -34,7 +34,6 @@ import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
@@ -43,7 +42,7 @@ import javax.sql.DataSource;
 /**
  * Class provides implementation of @{@link DiscretionaryAccessController} with database based auth resource store.
  */
-public class RdbmsDacHandler implements DiscretionaryAccessController {
+public class RdbmsDacHandler extends DiscretionaryAccessController {
 
     /**
      * User cache which contains authResource Key vs cache entry.
@@ -73,14 +72,6 @@ public class RdbmsDacHandler implements DiscretionaryAccessController {
                                                                                       .getCache()
                                                                                       .getTimeout(), TimeUnit.MINUTES)
                                              .build(new AuthResourceCacheLoader());
-    }
-
-    @Override
-    public boolean authorize(String resourceType, String resourceName, String action, String userId,
-                             Set<String> userGroups) throws AuthNotFoundException {
-        AuthResource authResource = getAuthResource(resourceType, resourceName);
-        return Objects.nonNull(authResource) && (authResource.getOwner().equals(userId) ||
-                authResource.getActionsUserGroupsMap().get(action).stream().anyMatch(userGroups::contains));
     }
 
     @Override

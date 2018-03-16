@@ -7,12 +7,13 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resourc
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Used to manage permissions for dynamic resources.
  */
-public interface DiscretionaryAccessController {
+public abstract class DiscretionaryAccessController {
     /**
      * Initialize authorization controller based on given auth configuration, user store.
      *
@@ -20,7 +21,7 @@ public interface DiscretionaryAccessController {
      * @param userStore      user store
      * @param properties     properties
      */
-    void initialize(StartupContext startupContext, UserStore userStore, Map<String, String> properties)
+    public abstract void initialize(StartupContext startupContext, UserStore userStore, Map<String, String> properties)
             throws Exception;
 
     /**
@@ -35,8 +36,21 @@ public interface DiscretionaryAccessController {
      * @throws AuthServerException throws if an server error occurred
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    boolean authorize(String resourceType, String resource, String action, String userId, Set<String> userGroups)
-            throws AuthServerException, AuthNotFoundException;
+    public final boolean authorize(String resourceType, String resource, String action, String userId,
+                                   Set<String> userGroups) throws AuthServerException, AuthNotFoundException {
+        AuthResource authResource = getAuthResource(resourceType, resource);
+
+        if (Objects.isNull(authResource)) {
+            return false;
+        }
+
+        if (authResource.getOwner().equals(userId)) {
+            return true;
+        }
+        Set<String> userGroupsForAction = authResource.getActionsUserGroupsMap().get(action);
+        return Objects.nonNull(userGroupsForAction) && userGroupsForAction.stream().anyMatch(userGroups::contains);
+
+    }
 
     /**
      * Create auth resource.
@@ -46,7 +60,7 @@ public interface DiscretionaryAccessController {
      * @param owner        resource owner
      * @throws AuthServerException throws if an server error occurred
      */
-    void addResource(String resourceType, String resourceName, String owner) throws AuthServerException;
+    public abstract void addResource(String resourceType, String resourceName, String owner) throws AuthServerException;
 
     /**
      * Delete auth resource.
@@ -56,7 +70,7 @@ public interface DiscretionaryAccessController {
      * @throws AuthServerException throws if an server error occurred
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    boolean deleteResource(String resourceType, String resourceName)
+    public abstract boolean deleteResource(String resourceType, String resourceName)
             throws AuthServerException, AuthNotFoundException;
 
     /**
@@ -69,7 +83,7 @@ public interface DiscretionaryAccessController {
      * @throws AuthException throws if error occur during updating resource
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
+    public abstract boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
             throws AuthException, AuthNotFoundException, AuthServerException;
 
     /**
@@ -82,8 +96,9 @@ public interface DiscretionaryAccessController {
      * @throws AuthServerException throws if an server error occurred
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
-            throws AuthServerException, AuthNotFoundException;
+    public abstract boolean removeGroupFromResource(String resourceType, String resourceName,
+                                                    String action, String group) throws AuthServerException,
+                                                                                        AuthNotFoundException;
 
     /**
      * Create auth resource.
@@ -94,7 +109,7 @@ public interface DiscretionaryAccessController {
      * @throws AuthServerException throws if an server error occurred
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    boolean changeResourceOwner(String resourceType, String resourceName, String owner)
+    public abstract boolean changeResourceOwner(String resourceType, String resourceName, String owner)
             throws AuthServerException, AuthNotFoundException;
 
     /**
@@ -106,7 +121,7 @@ public interface DiscretionaryAccessController {
      * @throws AuthServerException throws if an server error occurred
      * @throws AuthNotFoundException throws if the resource is not found
      */
-    AuthResource getAuthResource(String resourceType, String resourceName)
+    public abstract AuthResource getAuthResource(String resourceType, String resourceName)
             throws AuthServerException, AuthNotFoundException;
 
 }

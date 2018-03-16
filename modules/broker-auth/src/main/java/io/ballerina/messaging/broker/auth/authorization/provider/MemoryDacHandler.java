@@ -29,30 +29,16 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resourc
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * This implementation used when there is no auth manager set to the startup context.
  */
-public class MemoryDacHandler implements DiscretionaryAccessController {
+public class MemoryDacHandler extends DiscretionaryAccessController {
     private AuthResourceDao resourceDao = new AuthResourceInMemoryDao();
 
     @Override
     public void initialize(StartupContext startupContext, UserStore userStore, Map<String, String> properties) {
         //do nothing as authorization disabled
-    }
-
-    @Override
-    public boolean authorize(String resourceType,
-                             String resource,
-                             String action,
-                             String userId,
-                             Set<String> userGroups) throws AuthServerException {
-        AuthResource authResource = resourceDao.read(resourceType, resource);
-        return Objects.nonNull(authResource) && (authResource.getOwner().equals(userId) ||
-                authResource.getActionsUserGroupsMap().get(action).stream().anyMatch(userGroups::contains));
-
     }
 
     @Override

@@ -88,7 +88,7 @@ public class QueuesApiDelegate {
         } catch (BrokerAuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
         } catch (BrokerException | URISyntaxException e) {
-            LOGGER.error("Error occurred while generating location URI ", e);
+            LOGGER.error("Error occurred while creating the queue.", e);
             throw new InternalServerErrorException(e.getMessage(), e);
         }
     }
