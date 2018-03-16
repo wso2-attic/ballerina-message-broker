@@ -38,8 +38,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.transaction.xa.Xid;
 
 /**
- * Represents the queue of the broker. Contains a bounded queue to store messages. Subscriptions for the queue
- * are maintained as an in-memory set.
+ * Represents the queue of the broker. Contains a bounded queue to store messages. Subscriptions for the queue are
+ * maintained as an in-memory set.
  */
 public final class QueueHandler {
 
@@ -94,6 +94,7 @@ public final class QueueHandler {
      * Add a new consumer to the queue.
      *
      * @param consumer {@link Consumer} implementation.
+     *
      * @return true if {@link Consumer} was successfully added.
      */
     boolean addConsumer(Consumer consumer) {
@@ -101,10 +102,11 @@ public final class QueueHandler {
     }
 
     /**
-     * Remove consumer from the queue.
-     * NOTE: This method is synchronized with getting next subscriber for the queue to avoid concurrent issues
+     * Remove consumer from the queue. NOTE: This method is synchronized with getting next subscriber for the queue to
+     * avoid concurrent issues
      *
      * @param consumer {@link Consumer} to be removed.
+     *
      * @return True if the {@link Consumer} is removed.
      */
     boolean removeConsumer(Consumer consumer) {
@@ -132,19 +134,23 @@ public final class QueueHandler {
     }
 
     void prepareForEnqueue(Xid xid, Message message) throws BrokerException {
+        MessageTracer.trace(message, xid, this, MessageTracer.PREPARE_ENQUEUE);
         queue.prepareEnqueue(xid, message);
     }
 
     void prepareForDetach(Xid xid, Message message) throws BrokerException {
+        MessageTracer.trace(message, xid, this, MessageTracer.PREPARE_DEQUEUE);
         queue.prepareDetach(xid, message);
     }
 
     public void commit(Xid xid) {
         queue.commit(xid);
+        MessageTracer.trace(xid, this, MessageTracer.QUEUE_COMMIT);
     }
 
     public void rollback(Xid xid) {
         queue.rollback(xid);
+        MessageTracer.trace(xid, this, MessageTracer.QUEUE_ROLLBACK);
     }
 
     /**
@@ -168,7 +174,8 @@ public final class QueueHandler {
      * Removes the message from the queue.
      *
      * @param message message to be removed.
-     * @throws BrokerException
+     *
+     * @throws BrokerException throws on failure to dequeue the message.
      */
     void dequeue(Message message) throws BrokerException {
         queue.detach(message);
@@ -188,8 +195,8 @@ public final class QueueHandler {
     }
 
     /**
-     * Get the current consumer list iterator for the queue. This is a snapshot of the consumers at the time
-     * when the when this method is invoked.
+     * Get the current consumer list iterator for the queue. This is a snapshot of the consumers at the time when the
+     * when this method is invoked.
      *
      * @return CyclicConsumerIterator
      */
@@ -270,7 +277,7 @@ public final class QueueHandler {
             return totalMessages;
         } else {
             throw new ValidationException("Cannot purge queue " + queue.getName() + " since there " + consumerCount()
-             + " active consumer(s)");
+                                                  + " active consumer(s)");
         }
     }
 }

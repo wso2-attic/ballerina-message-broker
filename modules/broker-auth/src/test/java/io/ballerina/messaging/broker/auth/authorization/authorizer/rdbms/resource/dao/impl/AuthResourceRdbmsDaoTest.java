@@ -50,9 +50,10 @@ public class AuthResourceRdbmsDaoTest {
     private AuthResourceDao authResourceDao;
 
     @BeforeClass
-    public void beforeTest() {
+    public void beforeTest() throws AuthServerException {
         dataSource = DbUtil.getDataSource();
         authResourceDao = new AuthResourceRdbmsDao(dataSource);
+        setup();
     }
 
     @AfterClass
@@ -65,8 +66,7 @@ public class AuthResourceRdbmsDaoTest {
         connection.close();
     }
 
-    @Test
-    public void testPersist() throws AuthServerException {
+    public void setup() throws AuthServerException {
         AuthResource queue = new AuthResource(ResourceType.QUEUE.toString(), "queue1", true, "customer");
         authResourceDao.persist(queue);
 
@@ -83,14 +83,13 @@ public class AuthResourceRdbmsDaoTest {
         authResourceDao.persist(exchange2);
     }
 
-    @Test(priority = 1,
-          expectedExceptions = AuthServerException.class)
+    @Test(expectedExceptions = AuthServerException.class)
     public void testDuplicate() throws AuthServerException {
         AuthResource queue = new AuthResource(ResourceType.QUEUE.toString(), "queue1", true, "customer");
         authResourceDao.persist(queue);
     }
 
-    @Test(priority = 1)
+    @Test
     public void testRead() throws AuthServerException {
         AuthResource queue = authResourceDao.read(ResourceType.QUEUE.toString(), "queue1");
         Assert.assertEquals(queue.getOwner(), "customer");
@@ -104,7 +103,7 @@ public class AuthResourceRdbmsDaoTest {
         Assert.assertEquals(exchange2.getActionsUserGroupsMap().get("bind").size(), 1);
     }
 
-    @Test(priority = 1)
+    @Test
     public void testReadAll() throws AuthServerException {
 
         List<AuthResource> customer = authResourceDao.readAll(ResourceType.QUEUE.toString(), "customer");
@@ -118,7 +117,7 @@ public class AuthResourceRdbmsDaoTest {
 
     }
 
-    @Test(priority = 1)
+    @Test
     public void testReadAllByGroups() throws AuthServerException {
         List<AuthResource> exchanges = authResourceDao.readAll(ResourceType.EXCHANGE.toString(), "bind",
                                                                "customer", Collections.singletonList("developer"));
@@ -128,7 +127,7 @@ public class AuthResourceRdbmsDaoTest {
         Assert.assertEquals(queues.size(), 1);
     }
 
-    @Test(priority = 1)
+    @Test
     public void testIsExists() throws AuthServerException {
         boolean queue1 = authResourceDao.isExists(ResourceType.QUEUE.toString(), "queue1");
         boolean queue11 = authResourceDao.isExists(ResourceType.QUEUE.toString(), "queue11");
@@ -136,7 +135,7 @@ public class AuthResourceRdbmsDaoTest {
         Assert.assertEquals(queue11, false);
     }
 
-    @Test(priority = 2)
+    @Test(dependsOnMethods = {"testIsExists", "testReadAllByGroups", "testReadAll", "testRead", "testDuplicate"})
     public void testUpdate() throws AuthServerException {
         Map<String, Set<String>> actionsUserGroupsMap = new HashMap<>();
         actionsUserGroupsMap.put("publish", new HashSet<>(Arrays.asList("architect", "customer", "manager")));
@@ -153,10 +152,9 @@ public class AuthResourceRdbmsDaoTest {
         List<AuthResource> exchanges = authResourceDao.readAll(ResourceType.EXCHANGE.toString(), "publish",
                                                                "manager", Collections.singletonList("manager"));
         Assert.assertEquals(exchanges.size(), 2);
-
     }
 
-    @Test(priority = 3)
+    @Test(dependsOnMethods = "testUpdate")
     public void testDelete() throws AuthServerException {
 
         authResourceDao.delete(ResourceType.EXCHANGE.toString(), "exchange1");

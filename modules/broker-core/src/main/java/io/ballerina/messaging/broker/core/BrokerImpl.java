@@ -289,6 +289,7 @@ public final class BrokerImpl implements Broker {
                 BindingSet bindingsForRoute = exchange.getBindingsForRoute(metadata.getRoutingKey());
                 Set<QueueHandler> uniqueQueueHandlers = getUniqueQueueHandlersForBinding(metadata, bindingsForRoute);
                 if (uniqueQueueHandlers.isEmpty()) {
+                    MessageTracer.trace(message, xid, MessageTracer.NO_ROUTES);
                     return uniqueQueueHandlers;
                 }
                 messageStore.add(xid, message.shallowCopy());
@@ -297,6 +298,7 @@ public final class BrokerImpl implements Broker {
                 }
                 return uniqueQueueHandlers;
             } else {
+                MessageTracer.trace(message, xid, MessageTracer.UNKNOWN_EXCHANGE);
                 throw new BrokerException("Message published to unknown exchange " + metadata.getExchangeName());
             }
         } finally {

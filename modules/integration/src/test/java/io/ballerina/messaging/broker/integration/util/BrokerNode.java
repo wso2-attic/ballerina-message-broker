@@ -112,7 +112,6 @@ public class BrokerNode {
             } catch (Exception e) {
                 throw new CoordinationException("Error initializing HA Strategy: ", e);
             }
-            startupContext.registerService(HaStrategy.class, haStrategy);
         }
 
         // auth configurations

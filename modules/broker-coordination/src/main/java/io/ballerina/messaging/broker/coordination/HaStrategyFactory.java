@@ -52,6 +52,7 @@ public class HaStrategyFactory {
         LOGGER.info("Initializing HA Strategy: {}", haStrategyClass);
         haStrategy = (HaStrategy) ClassLoader.getSystemClassLoader().loadClass(haStrategyClass).newInstance();
         haStrategy.setup(startupContext);
+        startupContext.registerService(HaStrategy.class, haStrategy);
         return haStrategy;
     }
 

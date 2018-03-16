@@ -3,7 +3,7 @@
 
 # Ballerina Message Broker
 
-WSO2 Message Broker is a lightweight, easy-to-use, 100% open source message-brokering server. It uses AMQP 0-9-1 
+Ballerina Message Broker is a lightweight, easy-to-use, 100% open source message-brokering server. It uses AMQP 0-9-1 
 as the messaging protocol.
 
 ## Building from the source
