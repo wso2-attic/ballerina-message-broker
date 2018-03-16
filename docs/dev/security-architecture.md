@@ -18,6 +18,6 @@ registered authenticator for broker. Broker will use Java Authentication and Aut
 password, it will response authentication result with authentication Id. 
 
  Users can defined their own JAAS Login module or write own custom authenticators as well.
-  - [Changing the Default Security Settings](../user/security-settings-guide.md)
+  - [Changing the Default Security Settings](../user/authentication-settings-guide.md)
 
 If authentication is success, connection will be established or else will send authentication error.
