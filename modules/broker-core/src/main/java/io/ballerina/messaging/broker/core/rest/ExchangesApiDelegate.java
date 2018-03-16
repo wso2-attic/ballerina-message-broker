@@ -60,7 +60,7 @@ public class ExchangesApiDelegate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExchangesApiDelegate.class);
 
-    private static final String EXCHANGES_API_PATH = "/exchanges";
+    public static final String EXCHANGES_API_PATH = "/exchanges";
 
     private final BrokerFactory brokerFactory;
 
