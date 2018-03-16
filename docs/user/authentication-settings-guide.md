@@ -43,7 +43,7 @@ implementation details.
 1. Copy the custom authenticator jar to <BROKER_HOME>/lib directory.
 2. Change the default authenticator in the <BROKER_HOME>/conf/broker.yaml
 
-
+```
      # Broker authentication related configurations.
      authentication:
       # Enable the authentication
@@ -51,7 +51,7 @@ implementation details.
       authenticator:
         # Authenticator implementation
         className: <fully qualified class name of the custom authenticator>
-
+```
 
 ### Configure custom login module
 
@@ -60,7 +60,7 @@ implementation details.
 1. Copy the custom login module jar to the <BROKER_HOME>/lib directory.
 2. Change the default authenticator in the <BROKER_HOME>/conf/broker.yaml.
 
-
+```
      # Broker authentication related configurations.
      authentication:
       # Enable the authentication
@@ -71,7 +71,7 @@ implementation details.
         # Optional properties
         properties:
          loginModule: io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule
-
+```
 
 ##### option 2
 
