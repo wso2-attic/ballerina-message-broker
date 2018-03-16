@@ -64,10 +64,13 @@ public class SecureBrokerImpl implements Broker {
     @Override
     public void publish(Message message) throws BrokerException {
         try {
-            authHandler.handle(ResourceAuthScope.EXCHANGES_PUBLISH, subject);
+            authHandler.handle(ResourceAuthScope.EXCHANGES_PUBLISH, ResourceType.EXCHANGE,
+                               message.getMetadata().getExchangeName(), ResourceAction.PUBLISH, subject);
             broker.publish(message);
         } catch (AuthException e) {
             throw new BrokerAuthException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new BrokerAuthNotFoundException(e.getMessage(), e);
         }
     }
 
@@ -89,7 +92,8 @@ public class SecureBrokerImpl implements Broker {
     @Override
     public void addConsumer(Consumer consumer) throws BrokerException {
         try {
-            authHandler.handle(ResourceType.QUEUE, consumer.getQueueName(), ResourceAction.CONSUME, subject);
+            authHandler.handle(ResourceAuthScope.QUEUES_CONSUME, ResourceType.QUEUE, consumer.getQueueName(),
+                               ResourceAction.CONSUME, subject);
             broker.addConsumer(consumer);
         } catch (AuthException e) {
             throw new BrokerAuthException(e.getMessage(), e);
@@ -133,7 +137,8 @@ public class SecureBrokerImpl implements Broker {
     public boolean deleteExchange(String exchangeName, boolean ifUnused)
             throws BrokerException, ValidationException, ResourceNotFoundException {
         try {
-            authHandler.handle(ResourceAuthScope.EXCHANGES_DELETE, subject);
+            authHandler.handle(ResourceAuthScope.EXCHANGES_DELETE, ResourceType.EXCHANGE, exchangeName,
+                               ResourceAction.DELETE, subject);
             boolean success = broker.deleteExchange(exchangeName, ifUnused);
             if (success) {
                 authHandler.deleteAuthResource(ResourceType.EXCHANGE, exchangeName);
@@ -141,6 +146,8 @@ public class SecureBrokerImpl implements Broker {
             return success;
         } catch (AuthException e) {
             throw new BrokerAuthException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new BrokerAuthNotFoundException(e.getMessage(), e);
         }
     }
 
@@ -160,15 +167,16 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty) throws BrokerException,
-            ValidationException, ResourceNotFoundException, BrokerAuthException, BrokerAuthNotFoundException {
+    public int deleteQueue(String queueName, boolean ifUnused, boolean ifEmpty)
+            throws BrokerException, ValidationException, ResourceNotFoundException {
 
         if (!queueExists(queueName)) {
             throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
         }
 
         try {
-            authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.DELETE, subject);
+            authHandler.handle(ResourceAuthScope.QUEUES_DELETE, ResourceType.QUEUE, queueName,
+                               ResourceAction.DELETE, subject);
             int messageCount = broker.deleteQueue(queueName, ifUnused, ifEmpty);
             authHandler.deleteAuthResource(ResourceType.QUEUE, queueName);
             return messageCount;
@@ -239,7 +247,8 @@ public class SecureBrokerImpl implements Broker {
             throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
         }
         try {
-            authHandler.handle(ResourceType.QUEUE, queueName, ResourceAction.GET, subject);
+            authHandler.handle(ResourceAuthScope.QUEUES_GET, ResourceType.QUEUE, queueName,
+                               ResourceAction.GET, subject);
             return broker.getQueue(queueName);
         } catch (AuthException e) {
             throw new BrokerAuthException(e.getMessage(), e);
@@ -271,7 +280,8 @@ public class SecureBrokerImpl implements Broker {
     @Override
     public Exchange getExchange(String exchangeName) throws BrokerException {
         try {
-            authHandler.handle(ResourceType.EXCHANGE, exchangeName, ResourceAction.GET, subject);
+            authHandler.handle(ResourceAuthScope.EXCHANGES_GET, ResourceType.EXCHANGE, exchangeName,
+                               ResourceAction.GET, subject);
             return broker.getExchange(exchangeName);
         } catch (AuthException e) {
             throw new BrokerAuthException(e.getMessage(), e);

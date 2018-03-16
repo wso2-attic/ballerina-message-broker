@@ -30,6 +30,7 @@ public enum ResourceAuthScope {
     QUEUES_CREATE("queues:create"),
     QUEUES_DELETE("queues:delete"),
     QUEUES_GET("queues:get"),
+    QUEUES_CONSUME("queues:consume"),
     RESOURCE_GRANT_PERMISSION("resources:grant"),
     SCOPES_UPDATE("scopes:update"),
     SCOPES_GET("scopes:get");
