@@ -38,12 +38,17 @@ public class CsvFormatter implements ResponseFormatter {
         if (exchanges.length == 0) {
             return;
         }
-        String printTemplate = "%s,%s,%s%n";
-        OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE);
+        String printTemplate = "%s,%s,%s,%s%n";
+        OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE, Exchange.OWNER);
         for (Exchange exchange : exchanges) {
             OUT_STREAM.printf(printTemplate.replaceFirst("%s", WRAPPED_STRING_FORMATTER), exchange.getName(),
-                    exchange.getType(), String.valueOf(exchange.isDurable()));
+                    exchange.getType(), String.valueOf(exchange.isDurable()), exchange.getOwner());
         }
+    }
+
+    @Override
+    public void printExchange(Exchange exchange) {
+        printExchanges(new Exchange[] { exchange });
     }
 
     @Override
@@ -51,15 +56,20 @@ public class CsvFormatter implements ResponseFormatter {
         if (queues.length == 0) {
             return;
         }
-        String printTemplate = "%s,%s,%s,%s,%s,%s%n";
+        String printTemplate = "%s,%s,%s,%s,%s,%s,%s%n";
         OUT_STREAM.printf(printTemplate, Queue.NAME, Queue.CONSUMER_COUNT, Queue.CAPACITY, Queue.SIZE, Queue.DURABLE,
-                Queue.AUTO_DELETE);
+                Queue.AUTO_DELETE, Queue.OWNER);
         for (Queue queue : queues) {
             OUT_STREAM.printf(printTemplate.replaceFirst("%s", WRAPPED_STRING_FORMATTER), queue.getName(),
                     String.valueOf(queue.getConsumerCount()), String.valueOf(queue.getCapacity()),
                     String.valueOf(queue.getSize()), String.valueOf(queue.isDurable()),
-                    String.valueOf(queue.isAutoDelete()));
+                    String.valueOf(queue.isAutoDelete()), queue.getOwner());
         }
+    }
+
+    @Override
+    public void printQueue(Queue queues) {
+        printQueues(new Queue[] {queues});
     }
 
     @Override

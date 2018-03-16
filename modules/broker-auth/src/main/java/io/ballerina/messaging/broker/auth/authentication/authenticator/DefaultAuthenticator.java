@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.auth.authentication.authenticator;
 
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.common.StartupContext;
 
 import java.util.Map;
@@ -30,7 +31,9 @@ import java.util.Map;
 public class DefaultAuthenticator implements Authenticator {
 
     @Override
-    public void initialize(StartupContext startupContext, Map<String, Object> properties) throws Exception {
+    public void initialize(StartupContext startupContext,
+                           UserStore userStore,
+                           Map<String, Object> properties) throws Exception {
         // nothing to do when authentication is disabled.
     }
 

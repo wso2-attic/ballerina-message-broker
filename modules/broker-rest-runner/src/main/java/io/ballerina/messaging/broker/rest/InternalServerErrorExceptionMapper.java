@@ -36,7 +36,8 @@ public class InternalServerErrorExceptionMapper implements ExceptionMapper<Inter
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalServerErrorExceptionMapper.class);
 
-    @Override public Response toResponse(InternalServerErrorException exception) {
+    @Override
+    public Response toResponse(InternalServerErrorException exception) {
         LOGGER.error("Internal server error.", exception);
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("message", exception.getMessage());

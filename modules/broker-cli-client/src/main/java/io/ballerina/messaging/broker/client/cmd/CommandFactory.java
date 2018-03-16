@@ -27,11 +27,20 @@ import io.ballerina.messaging.broker.client.cmd.impl.create.CreateQueueCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.delete.DeleteQueueCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.grant.GrantCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.grant.GrantExchangeCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.grant.GrantQueueCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListBindingCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListConsumerCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.list.ListQueueCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeExchangeCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeQueueCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferExchangeCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferQueueCmd;
 
 /**
  * Factory class to generate different command instances.
@@ -61,6 +70,18 @@ public class CommandFactory {
 
     public DeleteCmd createDeleteCommand() {
         return new DeleteCmd(rootCommand);
+    }
+
+    public GrantCmd createGrantCommand() {
+        return new GrantCmd(rootCommand);
+    }
+
+    public RevokeCmd createRevokeCommand() {
+        return new RevokeCmd(rootCommand);
+    }
+
+    public TransferCmd createTransferCommand() {
+        return new TransferCmd(rootCommand);
     }
 
     public ListCmd createListCommand() {
@@ -101,5 +122,29 @@ public class CommandFactory {
 
     public ListConsumerCmd createListConsumerCommand() {
         return new ListConsumerCmd(rootCommand);
+    }
+
+    public GrantQueueCmd createGrantQueueCommand() {
+        return new GrantQueueCmd(rootCommand);
+    }
+
+    public GrantExchangeCmd createGrantExchangeCommand() {
+        return new GrantExchangeCmd(rootCommand);
+    }
+
+    public RevokeQueueCmd createRevokeQueueCommand() {
+        return new RevokeQueueCmd(rootCommand);
+    }
+
+    public MBClientCmd createRevokeExchangeCommand() {
+        return new RevokeExchangeCmd(rootCommand);
+    }
+
+    public TransferQueueCmd createTransferQueueCommand() {
+        return new TransferQueueCmd(rootCommand);
+    }
+
+    public TransferExchangeCmd createTransferExchangeCommand() {
+        return new TransferExchangeCmd(rootCommand);
     }
 }

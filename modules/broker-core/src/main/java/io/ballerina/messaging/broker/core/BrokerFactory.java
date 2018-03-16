@@ -14,25 +14,22 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
  */
-package io.ballerina.messaging.broker.auth;
 
-import javax.security.auth.login.LoginException;
+package io.ballerina.messaging.broker.core;
+
+import javax.security.auth.Subject;
 
 /**
- * This Exception class represents login failures.
+ * Generic broker factory to get the broker object based on implementation
  */
-public class BrokerAuthException extends LoginException {
+public interface BrokerFactory {
 
-    private static final long serialVersionUID = 1414511165553802816L;
-
-    public BrokerAuthException(String message) {
-        super(message);
-    }
-
-    public BrokerAuthException(String message, Throwable throwable) {
-        super(message);
-        initCause(throwable);
-    }
+    /**
+     * Get {@link Broker} implementation based on authorization enabled or disabled
+     *
+     * @param subject entity has {@link io.ballerina.messaging.broker.auth.UsernamePrincipal}
+     * @return {@link Broker} object
+     */
+    Broker getBroker(Subject subject);
 }

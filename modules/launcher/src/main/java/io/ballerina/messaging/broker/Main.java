@@ -30,6 +30,7 @@ import io.ballerina.messaging.broker.coordination.CoordinationException;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
 import io.ballerina.messaging.broker.coordination.HaStrategyFactory;
 import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerImpl;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.metrics.BrokerMetricService;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
@@ -79,7 +80,7 @@ public class Main {
             AuthManager authManager = new AuthManager(startupContext);
             BrokerMetricService metricService = new BrokerMetricService(startupContext);
             BrokerRestServer restServer = new BrokerRestServer(startupContext);
-            Broker broker = new Broker(startupContext);
+            Broker broker = new BrokerImpl(startupContext);
             Server amqpServer = new Server(startupContext);
             registerShutdownHook(broker, amqpServer, restServer, haStrategy, authManager, metricService);
 

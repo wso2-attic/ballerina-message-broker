@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerAuthException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -111,6 +112,12 @@ public class QueueDeclare extends MethodFrame {
             } catch (ValidationException e) {
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
                                                    ChannelException.PRECONDITION_FAILED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
+            } catch (BrokerAuthException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.ACCESS_REFUSED,
                                                    ShortString.parseString(e.getMessage()),
                                                    CLASS_ID,
                                                    METHOD_ID));

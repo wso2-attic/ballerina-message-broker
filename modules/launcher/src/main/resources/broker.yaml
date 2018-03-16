@@ -55,11 +55,35 @@ ballerina.broker.auth:
   # Enable the authentication
   enabled: true
   authenticator:
-    # Authenticator implemetation
+    # Authenticator implementation
     className: io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator
     # Optional properties
     properties:
      loginModule: io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule
+ # Broker authorization related configurations.
+ authorization:
+  # Enable the authorization
+  enabled: true
+
+  # User store used tot lookup user groups that a user belongs.
+  userStore:
+   # User store implementing class
+   className: io.ballerina.messaging.broker.auth.authorization.provider.FileBasedUserStore
+
+  # Configurations related to MAC handler.
+  mandatoryAccessController:
+   # MAC handler implementation.
+   className: io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler
+
+  # Configurations related to DAC handler.
+  discretionaryAccessController:
+   className: io.ballerina.messaging.broker.auth.authorization.provider.RdbmsDacHandler
+
+  cache:
+   # Cache timeout in Minutes
+   timeout: 15
+   # Maximum Cache size to hold user id
+   size: 5000
 
 # AMQP transport related configurations.
 ballerina.broker.transport.amqp:

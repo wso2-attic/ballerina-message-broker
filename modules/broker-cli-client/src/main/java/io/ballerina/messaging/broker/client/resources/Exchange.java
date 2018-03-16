@@ -20,6 +20,9 @@ package io.ballerina.messaging.broker.client.resources;
 
 import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Representation of exchange in the broker.
  */
@@ -28,12 +31,17 @@ public class Exchange {
     public static final String NAME = "name";
     public static final String TYPE = "type";
     public static final String DURABLE = "durable";
+    public static final String OWNER = "owner";
 
     private String name;
 
     private String type;
 
     private boolean durable;
+
+    private String owner;
+
+    private List<Permission> permissions = new ArrayList<>();
 
     public Exchange(String name, String type, boolean durable) {
         this.name = name;
@@ -53,11 +61,19 @@ public class Exchange {
         return durable;
     }
 
+    public String getOwner() {
+        return owner;
+    }
+
     public String getAsJsonString() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(NAME, name);
         jsonObject.addProperty(TYPE, type);
         jsonObject.addProperty(DURABLE, durable);
         return jsonObject.toString();
+    }
+
+    public List<Permission> getPermissions() {
+        return permissions;
     }
 }

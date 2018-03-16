@@ -72,7 +72,7 @@ public class NegativeQueueDeleteTest {
     public void testQueueAutoDelete() throws Exception {
         Channel channel = amqpConnection.createChannel();
 
-        String queueName = "PositiveQueueDeleteTestTestQueueAutoDelete";
+        String queueName = "NegativeQueueDeleteTestTestQueueAutoDelete";
         channel.queueDeclare(queueName, false, false, true, null);
         String consumerTag = channel.basicConsume(queueName, new DefaultConsumer(channel));
 

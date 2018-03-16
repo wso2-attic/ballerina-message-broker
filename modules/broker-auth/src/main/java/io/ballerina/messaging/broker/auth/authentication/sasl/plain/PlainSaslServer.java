@@ -19,7 +19,7 @@
 package io.ballerina.messaging.broker.auth.authentication.sasl.plain;
 
 import com.google.common.primitives.Bytes;
-import io.ballerina.messaging.broker.auth.BrokerAuthException;
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 
@@ -81,7 +81,7 @@ class PlainSaslServer implements SaslServer {
             authenticationId = authResult.getUserId();
             isComplete = authResult.isAuthenticated();
             return new byte[0];
-        } catch (BrokerAuthException e) {
+        } catch (AuthException e) {
             throw new SaslException("Error while authenticating user with authenticator", e);
         } finally {
             clearCredentials();

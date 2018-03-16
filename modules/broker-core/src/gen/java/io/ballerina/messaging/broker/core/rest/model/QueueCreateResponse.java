@@ -19,13 +19,12 @@
 
 package io.ballerina.messaging.broker.core.rest.model;
 
-import javax.validation.constraints.*;
-import javax.validation.Valid;
-
-
-import io.swagger.annotations.*;
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Objects;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 
 public class QueueCreateResponse   {
@@ -33,7 +32,7 @@ public class QueueCreateResponse   {
   private @Valid String message = null;
 
   /**
-   * Response message with status of the queue create request.
+   * Response message with status of the queue create operation.
    **/
   public QueueCreateResponse message(String message) {
     this.message = message;
@@ -41,7 +40,7 @@ public class QueueCreateResponse   {
   }
 
   
-  @ApiModelProperty(required = true, value = "Response message with status of the queue create request.")
+  @ApiModelProperty(required = true, value = "Response message with status of the queue create operation.")
   @JsonProperty("message")
   @NotNull
   public String getMessage() {
@@ -53,7 +52,7 @@ public class QueueCreateResponse   {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -83,7 +82,7 @@ public class QueueCreateResponse   {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

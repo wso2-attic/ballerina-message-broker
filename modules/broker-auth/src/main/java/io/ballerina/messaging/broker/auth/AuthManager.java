@@ -23,7 +23,12 @@ import io.ballerina.messaging.broker.auth.authentication.AuthenticatorFactory;
 import io.ballerina.messaging.broker.auth.authentication.sasl.BrokerSecurityProvider;
 import io.ballerina.messaging.broker.auth.authentication.sasl.SaslServerBuilder;
 import io.ballerina.messaging.broker.auth.authentication.sasl.plain.PlainSaslServerBuilder;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.AuthorizerFactory;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +51,7 @@ public class AuthManager {
 
     private static final String AMQP_PROTOCOL_IDENTIFIER = "AMQP";
     /**
-     *  The name for the amq Java Cryptography Architecture (JCA) provider. This will be used to register Sasl servers.
+     * The name for the amq Java Cryptography Architecture (JCA) provider. This will be used to register Sasl servers.
      */
     private static final String PROVIDER_NAME = "AMQSASLProvider";
     /**
@@ -54,19 +59,48 @@ public class AuthManager {
      */
     private Map<String, SaslServerBuilder> saslMechanisms = new HashMap<>();
 
-    private BrokerAuthConfiguration brokerAuthConfiguration;
     /**
      * Authenticator which defines the authentication strategy for auth manager.
      */
     private Authenticator authenticator;
 
+    private Authorizer authorizer;
+
+    private final boolean isAuthenticationEnabled;
+
+    private final boolean isAuthorizationEnabled;
+
     public AuthManager(StartupContext startupContext) throws Exception {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        brokerAuthConfiguration = configProvider
+        BrokerAuthConfiguration brokerAuthConfiguration = configProvider
                 .getConfigurationObject(BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
+        isAuthenticationEnabled = brokerAuthConfiguration.getAuthentication().isEnabled();
+        isAuthorizationEnabled = brokerAuthConfiguration.getAuthorization().isEnabled();
+
+        if (isAuthenticationEnabled) {
+            UserStore userStore = AuthorizerFactory.createUserStore(startupContext, brokerAuthConfiguration);
+
+            authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
+                                                                        brokerAuthConfiguration.getAuthentication(),
+                                                                        userStore);
+
+            BrokerCommonConfiguration commonConfigs
+                    = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
+                                                            BrokerCommonConfiguration.class);
+
+            if (isAuthorizationEnabled) {
+                authorizer = AuthorizerFactory.getAuthorizer(commonConfigs,
+                                                             brokerAuthConfiguration,
+                                                             userStore,
+                                                             startupContext);
+            }
+        } else if (isAuthorizationEnabled) {
+            throw new ValidationException("Invalid combination found in the configuration - " +
+                                                  "authentication enabled: FALSE and authorization enabled: TRUE");
+
+        }
+
         startupContext.registerService(AuthManager.class, this);
-        authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
-                                                                    brokerAuthConfiguration.getAuthentication());
     }
 
     public void start() {
@@ -127,7 +161,16 @@ public class AuthManager {
      * @return broker authentication enabled or not
      */
     public boolean isAuthenticationEnabled() {
-        return brokerAuthConfiguration.getAuthentication().isEnabled();
+        return isAuthenticationEnabled;
+    }
+
+    /**
+     * Provides broker authorization enabled
+     *
+     * @return broker authorization enabled or not
+     */
+    public boolean isAuthorizationEnabled() {
+        return isAuthorizationEnabled;
     }
 
     /**
@@ -138,4 +181,14 @@ public class AuthManager {
     public Authenticator getAuthenticator() {
         return authenticator;
     }
+
+    /**
+     * Provides authorizer which will be used to authorize users for broker resources.
+     *
+     * @return broker authorizer
+     */
+    public Authorizer getAuthorizer() {
+        return authorizer;
+    }
+
 }

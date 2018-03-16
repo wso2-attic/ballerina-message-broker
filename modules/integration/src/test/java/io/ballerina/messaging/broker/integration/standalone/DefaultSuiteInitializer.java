@@ -21,8 +21,16 @@ package io.ballerina.messaging.broker.integration.standalone;
 
 import io.ballerina.messaging.broker.amqp.Server;
 import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.RdbmsDacHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerFactory;
+import io.ballerina.messaging.broker.core.BrokerImpl;
+import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
+import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.ballerina.messaging.broker.integration.util.DbUtils;
 import io.ballerina.messaging.broker.integration.util.TestUtils;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
@@ -56,6 +64,18 @@ public class DefaultSuiteInitializer {
         LOGGER.info("Starting broker on " + port + " for suite " + context.getSuite().getName());
         StartupContext startupContext = TestUtils.initStartupContext(port, sslPort, hostname, restPort);
 
+        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+        BrokerAuthConfiguration brokerAuthConfiguration
+                = configProvider.getConfigurationObject(BrokerAuthConfiguration.NAMESPACE,
+                                                        BrokerAuthConfiguration.class);
+
+        brokerAuthConfiguration.getAuthorization()
+                               .getDiscretionaryAccessController()
+                               .setClassName(RdbmsDacHandler.class.getCanonicalName());
+        brokerAuthConfiguration.getAuthorization()
+                               .getMandatoryAccessController()
+                               .setClassName(DefaultMacHandler.class.getCanonicalName());
+
         DbUtils.setupDB();
         DataSource dataSource = DbUtils.getDataSource();
         startupContext.registerService(DataSource.class, dataSource);
@@ -64,7 +84,14 @@ public class DefaultSuiteInitializer {
 
         authManager.start();
         restServer = new BrokerRestServer(startupContext);
-        broker = new Broker(startupContext);
+        broker = new BrokerImpl(startupContext);
+        BrokerFactory brokerFactory;
+        if (authManager.isAuthorizationEnabled()) {
+            brokerFactory = new SecureBrokerFactory(startupContext);
+        } else {
+            brokerFactory = new DefaultBrokerFactory(startupContext);
+        }
+        startupContext.registerService(BrokerFactory.class, brokerFactory);
         broker.startMessageDelivery();
         server = new Server(startupContext);
         server.start();

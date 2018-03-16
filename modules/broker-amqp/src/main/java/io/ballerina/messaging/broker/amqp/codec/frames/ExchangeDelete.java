@@ -23,8 +23,10 @@ import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ChannelException;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerAuthException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -72,6 +74,12 @@ public class ExchangeDelete extends MethodFrame {
             try {
                 channel.deleteExchange(exchange.toString(), ifUnused);
                 ctx.writeAndFlush(new ExchangeDeleteOk(getChannel()));
+            } catch (BrokerAuthException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.ACCESS_REFUSED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
             } catch (BrokerException e) {
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
                                                    ChannelException.NOT_ALLOWED,
@@ -84,6 +92,9 @@ public class ExchangeDelete extends MethodFrame {
                                                    ShortString.parseString(e.getMessage()),
                                                    CLASS_ID,
                                                    METHOD_ID));
+            } catch (ResourceNotFoundException e) {
+                // For AMQP clients this is not an exception. Respond with message count zero.
+                ctx.writeAndFlush(new ExchangeDeleteOk(getChannel()));
             }
         });
     }

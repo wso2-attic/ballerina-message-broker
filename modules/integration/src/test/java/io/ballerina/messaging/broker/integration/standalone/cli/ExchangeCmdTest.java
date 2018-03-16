@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.integration.standalone.cli;
 import io.ballerina.messaging.broker.client.Main;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import org.testng.Assert;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
@@ -124,5 +125,53 @@ public class ExchangeCmdTest extends CliTestParent {
         Main.main(cmd);
 
         evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
+    }
+
+    @Test(groups = "StreamReading",
+          description = "test command 'grant exchange'")
+    public void testGrantRevokeExchange() {
+        String exchangeName = "testGrantExchange";
+        String[] createCmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_EXCHANGE, exchangeName, "-d" };
+
+        String[] grantCmd = { CLI_ROOT_COMMAND, Constants.CMD_GRANT, Constants.CMD_EXCHANGE, exchangeName, "-a", "get",
+                              "-g", "manager" };
+
+        String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE, exchangeName };
+
+        Main.main(createCmd);
+        Main.main(grantCmd);
+        Main.main(checkCmd);
+
+        evalStreamContent(PrintStreamHandler.readOutStream(), "get: manager", grantCmd);
+
+        PrintStreamHandler.resetStreams();
+
+        String[] revokeCmd = {
+                CLI_ROOT_COMMAND, Constants.CMD_REVOKE, Constants.CMD_EXCHANGE, exchangeName, "-a", "get", "-g",
+                "manager"
+        };
+
+        Main.main(revokeCmd);
+
+        evalStreamContent(PrintStreamHandler.readOutStream(), "User group successfully removed.", revokeCmd);
+    }
+
+    @Test(groups = "StreamReading", description = "test command 'transfer exchange'")
+    @Parameters({ "test-username"})
+    public void testChangeOwnerExchange(String testUser) {
+        String exchangeName = "testChangeOwnerExchange";
+        String[] createCmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_EXCHANGE, exchangeName, "-d" };
+
+        String[] changeOwnerCmd = {
+                CLI_ROOT_COMMAND, Constants.CMD_TRANSFER, Constants.CMD_EXCHANGE, exchangeName, "-n", testUser
+        };
+
+        String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE, exchangeName };
+
+        Main.main(createCmd);
+        Main.main(changeOwnerCmd);
+        Main.main(checkCmd);
+
+        evalStreamContent(PrintStreamHandler.readOutStream(), "owner   : " + testUser, changeOwnerCmd);
     }
 }

@@ -101,6 +101,12 @@ public class Main {
                 commandFactory.createCreateCommand());
         JCommander jCommanderDelete = addChildCommand(jCommanderRoot, Constants.CMD_DELETE,
                 commandFactory.createDeleteCommand());
+        JCommander jCommanderGrant = addChildCommand(jCommanderRoot, Constants.CMD_GRANT,
+                                                      commandFactory.createGrantCommand());
+        JCommander jCommanderRevoke = addChildCommand(jCommanderRoot, Constants.CMD_REVOKE,
+                                                     commandFactory.createRevokeCommand());
+        JCommander jCommanderTransfer = addChildCommand(jCommanderRoot, Constants.CMD_TRANSFER,
+                                                      commandFactory.createTransferCommand());
 
         // secondary level commands
         // add list sub-commands
@@ -117,6 +123,18 @@ public class Main {
         // add delete sub-commands
         addChildCommand(jCommanderDelete, Constants.CMD_EXCHANGE, commandFactory.createDeleteExchangeCommand());
         addChildCommand(jCommanderDelete, Constants.CMD_QUEUE, commandFactory.createDeleteQueueCommand());
+
+        // add grant sub-commands
+        addChildCommand(jCommanderGrant, Constants.CMD_QUEUE, commandFactory.createGrantQueueCommand());
+        addChildCommand(jCommanderGrant, Constants.CMD_EXCHANGE, commandFactory.createGrantExchangeCommand());
+
+        // add revoke sub-commands
+        addChildCommand(jCommanderRevoke, Constants.CMD_QUEUE, commandFactory.createRevokeQueueCommand());
+        addChildCommand(jCommanderRevoke, Constants.CMD_EXCHANGE, commandFactory.createRevokeExchangeCommand());
+
+        // add transfer sub-commands
+        addChildCommand(jCommanderTransfer, Constants.CMD_QUEUE, commandFactory.createTransferQueueCommand());
+        addChildCommand(jCommanderTransfer, Constants.CMD_EXCHANGE, commandFactory.createTransferExchangeCommand());
 
         return jCommanderRoot;
     }

@@ -20,9 +20,11 @@ package io.ballerina.messaging.broker.client.output;
 import io.ballerina.messaging.broker.client.resources.Binding;
 import io.ballerina.messaging.broker.client.resources.Consumer;
 import io.ballerina.messaging.broker.client.resources.Exchange;
+import io.ballerina.messaging.broker.client.resources.Permission;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * Print backend responses into tables. This is used for displaying results of 'list' commands.
@@ -42,18 +44,41 @@ public class TableFormatter implements ResponseFormatter {
             return;
         }
         int maxExchangeNameLength = Arrays.stream(exchanges)
-                .mapToInt(exchange -> exchange.getName().length())
-                .max()
-                .getAsInt();
+                                          .mapToInt(exchange -> exchange.getName().length())
+                                          .max()
+                                          .getAsInt();
 
         int maxColumnSize = Math.max(maxExchangeNameLength, Exchange.NAME.length());
 
-        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-10s%-10s\n";
+        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-10s%-10s%-10s\n";
 
-        OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE);
+        OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE, Exchange.OWNER);
         for (Exchange exchange : exchanges) {
             OUT_STREAM.printf(printTemplate, exchange.getName(), exchange.getType(),
-                    String.valueOf(exchange.isDurable()));
+                              String.valueOf(exchange.isDurable()), exchange.getOwner());
+        }
+    }
+
+    @Override
+    public void printExchange(Exchange exchange) {
+        int maxFieldLength = Exchange.DURABLE.length() + 1;
+        String printTemplate = "%-" + maxFieldLength + "s: %s\n";
+
+        OUT_STREAM.printf(printTemplate, Exchange.NAME, exchange.getName());
+        OUT_STREAM.printf(printTemplate, Exchange.TYPE, exchange.getType());
+        OUT_STREAM.printf(printTemplate, Queue.DURABLE, exchange.isDurable());
+        OUT_STREAM.printf(printTemplate, Queue.OWNER, exchange.getOwner());
+
+        OUT_STREAM.println("\nPermissions");
+        OUT_STREAM.println("===========");
+
+        for (Permission permission : exchange.getPermissions()) {
+            String permissionsList = permission.getUserGroups()
+                                               .stream()
+                                               .map(String::toString)
+                                               .collect(Collectors.joining(","));
+            OUT_STREAM.println(permission.getAction() + ": " + permissionsList);
+
         }
     }
 
@@ -63,20 +88,48 @@ public class TableFormatter implements ResponseFormatter {
             return;
         }
         int maxQueueNameLength = Arrays.stream(queues)
-                .mapToInt(queue -> queue.getName().length())
-                .max()
-                .getAsInt();
+                                       .mapToInt(queue -> queue.getName().length())
+                                       .max()
+                                       .getAsInt();
 
         int maxColumnSize = Math.max(maxQueueNameLength, Queue.NAME.length());
 
-        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-15s%-15s%-10s%-10s%-10s\n";
+        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING)
+                + "s%-15s%-15s%-10s%-10s%-12s%-10s\n";
 
         OUT_STREAM.printf(printTemplate, Queue.NAME, Queue.CONSUMER_COUNT, Queue.CAPACITY, Queue.SIZE, Queue.DURABLE,
-                Queue.AUTO_DELETE);
+                          Queue.AUTO_DELETE, Queue.OWNER);
         for (Queue queue : queues) {
             OUT_STREAM.printf(printTemplate, queue.getName(), String.valueOf(queue.getConsumerCount()),
-                    String.valueOf(queue.getCapacity()), String.valueOf(queue.getSize()),
-                    String.valueOf(queue.isDurable()), String.valueOf(queue.isAutoDelete()));
+                              String.valueOf(queue.getCapacity()), String.valueOf(queue.getSize()),
+                              String.valueOf(queue.isDurable()), String.valueOf(queue.isAutoDelete()),
+                              queue.getOwner());
+        }
+    }
+
+    @Override
+    public void printQueue(Queue queue) {
+        int maxFieldLength = Queue.CONSUMER_COUNT.length() + 1;
+        String printTemplate = "%-" + maxFieldLength + "s: %s\n";
+
+        OUT_STREAM.printf(printTemplate, Queue.NAME, queue.getName());
+        OUT_STREAM.printf(printTemplate, Queue.CONSUMER_COUNT, queue.getConsumerCount());
+        OUT_STREAM.printf(printTemplate, Queue.CAPACITY, queue.getCapacity());
+        OUT_STREAM.printf(printTemplate, Queue.SIZE, queue.getSize());
+        OUT_STREAM.printf(printTemplate, Queue.DURABLE, queue.isDurable());
+        OUT_STREAM.printf(printTemplate, Queue.AUTO_DELETE, queue.isAutoDelete());
+        OUT_STREAM.printf(printTemplate, Queue.OWNER, queue.getOwner());
+
+        OUT_STREAM.println("\nPermissions");
+        OUT_STREAM.println("===========");
+
+        for (Permission permission : queue.getPermissions()) {
+            String permissionsList = permission.getUserGroups()
+                                               .stream()
+                                               .map(String::toString)
+                                               .collect(Collectors.joining(","));
+            OUT_STREAM.println(permission.getAction() + ": " + permissionsList);
+
         }
     }
 
@@ -86,9 +139,9 @@ public class TableFormatter implements ResponseFormatter {
             return;
         }
         int maxQueueNameLength = Arrays.stream(bindings)
-                .mapToInt(binding -> binding.getQueueName().length())
-                .max()
-                .getAsInt();
+                                       .mapToInt(binding -> binding.getQueueName().length())
+                                       .max()
+                                       .getAsInt();
 
         int maxColumnSize = Math.max(maxQueueNameLength, Binding.QUEUE_NAME.length());
 
@@ -106,9 +159,9 @@ public class TableFormatter implements ResponseFormatter {
             return;
         }
         int maxIdLength = Arrays.stream(consumers)
-                .mapToInt(consumer -> String.valueOf(consumer.getId()).length())
-                .max()
-                .getAsInt();
+                                .mapToInt(consumer -> String.valueOf(consumer.getId()).length())
+                                .max()
+                                .getAsInt();
 
         int maxColumnSize = Math.max(maxIdLength, Consumer.CONSUMER_ID.length());
 

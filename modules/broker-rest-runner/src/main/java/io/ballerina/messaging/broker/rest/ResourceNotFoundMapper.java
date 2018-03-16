@@ -36,7 +36,8 @@ public class ResourceNotFoundMapper implements ExceptionMapper<NotFoundException
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceNotFoundMapper.class);
 
-    @Override public Response toResponse(NotFoundException exception) {
+    @Override
+    public Response toResponse(NotFoundException exception) {
         LOGGER.debug("Resource not found.", exception);
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("message", exception.getMessage());

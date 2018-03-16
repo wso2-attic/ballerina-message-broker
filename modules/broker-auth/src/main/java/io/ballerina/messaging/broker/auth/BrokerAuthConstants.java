@@ -54,4 +54,6 @@ public final class BrokerAuthConstants {
     public static final String USERS_CONFIG_NAMESPACE = "wso2.broker.users";
     // user manager property name
     public static final String PROPERTY_USER_STORE_CONNECTOR = "broker.user.store.connector";
+    // user manager authorization id
+    public static final String AUTHENTICATION_ID = "AuthenticationId";
 }

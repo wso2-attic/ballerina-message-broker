@@ -23,6 +23,7 @@ import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.auth.SaslAuthenticationStrategy;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.auth.UsernamePrincipal;
 import io.ballerina.messaging.broker.common.data.types.LongString;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.netty.buffer.ByteBuf;
@@ -32,6 +33,7 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.Subject;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
@@ -75,6 +77,8 @@ public class ConnectionSecureOk extends MethodFrame {
                 if (saslServerAttribute != null && (saslServer = saslServerAttribute.get()) != null) {
                     byte[] challenge = saslServer.evaluateResponse(response.getBytes());
                     if (saslServer.isComplete()) {
+                        Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());
+                        connectionHandler.attachBroker(subject);
                         ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
                     } else {
                         ctx.channel().attr(AttributeKey.valueOf(SaslAuthenticationStrategy.SASL_SERVER_ATTRIBUTE))

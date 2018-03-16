@@ -25,8 +25,8 @@ import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.FieldValue;
 import io.ballerina.messaging.broker.core.Binding;
 import io.ballerina.messaging.broker.core.BindingSet;
-import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.rest.model.BindingCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.BindingCreateResponse;
 import io.ballerina.messaging.broker.core.rest.model.BindingSetInfo;
@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.security.auth.Subject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.Response;
@@ -50,13 +51,13 @@ import javax.ws.rs.core.Response;
  */
 public class BindingsApiDelegate {
 
-    private final Broker broker;
+    private final BrokerFactory brokerFactory;
 
-    public BindingsApiDelegate(Broker broker) {
-        this.broker = broker;
+    public BindingsApiDelegate(BrokerFactory brokerFactory) {
+        this.brokerFactory = brokerFactory;
     }
 
-    public Response createBinding(String queueName, BindingCreateRequest requestBody) {
+    public Response createBinding(String queueName, BindingCreateRequest requestBody, Subject subject) {
         FieldTable fieldTable = new FieldTable();
         String filter = requestBody.getFilterExpression();
         if (Objects.nonNull(filter)) {
@@ -67,7 +68,8 @@ public class BindingsApiDelegate {
         }
 
         try {
-            broker.bind(queueName, requestBody.getExchangeName(), requestBody.getBindingPattern(), fieldTable);
+            brokerFactory.getBroker(subject).bind(queueName, requestBody.getExchangeName(),
+                    requestBody.getBindingPattern(), fieldTable);
             BindingCreateResponse responsePayload = new BindingCreateResponse().message("Binding created.");
             return Response.created(generateLocationHeader(queueName, requestBody))
                            .entity(responsePayload)
@@ -96,9 +98,10 @@ public class BindingsApiDelegate {
         return new URI(locationBuilder.toString());
     }
 
-    public Response getAllBindingsForExchange(String exchangeName) {
+    public Response getAllBindingsForExchange(String exchangeName, Subject subject) {
         try {
-            Map<String, BindingSet> bindingSets = broker.getAllBindingsForExchange(exchangeName);
+            Map<String, BindingSet> bindingSets =
+                    brokerFactory.getBroker(subject).getAllBindingsForExchange(exchangeName);
             List<BindingSetInfo> responsePayload = new ArrayList<>();
             for (Map.Entry<String, BindingSet> entry : bindingSets.entrySet()) {
                 BindingSetInfo responseBindingSet = new BindingSetInfo().bindingPattern(entry.getKey());
@@ -135,11 +138,11 @@ public class BindingsApiDelegate {
         }
     }
 
-    public Response deleteBinding(String queueName, String bindingPattern, String filterExpression) {
+    public Response deleteBinding(String queueName, String bindingPattern, String filterExpression, Subject subject) {
         return Response.status(Response.Status.NOT_IMPLEMENTED).build();
     }
 
-    public Response getBinding(String queueName, String bindingPattern, String filterExpression) {
+    public Response getBinding(String queueName, String bindingPattern, String filterExpression, Subject subject) {
         return Response.status(Response.Status.NOT_IMPLEMENTED).build();
     }
 }

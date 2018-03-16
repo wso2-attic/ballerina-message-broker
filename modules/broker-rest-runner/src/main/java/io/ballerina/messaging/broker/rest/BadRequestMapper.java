@@ -35,7 +35,8 @@ public class BadRequestMapper implements ExceptionMapper<BadRequestException> {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BadRequestMapper.class);
 
-    @Override public Response toResponse(BadRequestException exception) {
+    @Override
+    public Response toResponse(BadRequestException exception) {
         LOGGER.debug("Bad request.", exception);
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("message", exception.getMessage());

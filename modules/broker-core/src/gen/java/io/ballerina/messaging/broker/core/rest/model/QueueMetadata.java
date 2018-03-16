@@ -19,13 +19,14 @@
 
 package io.ballerina.messaging.broker.core.rest.model;
 
-import javax.validation.constraints.*;
-import javax.validation.Valid;
-
-
-import io.swagger.annotations.*;
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 
 public class QueueMetadata   {
@@ -36,6 +37,8 @@ public class QueueMetadata   {
   private @Valid Integer capacity = null;
   private @Valid Integer size = null;
   private @Valid Boolean autoDelete = null;
+  private @Valid String owner = null;
+  private @Valid List<ActionUserGroupsMapping> permissions = new ArrayList<ActionUserGroupsMapping>();
 
   /**
    * Name of the queue. This is a unique value
@@ -151,9 +154,45 @@ public class QueueMetadata   {
     this.autoDelete = autoDelete;
   }
 
+  /**
+   * Queue owner
+   **/
+  public QueueMetadata owner(String owner) {
+    this.owner = owner;
+    return this;
+  }
+
+  
+  @ApiModelProperty(value = "Queue owner")
+  @JsonProperty("owner")
+  public String getOwner() {
+    return owner;
+  }
+  public void setOwner(String owner) {
+    this.owner = owner;
+  }
+
+  /**
+   * Queue action User groups permissions
+   **/
+  public QueueMetadata permissions(List<ActionUserGroupsMapping> permissions) {
+    this.permissions = permissions;
+    return this;
+  }
+
+  
+  @ApiModelProperty(value = "Queue action User groups permissions")
+  @JsonProperty("permissions")
+  public List<ActionUserGroupsMapping> getPermissions() {
+    return permissions;
+  }
+  public void setPermissions(List<ActionUserGroupsMapping> permissions) {
+    this.permissions = permissions;
+  }
+
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -166,12 +205,14 @@ public class QueueMetadata   {
         Objects.equals(durable, queueMetadata.durable) &&
         Objects.equals(capacity, queueMetadata.capacity) &&
         Objects.equals(size, queueMetadata.size) &&
-        Objects.equals(autoDelete, queueMetadata.autoDelete);
+        Objects.equals(autoDelete, queueMetadata.autoDelete) &&
+        Objects.equals(owner, queueMetadata.owner) &&
+        Objects.equals(permissions, queueMetadata.permissions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, consumerCount, durable, capacity, size, autoDelete);
+    return Objects.hash(name, consumerCount, durable, capacity, size, autoDelete, owner, permissions);
   }
 
   @Override
@@ -185,6 +226,8 @@ public class QueueMetadata   {
     sb.append("    capacity: ").append(toIndentedString(capacity)).append("\n");
     sb.append("    size: ").append(toIndentedString(size)).append("\n");
     sb.append("    autoDelete: ").append(toIndentedString(autoDelete)).append("\n");
+    sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
+    sb.append("    permissions: ").append(toIndentedString(permissions)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -193,7 +236,7 @@ public class QueueMetadata   {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

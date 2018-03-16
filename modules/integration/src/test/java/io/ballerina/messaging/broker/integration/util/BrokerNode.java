@@ -6,7 +6,7 @@
  * in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -14,6 +14,7 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package io.ballerina.messaging.broker.integration.util;
@@ -25,7 +26,10 @@ import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator;
 import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
+import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.RdbmsDacHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
+import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.BrokerHaConfiguration;
 import io.ballerina.messaging.broker.coordination.CoordinationException;
@@ -33,6 +37,10 @@ import io.ballerina.messaging.broker.coordination.HaStrategy;
 import io.ballerina.messaging.broker.coordination.HaStrategyFactory;
 import io.ballerina.messaging.broker.coordination.rdbms.RdbmsHaStrategy;
 import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerFactory;
+import io.ballerina.messaging.broker.core.BrokerImpl;
+import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
+import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
 import io.ballerina.messaging.broker.rest.config.RestServerConfiguration;
@@ -126,12 +134,27 @@ public class BrokerNode {
         authenticatorConfiguration.setProperties(properties);
         authenticationConfiguration.setAuthenticator(authenticatorConfiguration);
         brokerAuthConfiguration.setAuthentication(authenticationConfiguration);
+        brokerAuthConfiguration.getAuthorization()
+                               .getMandatoryAccessController()
+                               .setClassName(DefaultMacHandler.class.getName());
+        brokerAuthConfiguration.getAuthorization()
+                               .getDiscretionaryAccessController()
+                               .setClassName(RdbmsDacHandler.class.getName());
+        BrokerCommonConfiguration brokerCommonConfiguration = new BrokerCommonConfiguration();
         configProvider.registerConfigurationObject(BrokerAuthConfiguration.NAMESPACE, brokerAuthConfiguration);
+        configProvider.registerConfigurationObject(BrokerCommonConfiguration.NAMESPACE, brokerCommonConfiguration);
         AuthManager authManager = new AuthManager(startupContext);
 
         authManager.start();
         brokerRestServer = new BrokerRestServer(startupContext);
-        broker = new Broker(startupContext);
+        broker = new BrokerImpl(startupContext);
+        BrokerFactory brokerFactory;
+        if (authManager.isAuthorizationEnabled()) {
+            brokerFactory = new SecureBrokerFactory(startupContext);
+        } else {
+            brokerFactory = new DefaultBrokerFactory(startupContext);
+        }
+        startupContext.registerService(BrokerFactory.class, brokerFactory);
         server = new Server(startupContext);
     }
 

@@ -24,4 +24,7 @@ package io.ballerina.messaging.broker.amqp.codec;
  */
 public class AmqConstant {
     public static final int COMMAND_INVALID = 503;
+
+    private AmqConstant() {
+    }
 }

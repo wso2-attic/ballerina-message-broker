@@ -22,6 +22,8 @@ package io.ballerina.messaging.broker.core.rest.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import javax.validation.Valid;
 
@@ -31,6 +33,9 @@ public class ExchangeMetadata   {
   private @Valid String name = null;
   private @Valid String type = null;
   private @Valid Boolean durable = null;
+  private @Valid String owner = null;
+  private @Valid
+  List<ActionUserGroupsMapping> permissions = new ArrayList<ActionUserGroupsMapping>();
 
   /**
    * Name of the exchange
@@ -86,6 +91,42 @@ public class ExchangeMetadata   {
     this.durable = durable;
   }
 
+  /**
+   * Queue owner
+   **/
+  public ExchangeMetadata owner(String owner) {
+    this.owner = owner;
+    return this;
+  }
+
+  
+  @ApiModelProperty(value = "Queue owner")
+  @JsonProperty("owner")
+  public String getOwner() {
+    return owner;
+  }
+  public void setOwner(String owner) {
+    this.owner = owner;
+  }
+
+  /**
+   * Queue action User groups permissions
+   **/
+  public ExchangeMetadata permissions(List<ActionUserGroupsMapping> permissions) {
+    this.permissions = permissions;
+    return this;
+  }
+
+  
+  @ApiModelProperty(value = "Queue action User groups permissions")
+  @JsonProperty("permissions")
+  public List<ActionUserGroupsMapping> getPermissions() {
+    return permissions;
+  }
+  public void setPermissions(List<ActionUserGroupsMapping> permissions) {
+    this.permissions = permissions;
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -98,12 +139,14 @@ public class ExchangeMetadata   {
     ExchangeMetadata exchangeMetadata = (ExchangeMetadata) o;
     return Objects.equals(name, exchangeMetadata.name) &&
         Objects.equals(type, exchangeMetadata.type) &&
-        Objects.equals(durable, exchangeMetadata.durable);
+        Objects.equals(durable, exchangeMetadata.durable) &&
+        Objects.equals(owner, exchangeMetadata.owner) &&
+        Objects.equals(permissions, exchangeMetadata.permissions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, type, durable);
+    return Objects.hash(name, type, durable, owner, permissions);
   }
 
   @Override
@@ -114,6 +157,8 @@ public class ExchangeMetadata   {
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    durable: ").append(toIndentedString(durable)).append("\n");
+    sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
+    sb.append("    permissions: ").append(toIndentedString(permissions)).append("\n");
     sb.append("}");
     return sb.toString();
   }

@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerAuthException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -100,6 +101,12 @@ public class ExchangeDeclare extends MethodFrame {
             try {
                 channel.declareExchange(exchange.toString(), type.toString(), passive, durable);
                 ctx.writeAndFlush(new ExchangeDeclareOk(getChannel()));
+            } catch (BrokerAuthException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.ACCESS_REFUSED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
             } catch (BrokerException e) {
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
                                                    ChannelException.NOT_ALLOWED,

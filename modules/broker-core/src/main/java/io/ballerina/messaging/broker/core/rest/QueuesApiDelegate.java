@@ -19,11 +19,19 @@
 
 package io.ballerina.messaging.broker.core.rest;
 
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
+import io.ballerina.messaging.broker.auth.AuthServerException;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
-import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerAuthException;
+import io.ballerina.messaging.broker.core.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.QueueHandler;
+import io.ballerina.messaging.broker.core.rest.model.ActionUserGroupsMapping;
 import io.ballerina.messaging.broker.core.rest.model.MessageDeleteResponse;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateResponse;
@@ -36,9 +44,13 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import javax.security.auth.Subject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -51,15 +63,18 @@ public class QueuesApiDelegate {
 
     public static final String QUEUES_API_PATH = "/queues";
 
-    private final Broker broker;
+    private final BrokerFactory brokerFactory;
 
-    public QueuesApiDelegate(Broker broker) {
-        this.broker = broker;
+    private final Authorizer authorizer;
+
+    public QueuesApiDelegate(BrokerFactory brokerFactory, Authorizer authorizer) {
+        this.brokerFactory = brokerFactory;
+        this.authorizer = authorizer;
     }
 
-    public Response createQueue(QueueCreateRequest requestBody) {
+    public Response createQueue(QueueCreateRequest requestBody, Subject subject) {
         try {
-            if (broker.createQueue(requestBody.getName(), false,
+            if (brokerFactory.getBroker(subject).createQueue(requestBody.getName(), false,
                                    requestBody.isDurable(), requestBody.isAutoDelete())) {
                 QueueCreateResponse message = new QueueCreateResponse().message("Queue created.");
                 return Response.created(new URI(BrokerAdminService.API_BASE_PATH + QUEUES_API_PATH
@@ -70,13 +85,15 @@ public class QueuesApiDelegate {
             }
         } catch (ValidationException e) {
             throw new BadRequestException(e.getMessage(), e);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
         } catch (BrokerException | URISyntaxException e) {
-            LOGGER.error("Error occurred while generating location URI ", e);
+            LOGGER.error("Error occurred while creating the queue.", e);
             throw new InternalServerErrorException(e.getMessage(), e);
         }
     }
 
-    public Response deleteQueue(String queueName, Boolean ifUnused, Boolean ifEmpty) {
+    public Response deleteQueue(String queueName, Boolean ifUnused, Boolean ifEmpty, Subject subject) {
         if (Objects.isNull(ifUnused)) {
             ifUnused = true;
         }
@@ -86,56 +103,96 @@ public class QueuesApiDelegate {
         }
 
         try {
-            int numberOfMessagesDeleted = broker.deleteQueue(queueName, ifUnused, ifEmpty);
+            int numberOfMessagesDeleted = brokerFactory.getBroker(subject).deleteQueue(queueName, ifUnused, ifEmpty);
             return Response.ok()
                            .entity(new MessageDeleteResponse().numberOfMessagesDeleted(numberOfMessagesDeleted))
                            .build();
         } catch (ValidationException e) {
             throw new BadRequestException(e.getMessage(), e);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (ResourceNotFoundException | BrokerAuthNotFoundException e) {
+            throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
         } catch (BrokerException e) {
             throw new InternalServerErrorException(e.getMessage(), e);
-        } catch (ResourceNotFoundException e) {
-            throw new NotFoundException("Queue " + queueName + " doesn't exist.", e);
         }
     }
 
-    public Response getQueue(String queueName) {
-        QueueHandler queueHandler = broker.getQueue(queueName);
-
-        if (Objects.isNull(queueHandler)) {
+    public Response getQueue(String queueName, Subject subject) {
+        QueueHandler queueHandler;
+        QueueMetadata queueMetadata;
+        try {
+            queueHandler = brokerFactory.getBroker(subject).getQueue(queueName);
+            queueMetadata = toQueueMetadata(queueHandler);
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (BrokerAuthNotFoundException | ResourceNotFoundException e) {
             throw new NotFoundException("Queue " + queueName + " not found");
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
 
-        QueueMetadata queueMetadata = toQueueMetadata(queueHandler);
         return Response.ok().entity(queueMetadata).build();
     }
 
-    public Response getAllQueues(Boolean durable) {
+    public Response getAllQueues(Boolean durable, Subject subject) {
         boolean filterByDurability = Objects.nonNull(durable);
-        Collection<QueueHandler> queueHandlers = broker.getAllQueues();
-        List<QueueMetadata> queueArray = new ArrayList<>(queueHandlers.size());
-        for (QueueHandler handler : queueHandlers) {
-            // Add if filter is not set or durability equals to filer value.
-            if (!filterByDurability || durable == handler.getQueue().isDurable()) {
-                queueArray.add(toQueueMetadata(handler));
+        Collection<QueueHandler> queueHandlers;
+        List<QueueMetadata> queueArray;
+        try {
+            queueHandlers = brokerFactory.getBroker(subject).getAllQueues();
+            queueArray = new ArrayList<>(queueHandlers.size());
+            for (QueueHandler handler : queueHandlers) {
+                // Add if filter is not set or durability equals to filer value.
+                if (!filterByDurability || durable == handler.getQueue().isDurable()) {
+                    queueArray.add(toQueueMetadata(handler));
+                }
             }
+        } catch (BrokerAuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (BrokerException e) {
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
         return Response.ok().entity(queueArray).build();
     }
 
-    private QueueMetadata toQueueMetadata(QueueHandler queueHandler) {
-        return new QueueMetadata()
-                .name(queueHandler.getQueue().getName())
+    private QueueMetadata toQueueMetadata(QueueHandler queueHandler) throws BrokerException {
+        QueueMetadata queueMetadata = new QueueMetadata();
+        queueMetadata.name(queueHandler.getQueue().getName())
                 .durable(queueHandler.getQueue().isDurable())
                 .autoDelete(queueHandler.getQueue().isAutoDelete())
                 .capacity(queueHandler.getQueue().capacity())
                 .consumerCount(queueHandler.consumerCount())
                 .size(queueHandler.size());
+        try {
+            AuthResource authResource = authorizer.getAuthResource(ResourceType.QUEUE.toString(),
+                                                      queueHandler.getQueue().getName());
+            if (Objects.nonNull(authResource)) {
+                queueMetadata.owner(authResource.getOwner())
+                        .permissions(toActionUserGroupsMapping(authResource.getActionsUserGroupsMap()));
+            }
+        } catch (AuthServerException | AuthNotFoundException e) {
+            throw new BrokerException("Error while querying auth resource", e);
+        }
+        return queueMetadata;
     }
 
-    public Response purgeQueue(String queueName) {
+    private ArrayList<ActionUserGroupsMapping> toActionUserGroupsMapping(
+            Map<String, Set<String>> actionsUserGroupsMap) {
+
+        ArrayList<ActionUserGroupsMapping> actionUserGroupsMappings = new ArrayList<>(actionsUserGroupsMap.size());
+        actionsUserGroupsMap.forEach((action, userGroups) -> {
+            ActionUserGroupsMapping actionUserGroupsMapping = new ActionUserGroupsMapping();
+            actionUserGroupsMapping.setAction(action);
+            actionUserGroupsMapping.setUserGroups(new ArrayList<>(userGroups));
+            actionUserGroupsMappings.add(actionUserGroupsMapping);
+        });
+        return actionUserGroupsMappings;
+    }
+
+    public Response purgeQueue(String queueName, Subject subject) {
         try {
-            int numberOfMessagesDeleted = broker.purgeQueue(queueName);
+            int numberOfMessagesDeleted = brokerFactory.getBroker(subject).purgeQueue(queueName);
             return Response.ok()
                            .entity(new MessageDeleteResponse().numberOfMessagesDeleted(numberOfMessagesDeleted))
                            .build();

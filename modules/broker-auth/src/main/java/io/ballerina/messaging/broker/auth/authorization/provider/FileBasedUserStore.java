@@ -16,12 +16,12 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.user.impl;
+package io.ballerina.messaging.broker.auth.authorization.provider;
 
+import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
-import io.ballerina.messaging.broker.auth.BrokerAuthException;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
-import io.ballerina.messaging.broker.auth.user.UserStoreConnector;
+import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.user.config.UserConfig;
 import io.ballerina.messaging.broker.auth.user.config.UsersFile;
 import io.ballerina.messaging.broker.auth.user.dto.User;
@@ -43,11 +43,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * This class implements @{@link UserStoreConnector} to connect to file based user store.
+ * This class implements @{@link UserStore} to connect to file based user store.
  */
-public class FileBasedUserStoreConnector implements UserStoreConnector {
+public class FileBasedUserStore implements UserStore {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedUserStoreConnector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedUserStore.class);
 
     /**
      * Store the map of userRegistry.
@@ -55,7 +55,7 @@ public class FileBasedUserStoreConnector implements UserStoreConnector {
     private static Map<String, User> userRegistry = new ConcurrentHashMap<>();
 
     @Override
-    public void initialize(StartupContext startupContext) throws Exception {
+    public void initialize(StartupContext startupContext, Map<String, String> properties) throws Exception {
         Path usersYamlFile;
         String usersFilePath = System.getProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG);
         if (usersFilePath == null || usersFilePath.trim().isEmpty()) {
@@ -84,25 +84,30 @@ public class FileBasedUserStoreConnector implements UserStoreConnector {
     /**
      * Authenticate given user with credentials.
      *
-     * @param userName    userName
+     * @param username    userName
      * @param credentials Credentials
      * @return Authentication result
-     * @throws BrokerAuthException Exception throws when authentication failed.
+     * @throws AuthException Exception throws when authentication failed.
      */
     @Override
-    public AuthResult authenticate(String userName, char... credentials) throws BrokerAuthException {
+    public AuthResult authenticate(String username, char... credentials) throws AuthException {
         User user;
-        if (Objects.isNull(userName)) {
-            throw new BrokerAuthException("Username cannot be null.");
-        } else if (Objects.isNull(user = userRegistry.get(userName))) {
-            throw new BrokerAuthException("User not found for the given username.");
+        if (Objects.isNull(username)) {
+            throw new AuthException("Username cannot be null.");
+        } else if (Objects.isNull(user = userRegistry.get(username))) {
+            throw new AuthException("User not found for the given username.");
         } else {
             if (Arrays.equals(credentials, user.getPassword())) {
-                return new AuthResult(true, userName);
+                return new AuthResult(true, username);
             } else {
-                throw new BrokerAuthException("Password did not match with the configured user");
+                throw new AuthException("Password did not match with the configured user");
             }
         }
+    }
+
+    @Override
+    public boolean isUserExists(String username) {
+        return Objects.nonNull(userRegistry.get(username));
     }
 
     /**
@@ -112,7 +117,7 @@ public class FileBasedUserStoreConnector implements UserStoreConnector {
      * @return List of roles
      */
     @Override
-    public Set<String> getUserRoleList(String userName) {
+    public Set<String> getUserGroupsList(String userName) {
         User user = userRegistry.get(userName);
         if (user != null) {
             return user.getRoles();

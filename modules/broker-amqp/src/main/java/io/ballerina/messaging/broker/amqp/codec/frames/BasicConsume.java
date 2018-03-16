@@ -25,6 +25,8 @@ import io.ballerina.messaging.broker.amqp.codec.ChannelException;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerAuthException;
+import io.ballerina.messaging.broker.core.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -104,6 +106,12 @@ public class BasicConsume extends MethodFrame {
             try {
                 ShortString usedConsumerTag = channel.consume(queue, consumerTag, exclusive, ctx);
                 ctx.writeAndFlush(new BasicConsumeOk(getChannel(), usedConsumerTag));
+            } catch (BrokerAuthException | BrokerAuthNotFoundException e) {
+                ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                   ChannelException.ACCESS_REFUSED,
+                                                   ShortString.parseString(e.getMessage()),
+                                                   CLASS_ID,
+                                                   METHOD_ID));
             } catch (BrokerException e) {
                 ctx.writeAndFlush(new ChannelClose(getChannel(),
                                                    ChannelException.NOT_ALLOWED,

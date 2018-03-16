@@ -72,13 +72,13 @@ public class ListExchangeCmd extends ListCmd {
 
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             Gson gson = new Gson();
-            Exchange[] exchanges;
             if (exchangeName.isEmpty()) {
-                exchanges = gson.fromJson(response.getPayload(), Exchange[].class);
+                Exchange[] exchanges = gson.fromJson(response.getPayload(), Exchange[].class);
+                responseFormatter.printExchanges(exchanges);
             } else {
-                exchanges = new Exchange[] { gson.fromJson(response.getPayload(), Exchange.class) };
+                Exchange exchange = gson.fromJson(response.getPayload(), Exchange.class);
+                responseFormatter.printExchange(exchange);
             }
-            responseFormatter.printExchanges(exchanges);
         } else {
             ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
         }
