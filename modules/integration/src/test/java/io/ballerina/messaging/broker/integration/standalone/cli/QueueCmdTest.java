@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.integration.standalone.cli;
 import io.ballerina.messaging.broker.client.Main;
 import io.ballerina.messaging.broker.client.utils.Constants;
 import org.testng.Assert;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import static io.ballerina.messaging.broker.integration.util.TestConstants.CLI_ROOT_COMMAND;
@@ -135,7 +136,6 @@ public class QueueCmdTest extends CliTestParent {
 
         String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_QUEUE, queueName };
 
-
         Main.main(createCmd);
         Main.main(grantCmd);
         Main.main(checkCmd);
@@ -152,33 +152,22 @@ public class QueueCmdTest extends CliTestParent {
         evalStreamContent(PrintStreamHandler.readOutStream(), "User group successfully removed.", revokeCmd);
     }
 
-    @Test(groups = "StreamReading",
-          description = "test command 'grant queue'")
-    public void testGrantRevokeExchange() {
-        String exchangeName = "testGrantExchange";
-        String[] createCmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_EXCHANGE, exchangeName, "-d" };
+    @Test(groups = "StreamReading", description = "test command 'transfer queue'")
+    @Parameters({ "test-username"})
+    public void testChangeOwnerQueue(String testUser) {
+        String queueName = "testChangeOwnerQueue";
+        String[] createCmd = { CLI_ROOT_COMMAND, Constants.CMD_CREATE, Constants.CMD_QUEUE, queueName, "-d" };
 
-        String[] grantCmd = { CLI_ROOT_COMMAND, Constants.CMD_GRANT, Constants.CMD_EXCHANGE, exchangeName, "-a", "get",
-                              "-g", "manager" };
+        String[] changeOwnerCmd = { CLI_ROOT_COMMAND, Constants.CMD_TRANSFER, Constants.CMD_QUEUE, queueName, "-n",
+                              testUser };
 
-        String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_EXCHANGE, exchangeName };
-
+        String[] checkCmd = { CLI_ROOT_COMMAND, Constants.CMD_LIST, Constants.CMD_QUEUE, queueName };
 
         Main.main(createCmd);
-        Main.main(grantCmd);
+        Main.main(changeOwnerCmd);
         Main.main(checkCmd);
 
-        evalStreamContent(PrintStreamHandler.readOutStream(), "get: manager", grantCmd);
-
-        PrintStreamHandler.resetStreams();
-
-        String[] revokeCmd = {
-                CLI_ROOT_COMMAND, Constants.CMD_REVOKE, Constants.CMD_EXCHANGE, exchangeName, "-a", "get", "-g",
-                "manager"
-        };
-
-        Main.main(revokeCmd);
-
-        evalStreamContent(PrintStreamHandler.readOutStream(), "User group successfully removed.", revokeCmd);
+        evalStreamContent(PrintStreamHandler.readOutStream(), "owner         : " + testUser, changeOwnerCmd);
     }
+
 }
