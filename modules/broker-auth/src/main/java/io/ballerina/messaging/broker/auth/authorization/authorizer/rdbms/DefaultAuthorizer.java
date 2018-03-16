@@ -214,8 +214,10 @@ public class DefaultAuthorizer implements Authorizer {
     public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
             throws AuthException, AuthNotFoundException, AuthServerException {
         boolean success = false;
-        if (!memoryDacHandler.addGroupToResource(resourceType, resourceName, action, group)) {
-            success = externalDacHandler.addGroupToResource(resourceType, resourceName, action, group);
+        if (memoryDacHandler.addGroupToResource(resourceType, resourceName, action, group)) {
+            success = true;
+        } else if (externalDacHandler.addGroupToResource(resourceType, resourceName, action, group)) {
+            success = true;
         }
         return success;
     }
@@ -224,8 +226,10 @@ public class DefaultAuthorizer implements Authorizer {
     public boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group)
             throws AuthServerException, AuthNotFoundException {
         boolean success = false;
-        if (!memoryDacHandler.removeGroupFromResource(resourceType, resourceName, action, group)) {
-            success = externalDacHandler.removeGroupFromResource(resourceType, resourceName, action, group);
+        if (memoryDacHandler.removeGroupFromResource(resourceType, resourceName, action, group)) {
+            success = true;
+        } else if (externalDacHandler.removeGroupFromResource(resourceType, resourceName, action, group)) {
+            success = true;
         }
         return success;
     }
@@ -234,8 +238,10 @@ public class DefaultAuthorizer implements Authorizer {
     public boolean changeResourceOwner(String resourceType, String resourceName, String owner)
             throws AuthServerException, AuthNotFoundException {
         boolean success = false;
-        if (!memoryDacHandler.changeResourceOwner(resourceType, resourceName, owner)) {
-            success = externalDacHandler.changeResourceOwner(resourceType, resourceName, owner);
+        if (memoryDacHandler.changeResourceOwner(resourceType, resourceName, owner)) {
+            success = true;
+        } else if (externalDacHandler.changeResourceOwner(resourceType, resourceName, owner)) {
+            success = true;
         }
         return success;
     }
