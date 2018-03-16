@@ -31,12 +31,15 @@ public class Exchange {
     public static final String NAME = "name";
     public static final String TYPE = "type";
     public static final String DURABLE = "durable";
+    public static final String OWNER = "owner";
 
     private String name;
 
     private String type;
 
     private boolean durable;
+
+    private String owner;
 
     private List<Permission> permissions = new ArrayList<>();
 
@@ -56,6 +59,10 @@ public class Exchange {
 
     public boolean isDurable() {
         return durable;
+    }
+
+    public String getOwner() {
+        return owner;
     }
 
     public String getAsJsonString() {

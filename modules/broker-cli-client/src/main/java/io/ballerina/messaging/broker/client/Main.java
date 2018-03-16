@@ -134,6 +134,7 @@ public class Main {
 
         // add transfer sub-commands
         addChildCommand(jCommanderTransfer, Constants.CMD_QUEUE, commandFactory.createTransferQueueCommand());
+        addChildCommand(jCommanderTransfer, Constants.CMD_EXCHANGE, commandFactory.createTransferExchangeCommand());
 
         return jCommanderRoot;
     }

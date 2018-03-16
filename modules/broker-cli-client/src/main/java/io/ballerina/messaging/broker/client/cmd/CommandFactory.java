@@ -39,6 +39,7 @@ import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeQueueCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferQueueCmd;
 
 /**
@@ -141,5 +142,9 @@ public class CommandFactory {
 
     public TransferQueueCmd createTransferQueueCommand() {
         return new TransferQueueCmd(rootCommand);
+    }
+
+    public TransferExchangeCmd createTransferExchangeCommand() {
+        return new TransferExchangeCmd(rootCommand);
     }
 }

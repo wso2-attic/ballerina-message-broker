@@ -50,12 +50,12 @@ public class TableFormatter implements ResponseFormatter {
 
         int maxColumnSize = Math.max(maxExchangeNameLength, Exchange.NAME.length());
 
-        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-10s%-10s\n";
+        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-10s%-10s%-10s\n";
 
-        OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE);
+        OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE, Exchange.OWNER);
         for (Exchange exchange : exchanges) {
             OUT_STREAM.printf(printTemplate, exchange.getName(), exchange.getType(),
-                              String.valueOf(exchange.isDurable()));
+                              String.valueOf(exchange.isDurable()), exchange.getOwner());
         }
     }
 
@@ -67,6 +67,7 @@ public class TableFormatter implements ResponseFormatter {
         OUT_STREAM.printf(printTemplate, Exchange.NAME, exchange.getName());
         OUT_STREAM.printf(printTemplate, Exchange.TYPE, exchange.getType());
         OUT_STREAM.printf(printTemplate, Queue.DURABLE, exchange.isDurable());
+        OUT_STREAM.printf(printTemplate, Queue.OWNER, exchange.getOwner());
 
         OUT_STREAM.println("\nPermissions");
         OUT_STREAM.println("===========");
