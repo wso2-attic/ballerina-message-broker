@@ -84,25 +84,30 @@ public class FileBasedUserStore implements UserStore {
     /**
      * Authenticate given user with credentials.
      *
-     * @param userName    userName
+     * @param username    userName
      * @param credentials Credentials
      * @return Authentication result
      * @throws AuthException Exception throws when authentication failed.
      */
     @Override
-    public AuthResult authenticate(String userName, char... credentials) throws AuthException {
+    public AuthResult authenticate(String username, char... credentials) throws AuthException {
         User user;
-        if (Objects.isNull(userName)) {
+        if (Objects.isNull(username)) {
             throw new AuthException("Username cannot be null.");
-        } else if (Objects.isNull(user = userRegistry.get(userName))) {
+        } else if (Objects.isNull(user = userRegistry.get(username))) {
             throw new AuthException("User not found for the given username.");
         } else {
             if (Arrays.equals(credentials, user.getPassword())) {
-                return new AuthResult(true, userName);
+                return new AuthResult(true, username);
             } else {
                 throw new AuthException("Password did not match with the configured user");
             }
         }
+    }
+
+    @Override
+    public boolean isUserExists(String username) {
+        return Objects.nonNull(userRegistry.get(username));
     }
 
     /**

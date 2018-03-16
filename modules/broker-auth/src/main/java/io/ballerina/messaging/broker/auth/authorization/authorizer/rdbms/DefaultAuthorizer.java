@@ -236,7 +236,10 @@ public class DefaultAuthorizer implements Authorizer {
 
     @Override
     public boolean changeResourceOwner(String resourceType, String resourceName, String owner)
-            throws AuthServerException, AuthNotFoundException {
+            throws AuthServerException, AuthNotFoundException, AuthException {
+        if (!userStore.isUserExists(owner)) {
+            throw new AuthException("Invalid username for the owner.");
+        }
         boolean success = false;
         if (memoryDacHandler.changeResourceOwner(resourceType, resourceName, owner)) {
             success = true;

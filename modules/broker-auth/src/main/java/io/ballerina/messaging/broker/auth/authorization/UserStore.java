@@ -50,10 +50,18 @@ public interface UserStore {
     /**
      * Authenticate given user with credentials.
      *
-     * @param userName    userName
+     * @param username    userName
      * @param credentials credentials
      * @return Authentication result
      * @throws AuthException Exception throws when authentication failed.
      */
-    AuthResult authenticate(String userName, char... credentials) throws AuthException;
+    AuthResult authenticate(String username, char... credentials) throws AuthException;
+
+    /**
+     * Verify given username against underlying user store
+     *
+     * @param username username to verify
+     * @return true or false based on the verification
+     */
+    boolean isUserExists(String username);
 }
