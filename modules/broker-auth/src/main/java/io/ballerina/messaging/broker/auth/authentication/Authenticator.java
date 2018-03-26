@@ -34,8 +34,9 @@ public interface Authenticator {
 
     /**
      * Initiate authenticator with startup context.
-     *  @param startupContext the startup context provides registered services for authenticator functionality.
-     * @param userStore
+     *
+     * @param startupContext the startup context provides registered services for authenticator functionality.
+     * @param userStore      {@link UserStore} to get the user information
      * @param properties     set of properties
      */
     void initialize(StartupContext startupContext,

@@ -34,7 +34,7 @@ There are two authenticator implementations available out of the box.
 
 A user can write custom authenticator by implementing the [Authenticator](https://github.com/ballerina-platform/ballerina-message-broker/blob/master/modules/broker-auth/src/main/java/io/ballerina/messaging/broker/auth/authentication/Authenticator.java) interface.
 Supporting classes pass to the Authenticator via properties. In the default implementation, JaasAuthenticator 
-required JaaS login module and it has provided with UserStoreLoginModule. Please refer to the developer guide for more 
+required JaaS login module and it has provided with UserStoreLoginModule. Please refer to the [developer guide](../dev/security-architecture.md) for more 
 implementation details.
 
 
@@ -70,7 +70,7 @@ implementation details.
         className: io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator
         # Optional properties
         properties:
-         loginModule: io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule
+         loginModule: <fully qualified class name of the custom login module>
 ```
 
 ##### option 2
