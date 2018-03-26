@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.store.dao.impl;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.ballerina.messaging.broker.common.BaseDao;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.ContentChunk;
@@ -37,6 +38,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.sql.DataSource;
@@ -182,7 +184,7 @@ class MessageCrudOperationsDao extends BaseDao {
         }
     }
 
-    public Collection<Message> read(Connection connection, Map<Long, Message> messageMap) throws BrokerException {
+    public void read(Connection connection, Map<Long, List<Message>> messageMap) throws BrokerException {
 
         try (Context ignored = metricManager.startMessageReadTimer()) {
             if (!messageMap.isEmpty()) {
@@ -190,26 +192,15 @@ class MessageCrudOperationsDao extends BaseDao {
                 populateMessageWithMetadata(connection, idList, messageMap.keySet(), messageMap);
                 populateContent(connection, idList, messageMap);
             }
-            return messageMap.values();
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while reading messages", e);
         }
     }
 
-    private String getSQLFormattedIdList(int size) {
-        StringBuilder paramList = new StringBuilder();
-        paramList.append("?");
-
-        for (int i = 1; i < size; i++) {
-            paramList.append(",?");
-        }
-        return paramList.toString();
-    }
-
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     private void populateMessageWithMetadata(Connection connection,
                                              String idListAsString, Collection<Long> idList,
-                                             Map<Long, Message> messageMap) throws SQLException, BrokerException {
+                                             Map<Long, List<Message>> messageMap) throws SQLException, BrokerException {
         String metadataSql = "SELECT MESSAGE_ID, EXCHANGE_NAME, ROUTING_KEY, CONTENT_LENGTH, MESSAGE_METADATA "
                 + " FROM MB_METADATA WHERE MESSAGE_ID IN (" + idListAsString + ") ORDER BY MESSAGE_ID";
 
@@ -237,12 +228,11 @@ class MessageCrudOperationsDao extends BaseDao {
                     metadata.setProperties(FieldTable.parse(buffer));
                     metadata.setHeaders(FieldTable.parse(buffer));
 
-                    Message message = messageMap.get(messageId);
-                    if (Objects.nonNull(message)) {
-                        message.setMetadata(metadata);
-                    } else {
-                        message = new Message(messageId, metadata);
-                        messageMap.put(messageId, message);
+                    List<Message> messages = messageMap.get(messageId);
+                    for (Message message : messages) {
+                        if (Objects.nonNull(message)) {
+                            message.setMetadata(metadata);
+                        }
                     }
                 } catch (Exception e) {
                     throw new BrokerException("Error occurred while parsing metadata properties", e);
@@ -258,7 +248,7 @@ class MessageCrudOperationsDao extends BaseDao {
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     private void populateContent(Connection connection, String idList,
-                                 Map<Long, Message> messageMap) throws SQLException {
+                                 Map<Long, List<Message>> messageMap) throws SQLException {
 
         PreparedStatement selectContent = null;
         ResultSet contentResultSet = null;
@@ -280,9 +270,11 @@ class MessageCrudOperationsDao extends BaseDao {
                 int offset = contentResultSet.getInt(2);
                 byte[] bytes = contentResultSet.getBytes(3);
 
-                Message message = messageMap.get(messageId);
-                if (message != null) {
-                    message.addChunk(new ContentChunk(offset, Unpooled.copiedBuffer(bytes)));
+                List<Message> messages = messageMap.get(messageId);
+                for (Message message : messages) {
+                    if (Objects.nonNull(message)) {
+                        message.addChunk(new ContentChunk(offset, Unpooled.copiedBuffer(bytes)));
+                    }
                 }
             }
         } finally {

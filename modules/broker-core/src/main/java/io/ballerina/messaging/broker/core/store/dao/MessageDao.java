@@ -24,6 +24,7 @@ import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.TransactionData;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import javax.transaction.xa.Xid;
 
@@ -52,7 +53,7 @@ public interface MessageDao {
      *
      * @param readList list of messages.
      */
-    Collection<Message> read(Map<Long, Message> readList) throws BrokerException;
+    void read(Map<Long, List<Message>> readList) throws BrokerException;
 
     /**
      * Store transaction data in a separate table until subsequent commit or rollback is issued.

@@ -36,6 +36,7 @@ import javax.sql.DataSource;
  */
 public abstract class BaseDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseDao.class);
+    public static final Object DUMMY_RETURN_OBJECT = new Object();
 
     private final DataSource dataSource;
 
@@ -140,7 +141,7 @@ public abstract class BaseDao {
         }
     }
 
-    public <R, E extends Exception> R selectOperation(ThrowingFunction<Connection, R, E> command)
+    public <R, E extends Exception> R selectAndGetOperation(ThrowingFunction<Connection, R, E> command)
             throws DaoException {
 
         Connection connection = null;
@@ -154,5 +155,12 @@ public abstract class BaseDao {
         } finally {
             close(connection);
         }
+    }
+
+    public <E extends Exception> void selectOperation(ThrowingConsumer<Connection, E> command) throws DaoException {
+        selectAndGetOperation((ThrowingFunction<Connection, Object, Exception>) connection -> {
+            command.accept(connection);
+            return DUMMY_RETURN_OBJECT;
+        });
     }
 }

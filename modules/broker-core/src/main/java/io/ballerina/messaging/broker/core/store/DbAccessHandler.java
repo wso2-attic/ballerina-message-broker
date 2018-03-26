@@ -25,8 +25,10 @@ import io.ballerina.messaging.broker.core.store.dao.MessageDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,7 +42,7 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
 
     private final int maxBatchSize;
 
-    private final Map<Long, Message> readList;
+    private final Map<Long, List<Message>> readList;
 
     private final TransactionData transactionData;
 
@@ -74,7 +76,9 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
                 transactionData.detach(event.getQueueName(), event.getMessageId());
                 break;
             case READ_MSG_DATA:
-                readList.put(event.getBareMessage().getInternalId(), event.getBareMessage());
+                List<Message> messages = readList.computeIfAbsent(event.getBareMessage().getInternalId(),
+                        messageId -> new ArrayList<>());
+                messages.add(event.getBareMessage());
                 break;
             case NO_OP:
                 break;

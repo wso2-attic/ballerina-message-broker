@@ -140,7 +140,7 @@ public class AuthResourceRdbmsDao implements AuthResourceDao {
     private  <R, E extends Exception> R selectOperation(ThrowingFunction<Connection, R, E> command)
             throws AuthServerException {
         try {
-            return authResourceCrudOperationsDao.selectOperation(command);
+            return authResourceCrudOperationsDao.selectAndGetOperation(command);
         } catch (DaoException e) {
             throw new AuthServerException("Error occurred while executing transaction", e);
         }
