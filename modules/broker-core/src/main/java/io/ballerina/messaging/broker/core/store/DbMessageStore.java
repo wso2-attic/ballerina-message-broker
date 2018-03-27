@@ -24,6 +24,7 @@ import com.lmax.disruptor.EventTranslatorOneArg;
 import com.lmax.disruptor.EventTranslatorTwoArg;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+import io.ballerina.messaging.broker.common.DaoException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.queue.QueueBuffer;
@@ -94,17 +95,29 @@ public class DbMessageStore extends MessageStore {
 
     @Override
     void commit(TransactionData transactionData) throws BrokerException {
-        messageDao.persist(transactionData);
+        try {
+            messageDao.persist(transactionData);
+        } catch (DaoException e) {
+            throw new BrokerException(e.getMessage(), e);
+        }
     }
 
     @Override
     void commit(Xid xid, TransactionData transactionData) throws BrokerException {
-        messageDao.commitPreparedData(xid, transactionData);
+        try {
+            messageDao.commitPreparedData(xid, transactionData);
+        } catch (DaoException e) {
+            throw new BrokerException(e.getMessage(), e);
+        }
     }
 
     @Override
     protected void rollback(Xid xid) throws BrokerException {
-        messageDao.rollbackPreparedData(xid);
+        try {
+            messageDao.rollbackPreparedData(xid);
+        } catch (DaoException e) {
+            throw new BrokerException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -114,11 +127,19 @@ public class DbMessageStore extends MessageStore {
 
     @Override
     public Collection<Message> readAllMessagesForQueue(String queueName) throws BrokerException {
-        return messageDao.readAll(queueName);
+        try {
+            return messageDao.readAll(queueName);
+        } catch (DaoException e) {
+            throw new BrokerException(e.getMessage(), e);
+        }
     }
 
     @Override
     public void prepare(Xid xid, TransactionData transactionData) throws BrokerException {
-        messageDao.prepare(xid, transactionData);
+        try {
+            messageDao.prepare(xid, transactionData);
+        } catch (DaoException e) {
+            throw new BrokerException(e.getMessage(), e);
+        }
     }
 }

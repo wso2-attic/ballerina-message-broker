@@ -19,7 +19,7 @@
 
 package io.ballerina.messaging.broker.core.store.dao;
 
-import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.common.DaoException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.TransactionData;
 
@@ -39,43 +39,43 @@ public interface MessageDao {
      *
      * @param transactionData {@link TransactionData} object which transactional operations list
      */
-    void persist(TransactionData transactionData) throws BrokerException;
+    void persist(TransactionData transactionData) throws DaoException;
 
     /**
      * Retrieve all messages from a given queue.
      *
      * @param queueName name of the queue.
      */
-    Collection<Message> readAll(String queueName) throws BrokerException;
+    Collection<Message> readAll(String queueName) throws DaoException;
 
     /**
      * Read message data for given messages.
      *
      * @param readList list of messages.
      */
-    void read(Map<Long, List<Message>> readList) throws BrokerException;
+    void read(Map<Long, List<Message>> readList) throws DaoException;
 
     /**
      * Store transaction data in a separate table until subsequent commit or rollback is issued.
      *
-     * @param xid {@link Xid} to identify the transaction
+     * @param xid             {@link Xid} to identify the transaction
      * @param transactionData relevant data of the transaction
      */
-    void prepare(Xid xid, TransactionData transactionData) throws BrokerException;
+    void prepare(Xid xid, TransactionData transactionData) throws DaoException;
 
     /**
      * Move data from prepared data tables to persistence storage.
      *
-     * @param xid {@link Xid} of the transaction
+     * @param xid             {@link Xid} of the transaction
      * @param transactionData {@link TransactionData} object relating to the transaction
-     * @throws BrokerException throws exception on persistence failure.
+     * @throws DaoException throws exception on persistence failure.
      */
-    void commitPreparedData(Xid xid, TransactionData transactionData) throws BrokerException;
+    void commitPreparedData(Xid xid, TransactionData transactionData) throws DaoException;
 
     /**
      * If prepared data exist, revert the requested operations in prepare stage.
      *
      * @param xid {@link Xid} of the rollback operation related transaction
      */
-    void rollbackPreparedData(Xid xid) throws BrokerException;
+    void rollbackPreparedData(Xid xid) throws DaoException;
 }

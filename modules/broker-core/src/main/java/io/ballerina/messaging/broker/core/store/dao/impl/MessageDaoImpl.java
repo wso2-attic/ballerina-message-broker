@@ -20,7 +20,6 @@
 package io.ballerina.messaging.broker.core.store.dao.impl;
 
 import io.ballerina.messaging.broker.common.DaoException;
-import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.TransactionData;
 import io.ballerina.messaging.broker.core.store.dao.MessageDao;
@@ -52,83 +51,59 @@ class MessageDaoImpl implements MessageDao {
     }
 
     @Override
-    public void persist(TransactionData transactionData) throws BrokerException {
-        try {
-            crudOperationsDao.transaction(connection -> {
-                crudOperationsDao.storeMessages(connection, transactionData.getEnqueueMessages());
-                crudOperationsDao.detachFromQueue(connection, transactionData.getDetachMessageMap());
-                crudOperationsDao.delete(connection, transactionData.getDeletableMessage());
-            });
-        } catch (DaoException e) {
-            throw new BrokerException(e.getMessage(), e);
-        }
+    public void persist(TransactionData transactionData) throws DaoException {
+        crudOperationsDao.transaction(connection -> {
+            crudOperationsDao.storeMessages(connection, transactionData.getEnqueueMessages());
+            crudOperationsDao.detachFromQueue(connection, transactionData.getDetachMessageMap());
+            crudOperationsDao.delete(connection, transactionData.getDeletableMessage());
+        });
     }
 
     @Override
-    public Collection<Message> readAll(String queueName) throws BrokerException {
-        try {
-            return crudOperationsDao.selectAndGetOperation(connection ->
-                    crudOperationsDao.readAll(connection, queueName));
-        } catch (DaoException e) {
-            throw new BrokerException(e.getMessage(), e);
-        }
+    public Collection<Message> readAll(String queueName) throws DaoException {
+        return crudOperationsDao.selectAndGetOperation(connection ->
+                crudOperationsDao.readAll(connection, queueName));
     }
 
     @Override
-    public void read(Map<Long, List<Message>> readList) throws BrokerException {
-        try {
-            crudOperationsDao.selectOperation(connection -> crudOperationsDao.read(connection, readList));
-        } catch (DaoException e) {
-            throw new BrokerException(e.getMessage(), e);
-        }
+    public void read(Map<Long, List<Message>> readList) throws DaoException {
+        crudOperationsDao.selectOperation(connection -> crudOperationsDao.read(connection, readList));
     }
 
     @Override
-    public void prepare(Xid xid, TransactionData transactionData) throws BrokerException {
-        try {
-            dtxCrudOperationsDao.transaction(connection -> {
-                long internalXid = dtxCrudOperationsDao.storeXid(connection, xid);
-                dtxCrudOperationsDao.prepareEnqueueMessages(connection, internalXid,
-                        transactionData.getEnqueueMessages());
-                dtxCrudOperationsDao.prepareDetachMessages(connection, internalXid,
-                        transactionData.getDetachMessageMap());
-                crudOperationsDao.detachFromQueue(connection, transactionData.getDetachMessageMap());
-                xidToInternalIdMap.put(xid, internalXid);
-            });
-        } catch (DaoException e) {
-            throw new BrokerException(e.getMessage(), e);
-        }
+    public void prepare(Xid xid, TransactionData transactionData) throws DaoException {
+        dtxCrudOperationsDao.transaction(connection -> {
+            long internalXid = dtxCrudOperationsDao.storeXid(connection, xid);
+            dtxCrudOperationsDao.prepareEnqueueMessages(connection, internalXid,
+                    transactionData.getEnqueueMessages());
+            dtxCrudOperationsDao.prepareDetachMessages(connection, internalXid,
+                    transactionData.getDetachMessageMap());
+            crudOperationsDao.detachFromQueue(connection, transactionData.getDetachMessageMap());
+            xidToInternalIdMap.put(xid, internalXid);
+        });
     }
 
     @Override
-    public void commitPreparedData(Xid xid, TransactionData transactionData) throws BrokerException {
+    public void commitPreparedData(Xid xid, TransactionData transactionData) throws DaoException {
 
-        try {
-            dtxCrudOperationsDao.transaction(connection -> {
-                long internalXid = getInternalXid(xid);
-                dtxCrudOperationsDao.copyEnqueueMessages(connection, internalXid);
-                crudOperationsDao.delete(connection, transactionData.getDeletableMessage());
-                dtxCrudOperationsDao.removePreparedData(connection, internalXid);
-            });
-        } catch (DaoException e) {
-            throw new BrokerException(e.getMessage(), e);
-        }
+        dtxCrudOperationsDao.transaction(connection -> {
+            long internalXid = getInternalXid(xid);
+            dtxCrudOperationsDao.copyEnqueueMessages(connection, internalXid);
+            crudOperationsDao.delete(connection, transactionData.getDeletableMessage());
+            dtxCrudOperationsDao.removePreparedData(connection, internalXid);
+        });
         xidToInternalIdMap.remove(xid);
     }
 
     @Override
-    public void rollbackPreparedData(Xid xid) throws BrokerException {
-        try {
-            dtxCrudOperationsDao.transaction(connection -> {
-                long internalXid = getInternalXid(xid);
-                if (internalXid != INVALID_XID) {
-                    dtxCrudOperationsDao.restoreDequeueMessages(connection, internalXid);
-                    dtxCrudOperationsDao.removePreparedData(connection, internalXid);
-                }
-            });
-        } catch (DaoException e) {
-            throw new BrokerException(e.getMessage(), e);
-        }
+    public void rollbackPreparedData(Xid xid) throws DaoException {
+        dtxCrudOperationsDao.transaction(connection -> {
+            long internalXid = getInternalXid(xid);
+            if (internalXid != INVALID_XID) {
+                dtxCrudOperationsDao.restoreDequeueMessages(connection, internalXid);
+                dtxCrudOperationsDao.removePreparedData(connection, internalXid);
+            }
+        });
         xidToInternalIdMap.remove(xid);
     }
 
