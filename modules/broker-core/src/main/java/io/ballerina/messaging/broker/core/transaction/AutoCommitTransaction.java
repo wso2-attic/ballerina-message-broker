@@ -24,6 +24,7 @@ import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 
+import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.Xid;
 
 /**
@@ -99,7 +100,7 @@ public class AutoCommitTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void setTimeout(Xid xid, long timeout) throws ValidationException {
+    public void setTimeout(Xid xid, long timeout, TimeUnit timeUnit) throws ValidationException {
         throw new ValidationException("dtx.set-timeout called on non-transactional channel");
     }
 

@@ -30,6 +30,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.Xid;
 
 /**
@@ -127,20 +128,20 @@ public class DistributedTransactionValidationTest {
     }
 
     @Test (expectedExceptions = ValidationException.class,
-            expectedExceptionsMessageRegExp = "Branch not found with xid .*")
+           expectedExceptionsMessageRegExp = "Branch not found with xid .*")
     public void testRollbackWithUnknownXid() throws Exception {
         transaction.rollback(xid);
     }
 
     @Test (expectedExceptions = ValidationException.class,
-            expectedExceptionsMessageRegExp = "Branch still has associated active sessions for xid .*")
+           expectedExceptionsMessageRegExp = "Branch still has associated active sessions for xid .*")
     public void testRollbackWithAssociatedActiveSession() throws Exception {
         transaction.start(xid, 1, false, false);
         transaction.rollback(xid);
     }
 
     @Test (expectedExceptions = ValidationException.class,
-            expectedExceptionsMessageRegExp = "Branch not found with xid .*")
+           expectedExceptionsMessageRegExp = "Branch not found with xid .*")
     public void testForgetWithUnknownXid() throws Exception {
         transaction.forget(xid);
     }
@@ -158,5 +159,11 @@ public class DistributedTransactionValidationTest {
         transaction.start(xid, 1, false, false);
         transaction.end(xid, 1, false, false);
         transaction.forget(xid);
+    }
+
+    @Test (expectedExceptions = ValidationException.class,
+           expectedExceptionsMessageRegExp = "Branch not found with xid .*")
+    public void testSetTimeoutWithUnkownXid() throws Exception {
+        transaction.setTimeout(xid, 5, TimeUnit.SECONDS);
     }
 }

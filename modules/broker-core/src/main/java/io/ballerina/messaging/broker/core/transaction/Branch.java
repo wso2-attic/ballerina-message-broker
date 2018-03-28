@@ -32,6 +32,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
 import javax.transaction.xa.Xid;
 
 /**
@@ -65,6 +67,11 @@ public class Branch implements EnqueueDequeueStrategy {
         FORGOTTEN,
 
         /**
+         * Branch expired
+         */
+        TIMED_OUT,
+
+        /**
          * Branch is in prepared state. Branch can only be committed or rolled back after this
          */
         PREPARED,
@@ -92,7 +99,7 @@ public class Branch implements EnqueueDequeueStrategy {
         /**
          * The branch was suspended in a dtx.end
          */
-        SUSPENDED,
+        SUSPENDED
     }
 
     private State state;
@@ -107,6 +114,8 @@ public class Branch implements EnqueueDequeueStrategy {
 
     private final Map<Integer, SessionState> associatedSessions;
 
+    private Future timeoutTaskFuture;
+
     Branch(Xid xid, MessageStore messageStore, Broker broker) {
         this.xid = xid;
         this.messageStore = messageStore;
@@ -115,6 +124,7 @@ public class Branch implements EnqueueDequeueStrategy {
         this.affectedQueueHandlers = new HashSet<>();
         this.associatedSessions = new HashMap<>();
         state = State.ACTIVE;
+        this.timeoutTaskFuture = null;
     }
 
     @Override
@@ -238,5 +248,21 @@ public class Branch implements EnqueueDequeueStrategy {
 
     public void clearAssociations() {
         associatedSessions.clear();
+    }
+
+    public void setTimeoutTaskFuture(ScheduledFuture<?> future) {
+        this.timeoutTaskFuture = future;
+    }
+
+    /**
+     * Check whether the branch has timed out. Returns true if the transaction timed out before prepare is invoked.
+     * @return True if expired false otherwise.
+     */
+    public boolean isExpired() {
+        return Objects.nonNull(timeoutTaskFuture) && state == State.TIMED_OUT;
+    }
+
+    public Future getTimeoutTaskFuture() {
+        return timeoutTaskFuture;
     }
 }

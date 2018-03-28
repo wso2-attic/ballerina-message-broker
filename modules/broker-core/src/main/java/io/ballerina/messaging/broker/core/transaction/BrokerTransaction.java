@@ -23,6 +23,7 @@ import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 
+import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.Xid;
 
 /**
@@ -136,8 +137,12 @@ public interface BrokerTransaction {
     /**
      * Set the transaction timeout value.
      *
+     * If the transaction is still in the "active" state after this time, it is automatically rolled back.
+     * Once the transaction moves on to the prepared state, however, this timeout parameter does not apply.
+     *
      * @param xid Xid of the branch to set the timeout value
-     * @param timeout The transaction timeout value in seconds
+     * @param timeout The transaction timeout value
+     * @param timeUnit {@link TimeUnit} of the provided timeout
      */
-    void setTimeout(Xid xid, long timeout) throws ValidationException;
+    void setTimeout(Xid xid, long timeout, TimeUnit timeUnit) throws ValidationException;
 }

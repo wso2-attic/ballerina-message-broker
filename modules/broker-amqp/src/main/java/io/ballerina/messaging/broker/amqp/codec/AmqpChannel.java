@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -463,6 +464,10 @@ public class AmqpChannel {
 
     public void forget(Xid xid) throws ValidationException {
         transaction.forget(xid);
+    }
+
+    public void setTimeout(Xid xid, long timeout) throws ValidationException {
+        transaction.setTimeout(xid, timeout, TimeUnit.SECONDS);
     }
 
     /**

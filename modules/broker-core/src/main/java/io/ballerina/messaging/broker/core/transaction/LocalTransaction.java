@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.Xid;
 
 /**
@@ -143,7 +144,7 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void setTimeout(Xid xid, long timeout) throws ValidationException {
+    public void setTimeout(Xid xid, long timeout, TimeUnit timeUnit) throws ValidationException {
         throw new ValidationException("dtx.set-timeout called on local-transactional channel");
     }
 
