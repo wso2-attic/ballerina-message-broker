@@ -84,40 +84,40 @@ public class FastTopicMatcherTest {
     }
 
     @Test
-    public void testTopicRemoval() throws Exception {
+    public void testTopicRemoval() {
         String pattern1 = "aa.bb.cc";
         String pattern2 = "bb.cc.aa";
         String pattern3 = "cc.kk.ll";
+        String pattern4 = "aa.cc.ll";
 
         topicMatcher.add(pattern1);
         topicMatcher.add(pattern2);
         topicMatcher.add(pattern3);
+        topicMatcher.add(pattern4);
 
-        Set<String> matchedPatterns = new HashSet<>();
-        topicMatcher.matchingBindings("cc.kk.ll", matchedPatterns::add);
-
-        Assert.assertTrue(matchedPatterns.contains(pattern3), pattern3 + " didn't match.");
-        Assert.assertEquals(matchedPatterns.size(), 1);
-        matchedPatterns.clear();
+        testForSingleMatchingPattern(pattern3);
 
         topicMatcher.remove(pattern2);
         // Check for other patterns
-        topicMatcher.matchingBindings("aa.bb.cc", matchedPatterns::add);
-        Assert.assertTrue(matchedPatterns.contains(pattern1), pattern1 + " didn't match.");
-        Assert.assertEquals(matchedPatterns.size(), 1);
-        matchedPatterns.clear();
+        testForSingleMatchingPattern(pattern1);
+        testForSingleMatchingPattern(pattern3);
+        testForSingleMatchingPattern(pattern4);
 
-        topicMatcher.matchingBindings("cc.kk.ll", matchedPatterns::add);
-        Assert.assertTrue(matchedPatterns.contains(pattern3), pattern3 + " didn't match.");
-        Assert.assertEquals(matchedPatterns.size(), 1);
-        matchedPatterns.clear();
-
+        Set<String> matchedPatterns = new HashSet<>();
         topicMatcher.matchingBindings("bb.cc.aa", matchedPatterns::add);
         Assert.assertTrue(matchedPatterns.isEmpty(), "No patterns should match.");
+        matchedPatterns.clear();
+    }
+
+    private void testForSingleMatchingPattern(String pattern) {
+        Set<String> matchedPatterns = new HashSet<>();
+        topicMatcher.matchingBindings(pattern, matchedPatterns::add);
+        Assert.assertTrue(matchedPatterns.contains(pattern), pattern + " didn't match.");
+        Assert.assertEquals(matchedPatterns.size(), 1);
     }
 
     @Test
-    public void testRemoveItemAtTheEnd() throws Exception {
+    public void testRemoveItemAtTheEnd() {
         String pattern1 = "aa.bb.cc";
         String pattern2 = "bb.cc.aa";
         String pattern3 = "cc.kk.ll";
@@ -127,17 +127,58 @@ public class FastTopicMatcherTest {
         topicMatcher.add(pattern3);
 
         Set<String> matchedPatterns = new HashSet<>();
-        topicMatcher.matchingBindings(pattern3, matchedPatterns::add);
 
-        Assert.assertTrue(matchedPatterns.contains(pattern3), pattern3 + " didn't match");
-        Assert.assertEquals(matchedPatterns.size(), 1);
-        matchedPatterns.clear();
-
+        testForSingleMatchingPattern(pattern3);
         topicMatcher.remove(pattern3);
+
         topicMatcher.matchingBindings(pattern3, matchedPatterns::add);
         Assert.assertTrue(matchedPatterns.isEmpty());
 
-        topicMatcher.matchingBindings(pattern2, matchedPatterns::add);
-        Assert.assertTrue(matchedPatterns.contains(pattern2), pattern2 + " didn't match");
+        testForSingleMatchingPattern(pattern2);
     }
+
+    /**
+     * Test for issue raised at
+     * https://github.com/ballerina-platform/ballerina-message-broker/issues/365
+     */
+    @Test
+    public void testPatternRemovalAndAddition() {
+        String pattern1 = "Sports.cricket.100s";
+        String pattern2 = "sports";
+
+        topicMatcher.add(pattern1);
+
+        testForSingleMatchingPattern(pattern1);
+        topicMatcher.remove(pattern1);
+
+        topicMatcher.add(pattern2);
+        Set<String> matchedPatterns = new HashSet<>();
+        topicMatcher.matchingBindings("sports.cricket", matchedPatterns::add);
+        Assert.assertTrue(matchedPatterns.isEmpty(), "Shouldn't match any pattern.");
+
+        topicMatcher.matchingBindings(pattern1, matchedPatterns::add);
+        Assert.assertTrue(matchedPatterns.isEmpty(), "Shouldn't match any pattern.");
+    }
+
+    @Test
+    public void testRemovalOfAllSubscriptions() {
+        String pattern1 = "aa.bb.cc.dd";
+        String pattern2 = "dd.kk";
+
+        topicMatcher.add(pattern1);
+        topicMatcher.add(pattern2);
+
+        topicMatcher.remove(pattern1);
+
+        Set<String> matchedPatterns = new HashSet<>();
+        topicMatcher.matchingBindings(pattern1, matchedPatterns::add);
+        Assert.assertTrue(matchedPatterns.isEmpty(), "No pattern should match");
+        matchedPatterns.clear();
+
+        topicMatcher.remove(pattern2);
+        topicMatcher.matchingBindings(pattern2, matchedPatterns::add);
+        Assert.assertTrue(matchedPatterns.isEmpty(), "No pattern should match");
+        matchedPatterns.clear();
+    }
+
 }
