@@ -120,8 +120,8 @@ public class Registry {
     private boolean cancelTimeoutTask(Branch branch) {
         Future timeoutTaskFuture = branch.getTimeoutTaskFuture();
         return Objects.isNull(timeoutTaskFuture)
-                || timeoutTaskFuture.cancel(false)
-                || timeoutTaskFuture.isCancelled();
+                || timeoutTaskFuture.isCancelled()
+                || timeoutTaskFuture.cancel(false);
     }
 
     private void validateCommitRequest(Xid xid, boolean onePhase, Branch branch) throws ValidationException {
