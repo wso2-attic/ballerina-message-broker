@@ -67,7 +67,17 @@ public class Branch implements EnqueueDequeueStrategy {
         /**
          * Branch is in prepared state. Branch can only be committed or rolled back after this
          */
-        PREPARED
+        PREPARED,
+
+        /**
+         * Branch heuristically committed
+         */
+        HEUR_COM,
+
+        /**
+         * Branch heuristically rolled back
+         */
+        HEUR_RB
     }
 
     /**
