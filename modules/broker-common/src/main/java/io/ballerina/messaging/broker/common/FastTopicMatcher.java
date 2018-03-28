@@ -207,10 +207,11 @@ public class FastTopicMatcher {
 
         for (Map<String, BitSet> table : constituentTables) {
             for (Map.Entry<String, BitSet> entry : table.entrySet()) {
+                BitSet bitSet = entry.getValue();
                 for (int bitIndex = removeIndex; bitIndex < subscribedTopicList.size(); bitIndex++) {
-                    BitSet bitSet = entry.getValue();
                     bitSet.set(bitIndex, bitSet.get(bitIndex + 1));
                 }
+                bitSet.clear(subscribedTopicList.size());
             }
         }
 
