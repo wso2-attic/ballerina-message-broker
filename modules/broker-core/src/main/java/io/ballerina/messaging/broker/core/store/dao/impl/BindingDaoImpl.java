@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core.store.dao.impl;
 
+import io.ballerina.messaging.broker.common.BaseDao;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.Binding;
 import io.ballerina.messaging.broker.core.BrokerException;

@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.store.dao.impl;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.ballerina.messaging.broker.common.BaseDao;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.ContentChunk;
 import io.ballerina.messaging.broker.core.Message;
