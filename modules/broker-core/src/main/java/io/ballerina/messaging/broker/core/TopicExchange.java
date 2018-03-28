@@ -20,11 +20,7 @@
 package io.ballerina.messaging.broker.core;
 
 import io.ballerina.messaging.broker.common.FastTopicMatcher;
-import io.ballerina.messaging.broker.common.ValidationException;
-import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.store.dao.BindingDao;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -32,9 +28,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * AMQP topic exchange implementation.
  */
-final class TopicExchange extends Exchange {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TopicExchange.class);
+final class TopicExchange extends Exchange implements BindingsRegistryListener {
 
     private final FastTopicMatcher fastTopicMatcher;
 
@@ -44,33 +38,7 @@ final class TopicExchange extends Exchange {
         super(exchangeName, Type.TOPIC, bindingDao);
         fastTopicMatcher = new FastTopicMatcher();
         lock = new ReentrantReadWriteLock();
-    }
-
-    @Override
-    public void bind(QueueHandler queue, String routingPattern, FieldTable arguments) throws BrokerException,
-                                                                                             ValidationException {
-        lock.writeLock().lock();
-        try {
-            LOGGER.debug("Binding added for queue {} with pattern {}", queue, routingPattern);
-            getBindingsRegistry().bind(queue, routingPattern, arguments);
-            fastTopicMatcher.add(routingPattern);
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    @Override
-    public void unbind(Queue queue, String routingPattern) throws BrokerException {
-        lock.writeLock().lock();
-        try {
-            getBindingsRegistry().unbind(queue, routingPattern);
-            if (getBindingsRegistry().getBindingsForRoute(routingPattern).isEmpty()) {
-                fastTopicMatcher.remove(routingPattern);
-            }
-            LOGGER.debug("Binding removed from queue {} with pattern {}", queue, routingPattern);
-        } finally {
-            lock.writeLock().unlock();
-        }
+        getBindingsRegistry().addBindingsRegistryListeners(this);
     }
 
     @Override
@@ -90,5 +58,22 @@ final class TopicExchange extends Exchange {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    @Override
+    public void onBind(String routingKey) {
+        fastTopicMatcher.add(routingKey);
+    }
+
+    @Override
+    public void onUnbind(String routingKey, boolean isLastSubscriber) {
+        if (isLastSubscriber) {
+            fastTopicMatcher.remove(routingKey);
+        }
+    }
+
+    @Override
+    public void onRetrieveAllBindingsForExchange(String routingKey) {
+        fastTopicMatcher.add(routingKey);
     }
 }
