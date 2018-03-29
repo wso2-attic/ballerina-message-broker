@@ -31,8 +31,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Manages the bindings for a given {@link Exchange}.
@@ -53,8 +51,6 @@ public final class BindingsRegistry {
 
     private List<BindingsRegistryListener> bindingsRegistryListeners;
 
-    private final ReadWriteLock lock;
-
     BindingsRegistry(Exchange exchange, BindingDao bindingDao) {
         this.bindingPatternToBindingsMap = new HashMap<>();
         this.exchange = exchange;
@@ -62,48 +58,37 @@ public final class BindingsRegistry {
         this.unmodifiableBindingSetView = Collections.unmodifiableMap(bindingPatternToBindingsMap);
         bindingDeleteListener = new BindingDeleteListener();
         bindingsRegistryListeners = new ArrayList<>();
-        lock = new ReentrantReadWriteLock();
     }
 
     void bind(QueueHandler queueHandler, String bindingKey, FieldTable arguments) throws BrokerException,
             ValidationException {
-        lock.writeLock().lock();
-        try {
-            BindingSet bindingSet = bindingPatternToBindingsMap.computeIfAbsent(bindingKey, k -> new BindingSet());
-            Queue queue = queueHandler.getQueue();
-            Binding binding = new Binding(queue, bindingKey, arguments);
-            boolean success = bindingSet.add(binding);
+        BindingSet bindingSet = bindingPatternToBindingsMap.computeIfAbsent(bindingKey, k -> new BindingSet());
+        Queue queue = queueHandler.getQueue();
+        Binding binding = new Binding(queue, bindingKey, arguments);
+        boolean success = bindingSet.add(binding);
 
-            if (success) {
-                queueHandler.addBinding(binding, bindingDeleteListener);
-                if (queue.isDurable()) {
-                    bindingDao.persist(exchange.getName(), binding);
-                }
+        if (success) {
+            queueHandler.addBinding(binding, bindingDeleteListener);
+            if (queue.isDurable()) {
+                bindingDao.persist(exchange.getName(), binding);
             }
-            LOGGER.debug("Binding added for queue {} with pattern {}", queueHandler, bindingKey);
-            notifyOnBind(bindingKey);
-        } finally {
-            lock.writeLock().unlock();
         }
+        LOGGER.debug("Binding added for queue {} with pattern {}", queueHandler, bindingKey);
+        notifyOnBind(bindingKey);
     }
 
     void unbind(Queue queue, String routingKey) throws BrokerException {
-        lock.writeLock().lock();
-        try {
-            BindingSet bindingSet = bindingPatternToBindingsMap.get(routingKey);
-            if (queue.isDurable()) {
-                bindingDao.delete(queue.getName(), routingKey, exchange.getName());
-            }
-            bindingSet.remove(queue);
-
-            if (bindingSet.isEmpty()) {
-                bindingPatternToBindingsMap.remove(routingKey);
-            }
-            LOGGER.debug("Binding removed from queue {} with pattern {}", queue, routingKey);
-            notifyOnUnbind(routingKey, getBindingsForRoute(routingKey).isEmpty());
-        } finally {
-            lock.writeLock().unlock();
+        BindingSet bindingSet = bindingPatternToBindingsMap.get(routingKey);
+        if (queue.isDurable()) {
+            bindingDao.delete(queue.getName(), routingKey, exchange.getName());
         }
+        bindingSet.remove(queue);
+
+        if (bindingSet.isEmpty()) {
+            bindingPatternToBindingsMap.remove(routingKey);
+        }
+        LOGGER.debug("Binding removed from queue {} with pattern {}", queue, routingKey);
+        notifyOnUnbind(routingKey, getBindingsForRoute(routingKey).isEmpty());
     }
 
     BindingSet getBindingsForRoute(String routingKey) {
