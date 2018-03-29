@@ -23,15 +23,21 @@ import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.util.function.ThrowingConsumer;
 import io.ballerina.messaging.broker.core.store.dao.BindingDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Manages the bindings for a given {@link Exchange}.
  */
 public final class BindingsRegistry {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BindingsRegistry.class);
 
     private final Map<String, BindingSet> bindingPatternToBindingsMap;
 
@@ -43,16 +49,19 @@ public final class BindingsRegistry {
 
     private final BindingDeleteListener bindingDeleteListener;
 
+    private List<BindingsRegistryListener> bindingsRegistryListeners;
+
     BindingsRegistry(Exchange exchange, BindingDao bindingDao) {
         this.bindingPatternToBindingsMap = new HashMap<>();
         this.exchange = exchange;
         this.bindingDao = bindingDao;
         this.unmodifiableBindingSetView = Collections.unmodifiableMap(bindingPatternToBindingsMap);
         bindingDeleteListener = new BindingDeleteListener();
+        bindingsRegistryListeners = new ArrayList<>();
     }
 
     void bind(QueueHandler queueHandler, String bindingKey, FieldTable arguments) throws BrokerException,
-                                                                                         ValidationException {
+            ValidationException {
         BindingSet bindingSet = bindingPatternToBindingsMap.computeIfAbsent(bindingKey, k -> new BindingSet());
         Queue queue = queueHandler.getQueue();
         Binding binding = new Binding(queue, bindingKey, arguments);
@@ -64,6 +73,8 @@ public final class BindingsRegistry {
                 bindingDao.persist(exchange.getName(), binding);
             }
         }
+        LOGGER.debug("Binding added for queue {} with pattern {}", queueHandler, bindingKey);
+        notifyOnBind(bindingKey);
     }
 
     void unbind(Queue queue, String routingKey) throws BrokerException {
@@ -76,6 +87,8 @@ public final class BindingsRegistry {
         if (bindingSet.isEmpty()) {
             bindingPatternToBindingsMap.remove(routingKey);
         }
+        LOGGER.debug("Binding removed from queue {} with pattern {}", queue, routingKey);
+        notifyOnUnbind(routingKey, getBindingsForRoute(routingKey).isEmpty());
     }
 
     BindingSet getBindingsForRoute(String routingKey) {
@@ -98,11 +111,34 @@ public final class BindingsRegistry {
             BindingSet bindingSet = bindingPatternToBindingsMap.computeIfAbsent(bindingKey, k -> new BindingSet());
             bindingSet.add(binding);
             queueHandler.addBinding(binding, bindingDeleteListener);
+            notifyOnRetrieveAllBindingsForExchange(bindingKey);
         });
     }
 
     public Map<String, BindingSet> getAllBindings() {
         return unmodifiableBindingSetView;
+    }
+
+    public void addBindingsRegistryListeners(BindingsRegistryListener listener) {
+        bindingsRegistryListeners.add(listener);
+    }
+
+    private void notifyOnBind(String routingKey) {
+        for (BindingsRegistryListener listener : bindingsRegistryListeners) {
+            listener.onBind(routingKey);
+        }
+    }
+
+    private void notifyOnUnbind(String routingKey, boolean isEmpty) {
+        for (BindingsRegistryListener listener : bindingsRegistryListeners) {
+            listener.onUnbind(routingKey, isEmpty);
+        }
+    }
+
+    private void notifyOnRetrieveAllBindingsForExchange(String routingKey) {
+        for (BindingsRegistryListener listener : bindingsRegistryListeners) {
+            listener.onRetrieveAllBindingsForExchange(routingKey);
+        }
     }
 
     /**

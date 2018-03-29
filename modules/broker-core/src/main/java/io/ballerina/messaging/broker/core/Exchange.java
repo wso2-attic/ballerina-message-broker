@@ -129,7 +129,7 @@ public abstract class Exchange {
         return false;
     }
 
-    void retrieveBindingsFromDb(QueueRegistry queueRegistry) throws BrokerException {
+    public void retrieveBindingsFromDb(QueueRegistry queueRegistry) throws BrokerException {
         bindingsRegistry.retrieveAllBindingsForExchange(queueRegistry);
     }
 
