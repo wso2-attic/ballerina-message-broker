@@ -17,8 +17,7 @@ public class BrokerClassLoader {
      */
     public static <T> T loadClass(String className, Class<T> returnClassName)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        Object object = ClassLoader.getSystemClassLoader()
-                                   .loadClass(className).newInstance();
+        Object object = Class.forName(className).newInstance();
         return returnClassName.cast(object);
     }
 }

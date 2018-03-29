@@ -17,7 +17,8 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>broker-feature</artifactId>
         <groupId>io.ballerina.messaging</groupId>
@@ -33,11 +34,11 @@
     <dependencies>
         <dependency>
             <groupId>io.ballerina.messaging</groupId>
-            <artifactId>broker-amqp</artifactId>
+            <artifactId>broker-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ballerina.messaging</groupId>
-            <artifactId>broker-core</artifactId>
+            <artifactId>broker-amqp</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ballerina.messaging</groupId>
@@ -52,12 +53,20 @@
             <artifactId>broker-rest-runner</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.ballerina.messaging</groupId>
+            <artifactId>broker-auth</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.orbit.com.lmax</groupId>
             <artifactId>disruptor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.ballerina.messaging</groupId>
+            <artifactId>broker-metrics</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -87,7 +96,11 @@
                             </adviceFileContents>
                             <bundles>
                                 <bundle>
-                                    <symbolicName>broker-rest-runner</symbolicName>
+                                    <symbolicName>broker-amqp</symbolicName>
+                                    <version>${project.version}</version>
+                                </bundle>
+                                <bundle>
+                                    <symbolicName>broker-auth</symbolicName>
                                     <version>${project.version}</version>
                                 </bundle>
                                 <bundle>
@@ -95,7 +108,7 @@
                                     <version>${project.version}</version>
                                 </bundle>
                                 <bundle>
-                                    <symbolicName>broker-amqp</symbolicName>
+                                    <symbolicName>broker-coordination</symbolicName>
                                     <version>${project.version}</version>
                                 </bundle>
                                 <bundle>
@@ -103,7 +116,11 @@
                                     <version>${project.version}</version>
                                 </bundle>
                                 <bundle>
-                                    <symbolicName>broker-coordination</symbolicName>
+                                    <symbolicName>broker-metrics</symbolicName>
+                                    <version>${project.version}</version>
+                                </bundle>
+                                <bundle>
+                                    <symbolicName>broker-rest-runner</symbolicName>
                                     <version>${project.version}</version>
                                 </bundle>
                                 <bundle>
@@ -171,7 +188,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <delete file="src/main/resources/database/MB_DB.mv.db" />
+                                <delete file="src/main/resources/database/MB_DB.mv.db"/>
                             </tasks>
                         </configuration>
                     </execution>
@@ -180,13 +197,14 @@
                         <configuration>
                             <target>
                                 <!-- Drop database if it exists -->
-                                <delete dir="${db.directory}" quiet="true" />
+                                <delete dir="${db.directory}" quiet="true"/>
                                 <!-- Create database schema -->
-                                <echo message="########### Creating MB Database ##############" />
-                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url}" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
-                                    <classpath refid="maven.compile.classpath" />
+                                <echo message="########### Creating MB Database ##############"/>
+                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url}" driver="${db.driver}"
+                                     delimiter="${db.delimiter}" autocommit="true">
+                                    <classpath refid="maven.compile.classpath"/>
                                     <!-- Create database schema -->
-                                    <transaction src="${sql.directory}/h2-mb.sql" />
+                                    <transaction src="${sql.directory}/h2-mb.sql"/>
                                 </sql>
                             </target>
                         </configuration>
