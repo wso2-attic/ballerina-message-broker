@@ -33,6 +33,7 @@ import io.ballerina.messaging.broker.core.store.disruptor.SleepingBlockingWaitSt
 
 import java.util.Collection;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.transaction.xa.Xid;
 
@@ -112,7 +113,7 @@ public class DbMessageStore extends MessageStore {
     }
 
     @Override
-    protected void rollback(Xid xid) throws BrokerException {
+    public void rollback(Xid xid) throws BrokerException {
         try {
             messageDao.rollbackPreparedData(xid);
         } catch (DaoException e) {
@@ -142,4 +143,23 @@ public class DbMessageStore extends MessageStore {
             throw new BrokerException(e.getMessage(), e);
         }
     }
+
+    @Override
+    public void retrieveStoredXids(Consumer<Xid> xidConsumer) throws BrokerException {
+        try {
+            messageDao.retrieveAllStoredXids(xidConsumer);
+        } catch (DaoException e) {
+            throw new BrokerException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Collection<Message> recoverEnqueuedMessages(Xid xid) throws BrokerException {
+        try {
+            return messageDao.retrieveAllEnqueuedMessages(xid);
+        } catch (DaoException e) {
+            throw new BrokerException(e.getMessage(), e);
+        }
+    }
+
 }

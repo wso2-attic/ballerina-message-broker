@@ -104,5 +104,10 @@ public class AutoCommitTransaction implements BrokerTransaction {
         throw new ValidationException("dtx.set-timeout called on non-transactional channel");
     }
 
+    @Override
+    public boolean inTransactionBlock() {
+        return false;
+    }
+
 
 }

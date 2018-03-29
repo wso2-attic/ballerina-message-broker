@@ -102,4 +102,9 @@ public class ForwardingBrokerTransaction implements BrokerTransaction {
     public void setTimeout(Xid xid, long timeout, TimeUnit timeUnit) throws ValidationException {
         brokerTransaction.setTimeout(xid, timeout, timeUnit);
     }
+
+    @Override
+    public boolean inTransactionBlock() {
+        return brokerTransaction.inTransactionBlock();
+    }
 }

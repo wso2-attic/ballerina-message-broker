@@ -22,11 +22,13 @@ package io.ballerina.messaging.broker.core.transaction;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.store.MessageStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -51,12 +53,25 @@ public class Registry {
 
     private static final String TIMED_OUT_ERROR_MSG = "Transaction timed out for xid ";
 
+    /**
+     * {@link Xid} to branch mapping of branches in memory.
+     */
     private final Map<Xid, Branch> branchMap;
 
     private final ScheduledExecutorService branchTimeoutExecutorService;
 
-    Registry() {
+    private final BranchFactory branchFactory;
+
+    /**
+     * {@link Xid}s of already prepared branches that are currently not in memory. This can be due to a node fail-over
+     * or a node restart.
+     */
+    private final Set<Xid> storedXidSet;
+
+    Registry(BranchFactory branchFactory) {
+        this.branchFactory = branchFactory;
         branchMap = new ConcurrentHashMap<>();
+        storedXidSet = ConcurrentHashMap.newKeySet();
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("DtxBranchTimeoutExecutor-%d").build();
         this.branchTimeoutExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
@@ -68,14 +83,24 @@ public class Registry {
     }
 
     public void unregister(Xid xid) {
-        branchMap.remove(xid);
+        if (Objects.isNull(branchMap.remove(xid))) {
+            storedXidSet.remove(xid);
+        }
     }
 
-    public Branch getBranch(Xid xid) {
+    public Branch getBranch(Xid xid) throws ValidationException {
+        if (storedXidSet.contains(xid)) {
+            throw new ValidationException("Branch is in prepared stage. Branch can be only be "
+                                                  + "committed or rollbacked.");
+        }
         return branchMap.get(xid);
     }
 
     public synchronized void prepare(Xid xid) throws ValidationException, BrokerException {
+        if (storedXidSet.contains(xid)) {
+            throw new DtxStateTransitionException(xid, Branch.State.PREPARED, Branch.State.PREPARED);
+        }
+
         Branch branch = branchMap.get(xid);
         if (Objects.isNull(branch)) {
             throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
@@ -94,10 +119,7 @@ public class Registry {
         } else if (branch.getState() != Branch.State.ACTIVE) {
             throw new ValidationException("Cannot prepare a branch in state " + branch.getState());
         }
-
-        branch.setState(Branch.State.PRE_PREPARE);
         branch.prepare();
-        branch.setState(Branch.State.PREPARED);
     }
 
     private void checkForBranchExpiration(Branch branch) throws ValidationException {
@@ -109,12 +131,40 @@ public class Registry {
 
     public synchronized void commit(Xid xid, boolean onePhase) throws ValidationException, BrokerException {
         Branch branch = branchMap.get(xid);
-        validateCommitRequest(xid, onePhase, branch);
+        if (Objects.isNull(branch)) {
+            branch = checkForBranchRecovery(xid);
+        } else {
+            if (branch.hasAssociatedActiveSessions()) {
+                throw new ValidationException(ASSOCIATED_XID_ERROR_MSG + xid);
+            }
+            checkForBranchExpiration(branch);
+            if (branch.isRollbackOnly()) {
+                throw new ValidationException("Branch is set to rollback only. Can't commit with xid " + xid);
+            }
+            if (!onePhase && !branch.isPrepared()) {
+                throw new ValidationException("Cannot call two-phase commit on a non-prepared branch for xid " + xid);
+            }
+        }
+
+        if (onePhase && branch.isPrepared()) {
+            throw new ValidationException("Cannot call one-phase commit on a prepared branch for xid " + xid);
+        }
 
         branch.clearAssociations();
-        branch.setState(Branch.State.FORGOTTEN);
         branch.commit(onePhase);
+        branch.setState(Branch.State.FORGOTTEN);
         unregister(xid);
+    }
+
+    private Branch checkForBranchRecovery(Xid xid) throws UnknownDtxBranchException {
+        Branch branch;
+        if (storedXidSet.contains(xid)) {
+            branch = branchFactory.createBranch(xid);
+            branch.markAsRecoveryBranch();
+        } else {
+            throw new UnknownDtxBranchException(xid);
+        }
+        return branch;
     }
 
     private boolean cancelTimeoutTask(Branch branch) {
@@ -124,38 +174,17 @@ public class Registry {
                 || timeoutTaskFuture.cancel(false);
     }
 
-    private void validateCommitRequest(Xid xid, boolean onePhase, Branch branch) throws ValidationException {
-        if (Objects.isNull(branch)) {
-            throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
-        }
-        if (branch.hasAssociatedActiveSessions()) {
-            throw new ValidationException(ASSOCIATED_XID_ERROR_MSG + xid);
-        }
-        checkForBranchExpiration(branch);
-        if (branch.getState() == Branch.State.ROLLBACK_ONLY) {
-            throw new ValidationException("Branch is set to rollback only. Can't commit with xid " + xid);
-        }
-        if (onePhase && branch.getState() == Branch.State.PREPARED) {
-            throw new ValidationException("Cannot call one-phase commit on a prepared branch for xid " + xid);
-        }
-        if (!onePhase && branch.getState() != Branch.State.PREPARED) {
-            throw new ValidationException("Cannot call two-phase commit on a non-prepared branch for xid " + xid);
-        }
-    }
-
     public synchronized void rollback(Xid xid) throws ValidationException, BrokerException {
         Branch branch = branchMap.get(xid);
         if (Objects.isNull(branch)) {
-            throw new ValidationException(UNKNOWN_XID_ERROR_MSG + xid);
+            branch = checkForBranchRecovery(xid);
+        } else {
+            checkForBranchExpiration(branch);
+            if (branch.hasAssociatedActiveSessions()) {
+                throw new ValidationException(ASSOCIATED_XID_ERROR_MSG + xid);
+            }
+            branch.clearAssociations();
         }
-
-        checkForBranchExpiration(branch);
-
-        if (branch.hasAssociatedActiveSessions()) {
-            throw new ValidationException(ASSOCIATED_XID_ERROR_MSG + xid);
-        }
-
-        branch.clearAssociations();
         branch.dtxRollback();
         branch.setState(Branch.State.FORGOTTEN);
         unregister(xid);
@@ -196,7 +225,7 @@ public class Registry {
 
             LOGGER.debug("timing out dtx task with xid {}", xid);
             synchronized (branch) {
-                if (branch.getState() == Branch.State.PREPARED) {
+                if (branch.isPrepared()) {
                     LOGGER.debug("Branch already prepared. Won't be timed out. Xid {}", xid);
                     return;
                 }
@@ -210,5 +239,10 @@ public class Registry {
 
         }, timeout, timeUnit);
         branch.setTimeoutTaskFuture(future);
+    }
+
+    void syncWithMessageStore(MessageStore messageStore) throws BrokerException {
+        storedXidSet.clear();
+        messageStore.retrieveStoredXids(storedXidSet::add);
     }
 }

@@ -26,6 +26,7 @@ import io.ballerina.messaging.broker.core.store.TransactionData;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.transaction.xa.Xid;
 
 /**
@@ -78,4 +79,21 @@ public interface MessageDao {
      * @param xid {@link Xid} of the rollback operation related transaction
      */
     void rollbackPreparedData(Xid xid) throws DaoException;
+
+    /**
+     * Retrieve all the xids stored on the database and invoke the xidConsumer for each {@link Xid} found.
+     *
+     * @param xidConsumer {@link Consumer} that accept an Xid.
+     * @throws DaoException throws on database failure.
+     */
+    void retrieveAllStoredXids(Consumer<Xid> xidConsumer) throws DaoException;
+
+    /**
+     * Retrieve prepared enqueued messages for a given {@link Xid} from storage.
+     *
+     * @param xid {@link Xid} of the prepared branch
+     * @return Enqueued messages
+     * @throws DaoException throws when the message retrieval fails due to an error.
+     */
+    Collection<Message> retrieveAllEnqueuedMessages(Xid xid) throws DaoException;
 }

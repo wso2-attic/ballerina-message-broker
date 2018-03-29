@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
@@ -50,8 +51,8 @@ public class DistributedTransactionValidationTest {
     }
 
     @BeforeMethod
-    public void setUp() {
-        transactionRegistry = new Registry();
+    public void setUp() throws BrokerException {
+        transactionRegistry = new Registry(new BranchFactory(null, new NullMessageStore()));
         transaction = new DistributedTransaction(new BranchFactory(null, new NullMessageStore()),
                                                  transactionRegistry);
     }
@@ -103,8 +104,7 @@ public class DistributedTransactionValidationTest {
         transaction.prepare(xid);
     }
 
-    @Test (expectedExceptions = ValidationException.class,
-            expectedExceptionsMessageRegExp = "Branch not found with xid .*")
+    @Test (expectedExceptions = UnknownDtxBranchException.class)
     public void testCommitWithUnknownXid() throws Exception {
         transaction.commit(xid, true);
     }
@@ -127,8 +127,7 @@ public class DistributedTransactionValidationTest {
         transaction.commit(xid, true);
     }
 
-    @Test (expectedExceptions = ValidationException.class,
-           expectedExceptionsMessageRegExp = "Branch not found with xid .*")
+    @Test (expectedExceptions = UnknownDtxBranchException.class)
     public void testRollbackWithUnknownXid() throws Exception {
         transaction.rollback(xid);
     }

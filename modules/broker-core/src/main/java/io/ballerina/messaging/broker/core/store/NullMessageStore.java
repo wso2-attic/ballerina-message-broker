@@ -19,11 +19,13 @@
 
 package io.ballerina.messaging.broker.core.store;
 
+import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.queue.QueueBuffer;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Consumer;
 import javax.transaction.xa.Xid;
 
 /**
@@ -57,7 +59,7 @@ public class NullMessageStore extends MessageStore {
     }
 
     @Override
-    protected void rollback(Xid xid) {
+    public void rollback(Xid xid) {
         // Do nothing
     }
 
@@ -74,5 +76,15 @@ public class NullMessageStore extends MessageStore {
     @Override
     public void prepare(Xid xid, TransactionData transactionData) {
         // Do nothing
+    }
+
+    @Override
+    public void retrieveStoredXids(Consumer<Xid> consumer) throws BrokerException {
+        // Do nothing
+    }
+
+    @Override
+    public Collection<Message> recoverEnqueuedMessages(Xid xid) {
+        return Collections.emptyList();
     }
 }
