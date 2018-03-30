@@ -84,9 +84,7 @@ public class AuthorizationHandler {
                                       resourceName,
                                       action.toString(),
                                       getUserFromSubject(subject))) {
-                throw new AuthException(
-                        "Unauthorized action on : " + resourceType.toString() + " resourceName: " + resourceName
-                                + " action: " + action.toString());
+                throw new AuthException(resourceType, resourceName, action);
             }
         } catch (AuthServerException e) {
             throw new AuthException(

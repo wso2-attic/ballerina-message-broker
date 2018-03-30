@@ -89,7 +89,7 @@ public class SslHandlerFactory {
     private Path getPath(String storePath) {
         Path path = Paths.get(storePath);
 
-        if (Files.notExists(path)) {
+        if (!path.toFile().exists()) {
             String brokerHome = System.getProperty(CommonConstants.MESSAGE_BROKER_HOME_PROPERTY);
             path = Paths.get(brokerHome + File.separator + storePath);
         }

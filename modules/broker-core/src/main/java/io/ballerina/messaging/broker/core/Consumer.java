@@ -74,11 +74,19 @@ public abstract class Consumer {
      */
     public abstract boolean isReady();
 
-    @Override public boolean equals(Object obj) {
-        return super.equals(obj);
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof Consumer) {
+            return id == ((Consumer) obj).id;
+        }
+        return false;
     }
 
-    @Override public int hashCode() {
+    @Override
+    public int hashCode() {
         return Integer.hashCode(id);
     }
 }

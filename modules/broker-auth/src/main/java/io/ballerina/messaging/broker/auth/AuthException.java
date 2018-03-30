@@ -18,6 +18,9 @@
  */
 package io.ballerina.messaging.broker.auth;
 
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
+
 import javax.security.auth.login.LoginException;
 
 /**
@@ -30,6 +33,12 @@ public class AuthException extends LoginException {
     public AuthException(String message) {
         super(message);
     }
+
+    public AuthException(ResourceType resourceType, String resourceName, ResourceAction action) {
+        super("Unauthorized action: " + action.toString() +  " on : " + resourceType.toString()
+                      + " resourceName: " + resourceName);
+    }
+
 
     public AuthException(String message, Throwable throwable) {
         super(message);

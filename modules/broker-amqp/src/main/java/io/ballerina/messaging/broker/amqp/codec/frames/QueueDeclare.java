@@ -58,8 +58,8 @@ public class QueueDeclare extends MethodFrame {
     private final boolean noWait;
     private final FieldTable arguments;
 
-    public QueueDeclare(int channel, ShortString queue, boolean passive, boolean durable, boolean exclusive,
-            boolean autoDelete, boolean noWait, FieldTable arguments) {
+    QueueDeclare(int channel, ShortString queue, boolean passive, boolean durable, boolean exclusive,
+                 boolean autoDelete, boolean noWait, FieldTable arguments) {
         super(channel, CLASS_ID, METHOD_ID);
         this.queue = queue;
         this.passive = passive;

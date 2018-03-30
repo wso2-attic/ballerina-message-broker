@@ -26,13 +26,13 @@ import java.util.List;
  */
 public class Queue {
 
-    public static final String NAME = "name";
-    public static final String AUTO_DELETE = "autoDelete";
-    public static final String DURABLE = "durable";
-    public static final String CONSUMER_COUNT = "consumerCount";
-    public static final String CAPACITY = "capacity";
-    public static final String SIZE = "size";
-    public static final String OWNER = "owner";
+    public static final String NAME_TAG = "name";
+    public static final String AUTO_DELETE_TAG = "autoDelete";
+    public static final String DURABLE_TAG = "durable";
+    public static final String CONSUMER_COUNT_TAG = "consumerCount";
+    public static final String CAPACITY_TAG = "capacity";
+    public static final String SIZE_TAG = "size";
+    public static final String OWNER_TAG = "owner";
 
     // required params
 
@@ -93,6 +93,7 @@ public class Queue {
     }
 
     public String getAsJsonString() {
-        return "{" + NAME + ":" + name + "," + AUTO_DELETE + ":" + autoDelete + "," + DURABLE + ":" + durable + "}";
+        return "{" + NAME_TAG + ":" + name + "," + AUTO_DELETE_TAG + ":" + autoDelete + ","
+                + DURABLE_TAG + ":" + durable + "}";
     }
 }

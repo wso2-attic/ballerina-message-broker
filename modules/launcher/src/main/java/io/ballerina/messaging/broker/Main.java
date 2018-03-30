@@ -156,6 +156,7 @@ public class Main {
                     server.awaitServerClose();
                 } catch (InterruptedException e) {
                     LOGGER.warn("Error stopping transport on shut down {}", e);
+                    Thread.currentThread().interrupt();
                 }
                 broker.shutdown();
                 metricService.stop();

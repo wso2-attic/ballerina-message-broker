@@ -24,8 +24,6 @@ import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for channel.close
@@ -36,7 +34,6 @@ import org.slf4j.LoggerFactory;
  *     4. method-id (method-id) - failing method ID
  */
 public class ChannelClose extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelClose.class);
 
     private final int replyCode;
     private final ShortString replyText;

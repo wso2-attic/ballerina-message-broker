@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  */
 public class TableFormatter implements ResponseFormatter {
 
-    public static final int TABLE_PADDING = 2;
+    private static final int TABLE_PADDING = 2;
 
     /**
      * Name of this formatter class. This will be used when displaying help logs.
@@ -48,11 +48,12 @@ public class TableFormatter implements ResponseFormatter {
                                           .max()
                                           .getAsInt();
 
-        int maxColumnSize = Math.max(maxExchangeNameLength, Exchange.NAME.length());
+        int maxColumnSize = Math.max(maxExchangeNameLength, Exchange.NAME_TAG.length());
 
-        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-10s%-10s%-10s\n";
+        String printTemplate = "%-" + (maxColumnSize + TABLE_PADDING) + "s%-10s%-10s%-10s\n";
 
-        OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE, Exchange.OWNER);
+        OUT_STREAM.printf(printTemplate, Exchange.NAME_TAG, Exchange.TYPE_TAG,
+                          Exchange.DURABLE_TAG, Exchange.OWNER_TAG);
         for (Exchange exchange : exchanges) {
             OUT_STREAM.printf(printTemplate, exchange.getName(), exchange.getType(),
                               String.valueOf(exchange.isDurable()), exchange.getOwner());
@@ -61,13 +62,13 @@ public class TableFormatter implements ResponseFormatter {
 
     @Override
     public void printExchange(Exchange exchange) {
-        int maxFieldLength = Exchange.DURABLE.length() + 1;
+        int maxFieldLength = Exchange.DURABLE_TAG.length() + 1;
         String printTemplate = "%-" + maxFieldLength + "s: %s\n";
 
-        OUT_STREAM.printf(printTemplate, Exchange.NAME, exchange.getName());
-        OUT_STREAM.printf(printTemplate, Exchange.TYPE, exchange.getType());
-        OUT_STREAM.printf(printTemplate, Queue.DURABLE, exchange.isDurable());
-        OUT_STREAM.printf(printTemplate, Queue.OWNER, exchange.getOwner());
+        OUT_STREAM.printf(printTemplate, Exchange.NAME_TAG, exchange.getName());
+        OUT_STREAM.printf(printTemplate, Exchange.TYPE_TAG, exchange.getType());
+        OUT_STREAM.printf(printTemplate, Queue.DURABLE_TAG, exchange.isDurable());
+        OUT_STREAM.printf(printTemplate, Queue.OWNER_TAG, exchange.getOwner());
 
         OUT_STREAM.println("\nPermissions");
         OUT_STREAM.println("===========");
@@ -92,13 +93,12 @@ public class TableFormatter implements ResponseFormatter {
                                        .max()
                                        .getAsInt();
 
-        int maxColumnSize = Math.max(maxQueueNameLength, Queue.NAME.length());
+        int maxColumnSize = Math.max(maxQueueNameLength, Queue.NAME_TAG.length());
 
-        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING)
-                + "s%-15s%-15s%-10s%-10s%-12s%-10s\n";
+        String printTemplate = "%-" + (maxColumnSize + TABLE_PADDING) + "s%-15s%-15s%-10s%-10s%-12s%-10s\n";
 
-        OUT_STREAM.printf(printTemplate, Queue.NAME, Queue.CONSUMER_COUNT, Queue.CAPACITY, Queue.SIZE, Queue.DURABLE,
-                          Queue.AUTO_DELETE, Queue.OWNER);
+        OUT_STREAM.printf(printTemplate, Queue.NAME_TAG, Queue.CONSUMER_COUNT_TAG, Queue.CAPACITY_TAG,
+                          Queue.SIZE_TAG, Queue.DURABLE_TAG, Queue.AUTO_DELETE_TAG, Queue.OWNER_TAG);
         for (Queue queue : queues) {
             OUT_STREAM.printf(printTemplate, queue.getName(), String.valueOf(queue.getConsumerCount()),
                               String.valueOf(queue.getCapacity()), String.valueOf(queue.getSize()),
@@ -109,16 +109,16 @@ public class TableFormatter implements ResponseFormatter {
 
     @Override
     public void printQueue(Queue queue) {
-        int maxFieldLength = Queue.CONSUMER_COUNT.length() + 1;
+        int maxFieldLength = Queue.CONSUMER_COUNT_TAG.length() + 1;
         String printTemplate = "%-" + maxFieldLength + "s: %s\n";
 
-        OUT_STREAM.printf(printTemplate, Queue.NAME, queue.getName());
-        OUT_STREAM.printf(printTemplate, Queue.CONSUMER_COUNT, queue.getConsumerCount());
-        OUT_STREAM.printf(printTemplate, Queue.CAPACITY, queue.getCapacity());
-        OUT_STREAM.printf(printTemplate, Queue.SIZE, queue.getSize());
-        OUT_STREAM.printf(printTemplate, Queue.DURABLE, queue.isDurable());
-        OUT_STREAM.printf(printTemplate, Queue.AUTO_DELETE, queue.isAutoDelete());
-        OUT_STREAM.printf(printTemplate, Queue.OWNER, queue.getOwner());
+        OUT_STREAM.printf(printTemplate, Queue.NAME_TAG, queue.getName());
+        OUT_STREAM.printf(printTemplate, Queue.CONSUMER_COUNT_TAG, queue.getConsumerCount());
+        OUT_STREAM.printf(printTemplate, Queue.CAPACITY_TAG, queue.getCapacity());
+        OUT_STREAM.printf(printTemplate, Queue.SIZE_TAG, queue.getSize());
+        OUT_STREAM.printf(printTemplate, Queue.DURABLE_TAG, queue.isDurable());
+        OUT_STREAM.printf(printTemplate, Queue.AUTO_DELETE_TAG, queue.isAutoDelete());
+        OUT_STREAM.printf(printTemplate, Queue.OWNER_TAG, queue.getOwner());
 
         OUT_STREAM.println("\nPermissions");
         OUT_STREAM.println("===========");
@@ -145,7 +145,7 @@ public class TableFormatter implements ResponseFormatter {
 
         int maxColumnSize = Math.max(maxQueueNameLength, Binding.QUEUE_NAME.length());
 
-        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%s\n";
+        String printTemplate = "%-" + (maxColumnSize + TABLE_PADDING) + "s%s\n";
 
         OUT_STREAM.printf(printTemplate, Binding.QUEUE_NAME, Binding.BINDING_PATTERN);
         for (Binding binding : bindings) {
@@ -165,7 +165,7 @@ public class TableFormatter implements ResponseFormatter {
 
         int maxColumnSize = Math.max(maxIdLength, Consumer.CONSUMER_ID.length());
 
-        String printTemplate = "%-" + String.valueOf(maxColumnSize + TABLE_PADDING) + "s%-12s%s\n";
+        String printTemplate = "%-" + (maxColumnSize + TABLE_PADDING) + "s%-12s%s\n";
 
         OUT_STREAM.printf(printTemplate, Consumer.CONSUMER_ID, Consumer.IS_EXCLUSIVE, Consumer.FLOW_ENABLED);
         for (Consumer consumer : consumers) {
