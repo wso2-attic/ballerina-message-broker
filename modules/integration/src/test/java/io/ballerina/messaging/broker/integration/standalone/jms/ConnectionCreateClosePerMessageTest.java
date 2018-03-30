@@ -33,6 +33,13 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -81,6 +88,85 @@ public class ConnectionCreateClosePerMessageTest {
         Assert.assertEquals(numberOfMessages, consumeMessageCount, "Send message count " +  numberOfMessages +
                 " and receive messages count " + consumeMessageCount);
 
+    }
+
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
+    @Test
+    public void testCreateAndCloseConnectionPerDurableTopicMessage(String port,
+                                                                  String adminUsername,
+                                                                  String adminPassword,
+                                                                  String brokerHostname)
+            throws NamingException, JMSException {
+        String topicName = "testCreateAndCloseConnectionPerDurableTopicMessage";
+        int numberOfMessages = 100;
+
+        InitialContext initialContext = ClientHelper
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
+                .withTopic(topicName)
+                .build();
+
+        // initialize subscriber to create durable topic and close immediately
+        TopicConnection tmpConnection = getTopicConnection(initialContext);
+        TopicSession tmpSession = getTopicSession(tmpConnection);
+        Topic subscriberDestination = getTopic(topicName, initialContext);
+        TopicSubscriber tmpSubscriber = getTopicSubscriber(tmpSession, subscriberDestination);
+        TextMessage tmpMessage = (TextMessage) tmpSubscriber.receive(1000);
+        Assert.assertNull(tmpMessage, "Message was received");
+        tmpSession.close();
+        tmpConnection.close();
+
+        // publish 100 messages
+        for (int i = 0; i < numberOfMessages; i++) {
+            TopicConnection connection = getTopicConnection(initialContext);
+            TopicSession producerSession = getTopicSession(connection);
+            TopicPublisher producer = getTopicPublisher(subscriberDestination, producerSession);
+            producer.publish(producerSession.createTextMessage(String.valueOf(i)));
+            producerSession.close();
+            connection.close();
+        }
+
+        // receive 100 messages
+        int consumeMessageCount = 0;
+        for (int i = 0; i < numberOfMessages; i++) {
+            TopicConnection connection = getTopicConnection(initialContext);
+            TopicSession subscriberSession = getTopicSession(connection);
+            TopicSubscriber subscriber = getTopicSubscriber(subscriberSession, subscriberDestination);
+            Message message = subscriber.receive(5000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+            consumeMessageCount = consumeMessageCount + 1;
+            subscriberSession.close();
+            connection.close();
+        }
+
+        Assert.assertEquals(numberOfMessages, consumeMessageCount, "Send message count " +  numberOfMessages +
+                " and receive messages count " + consumeMessageCount);
+
+    }
+
+    private TopicPublisher getTopicPublisher(Topic subscriberDestination, TopicSession producerSession)
+            throws JMSException {
+        return producerSession.createPublisher(subscriberDestination);
+    }
+
+    private TopicSubscriber getTopicSubscriber(TopicSession subscriberSession, Topic subscriberDestination)
+            throws JMSException {
+        return subscriberSession.createDurableSubscriber(subscriberDestination, "100_1");
+    }
+
+    private Topic getTopic(String topicName, InitialContext initialContext) throws NamingException {
+        return (Topic) initialContext.lookup(topicName);
+    }
+
+    private TopicSession getTopicSession(TopicConnection connection) throws JMSException {
+        return connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+    }
+
+    private TopicConnection getTopicConnection(InitialContext initialContext) throws NamingException, JMSException {
+        TopicConnectionFactory connectionFactory
+                = (TopicConnectionFactory) initialContext.lookup(ClientHelper.CONNECTION_FACTORY);
+        TopicConnection connection = connectionFactory.createTopicConnection();
+        connection.start();
+        return connection;
     }
 
     private MessageConsumer getMessageConsumer(String queueName, InitialContext initialContextForQueue,
