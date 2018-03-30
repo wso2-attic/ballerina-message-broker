@@ -17,12 +17,11 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>broker-feature</artifactId>
         <groupId>io.ballerina.messaging</groupId>
-        <version>0.1.44-SNAPSHOT</version>
+        <version>0.1.44</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -188,7 +187,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <delete file="src/main/resources/database/MB_DB.mv.db"/>
+                                <delete file="src/main/resources/database/MB_DB.mv.db" />
                             </tasks>
                         </configuration>
                     </execution>
@@ -197,14 +196,13 @@
                         <configuration>
                             <target>
                                 <!-- Drop database if it exists -->
-                                <delete dir="${db.directory}" quiet="true"/>
+                                <delete dir="${db.directory}" quiet="true" />
                                 <!-- Create database schema -->
-                                <echo message="########### Creating MB Database ##############"/>
-                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url}" driver="${db.driver}"
-                                     delimiter="${db.delimiter}" autocommit="true">
-                                    <classpath refid="maven.compile.classpath"/>
+                                <echo message="########### Creating MB Database ##############" />
+                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url}" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
+                                    <classpath refid="maven.compile.classpath" />
                                     <!-- Create database schema -->
-                                    <transaction src="${sql.directory}/h2-mb.sql"/>
+                                    <transaction src="${sql.directory}/h2-mb.sql" />
                                 </sql>
                             </target>
                         </configuration>
