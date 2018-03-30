@@ -58,7 +58,7 @@ public class BrokerCommonConfiguration {
 
         private String url = "jdbc:h2:./database/MB_DB";
 
-        private String databaseDriver;
+        private String databaseDriver = "org.h2.Driver";
 
         private String user = "wso2carbon";
 

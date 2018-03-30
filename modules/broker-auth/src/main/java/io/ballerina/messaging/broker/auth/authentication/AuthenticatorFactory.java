@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.auth.authentication;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
+import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public class AuthenticatorFactory {
         Authenticator authenticator;
         String authenticatorClass = authenticationConfiguration.getAuthenticator().getClassName();
         LOGGER.info("Initializing authenticator: {}", authenticatorClass);
-        authenticator = (Authenticator) ClassLoader.getSystemClassLoader().loadClass(authenticatorClass).newInstance();
+        authenticator = BrokerClassLoader.loadClass(authenticatorClass, Authenticator.class);
         authenticator.initialize(startupContext,
                                  userStore,
                                  authenticationConfiguration.getAuthenticator().getProperties());

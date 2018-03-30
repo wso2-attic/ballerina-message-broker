@@ -131,6 +131,9 @@
                             io.ballerina.messaging.broker.coordination.*; version="${broker.package.import.range.version}",
                             io.ballerina.messaging.broker.core.*;version="${broker.package.import.range.version}",
                             org.slf4j.*;version="${slf4j.logging.package.import.version.range}",
+                            org.wso2.carbon.metrics.*;version="${carbon.metrics.version.range}",
+                            com.google.common.*;version="${guava.package.import.version.range}",
+                            io.ballerina.messaging.broker.auth.*;version="${broker.package.import.range.version}",
                         </Import-Package>
                         <Export-Package>
                             io.ballerina.messaging.broker.amqp.*; version="${project.version}"
