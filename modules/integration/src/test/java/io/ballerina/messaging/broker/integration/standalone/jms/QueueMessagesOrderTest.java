@@ -50,14 +50,17 @@ public class QueueMessagesOrderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QueueMessagesOrderTest.class);
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void test1782QueueMessagesOrderSingleConsumer(String port) throws NamingException, JMSException {
+    public void test1782QueueMessagesOrderSingleConsumer(String port,
+                                                         String adminUsername,
+                                                         String adminPassword,
+                                                         String brokerHostname) throws NamingException, JMSException {
         String queueName = "test1782QueueMessagesOrderSingleConsumer";
         List<String> consumerOneMessages = new ArrayList<>();
 
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -106,15 +109,19 @@ public class QueueMessagesOrderTest {
         Assert.assertTrue(isOrderPreserved, "Queue messages order not preserved for single consumer.");
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void test1221QueueMessagesOrderTwoSequentialConsumers(String port) throws NamingException, JMSException {
+    public void test1221QueueMessagesOrderTwoSequentialConsumers(String port,
+                                                                 String adminUsername,
+                                                                 String adminPassword,
+                                                                 String brokerHostname)
+            throws NamingException, JMSException {
         String queueName = "test1221QueueMessagesOrderTwoSequentialConsumers";
         List<String> consumerOneMessages = new ArrayList<>();
         List<String> consumerTwoMessages = new ArrayList<>();
 
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -190,16 +197,19 @@ public class QueueMessagesOrderTest {
                 "Queue messages order not preserved for sequential consumer two.");
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void test1497QueueMessagesOrderTwoParallelConsumers(String port)
+    public void test1497QueueMessagesOrderTwoParallelConsumers(String port,
+                                                               String adminUsername,
+                                                               String adminPassword,
+                                                               String brokerHostname)
             throws NamingException, JMSException, InterruptedException {
         String queueName = "test1497QueueMessagesOrderTwoParallelConsumers";
         List<String> consumerOneMessages = new ArrayList<>();
         List<String> consumerTwoMessages = new ArrayList<>();
 
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 

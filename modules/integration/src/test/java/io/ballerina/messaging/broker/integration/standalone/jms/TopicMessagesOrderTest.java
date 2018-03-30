@@ -38,6 +38,7 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * Test class to validate message ordering in the topic.
@@ -46,15 +47,18 @@ public class TopicMessagesOrderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TopicMessagesOrderTest.class);
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void test1338TopicMessagesOrderSingleSubscriber(String port) throws Exception {
+    public void test1338TopicMessagesOrderSingleSubscriber(String port,
+                                                           String adminUsername,
+                                                           String adminPassword,
+                                                           String brokerHostname) throws NamingException, JMSException {
         String topicName = "test1338TopicMessagesOrderSingleSubscriber";
         List<String> subscriberOneMessages = new ArrayList<>();
         int numberOfMessages = 1338;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -100,16 +104,20 @@ public class TopicMessagesOrderTest {
         Assert.assertTrue(isOrderPreserved, "Topic messages order not preserved for single subscriber.");
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void test1644TopicMessagesOrderTwoSequentialSubscribers(String port) throws Exception {
+    public void test1644TopicMessagesOrderTwoSequentialSubscribers(String port,
+                                                                   String adminUsername,
+                                                                   String adminPassword,
+                                                                   String brokerHostname)
+            throws NamingException, JMSException {
         String topicName = "test1644TopicMessagesOrderTwoSequentialSubscribers";
         List<String> subscriberOneMessages = new ArrayList<>();
         List<String> subscriberTwoMessages = new ArrayList<>();
         int numberOfMessages = 1644;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -176,16 +184,20 @@ public class TopicMessagesOrderTest {
                 "Topic messages order not preserved for sequential subscriber two.");
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void test1161TopicMessagesOrderTwoParallelSubscribers(String port) throws Exception {
+    public void test1161TopicMessagesOrderTwoParallelSubscribers(String port,
+                                                                 String adminUsername,
+                                                                 String adminPassword,
+                                                                 String brokerHostname)
+            throws NamingException, JMSException, InterruptedException {
         String topicName = "test1161TopicMessagesOrderTwoParallelSubscribers";
         List<String> subscriberOneMessages = new ArrayList<>();
         List<String> subscriberTwoMessages = new ArrayList<>();
         int numberOfMessages = 1161;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 

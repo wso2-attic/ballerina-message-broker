@@ -55,12 +55,15 @@ public class QueueLocalTransactionCommitTest {
         System.clearProperty("STRICT_AMQP");
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testConsumerProducerCommitTransaction(String port) throws NamingException, JMSException {
+    public void testConsumerProducerCommitTransaction(String port,
+                                                      String adminUsername,
+                                                      String adminPassword,
+                                                      String brokerHostname) throws NamingException, JMSException {
         String queueName = "testConsumerProducerCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -100,12 +103,16 @@ public class QueueLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testTwoConsumersOneProducerCommitTransaction(String port) throws NamingException, JMSException {
+    public void testTwoConsumersOneProducerCommitTransaction(String port,
+                                                             String adminUsername,
+                                                             String adminPassword,
+                                                             String brokerHostname)
+            throws NamingException, JMSException {
         String queueName = "testTwoConsumersOneProducerCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -163,13 +170,16 @@ public class QueueLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testOneConsumerCommitOneConsumerRollbackOneProducerCommitTransaction(String port)
+    public void testOneConsumerCommitOneConsumerRollbackOneProducerCommitTransaction(String port,
+                                                                                     String adminUsername,
+                                                                                     String adminPassword,
+                                                                                     String brokerHostname)
             throws NamingException, JMSException {
         String queueName = "testOneConsumerCommitOneConsumerRollbackOneProducerCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -237,12 +247,15 @@ public class QueueLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testProducerNotCommitTransaction(String port) throws NamingException, JMSException {
+    public void testProducerNotCommitTransaction(String port,
+                                                 String adminUsername,
+                                                 String adminPassword,
+                                                 String brokerHostname) throws NamingException, JMSException {
         String queueName = "testProducerNotCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -289,13 +302,16 @@ public class QueueLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test(expectedExceptions = javax.jms.IllegalStateException.class,
             expectedExceptionsMessageRegExp = ".*Session is not transacted")
-    public void testCommitOnNonTransactionSession(String port) throws NamingException, JMSException {
+    public void testCommitOnNonTransactionSession(String port,
+                                                  String adminUsername,
+                                                  String adminPassword,
+                                                  String brokerHostname) throws NamingException, JMSException {
         String queueName = "testCommitOnNonTransactionSession";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -319,12 +335,15 @@ public class QueueLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testConsumerCloseBeforeCommitTransaction(String port) throws NamingException, JMSException {
+    public void testConsumerCloseBeforeCommitTransaction(String port,
+                                                         String adminUsername,
+                                                         String adminPassword,
+                                                         String brokerHostname) throws NamingException, JMSException {
         String queueName = "testConsumerCloseBeforeCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -370,12 +389,15 @@ public class QueueLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testProducerCloseBeforeCommitTransaction(String port) throws NamingException, JMSException {
+    public void testProducerCloseBeforeCommitTransaction(String port,
+                                                         String adminUsername,
+                                                         String adminPassword,
+                                                         String brokerHostname) throws NamingException, JMSException {
         String queueName = "testPublisherCloseBeforeCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 

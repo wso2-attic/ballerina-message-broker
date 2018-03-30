@@ -41,14 +41,18 @@ import javax.naming.NamingException;
  */
 public class ConnectionCreateClosePerMessageTest {
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testCreateAndCloseConnectionPerQueueMessage(String port) throws NamingException, JMSException {
+    public void testCreateAndCloseConnectionPerQueueMessage(String port,
+                                                            String adminUsername,
+                                                            String adminPassword,
+                                                            String brokerHostname)
+            throws NamingException, JMSException {
         String queueName = "testCreateAndCloseConnectionPerQueueMessage";
         int numberOfMessages = 100;
 
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -68,7 +72,7 @@ public class ConnectionCreateClosePerMessageTest {
             Connection connection = getConnection(initialContextForQueue);
             Session subscriberSession = getSession(connection);
             MessageConsumer consumer = getMessageConsumer(queueName, initialContextForQueue, subscriberSession);
-            Message message = consumer.receive(1000);
+            Message message = consumer.receive(5000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
             consumeMessageCount = consumeMessageCount + 1;
             connection.close();

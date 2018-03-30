@@ -38,6 +38,7 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * Test class to validate message ordering in the durable topic.
@@ -46,15 +47,19 @@ public class DurableTopicMessagesOrderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DurableTopicMessagesOrderTest.class);
 
-    @Parameters({"broker-port"})
-    @Test(enabled = false)
-    public void test1966DurableTopicMessagesOrderSingleSubscriber(String port) throws Exception {
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
+    @Test
+    public void test1966DurableTopicMessagesOrderSingleSubscriber(String port,
+                                                                  String adminUsername,
+                                                                  String adminPassword,
+                                                                  String brokerHostname)
+            throws NamingException, JMSException {
         String topicName = "test1966DurableTopicMessagesOrderSingleSubscriber";
         List<String> subscriberOneMessages = new ArrayList<>();
         int numberOfMessages = 1966;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -100,16 +105,20 @@ public class DurableTopicMessagesOrderTest {
         Assert.assertTrue(isOrderPreserved, "Topic messages order not preserved for single subscriber.");
     }
 
-    @Parameters({"broker-port"})
-    @Test(enabled = false)
-    public void test1571DurableTopicMessagesOrderTwoSequentialSubscribers(String port) throws Exception {
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
+    @Test
+    public void test1571DurableTopicMessagesOrderTwoSequentialSubscribers(String port,
+                                                                          String adminUsername,
+                                                                          String adminPassword,
+                                                                          String brokerHostname)
+            throws NamingException, JMSException {
         String topicName = "test1571DurableTopicMessagesOrderTwoSequentialSubscribers";
         List<String> subscriberOneMessages = new ArrayList<>();
         List<String> subscriberTwoMessages = new ArrayList<>();
         int numberOfMessages = 1571;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -176,16 +185,20 @@ public class DurableTopicMessagesOrderTest {
                 "Topic messages order not preserved for sequential subscriber two.");
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void test1837DurableTopicMessagesOrderTwoParallelSubscribers(String port) throws Exception {
+    public void test1837DurableTopicMessagesOrderTwoParallelSubscribers(String port,
+                                                                        String adminUsername,
+                                                                        String adminPassword,
+                                                                        String brokerHostname)
+            throws NamingException, JMSException, InterruptedException {
         String topicName = "test1837DurableTopicMessagesOrderTwoParallelSubscribers";
         List<String> subscriberOneMessages = new ArrayList<>();
         List<String> subscriberTwoMessages = new ArrayList<>();
         int numberOfMessages = 1837;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
