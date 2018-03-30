@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 
 /**
@@ -47,6 +48,11 @@ import javax.sql.DataSource;
 class MessageCrudOperationsDao extends BaseDao {
 
     private final BrokerMetricManager metricManager;
+
+    /**
+     * temp storage for messages loaded from DB when restarting the message broker.
+     */
+    private Map<Long, Message> storedMessageCache = new ConcurrentHashMap<>();
 
     MessageCrudOperationsDao(DataSource dataSource, BrokerMetricManager metricManager) {
         super(dataSource);
@@ -151,6 +157,11 @@ class MessageCrudOperationsDao extends BaseDao {
                 statement.addBatch();
             }
             statement.executeBatch();
+
+            // Remove deleted messages from the stored cache
+            for (Long internalId : internalIdList) {
+                storedMessageCache.remove(internalId);
+            }
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while deleting messages", e);
         } finally {
@@ -170,9 +181,19 @@ class MessageCrudOperationsDao extends BaseDao {
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 long messageId = resultSet.getLong(1);
-                Message message = messageList.computeIfAbsent(messageId, k -> new Message(k, null));
-                message.addAttachedDurableQueue(resultSet.getString(2));
+                Message cachedMessage = storedMessageCache.get(messageId);
+
+                if (Objects.nonNull(cachedMessage)) {
+                    if (!messageList.containsKey(messageId)) {
+                        messageList.put(messageId, cachedMessage.bareShallowCopy());
+                    }
+                } else {
+                    Message message = messageList.computeIfAbsent(messageId, k -> new Message(k, null));
+                    message.addAttachedDurableQueue(resultSet.getString(2));
+                }
             }
+
+            storedMessageCache.putAll(messageList);
             return messageList.values();
         } catch (SQLException e) {
             throw new BrokerException("Error occurred while reading messages", e);

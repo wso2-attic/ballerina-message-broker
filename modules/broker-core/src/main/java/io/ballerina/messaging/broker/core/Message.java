@@ -85,6 +85,16 @@ public class Message {
         return message;
     }
 
+    /**
+     * Create a  shallow copy of the message without copying metadata or content. Only the message ID and the
+     * attached queue data is copied by reference.
+     *
+     * @return shallow copy of the message
+     */
+    public Message bareShallowCopy() {
+        return new Message(internalId, null, queueSet);
+    }
+
     public Message shallowCopyWith(long newMessageId, String routingKey, String exchangeName) {
         Message message = new Message(newMessageId, metadata.shallowCopyWith(routingKey, exchangeName));
         shallowCopyContent(message);
