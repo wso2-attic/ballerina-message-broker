@@ -17,7 +17,7 @@
  *
  */
 
-package io.ballerina.messaging.broker.amqp;
+package io.ballerina.messaging.broker.amqp.consumer;
 
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.frames.BasicDeliver;

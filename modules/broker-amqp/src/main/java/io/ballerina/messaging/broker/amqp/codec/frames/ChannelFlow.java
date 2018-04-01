@@ -19,9 +19,9 @@
 
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
-import io.ballerina.messaging.broker.amqp.AmqpDeliverMessage;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.amqp.consumer.AmqpDeliverMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
