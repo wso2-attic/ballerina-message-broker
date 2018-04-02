@@ -16,7 +16,7 @@ following JMS selector functionalities are supported as well.
     CorrelationId = 'a234df34'
     ```
     
-    Following selector expression will match the messages with **eventName** header value **logging**
+    Following selector expression will match the messages with **eventName** custome property's value **logging**
     ```iso92-sql
     eventName = 'logging'
     ```
