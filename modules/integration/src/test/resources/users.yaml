@@ -28,3 +28,8 @@ wso2.broker.users:
    roles:
    - test
 
+ -
+   username: user1
+   password: 1q2w3e4r
+   roles:
+   - role1

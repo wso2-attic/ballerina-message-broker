@@ -25,10 +25,7 @@ import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.core.Broker;
-import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.BrokerImpl;
-import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
-import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.ballerina.messaging.broker.integration.util.TestUtils;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
 import org.slf4j.Logger;
@@ -71,13 +68,6 @@ public class InMemorySuiteInitializer {
         authManager.start();
         restServer = new BrokerRestServer(startupContext);
         broker = new BrokerImpl(startupContext);
-        BrokerFactory brokerFactory;
-        if (authManager.isAuthorizationEnabled()) {
-            brokerFactory = new SecureBrokerFactory(startupContext);
-        } else {
-            brokerFactory = new DefaultBrokerFactory(startupContext);
-        }
-        startupContext.registerService(BrokerFactory.class, brokerFactory);
         broker.startMessageDelivery();
         server = new Server(startupContext);
         server.start();

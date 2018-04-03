@@ -28,6 +28,8 @@
     <parameter name="admin-password" value="admin"/>
     <parameter name="test-username" value="test"/>
     <parameter name="test-password" value="a1D-M*i2+n"/>
+    <parameter name="user1-username" value="user1"/>
+    <parameter name="user1-password" value="1q2w3e4r"/>
 
     <listeners>
         <listener class-name="io.ballerina.messaging.broker.integration.util.TestExecutionListener"/>
@@ -45,6 +47,7 @@
             <package name="io.ballerina.messaging.broker.integration.standalone.amqp"/>
             <package name="io.ballerina.messaging.broker.integration.standalone.jms"/>
             <package name="io.ballerina.messaging.broker.integration.standalone.cli"/>
+            <package name="io.ballerina.messaging.broker.integration.standalone.security"/>
         </packages>
     </test>
 </suite>

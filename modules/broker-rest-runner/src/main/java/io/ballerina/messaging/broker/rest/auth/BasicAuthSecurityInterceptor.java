@@ -62,7 +62,7 @@ public class BasicAuthSecurityInterceptor implements RequestInterceptor {
                 // Read the Basic auth header and extract the username and password from base 64 encoded string.
                 byte[] decodedByte = Base64.getDecoder().decode(authEncoded.getBytes(StandardCharsets.UTF_8));
                 char[] array = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(decodedByte)).array();
-                int separatorIndex = Arrays.binarySearch(array, ':');
+                int separatorIndex = new String(array).indexOf(":");
                 String userName = new String(Arrays.copyOfRange(array, 0, separatorIndex));
                 char[] password = Arrays.copyOfRange(array, separatorIndex + 1, array.length);
                 if (authenticate(userName, password)) {

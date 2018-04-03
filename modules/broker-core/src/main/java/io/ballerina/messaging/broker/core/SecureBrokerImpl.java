@@ -111,7 +111,9 @@ public class SecureBrokerImpl implements Broker {
     public void declareExchange(String exchangeName, String type, boolean passive, boolean durable)
             throws BrokerException, ValidationException {
         try {
-            authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
+            if (!passive) {
+                authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
+            }
             broker.declareExchange(exchangeName, type, passive, durable);
             if (!passive) {
                 authHandler.createAuthResource(ResourceType.EXCHANGE, exchangeName, durable, subject);
