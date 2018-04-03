@@ -76,16 +76,16 @@ public class Metadata {
         this.routingKey = routingKey;
         this.exchangeName = exchangeName;
         this.contentLength = contentLength;
-        this.properties = FieldTable.EMPTY_TABLE;
-        this.headers = FieldTable.EMPTY_TABLE;
+        this.properties = new FieldTable();
+        this.headers = new FieldTable();
     }
 
     public Metadata(String routingKey, String exchangeName, long contentLength, byte[] propertyBytes) throws Exception {
         this.routingKey = routingKey;
         this.exchangeName = exchangeName;
         this.contentLength = contentLength;
-        this.properties = FieldTable.EMPTY_TABLE;
-        this.headers = FieldTable.EMPTY_TABLE;
+        this.properties = new FieldTable();
+        this.headers = new FieldTable();
         setPropertiesFromBytes(propertyBytes);
     }
 
