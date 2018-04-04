@@ -41,14 +41,17 @@ import javax.naming.NamingException;
  */
 public class TopicLocalTransactionCommitTest {
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testSubscriberPublisherCommitTransaction(String port) throws NamingException, JMSException {
+    public void testSubscriberPublisherCommitTransaction(String port,
+                                                         String adminUsername,
+                                                         String adminPassword,
+                                                         String brokerHostname) throws NamingException, JMSException {
         String topicName = "testSubscriberPublisherCommitTransaction";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -87,14 +90,18 @@ public class TopicLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testTwoSubscribersOnePublisherCommitTransaction(String port) throws NamingException, JMSException {
+    public void testTwoSubscribersOnePublisherCommitTransaction(String port,
+                                                                String adminUsername,
+                                                                String adminPassword,
+                                                                String brokerHostname)
+            throws NamingException, JMSException {
         String topicName = "testTwoSubscribersOnePublisherCommitTransaction";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -148,15 +155,18 @@ public class TopicLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testOneSubscriberCommitOneSubscriberRollbackOnePublisherCommitTransaction(String port)
+    public void testOneSubscriberCommitOneSubscriberRollbackOnePublisherCommitTransaction(String port,
+                                                                                          String adminUsername,
+                                                                                          String adminPassword,
+                                                                                          String brokerHostname)
             throws NamingException, JMSException {
         String topicName = "testOneSubscriberCommitOneSubscriberRollbackOnePublisherCommitTransaction";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -223,14 +233,17 @@ public class TopicLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testPublisherNotCommitTransaction(String port) throws NamingException, JMSException {
+    public void testPublisherNotCommitTransaction(String port,
+                                                  String adminUsername,
+                                                  String adminPassword,
+                                                  String brokerHostname) throws NamingException, JMSException {
         String topicName = "testPublisherNotCommitTransaction";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -273,15 +286,18 @@ public class TopicLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test(expectedExceptions = javax.jms.IllegalStateException.class,
             expectedExceptionsMessageRegExp = ".*Session is not transacted")
-    public void testCommitOnNonTransactionTopicSession(String port) throws NamingException, JMSException {
+    public void testCommitOnNonTransactionTopicSession(String port,
+                                                       String adminUsername,
+                                                       String adminPassword,
+                                                       String brokerHostname) throws NamingException, JMSException {
         String topicName = "testCommitOnNonTransactionTopicSession";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -314,14 +330,17 @@ public class TopicLocalTransactionCommitTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testPublisherCloseBeforeCommitTransaction(String port) throws NamingException, JMSException {
+    public void testPublisherCloseBeforeCommitTransaction(String port,
+                                                          String adminUsername,
+                                                          String adminPassword,
+                                                          String brokerHostname) throws NamingException, JMSException {
         String topicName = "testPublisherCloseBeforeCommitTransaction";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 

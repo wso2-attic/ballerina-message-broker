@@ -41,14 +41,17 @@ import javax.naming.NamingException;
  */
 public class TopicLocalTransactionRollbackTest {
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testSubscriberRollbackTransaction(String port) throws NamingException, JMSException {
+    public void testSubscriberRollbackTransaction(String port,
+                                                  String adminUsername,
+                                                  String adminPassword,
+                                                  String brokerHostname) throws NamingException, JMSException {
         String topicName = "testSubscriberRollbackTransaction";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -95,14 +98,17 @@ public class TopicLocalTransactionRollbackTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testPublisherRollbackTransaction(String port) throws NamingException, JMSException {
+    public void testPublisherRollbackTransaction(String port,
+                                                 String adminUsername,
+                                                 String adminPassword,
+                                                 String brokerHostname) throws NamingException, JMSException {
         String topicName = "testPublisherRollbackTransaction";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -135,15 +141,18 @@ public class TopicLocalTransactionRollbackTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testTwoSubscribersRollbackOnePublisherCommitTransaction(String port)
+    public void testTwoSubscribersRollbackOnePublisherCommitTransaction(String port,
+                                                                        String adminUsername,
+                                                                        String adminPassword,
+                                                                        String brokerHostname)
             throws NamingException, JMSException {
         String topicName = "testTwoSubscribersRollbackOnePublisherCommitTransaction";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -224,15 +233,18 @@ public class TopicLocalTransactionRollbackTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test(expectedExceptions = javax.jms.IllegalStateException.class,
             expectedExceptionsMessageRegExp = ".*Session is not transacted")
-    public void testRollbackOnNonTransactionTopicSession(String port) throws NamingException, JMSException {
+    public void testRollbackOnNonTransactionTopicSession(String port,
+                                                         String adminUsername,
+                                                         String adminPassword,
+                                                         String brokerHostname) throws NamingException, JMSException {
         String topicName = "testRollbackOnNonTransactionTopicSession";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 
@@ -265,14 +277,18 @@ public class TopicLocalTransactionRollbackTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testPublisherCloseBeforeRollbackTransaction(String port) throws NamingException, JMSException {
+    public void testPublisherCloseBeforeRollbackTransaction(String port,
+                                                            String adminUsername,
+                                                            String adminPassword,
+                                                            String brokerHostname)
+            throws NamingException, JMSException {
         String topicName = "testPublisherCloseBeforeRollbackTransaction";
         int numberOfMessages = 100;
 
         InitialContext initialContext = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withTopic(topicName)
                 .build();
 

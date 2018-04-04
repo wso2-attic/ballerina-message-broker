@@ -53,12 +53,15 @@ public class QueueLocalTransactionRollbackTest {
         System.clearProperty("STRICT_AMQP");
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testConsumerRollbackTransaction(String port) throws NamingException, JMSException {
+    public void testConsumerRollbackTransaction(String port,
+                                                String adminUsername,
+                                                String adminPassword,
+                                                String brokerHostname) throws NamingException, JMSException {
         String queueName = "testConsumerRollbackTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -109,12 +112,15 @@ public class QueueLocalTransactionRollbackTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testProducerRollbackTransaction(String port) throws NamingException, JMSException {
+    public void testProducerRollbackTransaction(String port,
+                                                String adminUsername,
+                                                String adminPassword,
+                                                String brokerHostname) throws NamingException, JMSException {
         String queueName = "testProducerRollbackTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -148,13 +154,16 @@ public class QueueLocalTransactionRollbackTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testTwoConsumersRollbackOneProducerCommitTransaction(String port)
+    public void testTwoConsumersRollbackOneProducerCommitTransaction(String port,
+                                                                     String adminUsername,
+                                                                     String adminPassword,
+                                                                     String brokerHostname)
             throws NamingException, JMSException {
         String queueName = "testTwoConsumersRollbackOneProducerCommitTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -238,13 +247,16 @@ public class QueueLocalTransactionRollbackTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test(expectedExceptions = javax.jms.IllegalStateException.class,
             expectedExceptionsMessageRegExp = ".*Session is not transacted")
-    public void testRollbackOnNonTransactionSession(String port) throws NamingException, JMSException {
+    public void testRollbackOnNonTransactionSession(String port,
+                                                    String adminUsername,
+                                                    String adminPassword,
+                                                    String brokerHostname) throws NamingException, JMSException {
         String queueName = "testRollbackOnNonTransactionSession";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -268,12 +280,15 @@ public class QueueLocalTransactionRollbackTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testConsumerCloseBeforeRollbackTransaction(String port) throws NamingException, JMSException {
+    public void testConsumerCloseBeforeRollbackTransaction(String port,
+                                                           String adminUsername,
+                                                           String adminPassword,
+                                                           String brokerHostname) throws NamingException, JMSException {
         String queueName = "testConsumerCloseBeforeRollbackTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
@@ -331,12 +346,15 @@ public class QueueLocalTransactionRollbackTest {
         connection.close();
     }
 
-    @Parameters({"broker-port"})
+    @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
-    public void testProducerCloseBeforeRollbackTransaction(String port) throws NamingException, JMSException {
+    public void testProducerCloseBeforeRollbackTransaction(String port,
+                                                           String adminUsername,
+                                                           String adminPassword,
+                                                           String brokerHostname) throws NamingException, JMSException {
         String queueName = "testPublisherCloseBeforeRollbackTransaction";
         InitialContext initialContextForQueue = ClientHelper
-                .getInitialContextBuilder("admin", "admin", "localhost", port)
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
                 .withQueue(queueName)
                 .build();
 
