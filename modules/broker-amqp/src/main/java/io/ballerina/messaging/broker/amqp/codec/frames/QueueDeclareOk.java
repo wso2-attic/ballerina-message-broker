@@ -23,8 +23,6 @@ import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for queue.declare-ok
@@ -34,13 +32,12 @@ import org.slf4j.LoggerFactory;
  *     3. consumer-count (long) - number of consumers
  */
 public class QueueDeclareOk extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(QueueDeclareOk.class);
 
     private final ShortString queue;
     private final long messageCount;
     private final long consumerCount;
 
-    public QueueDeclareOk(int channel, ShortString queue, long messageCount, long consumerCount) {
+    QueueDeclareOk(int channel, ShortString queue, long messageCount, long consumerCount) {
         super(channel, (short) 50, (short) 11);
         this.queue = queue;
         this.messageCount = messageCount;

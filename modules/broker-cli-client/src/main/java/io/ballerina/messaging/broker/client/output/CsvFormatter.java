@@ -27,7 +27,7 @@ import io.ballerina.messaging.broker.client.resources.Queue;
  */
 public class CsvFormatter implements ResponseFormatter {
 
-    public static final String WRAPPED_STRING_FORMATTER = "\"%s\"";
+    private static final String WRAPPED_STRING_FORMATTER = "\"%s\"";
     /**
      * Name of this formatter class. This will be used when displaying help logs.
      */
@@ -39,7 +39,8 @@ public class CsvFormatter implements ResponseFormatter {
             return;
         }
         String printTemplate = "%s,%s,%s,%s%n";
-        OUT_STREAM.printf(printTemplate, Exchange.NAME, Exchange.TYPE, Exchange.DURABLE, Exchange.OWNER);
+        OUT_STREAM.printf(printTemplate, Exchange.NAME_TAG, Exchange.TYPE_TAG,
+                          Exchange.DURABLE_TAG, Exchange.OWNER_TAG);
         for (Exchange exchange : exchanges) {
             OUT_STREAM.printf(printTemplate.replaceFirst("%s", WRAPPED_STRING_FORMATTER), exchange.getName(),
                     exchange.getType(), String.valueOf(exchange.isDurable()), exchange.getOwner());
@@ -57,8 +58,8 @@ public class CsvFormatter implements ResponseFormatter {
             return;
         }
         String printTemplate = "%s,%s,%s,%s,%s,%s,%s%n";
-        OUT_STREAM.printf(printTemplate, Queue.NAME, Queue.CONSUMER_COUNT, Queue.CAPACITY, Queue.SIZE, Queue.DURABLE,
-                Queue.AUTO_DELETE, Queue.OWNER);
+        OUT_STREAM.printf(printTemplate, Queue.NAME_TAG, Queue.CONSUMER_COUNT_TAG, Queue.CAPACITY_TAG,
+                          Queue.SIZE_TAG, Queue.DURABLE_TAG, Queue.AUTO_DELETE_TAG, Queue.OWNER_TAG);
         for (Queue queue : queues) {
             OUT_STREAM.printf(printTemplate.replaceFirst("%s", WRAPPED_STRING_FORMATTER), queue.getName(),
                     String.valueOf(queue.getConsumerCount()), String.valueOf(queue.getCapacity()),

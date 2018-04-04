@@ -88,6 +88,7 @@ final class TaskProcessor implements Callable<Boolean> {
                         delay = idleWaitTimeMillis;
                     }
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     if (isActive.get()) {
                         taskExceptionHandler.handleException(e, "null");
                     }
@@ -114,7 +115,7 @@ final class TaskProcessor implements Callable<Boolean> {
                     }
                 }
             }
-            log.info("Task processor stopped. Task queue size " + taskHolderQueue.size());
+            log.info("Task processor stopped. Task queue size {}", taskHolderQueue.size());
         } else {
             log.error("Task processor is already running ");
             throw new IllegalStateException("Task processor is already running");

@@ -24,8 +24,6 @@ import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for basic.ack.
@@ -34,7 +32,6 @@ import org.slf4j.LoggerFactory;
  *      2. multiple (bit) - acknowledge multiple messages
  */
 public class BasicAck extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicAck.class);
 
     private final long deliveryTag;
     private final boolean multiple;

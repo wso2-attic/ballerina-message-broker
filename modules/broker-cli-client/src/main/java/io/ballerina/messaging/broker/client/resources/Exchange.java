@@ -28,10 +28,10 @@ import java.util.List;
  */
 public class Exchange {
 
-    public static final String NAME = "name";
-    public static final String TYPE = "type";
-    public static final String DURABLE = "durable";
-    public static final String OWNER = "owner";
+    public static final String NAME_TAG = "name";
+    public static final String TYPE_TAG = "type";
+    public static final String DURABLE_TAG = "durable";
+    public static final String OWNER_TAG = "owner";
 
     private String name;
 
@@ -67,9 +67,9 @@ public class Exchange {
 
     public String getAsJsonString() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(NAME, name);
-        jsonObject.addProperty(TYPE, type);
-        jsonObject.addProperty(DURABLE, durable);
+        jsonObject.addProperty(NAME_TAG, name);
+        jsonObject.addProperty(TYPE_TAG, type);
+        jsonObject.addProperty(DURABLE_TAG, durable);
         return jsonObject.toString();
     }
 

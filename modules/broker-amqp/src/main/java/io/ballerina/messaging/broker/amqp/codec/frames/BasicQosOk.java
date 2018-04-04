@@ -22,8 +22,6 @@ package io.ballerina.messaging.broker.amqp.codec.frames;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for basic.qos.
@@ -31,9 +29,8 @@ import org.slf4j.LoggerFactory;
  *     No parameters
  */
 public class BasicQosOk extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicQosOk.class);
 
-    public BasicQosOk(int channel) {
+    BasicQosOk(int channel) {
         super(channel, (short) 60, (short) 11);
     }
 
@@ -44,6 +41,7 @@ public class BasicQosOk extends MethodFrame {
 
     @Override
     protected void writeMethod(ByteBuf buf) {
+        // no fields to be written.
     }
 
     @Override

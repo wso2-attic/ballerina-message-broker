@@ -23,8 +23,6 @@ import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for basic.qos
@@ -34,13 +32,12 @@ import org.slf4j.LoggerFactory;
  *     3. global (bit) - apply to entire connection
  */
 public class BasicQos extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicQos.class);
 
     private final long prefetchWindowSize;
     private final int prefetchCount;
     private final boolean global;
 
-    public BasicQos(int channel, long prefetchWindowSize, int prefetchCount, boolean global) {
+    private BasicQos(int channel, long prefetchWindowSize, int prefetchCount, boolean global) {
         super(channel, (short) 60, (short) 10);
         this.prefetchWindowSize = prefetchWindowSize;
         this.prefetchCount = prefetchCount;

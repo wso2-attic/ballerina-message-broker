@@ -22,8 +22,6 @@ package io.ballerina.messaging.broker.amqp.codec.frames;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for channel.open-ok
@@ -31,10 +29,8 @@ import org.slf4j.LoggerFactory;
  *     1. reserved-1 (LongString) - deprecated param
  */
 public class ChannelOpenOk extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelOpenOk.class);
 
-
-    public ChannelOpenOk(int channel) {
+    ChannelOpenOk(int channel) {
         super(channel, (short) 20, (short) 11);
     }
 

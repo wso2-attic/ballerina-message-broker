@@ -22,8 +22,6 @@ package io.ballerina.messaging.broker.amqp.codec.frames;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for connection.close-ok.
@@ -31,9 +29,8 @@ import org.slf4j.LoggerFactory;
  *     No parameters
  */
 public class ConnectionCloseOk extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionCloseOk.class);
 
-    public ConnectionCloseOk(int channel) {
+    ConnectionCloseOk(int channel) {
         super(channel, (short) 10, (short) 51);
     }
 
@@ -44,6 +41,7 @@ public class ConnectionCloseOk extends MethodFrame {
 
     @Override
     protected void writeMethod(ByteBuf buf) {
+        // No fields to be written.
     }
 
     @Override

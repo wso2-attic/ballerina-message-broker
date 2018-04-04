@@ -32,7 +32,7 @@ public class BrokerTransactionFactory {
 
     private final Registry registry;
 
-    public BrokerTransactionFactory(Broker broker, MessageStore messageStore) throws BrokerException {
+    public BrokerTransactionFactory(Broker broker, MessageStore messageStore) {
         this.branchFactory = new BranchFactory(broker, messageStore);
         this.registry = new Registry(branchFactory);
     }

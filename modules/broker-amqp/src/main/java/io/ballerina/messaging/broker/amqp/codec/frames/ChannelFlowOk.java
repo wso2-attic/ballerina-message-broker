@@ -22,8 +22,6 @@ package io.ballerina.messaging.broker.amqp.codec.frames;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * AMQP frame for channel.flow-ok.
@@ -31,11 +29,10 @@ import org.slf4j.LoggerFactory;
  *     1.active (bit) - current flow setting
  */
 public class ChannelFlowOk extends MethodFrame {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChannelFlowOk.class);
 
     private final boolean active;
 
-    public ChannelFlowOk(int channel, boolean active) {
+    ChannelFlowOk(int channel, boolean active) {
         super(channel, (short) 20, (short) 21);
         this.active = active;
     }

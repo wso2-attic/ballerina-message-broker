@@ -97,6 +97,7 @@ public class AmqpConsumer extends Consumer {
 
     @Override
     public void close() {
+        // There is no frame to close a consumer from server side.
     }
 
     @Override

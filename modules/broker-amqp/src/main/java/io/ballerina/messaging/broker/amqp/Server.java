@@ -79,7 +79,6 @@ public class Server {
      */
     private static final int BLOCKING_TASK_EXECUTOR_THREADS = 32;
 
-    private final Broker broker;
     private final BrokerFactory brokerFactory;
     private final AmqpServerConfiguration configuration;
     private final AmqpMetricManager metricManager;
@@ -109,7 +108,7 @@ public class Server {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         this.configuration = configProvider
                 .getConfigurationObject(AmqpServerConfiguration.NAMESPACE, AmqpServerConfiguration.class);
-        this.broker = startupContext.getService(Broker.class);
+        Broker broker = startupContext.getService(Broker.class);
 
         if (broker == null) {
             throw new RuntimeException("Could not find the broker class to initialize AMQP server");
@@ -147,41 +146,6 @@ public class Server {
         ioExecutors.shutdownGracefully();
     }
 
-    private ChannelFuture bindToPlainSocket() throws InterruptedException {
-        String hostname = configuration.getHostName();
-        int port = Integer.parseInt(configuration.getPlain().getPort());
-
-        ServerBootstrap b = new ServerBootstrap();
-        b.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class)
-                .childHandler(new SocketChannelInitializer(ioExecutors))
-                .option(ChannelOption.SO_BACKLOG, 128)
-                .childOption(ChannelOption.SO_KEEPALIVE, true);
-
-        // Bind and start to accept incoming connections.
-        ChannelFuture future = b.bind(hostname, port).sync();
-        LOGGER.info("Listening AMQP on " + hostname + ":" + port);
-        return future;
-    }
-
-    private ChannelFuture bindToSslSocket()
-            throws InterruptedException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException,
-            KeyStoreException, KeyManagementException, IOException {
-        String hostname = configuration.getHostName();
-        int port = Integer.parseInt(configuration.getSsl().getPort());
-
-        ServerBootstrap b = new ServerBootstrap();
-        b.group(bossGroup, workerGroup)
-         .channel(NioServerSocketChannel.class)
-         .childHandler(new SslSocketChannelInitializer(ioExecutors, new SslHandlerFactory(configuration)))
-         .option(ChannelOption.SO_BACKLOG, 128)
-         .childOption(ChannelOption.SO_KEEPALIVE, true);
-
-        // Bind and start to accept incoming connections.
-        ChannelFuture future = b.bind(hostname, port).sync();
-        LOGGER.info("Listening AMQP/" + configuration.getSsl().getProtocol() + " on " + hostname + ":" + port);
-        return future;
-    }
 
     public void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
                                NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
@@ -198,7 +162,7 @@ public class Server {
         }
     }
 
-    public void stop() throws InterruptedException {
+    public void stop() {
         try {
             closeChannels();
         } finally {
@@ -206,14 +170,14 @@ public class Server {
         }
     }
 
-    public void shutdown() throws InterruptedException {
+    public void shutdown() {
         serverHelper.shutdown();
     }
 
     /**
      * Method to close the channels.
      */
-    private void closeChannels() throws InterruptedException {
+    private void closeChannels() {
         if (plainServerChannel != null) {
             plainServerChannel.close();
         }
@@ -226,7 +190,7 @@ public class Server {
 
         private final EventExecutorGroup ioExecutors;
 
-        public SocketChannelInitializer(EventExecutorGroup ioExecutors) {
+        SocketChannelInitializer(EventExecutorGroup ioExecutors) {
             this.ioExecutors = ioExecutors;
         }
 
@@ -245,7 +209,7 @@ public class Server {
         private final EventExecutorGroup ioExecutors;
         private final SslHandlerFactory sslHandlerFactory;
 
-        public SslSocketChannelInitializer(EventExecutorGroup ioExecutors, SslHandlerFactory sslHandlerFactory) {
+        SslSocketChannelInitializer(EventExecutorGroup ioExecutors, SslHandlerFactory sslHandlerFactory) {
             this.ioExecutors = ioExecutors;
             this.sslHandlerFactory = sslHandlerFactory;
         }
@@ -275,7 +239,44 @@ public class Server {
             }
         }
 
-        public void shutdown() throws InterruptedException {
+        private ChannelFuture bindToPlainSocket() throws InterruptedException {
+            String hostname = configuration.getHostName();
+            int port = Integer.parseInt(configuration.getPlain().getPort());
+
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(bossGroup, workerGroup)
+             .channel(NioServerSocketChannel.class)
+             .childHandler(new SocketChannelInitializer(ioExecutors))
+             .option(ChannelOption.SO_BACKLOG, 128)
+             .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+            // Bind and start to accept incoming connections.
+            ChannelFuture future = b.bind(hostname, port).sync();
+            LOGGER.info("Listening AMQP on {}:{}", hostname, port);
+            return future;
+        }
+
+        private ChannelFuture bindToSslSocket()
+                throws InterruptedException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException,
+                       KeyStoreException, KeyManagementException, IOException {
+            String hostname = configuration.getHostName();
+            int port = Integer.parseInt(configuration.getSsl().getPort());
+
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(bossGroup, workerGroup)
+             .channel(NioServerSocketChannel.class)
+             .childHandler(new SslSocketChannelInitializer(ioExecutors, new SslHandlerFactory(configuration)))
+             .option(ChannelOption.SO_BACKLOG, 128)
+             .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+            // Bind and start to accept incoming connections.
+            ChannelFuture future = b.bind(hostname, port).sync();
+            LOGGER.info("Listening AMQP/{} on {}:{}", configuration.getSsl().getProtocol(), hostname, port);
+            return future;
+        }
+
+
+        public void shutdown() {
             stop();
         }
 
@@ -302,7 +303,7 @@ public class Server {
         }
 
         @Override
-        public void shutdown() throws InterruptedException {
+        public void shutdown() {
             haStrategy.unregisterListener(basicHaListener);
             super.shutdown();
         }
@@ -320,11 +321,7 @@ public class Server {
          */
         public void deactivate() {
             LOGGER.info("AMQP Transport mode changed from ACTIVE to PASSIVE");
-            try {
-                closeChannels();
-            } catch (InterruptedException e) {
-                LOGGER.error("Error while stopping the AMQP transport ", e);
-            }
+            closeChannels();
         }
 
         /**
