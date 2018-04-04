@@ -17,7 +17,7 @@
  *
  */
 
-package io.ballerina.messaging.broker.amqp;
+package io.ballerina.messaging.broker.amqp.consumer;
 
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.Message;

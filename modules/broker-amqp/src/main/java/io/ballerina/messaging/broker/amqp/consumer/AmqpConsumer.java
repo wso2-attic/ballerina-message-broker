@@ -17,22 +17,18 @@
  *
  */
 
-package io.ballerina.messaging.broker.amqp;
+package io.ballerina.messaging.broker.amqp.consumer;
 
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.Consumer;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
-import io.ballerina.messaging.broker.core.util.TraceField;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * AMQP based message consumer.
@@ -55,21 +51,28 @@ public class AmqpConsumer extends Consumer {
 
     private final AmqpChannel channel;
 
-    private ChannelFutureListener errorLogger;
+    private final ChannelFutureListenerFactory channelFutureListenerFactory;
 
-    private final List<TraceField> tracingProperties;
-
-    public AmqpConsumer(ChannelHandlerContext ctx, AmqpChannel channel,
-                        String queueName, ShortString consumerTag, boolean isExclusive) {
+    public AmqpConsumer(ChannelHandlerContext ctx,
+                        Broker broker,
+                        AmqpChannel channel,
+                        String queueName,
+                        ShortString consumerTag,
+                        boolean isExclusive) {
         this.queueName = queueName;
         this.consumerTag = consumerTag;
         this.isExclusive = isExclusive;
         this.context = ctx;
         this.channel = channel;
-        this.errorLogger = new ErrorLogger(queueName);
-        this.tracingProperties = new ArrayList<>(2);
-        tracingProperties.add(new TraceField(AmqpChannel.CHANNEL_ID_FIELD_NAME, channel.getChannelId()));
-        tracingProperties.add(new TraceField(CONSUMER_TAG_FIELD_NAME, consumerTag));
+        if (MessageTracer.isTraceEnabled()) {
+            this.channelFutureListenerFactory = new ConsumerErrorHandlerFactory(broker, queueName);
+        } else {
+            this.channelFutureListenerFactory = new TracingChannelFutureListenerFactory(broker,
+                                                                                        queueName,
+                                                                                        channel.getChannelId(),
+                                                                                        consumerTag,
+                                                                                        this);
+        }
     }
 
     @Override
@@ -83,14 +86,8 @@ public class AmqpConsumer extends Consumer {
         }
         AmqpDeliverMessage deliverMessage = channel.createDeliverMessage(message, consumerTag, queueName);
 
-        ChannelFutureListener channelListener;
-        if (MessageTracer.isTraceEnabled()) {
-            channelListener = new TracingChannelFutureListener(message, this);
-        } else {
-            channelListener = errorLogger;
-        }
         ChannelFuture channelFuture = context.channel().writeAndFlush(deliverMessage);
-        channelFuture.addListener(channelListener);
+        channelFuture.addListener(channelFutureListenerFactory.createListener(message));
     }
 
     @Override
@@ -112,21 +109,6 @@ public class AmqpConsumer extends Consumer {
         return channel.isReady();
     }
 
-    private static class ErrorLogger implements ChannelFutureListener {
-        private final String queueName;
-
-        private ErrorLogger(String queueName) {
-            this.queueName = queueName;
-        }
-
-        @Override
-        public void operationComplete(ChannelFuture future) {
-            if (!future.isSuccess()) {
-                LOGGER.warn("Error while sending message for " + queueName, future.cause());
-            }
-        }
-    }
-
     @Override
     public String toString() {
         return "AmqpConsumer{"
@@ -136,32 +118,4 @@ public class AmqpConsumer extends Consumer {
                 + '}';
     }
 
-    /**
-     * Channel listener to trace errors with message written to the socket.
-     */
-    private class TracingChannelFutureListener implements ChannelFutureListener {
-
-        private static final String TRANSPORT_DELIVERY_FAILURE = "Message delivery failed. AMQP transport error.";
-
-        private static final String SENT_FROM_TRANSPORT = "Message sent from transport.";
-
-        private final Message message;
-
-        private final AmqpConsumer consumer;
-
-        TracingChannelFutureListener(Message message, AmqpConsumer consumer) {
-            this.message = message;
-            this.consumer = consumer;
-        }
-
-        @Override
-        public void operationComplete(ChannelFuture channelFuture) {
-            if (channelFuture.isSuccess()) {
-                MessageTracer.trace(message, consumer, SENT_FROM_TRANSPORT, tracingProperties);
-            } else {
-                LOGGER.warn("Error while sending message for " + queueName, channelFuture.cause());
-                MessageTracer.trace(message, consumer, TRANSPORT_DELIVERY_FAILURE, tracingProperties);
-            }
-        }
-    }
 }

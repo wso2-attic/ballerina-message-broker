@@ -19,7 +19,7 @@
 
 package io.ballerina.messaging.broker.amqp.codec.handlers;
 
-import io.ballerina.messaging.broker.amqp.AmqpDeliverMessage;
+import io.ballerina.messaging.broker.amqp.consumer.AmqpDeliverMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;

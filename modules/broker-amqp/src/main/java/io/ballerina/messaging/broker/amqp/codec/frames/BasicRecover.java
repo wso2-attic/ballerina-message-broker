@@ -19,10 +19,10 @@
 
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
-import io.ballerina.messaging.broker.amqp.AckData;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.amqp.consumer.AckData;
 import io.ballerina.messaging.broker.core.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;

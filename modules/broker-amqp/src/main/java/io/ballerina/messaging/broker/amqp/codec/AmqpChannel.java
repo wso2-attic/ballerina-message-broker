@@ -19,11 +19,11 @@
 
 package io.ballerina.messaging.broker.amqp.codec;
 
-import io.ballerina.messaging.broker.amqp.AckData;
-import io.ballerina.messaging.broker.amqp.AmqpConsumer;
-import io.ballerina.messaging.broker.amqp.AmqpDeliverMessage;
 import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.amqp.codec.flow.ChannelFlowManager;
+import io.ballerina.messaging.broker.amqp.consumer.AckData;
+import io.ballerina.messaging.broker.amqp.consumer.AmqpConsumer;
+import io.ballerina.messaging.broker.amqp.consumer.AmqpDeliverMessage;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
@@ -183,7 +183,7 @@ public class AmqpChannel {
         if (tag.isEmpty()) {
             tag = ShortString.parseString("sgen" + getNextConsumerTag());
         }
-        AmqpConsumer amqpConsumer = new AmqpConsumer(ctx, this, queueName.toString(), tag, exclusive);
+        AmqpConsumer amqpConsumer = new AmqpConsumer(ctx, broker, this, queueName.toString(), tag, exclusive);
         consumerMap.put(tag, amqpConsumer);
         broker.addConsumer(amqpConsumer);
         metricManager.incrementConsumerCount();
