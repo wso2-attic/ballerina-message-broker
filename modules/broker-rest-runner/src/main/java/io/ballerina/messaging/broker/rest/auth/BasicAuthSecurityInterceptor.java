@@ -62,7 +62,7 @@ public class BasicAuthSecurityInterceptor implements RequestInterceptor {
                 // Read the Basic auth header and extract the username and password from base 64 encoded string.
                 byte[] decodedByte = Base64.getDecoder().decode(authEncoded.getBytes(StandardCharsets.UTF_8));
                 char[] array = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(decodedByte)).array();
-                int separatorIndex = new String(array).indexOf(":");
+                int separatorIndex = findIndex(array, ':');
                 String userName = new String(Arrays.copyOfRange(array, 0, separatorIndex));
                 char[] password = Arrays.copyOfRange(array, separatorIndex + 1, array.length);
                 if (authenticate(userName, password)) {
@@ -76,6 +76,21 @@ public class BasicAuthSecurityInterceptor implements RequestInterceptor {
         response.setStatus(javax.ws.rs.core.Response.Status.UNAUTHORIZED.getStatusCode());
         response.setHeader(javax.ws.rs.core.HttpHeaders.WWW_AUTHENTICATE, AUTH_TYPE_BASIC);
         return false;
+    }
+
+    private int findIndex(char[] array, char value) {
+        int startIndex = 0;
+
+        if (array == null) {
+            return -1;
+        } else {
+            for (int i = startIndex; i < array.length; ++i) {
+                if (value == array[i]) {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
 
     private boolean authenticate(String userName, char... password) {

@@ -93,11 +93,11 @@ public class RdbmsMandatoryAccessControlGrantTest {
     public void tearDown() throws Exception {
         apiBasePath = null;
         client.close();
+        brokerRestApiClient.close();
     }
 
     @AfterMethod
     public void afterMethod() throws IOException {
-        brokerRestApiClient.close();
         client.close();
     }
 

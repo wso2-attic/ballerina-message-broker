@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.integration.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ballerina.messaging.broker.core.rest.ExchangesApiDelegate;
 import io.ballerina.messaging.broker.core.rest.QueuesApiDelegate;
+import io.ballerina.messaging.broker.core.rest.model.BindingCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeCreateRequest;
 import io.ballerina.messaging.broker.core.rest.model.ExchangeMetadata;
 import io.ballerina.messaging.broker.core.rest.model.QueueCreateRequest;
@@ -82,6 +83,21 @@ public class BrokerRestApiClient {
         StringEntity stringEntity = new StringEntity(value, ContentType.APPLICATION_JSON);
         httpPost.setEntity(stringEntity);
         CloseableHttpResponse response = httpClient.execute(httpPost);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
+    }
+
+    public void bindQueue(String queueName, String bindingPattern, String exchangeName) throws IOException {
+        HttpPost httpPost = new HttpPost(apiBasePath + "/queues/" + queueName + "/bindings");
+        ClientHelper.setAuthHeader(httpPost, userName, password);
+        BindingCreateRequest createRequest = new BindingCreateRequest().bindingPattern(bindingPattern)
+                .exchangeName(exchangeName);
+
+        String payloadString = objectMapper.writeValueAsString(createRequest);
+        StringEntity stringEntity = new StringEntity(payloadString, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(stringEntity);
+
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
     }
 

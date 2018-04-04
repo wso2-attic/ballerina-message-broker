@@ -188,18 +188,12 @@ public class QueueGrantRestApiTest {
     public static Object[][] userGroupRequest() {
         return new Object[][]{
                 {true, "get"},
-                {true, "update"},
                 {true, "delete"},
                 {true, "consume"},
-                {true, "bind"},
-                {true, "unbind"},
                 {true, "grantPermission"},
                 {false, "get"},
-                {false, "update"},
                 {false, "delete"},
                 {false, "consume"},
-                {false, "bind"},
-                {false, "unbind"},
                 {false, "grantPermission"}
         };
     }

@@ -157,7 +157,9 @@ public class SecureBrokerImpl implements Broker {
     public boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
             throws BrokerException, ValidationException {
         try {
-            authHandler.handle(ResourceAuthScope.QUEUES_CREATE, subject);
+            if (!queueExists(queueName) && !passive) {
+                authHandler.handle(ResourceAuthScope.QUEUES_CREATE, subject);
+            }
             boolean succeed = broker.createQueue(queueName, passive, durable, autoDelete);
             if (succeed) {
                 authHandler.createAuthResource(ResourceType.QUEUE, queueName, durable, subject);
