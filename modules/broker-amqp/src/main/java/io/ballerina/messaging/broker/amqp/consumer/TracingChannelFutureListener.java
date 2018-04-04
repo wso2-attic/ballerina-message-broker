@@ -8,8 +8,6 @@ import io.ballerina.messaging.broker.core.util.MessageTracer;
 import io.ballerina.messaging.broker.core.util.TraceField;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +16,6 @@ import java.util.List;
  * Channel listener to trace errors with message written to the socket.
  */
 class TracingChannelFutureListener implements ChannelFutureListener {
-    /**
-     * Class logger.
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(TracingChannelFutureListener.class);
-
 
     private static final String TRANSPORT_DELIVERY_FAILURE = "Message delivery failed. AMQP transport error.";
 
@@ -30,7 +23,6 @@ class TracingChannelFutureListener implements ChannelFutureListener {
 
     private final Message message;
 
-    private String queueName;
     private List<TraceField> tracingProperties;
     private final AmqpConsumer consumer;
     private final ConsumerErrorHandler consumerErrorHandler;
@@ -42,7 +34,6 @@ class TracingChannelFutureListener implements ChannelFutureListener {
                                  ShortString consumerTag,
                                  AmqpConsumer consumer) {
         this.message = message;
-        this.queueName = queueName;
         this.tracingProperties = new ArrayList<>(2);
         tracingProperties.add(new TraceField(AmqpChannel.CHANNEL_ID_FIELD_NAME, channelId));
         tracingProperties.add(new TraceField(AmqpConsumer.CONSUMER_TAG_FIELD_NAME, consumerTag));
