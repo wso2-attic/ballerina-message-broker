@@ -132,13 +132,13 @@ public class AuthResourceInMemoryDao implements AuthResourceDao {
     }
 
     @Override
-    public boolean addGroup(String resourceType, String resourceName, String action, String group) {
+    public boolean addGroups(String resourceType, String resourceName, String action, List<String> groups) {
         AuthResource authResource = inMemoryResourceMap.get(resourceType, resourceName);
 
         if (Objects.nonNull(authResource)) {
             Set<String> userGroups = authResource.getActionsUserGroupsMap()
-                                                 .computeIfAbsent(action, key -> new HashSet<>());
-            userGroups.add(group);
+                    .computeIfAbsent(action, key -> new HashSet<>());
+            userGroups.addAll(groups);
             return true;
         } else {
             return false;

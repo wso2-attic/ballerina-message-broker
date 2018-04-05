@@ -113,16 +113,17 @@ public interface AuthResourceDao {
 
 
     /**
-     * Add a group mapping to the given auth resource.
+     * Add batch of group mapping to the given auth resource
      *
      * @param resourceType resource type
      * @param resourceName resource name
      * @param action       action
-     * @param group        group to add
-     * @return true if resource was updated
+     * @param groups       list of group to add
+     * @return true if resource update with  group list
+     * @throws AuthServerException when database operation failed.
      */
-    boolean addGroup(String resourceType, String resourceName, String action, String group)
-            throws AuthNotFoundException, AuthServerException;
+    boolean addGroups(String resourceType, String resourceName, String action, List<String> groups)
+            throws AuthServerException;
 
     /**
      * Remove a group mapping from the given auth resource.

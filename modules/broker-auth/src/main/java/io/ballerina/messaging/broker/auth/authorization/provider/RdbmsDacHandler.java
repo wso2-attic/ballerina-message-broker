@@ -32,6 +32,7 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resourc
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -115,13 +116,12 @@ public class RdbmsDacHandler extends DiscretionaryAccessController {
     }
 
     @Override
-    public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
+    public boolean addGroupsToResource(String resourceType, String resourceName, String action, List<String> groups)
             throws AuthServerException {
-        boolean success = authResourceDao.addGroup(resourceType, resourceName, action, group);
+        boolean success = authResourceDao.addGroups(resourceType, resourceName, action, groups);
         if (success) {
             authResourceCache.invalidate(new ResourceCacheKey(resourceType, resourceName));
         }
-
         return success;
     }
 

@@ -22,6 +22,8 @@ import io.ballerina.messaging.broker.auth.authorization.Authorizer;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.common.StartupContext;
 
+import java.util.List;
+
 /**
  * Defines empty @{@link Authorizer} when authorization is disabled.
  */
@@ -53,7 +55,7 @@ public class NoOpAuthorizer implements Authorizer {
     }
 
     @Override
-    public boolean addGroupToResource(String resourceType, String resourceName, String action, String group) {
+    public boolean addGroupsToResource(String resourceType, String resourceName, String action, List<String> groups) {
         return false;
     }
 

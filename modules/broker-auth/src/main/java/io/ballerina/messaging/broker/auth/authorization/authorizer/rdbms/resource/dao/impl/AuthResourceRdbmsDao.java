@@ -106,10 +106,10 @@ public class AuthResourceRdbmsDao implements AuthResourceDao {
     }
 
     @Override
-    public boolean addGroup(String resourceType, String resourceName, String action, String group)
+    public boolean addGroups(String resourceType, String resourceName, String action, List<String> groups)
             throws AuthServerException {
         return transaction((ThrowingFunction<Connection, Boolean, Exception>) connection ->
-                authResourceCrudOperationsDao.addGroup(connection, resourceType, resourceName, action, group));
+                authResourceCrudOperationsDao.addGroups(connection, resourceType, resourceName, action, groups));
     }
 
     @Override
