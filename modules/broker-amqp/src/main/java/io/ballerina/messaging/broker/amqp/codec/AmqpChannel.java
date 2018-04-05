@@ -177,7 +177,7 @@ public class AmqpChannel {
         broker.unbind(queue.toString(), exchange.toString(), routingKey.toString());
     }
 
-    public ShortString consume(ShortString queueName, ShortString consumerTag, boolean exclusive,
+    public AmqpConsumer consume(ShortString queueName, ShortString consumerTag, boolean exclusive,
                                ChannelHandlerContext ctx) throws BrokerException {
         ShortString tag = consumerTag;
         if (tag.isEmpty()) {
@@ -187,7 +187,7 @@ public class AmqpChannel {
         consumerMap.put(tag, amqpConsumer);
         broker.addConsumer(amqpConsumer);
         metricManager.incrementConsumerCount();
-        return tag;
+        return amqpConsumer;
     }
 
     public void close() {
