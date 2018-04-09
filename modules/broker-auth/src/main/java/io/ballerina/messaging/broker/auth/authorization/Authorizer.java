@@ -24,6 +24,8 @@ import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.common.StartupContext;
 
+import java.util.List;
+
 /**
  * Interface represents authorization for broker resources.
  * This will provide two functions.
@@ -88,17 +90,17 @@ public interface Authorizer {
             throws AuthServerException, AuthNotFoundException;
 
     /**
-     * Allow given group to access the given resource.
+     * Allow given groups to access the givne resource.
      *
      * @param resourceType resource type
      * @param resourceName resource name
      * @param action       action
-     * @param group        group
-     * @throws AuthException         throws if error occur during updating resource
-     * @throws AuthNotFoundException throws if the resource is not found
+     * @param groups       list of group to add
+     * @return true if group list add successfully
+     * @throws AuthServerException throws if error occurred while adding groups to resource
      */
-    boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
-            throws AuthException, AuthNotFoundException, AuthServerException;
+    boolean addGroupsToResource(String resourceType, String resourceName, String action, List<String> groups)
+            throws AuthServerException;
 
     /**
      * Revoke access from the given group.

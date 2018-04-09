@@ -28,6 +28,7 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resourc
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceInMemoryDao;
 import io.ballerina.messaging.broker.common.StartupContext;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,9 +55,9 @@ public class MemoryDacHandler extends DiscretionaryAccessController {
     }
 
     @Override
-    public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
-            throws AuthServerException, AuthNotFoundException {
-        return resourceDao.addGroup(resourceType, resourceName, action, group);
+    public boolean addGroupsToResource(String resourceType, String resourceName, String action, List<String> groups)
+            throws AuthServerException {
+        return resourceDao.addGroups(resourceType, resourceName, action, groups);
     }
 
     @Override

@@ -127,21 +127,23 @@ class AuthResourceCrudOperationsDao extends BaseDao {
         }
     }
 
-    public boolean addGroup(Connection connection, String resourceType, String resourceName,
-                            String action, String group) throws AuthServerException {
+    public boolean addGroups(Connection connection, String resourceType, String resourceName,
+                             String action, List<String> groups) throws AuthServerException {
         PreparedStatement insertMappingsStmt = null;
         try {
             insertMappingsStmt = connection.prepareStatement(RdbmsConstants.PS_INSERT_AUTH_RESOURCE_MAPPING);
-            insertMappingsStmt.setString(1, action);
-            insertMappingsStmt.setString(2, group);
-            insertMappingsStmt.setString(3, resourceType);
-            insertMappingsStmt.setString(4, resourceName);
+            for (String group : groups) {
+                insertMappingsStmt.setString(1, action);
+                insertMappingsStmt.setString(2, group);
+                insertMappingsStmt.setString(3, resourceType);
+                insertMappingsStmt.setString(4, resourceName);
+                insertMappingsStmt.addBatch();
+            }
+            int[] updateRows = insertMappingsStmt.executeBatch();
 
-            int updateRows = insertMappingsStmt.executeUpdate();
-
-            return updateRows != 0;
+            return updateRows.length > 0;
         } catch (SQLException e) {
-            throw new AuthServerException("Error occurred while persisting group.", e);
+            throw new AuthServerException("Error occurred while persisting groups.", e);
         } finally {
             close(insertMappingsStmt);
         }

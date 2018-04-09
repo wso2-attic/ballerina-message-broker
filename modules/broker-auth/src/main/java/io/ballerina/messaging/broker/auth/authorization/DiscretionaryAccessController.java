@@ -1,11 +1,11 @@
 package io.ballerina.messaging.broker.auth.authorization;
 
-import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.AuthServerException;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.AuthResource;
 import io.ballerina.messaging.broker.common.StartupContext;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -74,17 +74,17 @@ public abstract class DiscretionaryAccessController {
             throws AuthServerException, AuthNotFoundException;
 
     /**
-     * Allow given group to access the given resource.
+     * Allow given groups to access the given resource.
      *
      * @param resourceType resource type
      * @param resourceName resource name
      * @param action       action
-     * @param group        group
-     * @throws AuthException throws if error occur during updating resource
-     * @throws AuthNotFoundException throws if the resource is not found
+     * @param groups       list of group
+     * @return true if group list add successfully
+     * @throws AuthServerException throws if server error occurred
      */
-    public abstract boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
-            throws AuthException, AuthNotFoundException, AuthServerException;
+    public abstract boolean addGroupsToResource(String resourceType, String resourceName, String action,
+                                                List<String> groups) throws AuthServerException;
 
     /**
      * Revoke access from the given group.

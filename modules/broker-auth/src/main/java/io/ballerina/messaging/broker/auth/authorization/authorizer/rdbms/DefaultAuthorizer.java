@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -211,11 +212,11 @@ public class DefaultAuthorizer implements Authorizer {
     }
 
     @Override
-    public boolean addGroupToResource(String resourceType, String resourceName, String action, String group)
-            throws AuthException, AuthNotFoundException, AuthServerException {
+    public boolean addGroupsToResource(String resourceType, String resourceName, String action, List<String> groups)
+            throws AuthServerException {
         boolean success = false;
-        if (memoryDacHandler.addGroupToResource(resourceType, resourceName, action, group)
-                || externalDacHandler.addGroupToResource(resourceType, resourceName, action, group)) {
+        if (memoryDacHandler.addGroupsToResource(resourceType, resourceName, action, groups)
+                || externalDacHandler.addGroupsToResource(resourceType, resourceName, action, groups)) {
             success = true;
         }
         return success;
