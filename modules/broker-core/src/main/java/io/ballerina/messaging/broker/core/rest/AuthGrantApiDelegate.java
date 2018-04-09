@@ -60,9 +60,8 @@ public class AuthGrantApiDelegate {
                                         ResourceAction.GRANT_PERMISSION, subject);
             boolean success = authorizer.changeResourceOwner(resourceType.toString(), resourceName, owner);
             if (!success) {
-                throw new BadRequestException("Error occurred while changing owner." +
-                        " Resource type: " + resourceType.toString() + ", Resource name: " + resourceName +
-                        ", Owner: " + owner);
+                throw new BadRequestException("Invalid input. Resource type: " + resourceType.toString()
+                        + ", Resource name: " + resourceName + ", Owner: " + owner);
             }
             return Response.noContent().build();
         } catch (AuthException e) {
@@ -83,9 +82,9 @@ public class AuthGrantApiDelegate {
             List<String> userGroups = userGroupList.getUserGroups();
             boolean success = authorizer.addGroupsToResource(resourceType.toString(), resourceName, action, userGroups);
             if (!success) {
-                throw new BadRequestException("Error occurred while adding user group to action." +
-                        " Resource type: " + resourceType.toString() + ", Resource name: " + resourceName +
-                        ", Action name: " + action + ", User groups: " + Arrays.toString(userGroups.toArray()));
+                throw new BadRequestException("Invalid input. Resource type: " + resourceType.toString()
+                        + ", Resource name: " + resourceName + ", Action name: " + action
+                        + ", User groups: " + Arrays.toString(userGroups.toArray()));
             }
             return Response.ok(new ResponseMessage().message("User groups successfully added.")).build();
         } catch (AuthException e) {
@@ -107,9 +106,9 @@ public class AuthGrantApiDelegate {
                                                                  action,
                                                                  groupName);
             if (!success) {
-                throw new BadRequestException("Error occurred while removing user group." +
-                        " Resource type: " + resourceType.toString() + ", Resource name: " + resourceName +
-                        ", Action name: " + action + ", Group name: " + groupName);
+                throw new BadRequestException("Invalid input. Resource type: " + resourceType.toString()
+                        + ", Resource name: " + resourceName + ", Action name: " + action
+                        + ", Group name: " + groupName);
             }
             return Response.ok().entity(new ResponseMessage().message("User group successfully removed.")).build();
         } catch (AuthException e) {
