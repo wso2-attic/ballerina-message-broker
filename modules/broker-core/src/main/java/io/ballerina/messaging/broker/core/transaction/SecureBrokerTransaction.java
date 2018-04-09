@@ -20,9 +20,13 @@
 package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAction;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
+import io.ballerina.messaging.broker.auth.authorization.enums.ResourceType;
 import io.ballerina.messaging.broker.core.BrokerAuthException;
+import io.ballerina.messaging.broker.core.BrokerAuthNotFoundException;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 
@@ -52,10 +56,13 @@ public class SecureBrokerTransaction extends ForwardingBrokerTransaction {
     @Override
     public void enqueue(Message message) throws BrokerException {
         try {
-            authHandler.handle(ResourceAuthScope.EXCHANGES_PUBLISH, subject);
+            authHandler.handle(ResourceAuthScope.EXCHANGES_PUBLISH, ResourceType.EXCHANGE,
+                    message.getMetadata().getExchangeName(), ResourceAction.PUBLISH, subject);
             super.enqueue(message);
         } catch (AuthException e) {
             throw new BrokerAuthException(e.getMessage(), e);
+        } catch (AuthNotFoundException e) {
+            throw new BrokerAuthNotFoundException(e.getMessage(), e);
         }
     }
 }

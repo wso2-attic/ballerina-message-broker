@@ -23,13 +23,10 @@ package io.ballerina.messaging.broker.auth.authorization.enums;
  */
 public enum ResourceAction {
 
-    UPDATE("update"),
     DELETE("delete"),
     GET("get"),
     CONSUME("consume"),
     PUBLISH("publish"),
-    BIND("bind"),
-    UNBIND("unbind"),
     GRANT_PERMISSION("grantPermission");
 
     private String name;
@@ -40,8 +37,6 @@ public enum ResourceAction {
 
     public static String getResourceAction(String action) throws Exception {
         switch (action) {
-            case "update":
-                return UPDATE.toString();
             case "delete":
                 return DELETE.toString();
             case "get":
@@ -50,10 +45,6 @@ public enum ResourceAction {
                 return CONSUME.toString();
             case "publish":
                 return PUBLISH.toString();
-            case "bind":
-                return BIND.toString();
-            case "unbind":
-                return UNBIND.toString();
             case "grantPermission":
                 return GRANT_PERMISSION.toString();
             default:

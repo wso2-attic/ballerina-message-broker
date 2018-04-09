@@ -111,7 +111,9 @@ public class SecureBrokerImpl implements Broker {
     public void declareExchange(String exchangeName, String type, boolean passive, boolean durable)
             throws BrokerException, ValidationException {
         try {
-            authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
+            if (!passive) {
+                authHandler.handle(ResourceAuthScope.EXCHANGES_CREATE, subject);
+            }
             broker.declareExchange(exchangeName, type, passive, durable);
             if (!passive) {
                 authHandler.createAuthResource(ResourceType.EXCHANGE, exchangeName, durable, subject);
@@ -155,7 +157,9 @@ public class SecureBrokerImpl implements Broker {
     public boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
             throws BrokerException, ValidationException {
         try {
-            authHandler.handle(ResourceAuthScope.QUEUES_CREATE, subject);
+            if (!queueExists(queueName) && !passive) {
+                authHandler.handle(ResourceAuthScope.QUEUES_CREATE, subject);
+            }
             boolean succeed = broker.createQueue(queueName, passive, durable, autoDelete);
             if (succeed) {
                 authHandler.createAuthResource(ResourceType.QUEUE, queueName, durable, subject);

@@ -193,18 +193,12 @@ public class ExchangesGrantRestApiTest {
     public static Object[][] userGroupRequest() {
         return new Object[][]{
                 {"direct", true, "get"},
-                {"topic", true, "update"},
                 {"direct", true, "delete"},
-                {"topic", true, "consume"},
-                {"direct", true, "bind"},
-                {"topic", true, "unbind"},
+                {"topic", true, "publish"},
                 {"direct", true, "grantPermission"},
                 {"topic", false, "get"},
-                {"direct", false, "update"},
                 {"topic", false, "delete"},
-                {"direct", false, "consume"},
-                {"topic", false, "bind"},
-                {"direct", false, "unbind"},
+                {"direct", false, "publish"},
                 {"topic", false, "grantPermission"}
         };
     }
