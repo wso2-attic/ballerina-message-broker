@@ -53,6 +53,8 @@ public class AmqpConsumer extends Consumer {
 
     private final ChannelFutureListenerFactory channelFutureListenerFactory;
 
+    private boolean isReady;
+
     public AmqpConsumer(ChannelHandlerContext ctx,
                         Broker broker,
                         AmqpChannel channel,
@@ -105,9 +107,17 @@ public class AmqpConsumer extends Consumer {
         return isExclusive;
     }
 
+    public void enableConsume() {
+        this.isReady = true;
+    }
+
+    public ShortString getConsumerTag() {
+        return consumerTag;
+    }
+
     @Override
     public boolean isReady() {
-        return channel.isReady();
+        return channel.isReady() && isReady;
     }
 
     @Override
