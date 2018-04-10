@@ -24,8 +24,8 @@ listenerConfigurations:
   port: 9000
   scheme: https
   keyStoreFile: "${message.broker.home}/resources/security/keystore.jks"
-  keyStorePassword: wso2carbon
-  certPass: wso2carbon
+  keyStorePassword: ballerina
+  certPass: ballerina
 
 senderConfigurations:
  -

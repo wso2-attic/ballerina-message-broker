@@ -1,0 +1,11 @@
+wso2.securevault:
+  secretRepository:
+    type: org.wso2.carbon.secvault.repository.DefaultSecretRepository
+    parameters:
+      privateKeyAlias: ballerina
+      keystoreLocation: src/test/resources/security/keystore.jks
+      secretPropertiesFile: src/test/resources/conf/secrets.properties
+  masterKeyReader:
+    type: org.wso2.carbon.secvault.reader.DefaultMasterKeyReader
+    parameters:
+      masterKeyReaderFile: src/test/resources/conf/master-keys.yaml

@@ -51,6 +51,7 @@
         <module>modules/broker-coordination</module>
         <module>modules/launcher</module>
         <module>modules/broker-cli-client</module>
+        <module>modules/broker-cipher-tool</module>
         <module>modules/integration</module>
         <module>modules/coverage-report</module>
         <module>modules/features</module>
@@ -101,6 +102,11 @@
             <dependency>
                 <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-cli-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ballerina.messaging</groupId>
+                <artifactId>broker-cipher-tool</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

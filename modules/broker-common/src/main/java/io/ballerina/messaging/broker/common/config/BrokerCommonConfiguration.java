@@ -60,9 +60,9 @@ public class BrokerCommonConfiguration {
 
         private String databaseDriver = "org.h2.Driver";
 
-        private String user = "wso2carbon";
+        private String user = "ballerina";
 
-        private String password = "wso2carbon";
+        private String password = "ballerina";
 
         public String getUrl() {
             return url;
