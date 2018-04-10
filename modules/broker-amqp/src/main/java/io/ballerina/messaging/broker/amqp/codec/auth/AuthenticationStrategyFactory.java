@@ -20,13 +20,15 @@ package io.ballerina.messaging.broker.amqp.codec.auth;
 
 import io.ballerina.messaging.broker.auth.AuthManager;
 
+import java.util.Objects;
+
 /**
  * Factory Class for provide @{@link AuthenticationStrategy} based on given @{@link AuthManager}.
  */
 public class AuthenticationStrategyFactory {
 
     public AuthenticationStrategy getStrategy(AuthManager authManager) {
-        if (authManager.isAuthenticationEnabled()) {
+        if (Objects.nonNull(authManager) && authManager.isAuthenticationEnabled()) {
             return new SaslAuthenticationStrategy(authManager);
         } else {
             return new NoAuthenticationStrategy();
