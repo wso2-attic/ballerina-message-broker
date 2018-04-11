@@ -19,17 +19,20 @@
 package io.ballerina.messaging.broker.amqp.codec.auth;
 
 import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.core.BrokerFactory;
 
 /**
  * Factory Class for provide @{@link AuthenticationStrategy} based on given @{@link AuthManager}.
  */
 public class AuthenticationStrategyFactory {
 
-    public AuthenticationStrategy getStrategy(AuthManager authManager) {
+    private AuthenticationStrategyFactory() {}
+
+    public static AuthenticationStrategy getStrategy(AuthManager authManager, BrokerFactory brokerFactory) {
         if (authManager.isAuthenticationEnabled()) {
-            return new SaslAuthenticationStrategy(authManager);
+            return new SaslAuthenticationStrategy(authManager, brokerFactory);
         } else {
-            return new NoAuthenticationStrategy();
+            return new NoAuthenticationStrategy(brokerFactory);
         }
 
     }

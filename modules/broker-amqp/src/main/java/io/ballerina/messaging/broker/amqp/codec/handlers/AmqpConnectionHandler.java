@@ -29,7 +29,6 @@ import io.ballerina.messaging.broker.amqp.codec.frames.GeneralFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.ProtocolInitFrame;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
 import io.ballerina.messaging.broker.core.Broker;
-import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -38,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.security.auth.Subject;
 
 /**
  * Netty handler for handling an AMQP connection.
@@ -49,14 +47,11 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
     private final AmqpServerConfiguration configuration;
     private Broker broker;
-    private final BrokerFactory brokerFactory;
     private final AmqpMetricManager metricManager;
 
     public AmqpConnectionHandler(AmqpServerConfiguration configuration,
-                                 BrokerFactory brokerFactory,
                                  AmqpMetricManager metricManager) {
         this.configuration = configuration;
-        this.brokerFactory = brokerFactory;
         this.metricManager = metricManager;
         metricManager.incrementConnectionCount();
     }
@@ -149,10 +144,10 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     /**
      * Attach relevant broker implementation to the amq connection.
      *
-     * @param subject an entity with {@link io.ballerina.messaging.broker.auth.UsernamePrincipal}
+     * @param broker a broker instance
      */
-    public void attachBroker(Subject subject) {
-        broker = brokerFactory.getBroker(subject);
+    public void attachBroker(Broker broker) {
+        this.broker = broker;
     }
 
     /**

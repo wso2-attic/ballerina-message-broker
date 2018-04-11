@@ -23,6 +23,7 @@ import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.common.data.types.LongString;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -30,9 +31,25 @@ import io.netty.channel.ChannelHandlerContext;
  * connections.
  */
 public class NoAuthenticationStrategy implements AuthenticationStrategy {
+    private BrokerFactory brokerFactory;
+
+    public NoAuthenticationStrategy(BrokerFactory brokerFactory) {
+
+        this.brokerFactory = brokerFactory;
+    }
+
     @Override
     public void handle(int channel, ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler,
                        ShortString mechanism, LongString response) throws BrokerException {
+        connectionHandler.attachBroker(brokerFactory.getBroker(null));
         ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
+    }
+
+    @Override
+    public void handleChallengeResponse(int channel,
+                                        ChannelHandlerContext ctx,
+                                        AmqpConnectionHandler connectionHandler,
+                                        LongString response) throws BrokerException {
+        throw new BrokerException("Authentication disabled in broker");
     }
 }
