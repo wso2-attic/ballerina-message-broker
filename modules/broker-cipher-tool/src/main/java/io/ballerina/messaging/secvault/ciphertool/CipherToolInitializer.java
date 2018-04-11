@@ -38,7 +38,7 @@ public class CipherToolInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger(CipherToolInitializer.class);
 
     public static void main(String[] args) {
-        new CipherToolInitializer().execute(args);
+        CipherToolInitializer.execute(args);
     }
 
     /**
@@ -46,7 +46,7 @@ public class CipherToolInitializer {
      *
      * @param toolArgs arguments for executing cipher tool
      */
-    public void execute(String... toolArgs) {
+    public static void execute(String... toolArgs) {
         CommandLineParser commandLineParser;
         try {
             commandLineParser = Utils.createCommandLineParser(toolArgs);
@@ -57,27 +57,15 @@ public class CipherToolInitializer {
 
         URLClassLoader urlClassLoader = Utils.getCustomClassLoader(commandLineParser.getCustomLibPath());
 
-        String customConfigPath = commandLineParser.getCustomConfigPath().orElse(null);
+        String brokerFilePath = System.getProperty(CipherToolConstants.SYSTEM_PARAM_BROKER_CONFIG_FILE);
+        String configYamlPath = commandLineParser.getCustomConfigPath().orElse(brokerFilePath);
 
         String commandName = commandLineParser.getCommandName().orElse("");
         String commandParam = commandLineParser.getCommandParam().orElse("");
 
         try {
 
-            Path secureVaultConfigPath;
-            Path brokerYamlFile;
-            String brokerFilePath = System.getProperty(CipherToolConstants.SYSTEM_PARAM_BROKER_CONFIG_FILE);
-            if (brokerFilePath == null || brokerFilePath.trim().isEmpty()) {
-                // use current path.
-                brokerYamlFile = Paths.get("", CipherToolConstants.BROKER_FILE_NAME).toAbsolutePath();
-            } else {
-                brokerYamlFile = Paths.get(brokerFilePath).toAbsolutePath();
-            }
-            if (customConfigPath == null) {
-                secureVaultConfigPath = brokerYamlFile;
-            } else {
-                secureVaultConfigPath = Paths.get(customConfigPath);
-            }
+            Path secureVaultConfigPath = Paths.get(configYamlPath);
             Object objCipherTool = Utils.createCipherTool(urlClassLoader, secureVaultConfigPath);
             processCommand(commandName, commandParam, objCipherTool);
             if (LOGGER.isDebugEnabled()) {
@@ -102,7 +90,7 @@ public class CipherToolInitializer {
      * @param objCipherTool ciphertool instance
      * @throws CipherToolException when an error is thrown during ciphertool execution
      */
-    private void processCommand(String command, String parameter, Object objCipherTool)
+    private static void processCommand(String command, String parameter, Object objCipherTool)
             throws CipherToolException {
         Method method;
         try {
@@ -127,7 +115,7 @@ public class CipherToolInitializer {
     /**
      * Prints a help message for the secure vault tool usage.
      */
-    private void printHelpMessage() {
+    private static void printHelpMessage() {
         LOGGER.info(
                 "\n"
                 + "Incorrect usage of the cipher tool."
@@ -140,27 +128,27 @@ public class CipherToolInitializer {
                 + "\n\n"
                 + "Usages:"
                 + "\n\n"
-                + "1. Load default secure vault config from [MESSAGE_BROKER_HOME]/conf/broker.yaml and encrypts the "
+                + "* Load default secure vault config from [MESSAGE_BROKER_HOME]/conf/broker.yaml and encrypts the "
                 + "secrets specified in the [MESSAGE_BROKER_HOME]/conf/security/secrets.properties file. "
                 + "\n"
                 + "     Eg: ciphertool.sh"
                 + "\n\n"
-                + "2. Load secure vault config from given config path and encrypt secrets in the specified "
+                + "* Load secure vault config from given config path and encrypt secrets in the specified "
                 + "secrets.properties file.\n"
                 + "     Eg: ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml"
                 + "\n\n"
-                + "3. Load libraries in the given path first and perform the same operation as above."
+                + "* Load libraries in the given path first and perform the same operation as above."
                 + "\n"
                 + "     Eg: ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml "
                 + "-customLibPath /home/user/custom/libs"
                 + "\n\n"
-                + "4. -encryptText : this option will first encrypt a given text and then prints the base64 encoded"
+                + "* -encryptText : this option will first encrypt a given text and then prints the base64 encoded"
                 + "\n"
                 + "   string of the encoded cipher text in the console."
                 + "\n"
                 + "     Eg: ciphertool.sh -encryptText Ballerina@WSO2"
                 + "\n\n"
-                + "5. -decryptText : this option accepts base64 encoded cipher text and prints the decoded plain text "
+                + "* -decryptText : this option accepts base64 encoded cipher text and prints the decoded plain text "
                 + "in the console."
                 + "\n"
                 + "     Eg: ciphertool.sh -decryptText XxXxXx"

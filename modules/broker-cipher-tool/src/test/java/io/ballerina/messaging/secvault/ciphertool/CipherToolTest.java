@@ -29,8 +29,6 @@ import org.wso2.carbon.secvault.exception.SecureVaultException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Unit tests class for CipherTool.
@@ -49,8 +47,7 @@ public class CipherToolTest {
 
     @Test
     public void testEncryptionAndDecryption() throws SecureVaultException {
-        List<URL> urls = new ArrayList<>();
-        URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
+        URLClassLoader urlClassLoader = new URLClassLoader(new URL[0]);
 
         TestUtils.createDefaultMasterKeyFile(true);
 

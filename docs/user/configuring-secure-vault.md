@@ -65,20 +65,20 @@ script file in the bin folder.
     
     Usages:
     
-    1. Load default secure vault config from [MESSAGE_BROKER_HOME]/conf/broker.yaml and encrypts the secrets specified in the [MESSAGE_BROKER_HOME]/conf/security/secrets.properties file. 
+    * Load default secure vault config from [MESSAGE_BROKER_HOME]/conf/broker.yaml and encrypts the secrets specified in the [MESSAGE_BROKER_HOME]/conf/security/secrets.properties file. 
          Eg: ciphertool.sh
     
-    2. Load secure vault config from given config path and encrypt secrets in the specified secrets.properties file.
+    * Load secure vault config from given config path and encrypt secrets in the specified secrets.properties file.
          Eg: ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml
     
-    3. Load libraries in the given path first and perform the same operation as above.
+    * Load libraries in the given path first and perform the same operation as above.
          Eg: ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml -customLibPath /home/user/custom/libs
     
-    4. -encryptText : this option will first encrypt a given text and then prints the base64 encoded
+    * -encryptText : this option will first encrypt a given text and then prints the base64 encoded
        string of the encoded cipher text in the console.
          Eg: ciphertool.sh -encryptText Ballerina@WSO2
     
-    5. -decryptText : this option accepts base64 encoded cipher text and prints the decoded plain text in the console.
+    * -decryptText : this option accepts base64 encoded cipher text and prints the decoded plain text in the console.
          Eg: ciphertool.sh -decryptText XxXxXx   
      
     ```

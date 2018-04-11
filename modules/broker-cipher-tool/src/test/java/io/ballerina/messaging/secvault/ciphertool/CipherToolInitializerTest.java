@@ -44,20 +44,21 @@ public class CipherToolInitializerTest {
     @Test(expectedExceptions = {CipherToolRuntimeException.class})
     public void testExecuteTestEncryptSecretsWithOddParameters() {
         String[] toolArgs = new String[]{"-customLibPath", "/tmp", "xyz"};
-        new CipherToolInitializer().execute(toolArgs);
+        CipherToolInitializer.execute(toolArgs);
     }
 
     @Test(expectedExceptions = {CipherToolRuntimeException.class})
     public void testExecuteTestEncryptSecretsWithWrongCommand() {
         String[] toolArgs = new String[]{"-ENCRYPTTEXT", "Ballerina@WSO2"};
-        new CipherToolInitializer().execute(toolArgs);
+        CipherToolInitializer.execute(toolArgs);
     }
 
     @Test
     public void testExecuteTestEncryptText() {
         String[] toolArgs = new String[]{"-encryptText", "Ballerina@WSO2",
                 "-configPath", secureVaultYAMLPath.toString()};
-        new CipherToolInitializer().execute(toolArgs);
+        //Here we could not assert the output as it print as a log.info()
+        CipherToolInitializer.execute(toolArgs);
     }
 
     @Test
@@ -68,6 +69,7 @@ public class CipherToolInitializerTest {
                         + "yL7u3qs5eDwsL+GfV5kRtk9giBU5dkvWxxVfdRzHj7OxpN4JpodN+dcY0fhtgHUS/s0f03fp9ZQqB7pKTl2SYIRjhc"
                         + "SaQxV3Moih7RCLsYdoLiIZRG3uZJUzHEAU2Z/Sd0R8enPIQ64qoWEm3GhCsuxQ==",
                 "-configPath", secureVaultYAMLPath.toString()};
-        new CipherToolInitializer().execute(toolArgs);
+        //Here we could not assert the output as it print as a log.info()
+        CipherToolInitializer.execute(toolArgs);
     }
 }
