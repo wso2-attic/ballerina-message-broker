@@ -360,7 +360,7 @@
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
         <hikari.version>2.7.4</hikari.version>
         <h2.version>1.4.196</h2.version>
-        <msf4j.version>2.5.2</msf4j.version>
+        <msf4j.version>2.6.0</msf4j.version>
         <msf4j.package.import.version.range>[2.5.0, 2.6.0)</msf4j.package.import.version.range>
         <com.ibatis.version>2.1.7.597</com.ibatis.version>
         <lmax.disruptor.version>3.3.7.wso2v1</lmax.disruptor.version>
