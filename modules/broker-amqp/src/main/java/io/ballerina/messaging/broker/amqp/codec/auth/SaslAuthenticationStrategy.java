@@ -64,9 +64,8 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
                 Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());
                 connectionHandler.attachBroker(brokerFactory.getBroker(subject));
                 ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
+                ctx.channel().attr(AttributeKey.valueOf(SASL_SERVER_ATTRIBUTE)).set(null);
             } else {
-                ctx.channel().attr(AttributeKey.valueOf(SASL_SERVER_ATTRIBUTE))
-                   .set(null);
                 ctx.writeAndFlush(new ConnectionSecure(channel, LongString.parse(challenge)));
             }
         } else {
