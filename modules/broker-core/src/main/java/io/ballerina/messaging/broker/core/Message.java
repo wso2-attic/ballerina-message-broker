@@ -78,7 +78,7 @@ public class Message {
     }
 
     public Message shallowCopy() {
-        Message message = new Message(internalId, metadata.shallowCopy(), queueSet);
+        Message message = new Message(internalId, metadata, queueSet);
         message.redelivered = redelivered;
         message.redeliveryCount = redeliveryCount;
         shallowCopyContent(message);
