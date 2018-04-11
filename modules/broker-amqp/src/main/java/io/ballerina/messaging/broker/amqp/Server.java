@@ -134,8 +134,9 @@ public class Server {
             serverHelper = new HaEnabledServerHelper();
         }
 
-        AuthenticationStrategy authenticationStrategy = new AuthenticationStrategyFactory().getStrategy(
-                startupContext.getService(AuthManager.class));
+        AuthenticationStrategy authenticationStrategy
+                = AuthenticationStrategyFactory.getStrategy(startupContext.getService(AuthManager.class),
+                                                                  brokerFactory);
         amqMethodRegistryFactory = new AmqMethodRegistryFactory(authenticationStrategy);
     }
 
@@ -198,7 +199,7 @@ public class Server {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, brokerFactory, metricManager))
+                         .addLast(new AmqpConnectionHandler(configuration, metricManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
@@ -219,7 +220,7 @@ public class Server {
                          .addLast(sslHandlerFactory.create())
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, brokerFactory, metricManager))
+                         .addLast(new AmqpConnectionHandler(configuration, metricManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }

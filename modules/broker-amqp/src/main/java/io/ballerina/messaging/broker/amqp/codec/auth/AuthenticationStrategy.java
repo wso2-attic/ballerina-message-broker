@@ -31,4 +31,9 @@ public interface AuthenticationStrategy {
 
     void handle(int channel, ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler,
                 ShortString mechanism, LongString response) throws BrokerException;
+
+    void handleChallengeResponse(int channel,
+                                 ChannelHandlerContext ctx,
+                                 AmqpConnectionHandler connectionHandler,
+                                 LongString response) throws BrokerException;
 }

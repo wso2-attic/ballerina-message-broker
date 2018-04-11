@@ -28,10 +28,10 @@ public class ConnectionSecureOkTest {
 
     @Test
     public void testEncodeDecode() throws Exception {
-        ConnectionSecureOk testFrame = new ConnectionSecureOk(1, LongString.parse(new byte[0]));
+        ConnectionSecureOk testFrame = new ConnectionSecureOk(1, LongString.parse(new byte[0]), null);
         ByteBuf buf = Unpooled.buffer((int) testFrame.getMethodBodySize());
         testFrame.writeMethod(buf);
-        ConnectionSecureOk decodedFrame = (ConnectionSecureOk) ConnectionSecureOk.getFactory()
+        ConnectionSecureOk decodedFrame = (ConnectionSecureOk) ConnectionSecureOk.getFactory(null)
                 .newInstance(buf, 1, testFrame.getMethodBodySize());
 
         Assert.assertEquals(decodedFrame.getChannel(), testFrame.getChannel(),

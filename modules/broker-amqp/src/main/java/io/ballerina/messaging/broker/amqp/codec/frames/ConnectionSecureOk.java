@@ -21,21 +21,15 @@ package io.ballerina.messaging.broker.amqp.codec.frames;
 
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
-import io.ballerina.messaging.broker.amqp.codec.auth.SaslAuthenticationStrategy;
+import io.ballerina.messaging.broker.amqp.codec.auth.AuthenticationStrategy;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
-import io.ballerina.messaging.broker.auth.UsernamePrincipal;
 import io.ballerina.messaging.broker.common.data.types.LongString;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerException;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.security.auth.Subject;
-import javax.security.sasl.SaslException;
-import javax.security.sasl.SaslServer;
 
 /**
  * AMQP frame for connection.secure.ok.
@@ -52,9 +46,14 @@ public class ConnectionSecureOk extends MethodFrame {
 
     private final LongString response;
 
-    public ConnectionSecureOk(int channel, LongString response) {
+    private AuthenticationStrategy authenticationStrategy;
+
+    public ConnectionSecureOk(int channel,
+                              LongString response,
+                              AuthenticationStrategy authenticationStrategy) {
         super(channel, CLASS_ID, METHOD_ID);
         this.response = response;
+        this.authenticationStrategy = authenticationStrategy;
     }
 
     @Override
@@ -71,24 +70,8 @@ public class ConnectionSecureOk extends MethodFrame {
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
         ctx.fireChannelRead((BlockingTask) () -> {
             try {
-                Attribute<SaslServer> saslServerAttribute =
-                        ctx.channel().attr(AttributeKey.valueOf(SaslAuthenticationStrategy.SASL_SERVER_ATTRIBUTE));
-                SaslServer saslServer;
-                if (saslServerAttribute != null && (saslServer = saslServerAttribute.get()) != null) {
-                    byte[] challenge = saslServer.evaluateResponse(response.getBytes());
-                    if (saslServer.isComplete()) {
-                        Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());
-                        connectionHandler.attachBroker(subject);
-                        ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
-                    } else {
-                        ctx.channel().attr(AttributeKey.valueOf(SaslAuthenticationStrategy.SASL_SERVER_ATTRIBUTE))
-                            .set(null);
-                        ctx.writeAndFlush(new ConnectionSecure(getChannel(), LongString.parse(challenge)));
-                    }
-                } else {
-                    throw new SaslException("Sasl server hasn't been set during connection start");
-                }
-            } catch (SaslException e) {
+                authenticationStrategy.handleChallengeResponse(getChannel(), ctx, connectionHandler, response);
+            } catch (BrokerException e) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Exception occurred while authenticating incoming connection ", e);
                 }
@@ -99,10 +82,10 @@ public class ConnectionSecureOk extends MethodFrame {
         });
     }
 
-    public static AmqMethodBodyFactory getFactory() {
+    public static AmqMethodBodyFactory getFactory(AuthenticationStrategy authenticationStrategy) {
         return (buf, channel, size) -> {
             LongString response = LongString.parse(buf);
-            return new ConnectionSecureOk(channel, response);
+            return new ConnectionSecureOk(channel, response, authenticationStrategy);
         };
     }
 

@@ -26,7 +26,9 @@ import io.ballerina.messaging.broker.auth.UsernamePrincipal;
 import io.ballerina.messaging.broker.common.data.types.LongString;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
 import javax.security.auth.Subject;
@@ -40,11 +42,44 @@ import javax.security.sasl.SaslServer;
 public class SaslAuthenticationStrategy implements AuthenticationStrategy {
 
     private AuthManager authManager;
+    private BrokerFactory brokerFactory;
 
     public static final String SASL_SERVER_ATTRIBUTE = "broker.sasl.server";
 
-    SaslAuthenticationStrategy(AuthManager authManager) {
+    SaslAuthenticationStrategy(AuthManager authManager, BrokerFactory brokerFactory) {
         this.authManager = authManager;
+        this.brokerFactory = brokerFactory;
+    }
+
+    @Override
+    public void handleChallengeResponse(int channel,
+                                        ChannelHandlerContext ctx,
+                                        AmqpConnectionHandler connectionHandler,
+                                        LongString response) throws BrokerException {
+        Attribute<SaslServer> saslServerAttribute = ctx.channel().attr(AttributeKey.valueOf(SASL_SERVER_ATTRIBUTE));
+        SaslServer saslServer;
+        if (saslServerAttribute != null && (saslServer = saslServerAttribute.get()) != null) {
+            byte[] challenge = evaluateResponse(response, saslServer);
+            if (saslServer.isComplete()) {
+                Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());
+                connectionHandler.attachBroker(brokerFactory.getBroker(subject));
+                ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
+            } else {
+                ctx.channel().attr(AttributeKey.valueOf(SASL_SERVER_ATTRIBUTE))
+                   .set(null);
+                ctx.writeAndFlush(new ConnectionSecure(channel, LongString.parse(challenge)));
+            }
+        } else {
+            throw new BrokerException("Sasl server hasn't been set during connection start");
+        }
+    }
+
+    private byte[] evaluateResponse(LongString response, SaslServer saslServer) throws BrokerException {
+        try {
+            return saslServer.evaluateResponse(response.getBytes());
+        } catch (SaslException e) {
+            throw new BrokerException("Exception occurred while handling authentication with Sasl", e);
+        }
     }
 
     @Override
@@ -56,7 +91,7 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
             byte[] challenge = saslServer.evaluateResponse(response.getBytes());
             if (saslServer.isComplete()) {
                 Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());
-                connectionHandler.attachBroker(subject);
+                connectionHandler.attachBroker(brokerFactory.getBroker(subject));
                 ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
             } else {
                 ctx.channel().attr(AttributeKey.valueOf(SASL_SERVER_ATTRIBUTE)).set(saslServer);
