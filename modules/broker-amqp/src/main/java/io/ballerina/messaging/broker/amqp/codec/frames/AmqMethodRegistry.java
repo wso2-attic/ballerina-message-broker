@@ -33,7 +33,7 @@ public class AmqMethodRegistry {
         factories[10] = new AmqMethodBodyFactory[52];
         factories[10][11] = ConnectionStartOk.getFactory(authenticationStrategy);
         factories[10][20] = ConnectionSecure.getFactory();
-        factories[10][21] = ConnectionSecureOk.getFactory();
+        factories[10][21] = ConnectionSecureOk.getFactory(authenticationStrategy);
         factories[10][31] = ConnectionTuneOk.getFactory();
         factories[10][40] = ConnectionOpen.getFactory();
         factories[10][41] = ConnectionOpenOk.getFactory();
