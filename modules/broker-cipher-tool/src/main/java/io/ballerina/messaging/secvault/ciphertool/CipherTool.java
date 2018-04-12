@@ -19,14 +19,13 @@
 
 package io.ballerina.messaging.secvault.ciphertool;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.MasterKeyReader;
 import org.wso2.carbon.secvault.SecretRepository;
 import org.wso2.carbon.secvault.SecureVaultUtils;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
 
+import java.io.PrintStream;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 
@@ -34,7 +33,8 @@ import java.nio.file.Path;
  * The Java class which defines the CipherTool.
  */
 public class CipherTool {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CipherTool.class);
+
+    private static final PrintStream out = System.out;
     private SecureVaultConfiguration secureVaultConfiguration;
     private SecretRepository secretRepository;
 
@@ -85,7 +85,7 @@ public class CipherTool {
     public char[] encryptText(String plainText) throws SecureVaultException {
         byte[] encryptedPassword = secretRepository.encrypt(SecureVaultUtils.toBytes(plainText.trim()));
         char[] base64Encoded = SecureVaultUtils.toChars(SecureVaultUtils.base64Encode(encryptedPassword));
-        LOGGER.info("Encrypted value : {}", new String(base64Encoded));
+        printOutput("Encrypted value : " + String.valueOf(base64Encoded));
         return base64Encoded;
     }
 
@@ -99,7 +99,11 @@ public class CipherTool {
     public char[] decryptText(String cipherText) throws SecureVaultException {
         byte[] decryptedPassword = secretRepository.decrypt(SecureVaultUtils
                 .base64Decode(SecureVaultUtils.toBytes(cipherText)));
-        LOGGER.info("Decrypted value : {}", new String(SecureVaultUtils.toChars(decryptedPassword)));
+        printOutput("Decrypted value : " + String.valueOf(SecureVaultUtils.toChars(decryptedPassword)));
         return SecureVaultUtils.toChars(decryptedPassword);
+    }
+
+    private void printOutput(String message) {
+        out.println(message);
     }
 }

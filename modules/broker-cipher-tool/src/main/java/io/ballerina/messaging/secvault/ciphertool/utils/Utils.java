@@ -69,9 +69,8 @@ public class Utils {
                 .ifPresent(path -> urls.addAll(getJarURLs(path.toString())));
 
         Optional.ofNullable(System.getProperty("message.broker.home"))
-                .ifPresent(messageBrokerHome -> {
-                    urls.addAll(getJarURLs(Paths.get(messageBrokerHome, "lib").toString()));
-                });
+                .ifPresent(messageBrokerHome ->
+                        urls.addAll(getJarURLs(Paths.get(messageBrokerHome, "lib").toString())));
 
         return (URLClassLoader) AccessController.doPrivileged(
                 (PrivilegedAction<Object>) () -> new URLClassLoader(urls.toArray(new URL[urls.size()])));
