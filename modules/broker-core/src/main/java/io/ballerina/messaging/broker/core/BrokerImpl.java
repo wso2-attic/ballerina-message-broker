@@ -550,10 +550,14 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public QueueHandler getQueue(String queueName) {
+    public QueueHandler getQueue(String queueName) throws ResourceNotFoundException {
         lock.readLock().lock();
         try {
-            return queueRegistry.getQueueHandler(queueName);
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
+            if (Objects.isNull(queueHandler)) {
+                throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
+            }
+            return queueHandler;
         } finally {
             lock.readLock().unlock();
         }

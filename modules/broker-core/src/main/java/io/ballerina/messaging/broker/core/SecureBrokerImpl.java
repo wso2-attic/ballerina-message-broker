@@ -32,7 +32,6 @@ import io.ballerina.messaging.broker.core.transaction.SecureBrokerTransaction;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.security.auth.Subject;
 import javax.transaction.xa.Xid;
@@ -245,9 +244,8 @@ public class SecureBrokerImpl implements Broker {
 
     @Override
     public QueueHandler getQueue(String queueName) throws BrokerException, ResourceNotFoundException {
-        QueueHandler queue = broker.getQueue(queueName);
 
-        if (Objects.isNull(queue)) {
+        if (!broker.queueExists(queueName)) {
             throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
         }
         try {
