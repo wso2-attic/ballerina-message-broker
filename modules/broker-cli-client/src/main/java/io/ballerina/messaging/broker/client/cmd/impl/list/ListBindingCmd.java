@@ -64,7 +64,7 @@ public class ListBindingCmd extends ListCmd {
             return;
         }
 
-        if (!queueName.isEmpty() && !exchangeName.isEmpty()) {
+        if ((!queueName.isEmpty() && !exchangeName.isEmpty()) || (queueName.isEmpty() && exchangeName.isEmpty())) {
             BrokerClientException exception = new BrokerClientException();
             exception.addMessage("either one from 'queue' name and 'exchange' name should only be present");
             throw exception;
