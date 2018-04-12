@@ -68,7 +68,7 @@ public class QueueBufferTest {
             Message message = queueBuffer.getFirstDeliverable();
             Assert.assertNotNull(message.getMetadata(), "Messages returned from #getFirstDeliverable() should never "
                     + "be empty");
-            queueBuffer.remove(message);
+            queueBuffer.remove(message.getInternalId());
         }
     }
 
@@ -95,7 +95,7 @@ public class QueueBufferTest {
             Message message = queueBuffer.getFirstDeliverable();
             Assert.assertNotNull(message.getMetadata(), "Messages returned from #getFirstDeliverable() should never "
                     + "be empty");
-            queueBuffer.remove(message);
+            queueBuffer.remove(message.getInternalId());
         }
 
         Assert.assertEquals(queueBuffer.size(), 0, "Buffer size should be 0 after removing all messages");

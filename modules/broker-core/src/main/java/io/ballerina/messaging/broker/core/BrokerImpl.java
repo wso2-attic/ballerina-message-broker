@@ -577,7 +577,7 @@ public final class BrokerImpl implements Broker {
             dlcMessage.getMetadata().addHeader(ORIGIN_ROUTING_KEY_HEADER, message.getMetadata().getRoutingKey());
 
             publish(dlcMessage);
-            acknowledge(queueName, message);
+            acknowledge(queueName, message.shallowCopy());
         } finally {
             message.release();
         }

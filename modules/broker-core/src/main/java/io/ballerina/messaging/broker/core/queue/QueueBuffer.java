@@ -180,10 +180,9 @@ public class QueueBuffer {
     /**
      * Remove a message from the buffer.
      *
-     * @param message message to remove
+     * @param messageId internal id of the message to be removed.
      */
-    public synchronized void remove(Message message) {
-        long messageId = message.getInternalId();
+    public synchronized void remove(long messageId) {
         Node node = keyMap.remove(messageId);
         if (Objects.nonNull(node)) {
             unlink(node);
@@ -192,7 +191,7 @@ public class QueueBuffer {
 
     public synchronized void removeAll(Collection<Message> messages) {
         for (Message message : messages) {
-            remove(message);
+            remove(message.getInternalId());
         }
     }
 

@@ -19,6 +19,9 @@
 
 package io.ballerina.messaging.broker.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * This contains the metadata and the content chunks of the message.
  */
 public class Message {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Message.class);
 
     private Metadata metadata;
 
@@ -72,12 +77,18 @@ public class Message {
     }
 
     public void release() {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Release message with id: {}", internalId, new Throwable());
+        }
         for (ContentChunk contentChunk : contentChunks) {
             contentChunk.release();
         }
     }
 
     public Message shallowCopy() {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Shallow copy message id: {}", internalId, new Throwable());
+        }
         Message message = new Message(internalId, metadata, queueSet);
         message.redelivered = redelivered;
         message.redeliveryCount = redeliveryCount;
@@ -96,6 +107,9 @@ public class Message {
     }
 
     public Message shallowCopyWith(long newMessageId, String routingKey, String exchangeName) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Shallow copy message with id: {} newId: {}", internalId, newMessageId, new Throwable());
+        }
         Message message = new Message(newMessageId, metadata.shallowCopyWith(routingKey, exchangeName));
         shallowCopyContent(message);
         return message;

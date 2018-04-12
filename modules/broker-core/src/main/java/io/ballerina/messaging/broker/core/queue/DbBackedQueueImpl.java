@@ -106,6 +106,7 @@ public class DbBackedQueueImpl extends Queue {
         List<Message> dequeueMessages = pendingDequeueMessages.get(xid);
         if (Objects.nonNull(dequeueMessages)) {
             buffer.removeAll(dequeueMessages);
+            dequeueMessages.forEach(Message::release);
         }
 
         List<Message> messages = pendingEnqueueMessages.get(xid);
@@ -117,7 +118,10 @@ public class DbBackedQueueImpl extends Queue {
     @Override
     public void rollback(Xid xid) {
         pendingDequeueMessages.remove(xid);
-        pendingEnqueueMessages.remove(xid);
+        List<Message> messages = pendingEnqueueMessages.remove(xid);
+        if (Objects.nonNull(messages)) {
+            messages.forEach(Message::release);
+        }
     }
 
     @Override
@@ -128,12 +132,12 @@ public class DbBackedQueueImpl extends Queue {
     @Override
     public void detach(Message message) {
         dbMessageStore.detach(getName(), message);
-        buffer.remove(message);
+        buffer.remove(message.getInternalId());
     }
 
     @Override
     public void prepareDetach(Xid xid, Message message) throws BrokerException {
-        dbMessageStore.detach(xid, getName(), message);
+        dbMessageStore.detach(xid, getName(), message.shallowCopy());
         List<Message> dequeueMessages = pendingDequeueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
         dequeueMessages.add(message);
     }

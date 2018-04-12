@@ -247,9 +247,9 @@ public class AmqpChannel {
             MessageTracer.trace(description, traceChannelIdField, new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag));
         }
         if (ackData != null) {
-            transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
+            transaction.dequeue(ackData.getQueueName(), ackData.getMessage().shallowCopy());
             if (!transaction.inTransactionBlock()) {
-                ackData = unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
+                unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
                 ackData.getMessage().release();
             }
         } else {

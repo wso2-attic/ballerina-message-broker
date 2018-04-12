@@ -78,11 +78,16 @@ public abstract class MessageStore {
 
     public synchronized void detach(String queueName, final Message message) {
         message.removeAttachedDurableQueue(queueName);
-        if (!message.hasAttachedDurableQueues()) {
-            deleteMessage(message.getInternalId());
-        } else {
-            detachFromQueue(queueName, message);
+        try {
+            if (!message.hasAttachedDurableQueues()) {
+                deleteMessage(message.getInternalId());
+            } else {
+                detachFromQueue(queueName, message.getInternalId());
+            }
+        } finally {
+            message.release();
         }
+
     }
 
     public synchronized void detach(Xid xid, String queueName, Message message) throws BrokerException {
@@ -90,6 +95,7 @@ public abstract class MessageStore {
         synchronized (transactionData) {
             transactionData.prepareForDetach(queueName, message);
         }
+        message.release(); // releasing message content since it is not used for delete and detach events.
     }
 
 
@@ -151,7 +157,7 @@ public abstract class MessageStore {
 
     abstract void publishMessageToStore(Message message);
 
-    abstract void detachFromQueue(String queueName, Message message);
+    abstract void detachFromQueue(String queueName, long messageId);
 
     abstract void deleteMessage(long messageId);
 

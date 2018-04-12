@@ -23,6 +23,7 @@ import com.lmax.disruptor.EventFactory;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.queue.QueueBuffer;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -148,7 +149,7 @@ public class DbOperation {
     }
 
     public void clear() {
-        if (message != null) {
+        if (Objects.nonNull(message)) {
             message.release();
             message = null;
         }
