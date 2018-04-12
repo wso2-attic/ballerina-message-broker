@@ -132,7 +132,7 @@ public class Main {
             brokerYamlFile = Paths.get(brokerFilePath).toAbsolutePath();
         }
 
-        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(brokerYamlFile, null);
+        ConfigProvider configProvider = ConfigProviderFactory.getConfigProvider(brokerYamlFile);
         startupContext.registerService(BrokerConfigProvider.class,
                                        (BrokerConfigProvider) configProvider::getConfigurationObject);
     }

@@ -1,0 +1,9 @@
+# The DefaultMasterKeyReader looks for the master-keys.yaml file in specified
+# location at broker.yaml, read the master keys and delete the file.
+# File will not be deleted when permanent set to true.
+permanent: true
+# masterKeys should be given in the base64 format and the data type of the
+# password should be explicitly specified as binary (type !!binary).
+masterKeys:
+  keyStorePassword: !!binary YmFsbGVyaW5h
+  privateKeyPassword: !!binary YmFsbGVyaW5h

@@ -24,8 +24,8 @@ listenerConfigurations:
   port: 9200
   scheme: https
   keyStoreFile: "src/test/resources/security/keystore.jks"
-  keyStorePassword: wso2carbon
-  certPass: wso2carbon
+  keyStorePassword: ballerina
+  certPass: ballerina
 
 senderConfigurations:
  -

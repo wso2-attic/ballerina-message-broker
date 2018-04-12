@@ -199,7 +199,7 @@
                                 <delete dir="${db.directory}" quiet="true" />
                                 <!-- Create database schema -->
                                 <echo message="########### Creating MB Database ##############" />
-                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url}" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
+                                <sql userid="ballerina" password="ballerina" url="${db.url}" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
                                     <classpath refid="maven.compile.classpath" />
                                     <!-- Create database schema -->
                                     <transaction src="${sql.directory}/h2-mb.sql" />

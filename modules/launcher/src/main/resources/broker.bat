@@ -1,7 +1,7 @@
 @echo off
 
 REM ---------------------------------------------------------------------------
-REM  Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+REM  Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 REM
 REM  WSO2 Inc. licenses this file to you under the Apache License,
 REM  Version 2.0 (the "License"); you may not use this file except
@@ -16,8 +16,7 @@ REM  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 REM  KIND, either express or implied. See the License for the
 REM  specific language governing permissions and limitations
 REM  under the License.
-
-rem ---------------------------------------------------------------------------
+REM ---------------------------------------------------------------------------
 
 rem ----- if JAVA_HOME is not set we're not happy ------------------------------
 
@@ -40,10 +39,6 @@ SET brokerDrive=%MESSAGE_BROKER_HOME:~0,1%
 if not "%curDrive%" == "%brokerDrive%" %brokerDrive%:
 
 goto updateClasspath
-
-:noServerHome
-echo MESSAGE_BROKER_HOME is set incorrectly or MESSAGE_BROKER could not be located. Please set MESSAGE_BROKER_HOME.
-goto end
 
 rem ----- update classpath -----------------------------------------------------
 :updateClasspath

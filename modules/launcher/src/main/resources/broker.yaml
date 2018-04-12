@@ -26,9 +26,9 @@ ballerina.broker:
   # Database URL.
   url: jdbc:h2:./database/MB_DB
   # Database username.
-  user: wso2carbon
+  user: ballerina
   # Database password.
-  password: wso2carbon
+  password: ballerina
 
 # Broker core configurations.
 ballerina.broker.core:
@@ -121,7 +121,7 @@ ballerina.broker.transport.amqp:
    # Location of the keystore file. The path can be relative to broker home or absolute path.
    location: resources/security/keystore.jks
    # Keystore password.
-   password: wso2carbon
+   password: ballerina
    # Cert type used in the keystore file.
    certType: SunX509
 
@@ -132,7 +132,7 @@ ballerina.broker.transport.amqp:
    # Location of the keystore file. The path can be relative to broker home or absolute path.
    location: resources/security/client-truststore.jks
    # Truststore password.
-   password: wso2carbon
+   password: ballerina
    # Cert type used in the truststore file
    certType: SunX509
 
@@ -176,3 +176,22 @@ wso2.metrics:
      # Polling Period in seconds.
      # This is the period for polling metrics from the metric registry and logging to the configured logger
      pollingPeriod: 60
+
+# Secure vault configurations
+wso2.securevault:
+  # The default implementation for secret repository in secure vault.
+  secretRepository:
+    type: org.wso2.carbon.secvault.repository.DefaultSecretRepository
+    parameters:
+      # Private key alias of the java key store
+      privateKeyAlias: ballerina
+      # Encryption/decryption is based on the java keyStore
+      keystoreLocation: ${sys:message.broker.home}/resources/security/keystore.jks
+      # Secrets are taken from the secrets.properties
+      secretPropertiesFile: ${sys:message.broker.home}/conf/security/secrets.properties
+  # The default implementation for read master keys to initialize the secret repositories.
+  masterKeyReader:
+    type: org.wso2.carbon.secvault.reader.DefaultMasterKeyReader
+    parameters:
+      # Read master keys from thremaster-keys.yaml
+      masterKeyReaderFile: ${sys:message.broker.home}/conf/master-keys.yaml

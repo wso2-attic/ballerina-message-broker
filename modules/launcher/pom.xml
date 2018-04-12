@@ -94,6 +94,10 @@
             <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-cli-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.ballerina.messaging</groupId>
+            <artifactId>broker-cipher-tool</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -125,7 +129,7 @@
                                 <!-- Drop database if it exists -->
                                 <delete dir="${db.directory}" quiet="true" />
                                 <!-- Create database schema -->
-                                <sql userid="wso2carbon" password="wso2carbon" url="${db.url}" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
+                                <sql userid="ballerina" password="ballerina" url="${db.url}" driver="${db.driver}" delimiter="${db.delimiter}" autocommit="true">
                                     <classpath refid="maven.compile.classpath" />
                                     <!-- Create database schema -->
                                     <transaction src="${sql.directory}/h2-mb.sql" />

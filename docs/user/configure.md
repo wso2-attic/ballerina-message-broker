@@ -17,8 +17,8 @@ These configurations are defined under the namespace `ballerina.broker`.
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
 | enableInMemoryMode          | false                                  | When the in-memory mode is enabled all message and context data including durable entities are held in memory. lease note that this can increase memory usage of the broker. Therefore it is advised to allocate more memory in the JVM which run the broker. | 
 | datasource:url              | jdbc:h2:./database/MB_DB               | Database URL.                                 |
-| database:user               | wso2carbon                             | Database username                             |
-| database:password           | wso2carbon                             | Database password.                            |
+| database:user               | ballerina                              | Database username                             |
+| database:password           | ballerina                              | Database password.                            |
 
 ### Broker-core configurations
 
@@ -48,11 +48,11 @@ These configurations are defined under the namespace `ballerina.broker.transport
 | ssl:protocol                | TLS                                          | Secureprotocol used to encrypt data.                                                                         |
 | ssl:keyStore:type           | JKS                                          | Type of the keystore file.                                                                                   |
 | ssl:keyStore:location       | resources/security/keystore.jks              | Location of the keystore file. The path can be relative to broker home or absolute path.                     |
-| ssl:keyStore:password       | wso2carbon                                   | Keystore password.                                                                                           |
+| ssl:keyStore:password       | ballerina                                    | Keystore password.                                                                                           |
 | ssl:keyStore:certType       | SunX509                                      | Cert type used in the keystore file.                                                                         |
 | ssl:trustStore:type         | JKS                                          | Type of truststore file.                                                                                     |
 | ssl:trustStore:location     | resources/security/client-truststore.jks     | Location of the keystore file. The path can be relative to broker home or absolute path.                     |
-| ssl:trustStore:password     | wso2carbon                                   | Truststore password.                                                                                         |
+| ssl:trustStore:password     | ballerina                                    | Truststore password.                                                                                         |
 | ssl:trustStore:certType     | SunX509                                      | Cert type used in the truststore file.                                                                       |
 
 ### Fail-over configurations

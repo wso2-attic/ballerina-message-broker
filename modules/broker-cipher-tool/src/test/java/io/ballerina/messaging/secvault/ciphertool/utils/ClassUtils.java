@@ -17,14 +17,21 @@
  *
  */
 
-package io.ballerina.messaging.broker.integration.util;
+package io.ballerina.messaging.secvault.ciphertool.utils;
 
-public class TestConstants {
-    public static final String KEYSTORE_LOCATION = "src/test/resources/security/keystore.jks";
-    public static final String TRUST_STORE_LOCATION = "src/test/resources/security/client-truststore.jks";
-    public static final String KEYSTORE_PASSWORD = "ballerina";
-    public static final String TRUST_STORE_PASSWORD = "ballerina";
-    public static final String CLI_CONFIG_SYSTEM_PROPERTY = "client.cli.conf";
-    public static final String CLI_CONFIG_LOCATION = "src/test/resources/config/cli-config.yaml";
-    public static final String CLI_ROOT_COMMAND = "broker-admin";
+import java.lang.reflect.Field;
+
+/**
+ * ClassUtils.
+ */
+public class ClassUtils {
+    public static void setToPrivateField(Object objInstance, String filedName, Object value) {
+        try {
+            Field field = objInstance.getClass().getDeclaredField(filedName);
+            field.setAccessible(true);
+            field.set(objInstance, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -1,0 +1,6 @@
+permanent: true
+# mastterKeys should be given in the base64 format and the data type of the
+# password should be explicitly specified as binary (type !!binary).
+masterKeys:
+  keyStorePassword: !!binary YmFsbGVyaW5h
+  privateKeyPassword: !!binary YmFsbGVyaW5h

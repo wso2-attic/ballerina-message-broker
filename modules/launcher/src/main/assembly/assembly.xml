@@ -39,6 +39,7 @@
                 <include>log4j.properties</include>
                 <include>broker.yaml</include>
                 <include>admin-service-transports.yaml</include>
+                <include>master-keys.yaml</include>
             </includes>
             <fileMode>644</fileMode>
         </fileSet>
@@ -47,6 +48,7 @@
             <outputDirectory>conf/security</outputDirectory>
             <includes>
                 <include>users.yaml</include>
+                <include>secrets.properties</include>
             </includes>
             <fileMode>644</fileMode>
         </fileSet>
@@ -57,6 +59,8 @@
                 <include>broker.sh</include>
                 <include>broker.bat</include>
                 <include>broker-admin.sh</include>
+                <include>ciphertool.sh</include>
+                <include>ciphertool.bat</include>
             </includes>
             <fileMode>755</fileMode>
         </fileSet>
@@ -96,6 +100,7 @@
                 <include>io.ballerina.messaging:broker-coordination:jar</include>
                 <include>io.ballerina.messaging:broker-cli-client:jar</include>
                 <include>io.ballerina.messaging:broker-launcher:jar</include>
+                <include>io.ballerina.messaging:broker-cipher-tool:jar</include>
             </includes>
             <outputDirectory>lib</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>

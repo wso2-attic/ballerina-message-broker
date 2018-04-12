@@ -16,15 +16,18 @@
  * under the License.
  *
  */
+package io.ballerina.messaging.secvault.ciphertool;
 
-package io.ballerina.messaging.broker.integration.util;
+/**
+ * Exception thrown when an error occurs in cipher tool.
+ */
+public class CipherToolException extends Exception {
 
-public class TestConstants {
-    public static final String KEYSTORE_LOCATION = "src/test/resources/security/keystore.jks";
-    public static final String TRUST_STORE_LOCATION = "src/test/resources/security/client-truststore.jks";
-    public static final String KEYSTORE_PASSWORD = "ballerina";
-    public static final String TRUST_STORE_PASSWORD = "ballerina";
-    public static final String CLI_CONFIG_SYSTEM_PROPERTY = "client.cli.conf";
-    public static final String CLI_CONFIG_LOCATION = "src/test/resources/config/cli-config.yaml";
-    public static final String CLI_ROOT_COMMAND = "broker-admin";
+    public CipherToolException(String message) {
+        super(message);
+    }
+
+    public CipherToolException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

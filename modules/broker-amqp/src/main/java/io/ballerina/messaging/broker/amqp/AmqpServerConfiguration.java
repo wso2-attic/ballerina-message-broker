@@ -215,7 +215,7 @@ public class AmqpServerConfiguration {
 
         private String location = "resources/security/keystore.jks";
 
-        private String password = "wso2carbon";
+        private String password = "ballerina";
 
         private String certType = "SunX509";
 
@@ -272,7 +272,7 @@ public class AmqpServerConfiguration {
 
         private String location = "resources/security/client-truststore.jks";
 
-        private String password = "wso2carbon";
+        private String password = "ballerina";
 
         private String certType = "SunX509";
 
