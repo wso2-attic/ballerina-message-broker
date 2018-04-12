@@ -75,7 +75,7 @@ public class TransactionTimeoutTest {
     @Test
     public void testTransactionAfterTimeout() throws Exception {
         transaction.setTimeout(xid, 2, TimeUnit.MILLISECONDS);
-        TimeUnit.MILLISECONDS.sleep(10);
+        TimeUnit.MILLISECONDS.sleep(20);
         Assert.assertEquals(branch.isExpired(), true);
         Assert.assertEquals(branch.getState(), Branch.State.TIMED_OUT);
     }
@@ -91,7 +91,7 @@ public class TransactionTimeoutTest {
     public void testTimeoutForAlreadyPreparedBranch() throws Exception {
         branch.setState(Branch.State.PREPARED);
         transaction.setTimeout(xid, 2, TimeUnit.MILLISECONDS);
-        TimeUnit.MILLISECONDS.sleep(10);
+        TimeUnit.MILLISECONDS.sleep(20);
 
         Assert.assertEquals(branch.isExpired(), false);
         Assert.assertEquals(branch.getState(), Branch.State.PREPARED);
