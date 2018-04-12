@@ -23,27 +23,29 @@ import io.netty.buffer.ByteBuf;
 
 /**
  *  AMQP Field value data.
- *  +------------+------------------+
- *  | Definition |       Type       |
- *  +------------+------------------+
- *  | t          | boolean          |
- *  | b          | short-short-int  |
- *  | B          | short-short-uint |
- *  | s          | short-int        |
- *  | u          | short-uint       |
- *  | I          | long-int         |
- *  | i          | long-uint        |
- *  | l          | long-long-int    |
- *  | f          | float            |
- *  | d          | double           |
- *  | D          | decimal          |
- *  | S          | long-string      |
- *  | A          | field-array      |
- *  | T          | timestamp        |
- *  | F          | field-table      |
- *  | V          | void             |
- *  | x          | byte array       |
- *  +------------+------------------+
+ * +-------+-------------+-----------------+
+ * | 0-9-1 | Qpid/Rabbit |      Type       |
+ * +-------+-------------+-----------------+
+ * | t     | t           | Boolean         |
+ * | b     | b           | Signed 8-bit    |
+ * | B     | B           | Unsigned 8-bit  |
+ * | U     | s           | Signed 16-bit   |
+ * | u     | u           | Unsigned 16-bit |
+ * | I     | I           | Signed 32-bit   |
+ * | i     | i           | Unsigned 32-bit |
+ * | L     | l           | Signed 64-bit   |
+ * | l     |             | Unsigned 64-bit |
+ * | f     | f           | 32-bit float    |
+ * | d     | d           | 64-bit float    |
+ * | D     | D           | Decimal         |
+ * | s     |             | Short string    |
+ * | S     | S           | Long string     |
+ * | A     | A           | Array           |
+ * | T     | T           | Timestamp (u64) |
+ * | F     | F           | Nested Table    |
+ * | V     | V           | Void            |
+ * |       | x           | Byte array      |
+ * +-------+-------------+-----------------+
  */
 public class FieldValue implements EncodableData {
 
@@ -68,7 +70,7 @@ public class FieldValue implements EncodableData {
         DECIMAL('D'),
         LONG_STRING('S'),
         FIELD_TABLE('F'),
-        SHORT_STRING('Z');
+        SHORT_STRING('z'); // define internally because HeaderFrame use FieldTable
 
         private final char type;
 
@@ -108,7 +110,7 @@ public class FieldValue implements EncodableData {
                     return LONG_STRING;
                 case 'F':
                     return FIELD_TABLE;
-                case 'Z':
+                case 'z':
                     return SHORT_STRING;
                 default:
                     throw new Exception("Unknown field table data type. Char value: '" + value + "'");

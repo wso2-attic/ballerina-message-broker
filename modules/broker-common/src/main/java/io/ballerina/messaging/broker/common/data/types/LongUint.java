@@ -21,6 +21,8 @@ package io.ballerina.messaging.broker.common.data.types;
 
 import io.netty.buffer.ByteBuf;
 
+import java.util.Objects;
+
 /**
  * AMQP long-uint.
  */
@@ -28,7 +30,7 @@ public class LongUint implements EncodableData {
 
     private final long value;
 
-    public LongUint(long value) {
+    private LongUint(long value) {
         this.value = value;
     }
 
@@ -39,7 +41,7 @@ public class LongUint implements EncodableData {
 
     @Override
     public void write(ByteBuf buf) {
-        buf.writeLong(value);
+        buf.writeInt((int) value);
     }
 
     public long getInt() {
@@ -48,7 +50,7 @@ public class LongUint implements EncodableData {
 
     @Override
     public int hashCode() {
-        return (int) (value ^ (value >>> 32));
+        return Objects.hash(value);
     }
 
     @Override

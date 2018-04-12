@@ -30,7 +30,7 @@ public class Float implements EncodableData {
 
     private final float value;
 
-    public Float(float value) {
+    private Float(float value) {
         this.value = value;
     }
 

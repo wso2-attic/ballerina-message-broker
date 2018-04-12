@@ -28,7 +28,7 @@ public class ShortInt implements EncodableData {
 
     private final short value;
 
-    public ShortInt(short value) {
+    private ShortInt(short value) {
         this.value = value;
     }
 

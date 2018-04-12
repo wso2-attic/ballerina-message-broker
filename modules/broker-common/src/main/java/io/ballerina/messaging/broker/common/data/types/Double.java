@@ -30,7 +30,7 @@ public class Double implements EncodableData {
 
     private final double value;
 
-    public Double(double value) {
+    private Double(double value) {
         this.value = value;
     }
 

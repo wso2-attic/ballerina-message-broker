@@ -26,18 +26,21 @@ import java.util.Objects;
 
 /**
  * AMQP decimal.
+ *
+ * decimal-value = scale long-uint
+ * scale = OCTET ; number of decimal digits
  */
 public class Decimal implements EncodableData {
 
     private final BigDecimal value;
 
-    public Decimal(BigDecimal value) {
+    private Decimal(BigDecimal value) {
         this.value = value;
     }
 
     @Override
     public long getSize() {
-        return 5L;
+        return 1L + 4L;
     }
 
     @Override

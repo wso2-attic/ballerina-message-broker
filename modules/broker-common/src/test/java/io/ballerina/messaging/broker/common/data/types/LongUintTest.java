@@ -24,20 +24,21 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class LongIntTest {
+public class LongUintTest {
 
-    private static final LongInt TEST_OBJECT = LongInt.parse(1);
-    private static final int DATA_VALUE = 1;
+    private static final LongUint TEST_OBJECT = LongUint.parse(Integer.MAX_VALUE + 1L);
+
+    private static final long DATA_VALUE = Integer.MAX_VALUE + 1L;
 
     @Test
     public void testGetSize() {
-        Assert.assertEquals(TEST_OBJECT.getSize(), 4, "Size of long-int should be 4");
+        Assert.assertEquals(TEST_OBJECT.getSize(), 4, "Size of long-uint should be 4");
     }
 
     @Test
     public void testEquals() {
-        LongInt other = LongInt.parse(3);
-        LongInt similar = LongInt.parse(DATA_VALUE);
+        LongUint other = LongUint.parse(3);
+        LongUint similar = LongUint.parse(DATA_VALUE);
 
         Assert.assertTrue(TEST_OBJECT.equals(TEST_OBJECT), "equals() should return true for similar objects");
         Assert.assertTrue(TEST_OBJECT.equals(similar), "equals() should return true for similar objects");
@@ -48,7 +49,7 @@ public class LongIntTest {
 
     @Test
     public void testHashCode() {
-        LongInt similar = LongInt.parse(DATA_VALUE);
+        LongUint similar = LongUint.parse(DATA_VALUE);
         Assert.assertEquals(similar.hashCode(), TEST_OBJECT.hashCode(), "Hashcode should match for similar data");
     }
 
@@ -58,8 +59,7 @@ public class LongIntTest {
         ByteBuf buf = Unpooled.buffer(4);
         TEST_OBJECT.write(buf);
 
-        LongInt parsedObject = LongInt.parse(buf);
+        LongUint parsedObject = LongUint.parse(buf);
         Assert.assertEquals(parsedObject, TEST_OBJECT, "Encoding and decoding should result in the same object");
     }
-
 }

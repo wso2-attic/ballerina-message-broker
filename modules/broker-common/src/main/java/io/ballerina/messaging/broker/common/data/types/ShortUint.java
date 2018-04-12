@@ -28,7 +28,7 @@ public class ShortUint implements EncodableData {
 
     private final int value;
 
-    public ShortUint(int value) {
+    private ShortUint(int value) {
         this.value = value;
     }
 
@@ -39,7 +39,7 @@ public class ShortUint implements EncodableData {
 
     @Override
     public void write(ByteBuf buf) {
-        buf.writeInt(value);
+        buf.writeShort(value);
     }
 
     public int getShort() {
