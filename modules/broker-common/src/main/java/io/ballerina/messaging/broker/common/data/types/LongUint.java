@@ -21,13 +21,16 @@ package io.ballerina.messaging.broker.common.data.types;
 
 import io.netty.buffer.ByteBuf;
 
-/**
- * AMQP long-int.
- */
-public class LongInt implements EncodableData {
-    private final int value;
+import java.util.Objects;
 
-    private LongInt(int value) {
+/**
+ * AMQP long-uint.
+ */
+public class LongUint implements EncodableData {
+
+    private final long value;
+
+    private LongUint(long value) {
         this.value = value;
     }
 
@@ -38,16 +41,16 @@ public class LongInt implements EncodableData {
 
     @Override
     public void write(ByteBuf buf) {
-        buf.writeInt(value);
+        buf.writeInt((int) value);
     }
 
-    public int getInt() {
+    public long getInt() {
         return value;
     }
 
     @Override
     public int hashCode() {
-        return value;
+        return Objects.hash(value);
     }
 
     @Override
@@ -55,15 +58,15 @@ public class LongInt implements EncodableData {
         if (this == obj) {
             return true;
         }
-        return (obj instanceof LongInt) && (value == ((LongInt) obj).value);
+        return (obj instanceof LongUint) && (value == ((LongUint) obj).value);
     }
 
-    public static LongInt parse(ByteBuf buf) {
-        return new LongInt(buf.readInt());
+    public static LongUint parse(ByteBuf buf) {
+        return new LongUint(buf.readUnsignedInt());
     }
 
-    public static LongInt parse(int value) {
-        return new LongInt(value);
+    public static LongUint parse(long value) {
+        return new LongUint(value);
     }
 
     @Override

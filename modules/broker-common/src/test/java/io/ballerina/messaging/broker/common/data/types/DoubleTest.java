@@ -24,20 +24,21 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class LongIntTest {
+public class DoubleTest {
 
-    private static final LongInt TEST_OBJECT = LongInt.parse(1);
-    private static final int DATA_VALUE = 1;
+    private static final Double TEST_OBJECT = Double.parse(1.0d);
+
+    private static final double DATA_VALUE = 1.0d;
 
     @Test
     public void testGetSize() {
-        Assert.assertEquals(TEST_OBJECT.getSize(), 4, "Size of long-int should be 4");
+        Assert.assertEquals(TEST_OBJECT.getSize(), 8, "Size of double should be 8");
     }
 
     @Test
     public void testEquals() {
-        LongInt other = LongInt.parse(3);
-        LongInt similar = LongInt.parse(DATA_VALUE);
+        Double other = Double.parse(3.0d);
+        Double similar = Double.parse(DATA_VALUE);
 
         Assert.assertTrue(TEST_OBJECT.equals(TEST_OBJECT), "equals() should return true for similar objects");
         Assert.assertTrue(TEST_OBJECT.equals(similar), "equals() should return true for similar objects");
@@ -48,18 +49,16 @@ public class LongIntTest {
 
     @Test
     public void testHashCode() {
-        LongInt similar = LongInt.parse(DATA_VALUE);
+        Double similar = Double.parse(DATA_VALUE);
         Assert.assertEquals(similar.hashCode(), TEST_OBJECT.hashCode(), "Hashcode should match for similar data");
     }
 
-
     @Test
     public void testParse() {
-        ByteBuf buf = Unpooled.buffer(4);
+        ByteBuf buf = Unpooled.buffer(8);
         TEST_OBJECT.write(buf);
 
-        LongInt parsedObject = LongInt.parse(buf);
+        Double parsedObject = Double.parse(buf);
         Assert.assertEquals(parsedObject, TEST_OBJECT, "Encoding and decoding should result in the same object");
     }
-
 }

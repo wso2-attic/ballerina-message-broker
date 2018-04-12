@@ -22,26 +22,30 @@ package io.ballerina.messaging.broker.common.data.types;
 import io.netty.buffer.ByteBuf;
 
 /**
- * AMQP Field value data.
- * <p>
- * field-value = 't' boolean
- * 'b' short-short-int
- * 'B' short-short-uint
- * 'U' short-int
- * 'u' short-uint
- * 'I' long-int
- * 'i' long-uint
- * 'L' long-long-int
- * 'l' long-long-uint
- * 'f' float
- * 'd' double
- * 'D' decimal-value
- * 's' short-string
- * 'S' long-string
- * 'A' field-array
- * 'T' timestamp
- * 'F' field-table
- * 'V'               ; no field
+ *  AMQP Field value data.
+ * +-------+-------------+-----------------+
+ * | 0-9-1 | Qpid/Rabbit |      Type       |
+ * +-------+-------------+-----------------+
+ * | t     | t           | Boolean         |
+ * | b     | b           | Signed 8-bit    |
+ * | B     | B           | Unsigned 8-bit  |
+ * | U     | s           | Signed 16-bit   |
+ * | u     | u           | Unsigned 16-bit |
+ * | I     | I           | Signed 32-bit   |
+ * | i     | i           | Unsigned 32-bit |
+ * | L     | l           | Signed 64-bit   |
+ * | l     |             | Unsigned 64-bit |
+ * | f     | f           | 32-bit float    |
+ * | d     | d           | 64-bit float    |
+ * | D     | D           | Decimal         |
+ * | s     |             | Short string    |
+ * | S     | S           | Long string     |
+ * | A     | A           | Array           |
+ * | T     | T           | Timestamp (u64) |
+ * | F     | F           | Nested Table    |
+ * | V     | V           | Void            |
+ * |       | x           | Byte array      |
+ * +-------+-------------+-----------------+
  */
 public class FieldValue implements EncodableData {
 
@@ -56,13 +60,17 @@ public class FieldValue implements EncodableData {
         BOOLEAN('t'),
         SHORT_SHORT_INT('b'),
         SHORT_SHORT_UINT('B'),
-        SHORT_INT('U'),
+        SHORT_INT('s'),
         SHORT_UINT('u'),
-        SHORT_STRING('s'),
-        LONG_STRING('S'),
         LONG_INT('I'),
-        LONG_LONG_INT('L'),
-        FIELD_TABLE('F');
+        LONG_UINT('i'),
+        LONG_LONG_INT('l'),
+        FLOAT('f'),
+        DOUBLE('d'),
+        DECIMAL('D'),
+        LONG_STRING('S'),
+        FIELD_TABLE('F'),
+        SHORT_STRING('z'); // define internally because HeaderFrame use FieldTable
 
         private final char type;
 
@@ -82,20 +90,28 @@ public class FieldValue implements EncodableData {
                     return SHORT_SHORT_INT;
                 case 'B':
                     return SHORT_SHORT_UINT;
-                case 'U':
+                case 's':
                     return SHORT_INT;
                 case 'u':
                     return SHORT_UINT;
-                case 'S':
-                    return LONG_STRING;
-                case 's':
-                    return SHORT_STRING;
                 case 'I':
                     return LONG_INT;
-                case 'L':
+                case 'i':
+                    return LONG_UINT;
+                case 'l':
                     return LONG_LONG_INT;
+                case 'f':
+                    return FLOAT;
+                case 'd':
+                    return DOUBLE;
+                case 'D':
+                    return DECIMAL;
+                case 'S':
+                    return LONG_STRING;
                 case 'F':
                     return FIELD_TABLE;
+                case 'z':
+                    return SHORT_STRING;
                 default:
                     throw new Exception("Unknown field table data type. Char value: '" + value + "'");
             }
@@ -131,18 +147,32 @@ public class FieldValue implements EncodableData {
         switch (type) {
             case BOOLEAN:
                 return FieldValue.parseBoolean(io.ballerina.messaging.broker.common.data.types.Boolean.parse(buf));
-            case LONG_STRING:
-                return parseLongString(LongString.parse(buf));
-            case LONG_INT:
-                return parseLongInt(LongInt.parse(buf));
-            case LONG_LONG_INT:
-                return parseLongLongInt(LongLongInt.parse(buf));
-            case SHORT_STRING:
-                return FieldValue.parseShortString(ShortString.parse(buf));
             case SHORT_SHORT_INT:
-                return parseShortShortInt(ShortShortInt.parse(buf));
+                return FieldValue.parseShortShortInt(ShortShortInt.parse(buf));
+            case SHORT_SHORT_UINT:
+                return FieldValue.parseShortShortUint(ShortShortUint.parse(buf));
+            case SHORT_INT:
+                return FieldValue.parseShortInt(ShortInt.parse(buf));
+            case SHORT_UINT:
+                return FieldValue.parseShortUint(ShortUint.parse(buf));
+            case LONG_INT:
+                return FieldValue.parseLongInt(LongInt.parse(buf));
+            case LONG_UINT:
+                return FieldValue.parseLongUint(LongUint.parse(buf));
+            case LONG_LONG_INT:
+                return FieldValue.parseLongLongInt(LongLongInt.parse(buf));
+            case FLOAT:
+                return FieldValue.parseFloat(Float.parse(buf));
+            case DOUBLE:
+                return FieldValue.parseDouble(Double.parse(buf));
+            case DECIMAL:
+                return FieldValue.parseDecimal(Decimal.parse(buf));
+            case LONG_STRING:
+                return FieldValue.parseLongString(LongString.parse(buf));
             case FIELD_TABLE:
                 return FieldValue.parseFieldTable(FieldTable.parse(buf));
+            case SHORT_STRING:
+                return FieldValue.parseShortString(ShortString.parse(buf));
             default:
                 throw new Exception("Unsupported AMQP field value type " + type);
         }
@@ -202,6 +232,34 @@ public class FieldValue implements EncodableData {
 
     public static FieldValue parseFieldTable(FieldTable fieldTable) {
         return new FieldValue(Type.FIELD_TABLE, fieldTable);
+    }
+
+    public static FieldValue parseShortInt(ShortInt value) {
+        return new FieldValue(Type.SHORT_INT, value);
+    }
+
+    public static FieldValue parseFloat(Float value) {
+        return new FieldValue(Type.FLOAT, value);
+    }
+
+    public static FieldValue parseDouble(Double value) {
+        return new FieldValue(Type.DOUBLE, value);
+    }
+
+    public static FieldValue parseDecimal(Decimal value) {
+        return new FieldValue(Type.DECIMAL, value);
+    }
+
+    public static FieldValue parseShortShortUint(ShortShortUint value) {
+        return new FieldValue(Type.SHORT_SHORT_UINT, value);
+    }
+
+    public static FieldValue parseShortUint(ShortUint value) {
+        return new FieldValue(Type.SHORT_UINT, value);
+    }
+
+    public static FieldValue parseLongUint(LongUint value) {
+        return new FieldValue(Type.LONG_UINT, value);
     }
 
     @Override

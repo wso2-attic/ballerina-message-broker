@@ -24,20 +24,23 @@ import io.netty.buffer.Unpooled;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class LongIntTest {
+import java.math.BigDecimal;
 
-    private static final LongInt TEST_OBJECT = LongInt.parse(1);
-    private static final int DATA_VALUE = 1;
+public class DecimalTest {
+
+    private static final Decimal TEST_OBJECT = Decimal.parse(new BigDecimal(1.0d));
+
+    private static final BigDecimal DATA_VALUE = new BigDecimal(1.0d);
 
     @Test
     public void testGetSize() {
-        Assert.assertEquals(TEST_OBJECT.getSize(), 4, "Size of long-int should be 4");
+        Assert.assertEquals(TEST_OBJECT.getSize(), 5, "Size of Decimal should be 5");
     }
 
     @Test
     public void testEquals() {
-        LongInt other = LongInt.parse(3);
-        LongInt similar = LongInt.parse(DATA_VALUE);
+        Decimal other = Decimal.parse(new BigDecimal(3.0d));
+        Decimal similar = Decimal.parse(DATA_VALUE);
 
         Assert.assertTrue(TEST_OBJECT.equals(TEST_OBJECT), "equals() should return true for similar objects");
         Assert.assertTrue(TEST_OBJECT.equals(similar), "equals() should return true for similar objects");
@@ -48,18 +51,16 @@ public class LongIntTest {
 
     @Test
     public void testHashCode() {
-        LongInt similar = LongInt.parse(DATA_VALUE);
+        Decimal similar = Decimal.parse(DATA_VALUE);
         Assert.assertEquals(similar.hashCode(), TEST_OBJECT.hashCode(), "Hashcode should match for similar data");
     }
 
-
     @Test
     public void testParse() {
-        ByteBuf buf = Unpooled.buffer(4);
+        ByteBuf buf = Unpooled.buffer(8);
         TEST_OBJECT.write(buf);
 
-        LongInt parsedObject = LongInt.parse(buf);
+        Decimal parsedObject = Decimal.parse(buf);
         Assert.assertEquals(parsedObject, TEST_OBJECT, "Encoding and decoding should result in the same object");
     }
-
 }

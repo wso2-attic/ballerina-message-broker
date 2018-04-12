@@ -21,33 +21,54 @@ package io.ballerina.messaging.broker.common.data.types;
 
 import io.netty.buffer.ByteBuf;
 
-/**
- * AMQP long-int.
- */
-public class LongInt implements EncodableData {
-    private final int value;
+import java.math.BigDecimal;
+import java.util.Objects;
 
-    private LongInt(int value) {
+/**
+ * AMQP decimal.
+ *
+ * decimal-value = scale long-uint
+ * scale = OCTET ; number of decimal digits
+ */
+public class Decimal implements EncodableData {
+
+    private final BigDecimal value;
+
+    private Decimal(BigDecimal value) {
         this.value = value;
     }
 
     @Override
     public long getSize() {
-        return 4L;
+        return 1L + 4L;
     }
 
     @Override
     public void write(ByteBuf buf) {
-        buf.writeInt(value);
+        byte places = (byte) value.scale();
+        int unscaled = value.intValue();
+        buf.writeByte(places);
+        buf.writeInt(unscaled);
     }
 
-    public int getInt() {
+    public static Decimal parse(BigDecimal value) {
+        return new Decimal(value);
+    }
+
+    public static Decimal parse(ByteBuf buf) {
+        byte places = buf.readByte();
+        int unscaled = buf.readInt();
+        BigDecimal decimal = new BigDecimal(unscaled).setScale(places);
+        return new Decimal(decimal);
+    }
+
+    public BigDecimal getDecimal() {
         return value;
     }
 
     @Override
     public int hashCode() {
-        return value;
+        return Objects.hashCode(value);
     }
 
     @Override
@@ -55,15 +76,7 @@ public class LongInt implements EncodableData {
         if (this == obj) {
             return true;
         }
-        return (obj instanceof LongInt) && (value == ((LongInt) obj).value);
-    }
-
-    public static LongInt parse(ByteBuf buf) {
-        return new LongInt(buf.readInt());
-    }
-
-    public static LongInt parse(int value) {
-        return new LongInt(value);
+        return (obj instanceof Decimal) && (value.equals(((Decimal) obj).value));
     }
 
     @Override

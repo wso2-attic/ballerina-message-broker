@@ -21,33 +21,44 @@ package io.ballerina.messaging.broker.common.data.types;
 
 import io.netty.buffer.ByteBuf;
 
-/**
- * AMQP long-int.
- */
-public class LongInt implements EncodableData {
-    private final int value;
+import java.util.Objects;
 
-    private LongInt(int value) {
+/**
+ * AMQP double.
+ */
+public class Double implements EncodableData {
+
+    private final double value;
+
+    private Double(double value) {
         this.value = value;
     }
 
     @Override
     public long getSize() {
-        return 4L;
+        return 8L;
     }
 
     @Override
     public void write(ByteBuf buf) {
-        buf.writeInt(value);
+        buf.writeDouble(value);
     }
 
-    public int getInt() {
+    public static Double parse(double value) {
+        return new Double(value);
+    }
+
+    public static Double parse(ByteBuf buf) {
+        return new Double(buf.readDouble());
+    }
+
+    public double getDouble() {
         return value;
     }
 
     @Override
     public int hashCode() {
-        return value;
+        return Objects.hashCode(value);
     }
 
     @Override
@@ -55,15 +66,7 @@ public class LongInt implements EncodableData {
         if (this == obj) {
             return true;
         }
-        return (obj instanceof LongInt) && (value == ((LongInt) obj).value);
-    }
-
-    public static LongInt parse(ByteBuf buf) {
-        return new LongInt(buf.readInt());
-    }
-
-    public static LongInt parse(int value) {
-        return new LongInt(value);
+        return (obj instanceof Double) && (value == ((Double) obj).value);
     }
 
     @Override
