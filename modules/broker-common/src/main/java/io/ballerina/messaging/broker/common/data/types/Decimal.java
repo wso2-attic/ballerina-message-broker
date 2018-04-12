@@ -45,7 +45,7 @@ public class Decimal implements EncodableData {
 
     @Override
     public void write(ByteBuf buf) {
-        byte places = Integer.valueOf(value.scale()).byteValue();
+        byte places = (byte) value.scale();
         int unscaled = value.intValue();
         buf.writeByte(places);
         buf.writeInt(unscaled);
