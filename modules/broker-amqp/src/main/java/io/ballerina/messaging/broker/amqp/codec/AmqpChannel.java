@@ -247,7 +247,7 @@ public class AmqpChannel {
             MessageTracer.trace(description, traceChannelIdField, new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag));
         }
         if (ackData != null) {
-            transaction.dequeue(ackData.getQueueName(), ackData.getMessage().shallowCopy());
+            transaction.dequeue(ackData.getQueueName(), ackData.getMessage().getDetachableMessage());
             if (!transaction.inTransactionBlock()) {
                 unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
                 ackData.getMessage().release();
@@ -331,8 +331,7 @@ public class AmqpChannel {
             try {
                 broker.requeue(queueName, message);
             } catch (ResourceNotFoundException e) {
-                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found",
-                            e);
+                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found", e);
             }
         }
     }

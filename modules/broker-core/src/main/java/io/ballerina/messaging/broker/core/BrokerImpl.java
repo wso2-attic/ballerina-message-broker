@@ -257,7 +257,7 @@ public final class BrokerImpl implements Broker {
         // Unique queues can be empty due to un-matching selectors.
         if (uniqueQueueHandlers.isEmpty()) {
             LOGGER.info("Dropping message since message didn't have any routes to {}",
-                    message.getMetadata().getRoutingKey());
+                        message.getMetadata().getRoutingKey());
             MessageTracer.trace(message, MessageTracer.NO_ROUTES);
             return;
         }
@@ -269,11 +269,11 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public void acknowledge(String queueName, Message message) throws BrokerException {
+    public void acknowledge(String queueName, DetachableMessage detachableMessage) throws BrokerException {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
-            queueHandler.dequeue(message);
+            queueHandler.dequeue(detachableMessage);
             metricManager.markAcknowledge();
         } finally {
             lock.readLock().unlock();
@@ -309,11 +309,11 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public QueueHandler dequeue(Xid xid, String queueName, Message message) throws BrokerException {
+    public QueueHandler dequeue(Xid xid, String queueName, DetachableMessage detachableMessage) throws BrokerException {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
-            queueHandler.prepareForDetach(xid, message);
+            queueHandler.prepareForDetach(xid, detachableMessage);
             return queueHandler;
         } finally {
             lock.readLock().unlock();
@@ -577,7 +577,7 @@ public final class BrokerImpl implements Broker {
             dlcMessage.getMetadata().addHeader(ORIGIN_ROUTING_KEY_HEADER, message.getMetadata().getRoutingKey());
 
             publish(dlcMessage);
-            acknowledge(queueName, message.shallowCopy());
+            acknowledge(queueName, message.getDetachableMessage());
         } finally {
             message.release();
         }

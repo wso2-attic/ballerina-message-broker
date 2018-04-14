@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.MessageStore;
 
@@ -78,8 +79,8 @@ public class BranchFactory {
         }
 
         @Override
-        public void dequeue(String queueName, Message message) throws BrokerException {
-            broker.acknowledge(queueName, message);
+        public void dequeue(String queueName, DetachableMessage detachableMessage) throws BrokerException {
+            broker.acknowledge(queueName, detachableMessage);
         }
     }
 }

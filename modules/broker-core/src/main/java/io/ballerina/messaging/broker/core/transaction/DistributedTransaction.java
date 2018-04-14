@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 
 import java.util.Objects;
@@ -53,9 +54,9 @@ public class DistributedTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void dequeue(String queue, Message message) {
+    public void dequeue(String queue, DetachableMessage detachableMessage) {
         try {
-            enqueueDequeueStrategy.dequeue(queue, message);
+            enqueueDequeueStrategy.dequeue(queue, detachableMessage);
         } catch (BrokerException e) {
             preConditionFailed = true;
             errorMessageBuilder.append(e.getMessage()).append('\n');

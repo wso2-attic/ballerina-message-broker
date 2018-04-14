@@ -48,6 +48,8 @@ public class Message {
 
     private final Set<String> queueSet;
 
+    private final DetachableMessage detachableMessage;
+
     /**
      * Unique id of the message.
      */
@@ -62,6 +64,7 @@ public class Message {
         this.metadata = metadata;
         this.contentChunks = new ArrayList<>();
         this.queueSet = queueSet;
+        detachableMessage = new DetachableMessage(internalId, queueSet);
     }
 
     public Metadata getMetadata() {
@@ -159,6 +162,10 @@ public class Message {
      */
     public boolean isRedelivered() {
         return redelivered;
+    }
+
+    public DetachableMessage getDetachableMessage() {
+        return detachableMessage;
     }
 
     @Override

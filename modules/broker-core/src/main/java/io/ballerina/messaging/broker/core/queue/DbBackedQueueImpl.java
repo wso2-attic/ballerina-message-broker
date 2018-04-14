@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.queue;
 
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Queue;
 import io.ballerina.messaging.broker.core.store.DbMessageStore;
@@ -50,7 +51,7 @@ public class DbBackedQueueImpl extends Queue {
 
     private final Map<Xid, List<Message>> pendingEnqueueMessages;
 
-    private final Map<Xid, List<Message>> pendingDequeueMessages;
+    private final Map<Xid, List<DetachableMessage>> pendingDequeueMessages;
 
     public DbBackedQueueImpl(String queueName, boolean autoDelete,
                              DbMessageStore dbMessageStore, QueueBufferFactory queueBufferFactory)
@@ -103,10 +104,9 @@ public class DbBackedQueueImpl extends Queue {
     @Override
     public void commit(Xid xid) {
 
-        List<Message> dequeueMessages = pendingDequeueMessages.get(xid);
+        List<DetachableMessage> dequeueMessages = pendingDequeueMessages.get(xid);
         if (Objects.nonNull(dequeueMessages)) {
             buffer.removeAll(dequeueMessages);
-            dequeueMessages.forEach(Message::release);
         }
 
         List<Message> messages = pendingEnqueueMessages.get(xid);
@@ -130,21 +130,21 @@ public class DbBackedQueueImpl extends Queue {
     }
 
     @Override
-    public void detach(Message message) {
+    public void detach(DetachableMessage message) {
         dbMessageStore.detach(getName(), message);
         buffer.remove(message.getInternalId());
     }
 
     @Override
-    public void prepareDetach(Xid xid, Message message) throws BrokerException {
-        dbMessageStore.detach(xid, getName(), message.shallowCopy());
-        List<Message> dequeueMessages = pendingDequeueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
-        dequeueMessages.add(message);
+    public void prepareDetach(Xid xid, DetachableMessage detachableMessage) throws BrokerException {
+        dbMessageStore.detach(xid, getName(), detachableMessage);
+        List<DetachableMessage> dequeueMessages = pendingDequeueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
+        dequeueMessages.add(detachableMessage);
     }
 
     @Override
     public int clear() {
         String queueName = getName();
-        return buffer.clear(message -> dbMessageStore.detach(queueName, message));
+        return buffer.clear(message -> dbMessageStore.detach(queueName, message.getDetachableMessage()));
     }
 }

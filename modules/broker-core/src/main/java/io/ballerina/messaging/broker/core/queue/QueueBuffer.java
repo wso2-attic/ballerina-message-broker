@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core.queue;
 
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 
 import java.util.ArrayList;
@@ -189,8 +190,8 @@ public class QueueBuffer {
         }
     }
 
-    public synchronized void removeAll(Collection<Message> messages) {
-        for (Message message : messages) {
+    public synchronized void removeAll(Collection<DetachableMessage> messages) {
+        for (DetachableMessage message : messages) {
             remove(message.getInternalId());
         }
     }

@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 
 import java.util.concurrent.TimeUnit;
@@ -51,11 +52,10 @@ public interface BrokerTransaction {
     }
     /**
      * Dequeue a message from queue.
-     *
      * @param queue Acknowledgment received queue name
-     * @param message An acknowledgement message
+     * @param detachableMessage An acknowledgement message
      */
-    void dequeue(String queue, Message message) throws BrokerException;
+    void dequeue(String queue, DetachableMessage detachableMessage) throws BrokerException;
     /**
      * Enqueue a message to a queue.
      *

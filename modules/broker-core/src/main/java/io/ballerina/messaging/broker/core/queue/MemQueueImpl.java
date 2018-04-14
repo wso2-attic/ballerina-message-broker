@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core.queue;
 
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Queue;
 
@@ -105,13 +106,13 @@ public class MemQueueImpl extends Queue {
     }
 
     @Override
-    public void detach(Message message) {
-        message.release();
+    public void detach(DetachableMessage detachableMessage) {
+        // Nothing to do.
     }
 
     @Override
-    public void prepareDetach(Xid xid, Message message) {
-        detach(message);
+    public void prepareDetach(Xid xid, DetachableMessage detachableMessage) {
+        // Nothing to do.
     }
 
     @Override
