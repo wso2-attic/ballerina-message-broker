@@ -33,6 +33,11 @@ public class DbOperation {
     private static final Factory factory = new Factory();
 
     /**
+     * This field will be not null when an exception is thrown from a handler.
+     */
+    private Throwable exceptionObject;
+
+    /**
      * Database operation types related to messages.
      */
     public enum DbOpType {
@@ -42,7 +47,6 @@ public class DbOperation {
         READ_MSG_DATA,
         NO_OP;
     }
-
     /**
      * Denotes the current state in terms of processing the event.
      */
@@ -60,6 +64,7 @@ public class DbOperation {
     private static final int PROCESSING = 1;
 
     private static final int PROCESSED = 2;
+
     /**
      * Event is processed by either {@link DbEventMatcher} or {@link DbAccessHandler}.
      */
@@ -117,6 +122,14 @@ public class DbOperation {
         this.queueBuffer = queueBuffer;
     }
 
+    public void setExceptionObject(Throwable throwable) {
+        exceptionObject = throwable;
+    }
+
+    public Throwable getExceptionObject() {
+        return exceptionObject;
+    }
+
     /**
      * Getter for bareMessage.
      */
@@ -156,6 +169,7 @@ public class DbOperation {
         queueBuffer = null;
         messageId = -1;
         queueName = null;
+        exceptionObject = null;
         type = DbOpType.NO_OP;
         state.set(AVAILABLE);
     }

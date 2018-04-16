@@ -20,8 +20,11 @@
 package io.ballerina.messaging.broker.core.store;
 
 import com.lmax.disruptor.EventHandler;
+import io.ballerina.messaging.broker.core.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
  * This class initiates database operations through disruptor.
@@ -32,6 +35,12 @@ public class FinalEventHandler implements EventHandler<DbOperation> {
 
     @Override
     public void onEvent(DbOperation event, long sequence, boolean endOfBatch) {
+        Throwable exceptionObject = event.getExceptionObject();
+        if (Objects.nonNull(exceptionObject)) {
+            handleError(event, sequence, exceptionObject);
+            return;
+        }
+
         try {
             switch (event.getType()) {
                 case READ_MSG_DATA:
@@ -49,6 +58,26 @@ public class FinalEventHandler implements EventHandler<DbOperation> {
             }
         } finally {
             event.clear();
+        }
+    }
+
+    private void handleError(DbOperation event, long sequence, Throwable exceptionObject) {
+        switch (event.getType()) {
+            case READ_MSG_DATA:
+                Message message = event.getBareMessage();
+
+                event.getQueueBuffer().markMessageFillFailed(message);
+                LOGGER.warn("Message read failed for message " + message.getInternalId());
+                break;
+            case INSERT_MESSAGE:
+            case DELETE_MESSAGE:
+            case DETACH_MSG_FROM_QUEUE:
+            case NO_OP:
+                break;
+            default:
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.error("Unknown event type " + event.getType());
+                }
         }
     }
 

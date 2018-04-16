@@ -323,6 +323,13 @@ public class QueueBuffer {
         }
     }
 
+    public void markMessageFillFailed(Message message) {
+        Node node = keyMap.get(message.getInternalId());
+        if (Objects.nonNull(node)) {
+            node.state.set(Node.BARE_MESSAGE);
+        }
+    }
+
     public synchronized void addAll(List<Message> messages) {
         for (Message message: messages) {
             add(message);

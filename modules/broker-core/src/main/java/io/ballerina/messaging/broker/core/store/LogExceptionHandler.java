@@ -32,6 +32,7 @@ public class LogExceptionHandler implements ExceptionHandler<DbOperation> {
 
     @Override
     public void handleEventException(Throwable throwable, long sequence, DbOperation event) {
+        event.setExceptionObject(throwable);
         LOGGER.error("Error occurred while processing event for sequence " + sequence
                 + " db operation " + event, throwable);
     }

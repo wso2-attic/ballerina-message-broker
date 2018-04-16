@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.store;
 
 import com.lmax.disruptor.EventHandler;
+import io.ballerina.messaging.broker.common.DaoException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.dao.MessageDao;
 import org.slf4j.Logger;
@@ -42,14 +43,14 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
 
     private final int maxBatchSize;
 
-    private final Map<Long, List<Message>> readList;
 
     private final TransactionData transactionData;
+
+    private List<DbOperation> readEvents = new ArrayList<>();
 
     public DbAccessHandler(MessageDao messageDao, int maxBatchSize) {
         this.messageDao = messageDao;
         this.maxBatchSize = maxBatchSize;
-        readList = new HashMap<>(maxBatchSize);
         transactionData = new TransactionData();
     }
 
@@ -76,9 +77,7 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
                 transactionData.detach(event.getQueueName(), event.getMessageId());
                 break;
             case READ_MSG_DATA:
-                List<Message> messages = readList.computeIfAbsent(event.getBareMessage().getInternalId(),
-                        messageId -> new ArrayList<>());
-                messages.add(event.getBareMessage());
+                readEvents.add(event);
                 break;
             case NO_OP:
                 break;
@@ -93,10 +92,25 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
             transactionData.clear();
         }
 
-        if (isBatchReady(endOfBatch, readList.values())) {
-            messageDao.read(readList);
-            readList.clear();
+        if (isBatchReady(endOfBatch, readEvents)) {
+            try {
+                messageDao.read(getUniqueMessageList());
+            } catch (DaoException e) {
+                readEvents.forEach(eventObject -> eventObject.setExceptionObject(e));
+            } finally {
+                readEvents.clear();
+            }
         }
+    }
+
+    private Map<Long, List<Message>> getUniqueMessageList() {
+        Map<Long, List<Message>> readList = new HashMap<>(maxBatchSize);
+
+        readEvents.forEach(action -> readList.computeIfAbsent(action.getBareMessage().getInternalId(),
+                                                              messageId -> new ArrayList<>())
+                                             .add(action.getBareMessage()));
+
+        return readList;
     }
 
     private boolean isBatchReady(boolean endOfBatch, Collection collection) {
