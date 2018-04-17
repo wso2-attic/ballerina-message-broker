@@ -43,15 +43,18 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
 
     private final int maxBatchSize;
 
-
     private final TransactionData transactionData;
 
-    private List<DbOperation> readEvents = new ArrayList<>();
+    private final List<DbOperation> transactionEvents;
+
+    private final List<DbOperation> readEvents;
 
     public DbAccessHandler(MessageDao messageDao, int maxBatchSize) {
         this.messageDao = messageDao;
         this.maxBatchSize = maxBatchSize;
         transactionData = new TransactionData();
+        readEvents = new ArrayList<>(maxBatchSize);
+        transactionEvents = new ArrayList<>(maxBatchSize);
     }
 
     @Override
@@ -68,13 +71,9 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
 
         switch (event.getType()) {
             case INSERT_MESSAGE:
-                transactionData.addEnqueueMessage(event.getMessage());
-                break;
             case DELETE_MESSAGE:
-                transactionData.addDeletableMessage(event.getMessageId());
-                break;
             case DETACH_MSG_FROM_QUEUE:
-                transactionData.detach(event.getQueueName(), event.getMessageId());
+                transactionEvents.add(event);
                 break;
             case READ_MSG_DATA:
                 readEvents.add(event);
@@ -87,11 +86,41 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
                 }
         }
 
-        if (isBatchReady(endOfBatch, transactionData)) {
-            messageDao.persist(transactionData);
-            transactionData.clear();
-        }
+        processTransactions(endOfBatch);
+        processMessageReads(endOfBatch);
+    }
 
+    private void processTransactions(boolean endOfBatch) {
+        if (isBatchReady(endOfBatch, transactionEvents)) {
+            try {
+                clusterTransactionEvents();
+                messageDao.persist(transactionData);
+            } catch (DaoException e) {
+                transactionEvents.forEach(eventObject -> eventObject.setExceptionObject(e));
+            } finally {
+                transactionData.clear();
+                transactionEvents.clear();
+            }
+        }
+    }
+
+    private void clusterTransactionEvents() {
+        transactionEvents.forEach(txEvent -> {
+            switch (txEvent.getType()) {
+                case INSERT_MESSAGE:
+                    transactionData.addEnqueueMessage(txEvent.getMessage());
+                    break;
+                case DELETE_MESSAGE:
+                    transactionData.addDeletableMessage(txEvent.getMessageId());
+                    break;
+                case DETACH_MSG_FROM_QUEUE:
+                    transactionData.detach(txEvent.getQueueName(), txEvent.getMessageId());
+                    break;
+            }
+        });
+    }
+
+    private void processMessageReads(boolean endOfBatch) {
         if (isBatchReady(endOfBatch, readEvents)) {
             try {
                 messageDao.read(getUniqueMessageList());
@@ -113,11 +142,11 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
         return readList;
     }
 
-    private boolean isBatchReady(boolean endOfBatch, Collection collection) {
-        return !collection.isEmpty() && (collection.size() >= maxBatchSize || endOfBatch);
+    private boolean isBatchComplete(int collectionSize, boolean endOfBatch) {
+        return collectionSize >= maxBatchSize || endOfBatch;
     }
 
-    private boolean isBatchReady(boolean endOfBatch, TransactionData transactionData) {
-        return !transactionData.isEmpty() && (transactionData.size() >= maxBatchSize || endOfBatch);
+    private boolean isBatchReady(boolean endOfBatch, Collection collection) {
+        return !collection.isEmpty() && isBatchComplete(collection.size(), endOfBatch);
     }
 }

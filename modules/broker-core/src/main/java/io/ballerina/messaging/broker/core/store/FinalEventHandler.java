@@ -72,6 +72,11 @@ public class FinalEventHandler implements EventHandler<DbOperation> {
             case INSERT_MESSAGE:
             case DELETE_MESSAGE:
             case DETACH_MSG_FROM_QUEUE:
+                LOGGER.error("Error occurred while processing DB write event for sequence {} db operation {}",
+                             sequence,
+                             event,
+                             exceptionObject);
+                break;
             case NO_OP:
                 break;
             default:
