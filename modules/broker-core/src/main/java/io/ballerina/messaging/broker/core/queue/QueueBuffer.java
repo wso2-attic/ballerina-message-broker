@@ -124,6 +124,16 @@ public class QueueBuffer {
     }
 
     /**
+     * Add a message whose content is never deleted irrespective of the queue size.
+     *
+     * @param message message
+     */
+    public synchronized void addIndelibleMessage(Message message) {
+        linkLast(message);
+        postProcessIndelibleMessage();
+    }
+
+    /**
      * Links newMessage as last element.
      */
     private void linkLast(Message newMessage) {
@@ -177,6 +187,19 @@ public class QueueBuffer {
         }
     }
 
+    private void postProcessIndelibleMessage() {
+        Node newNode = last;
+        newNode.state.set(Node.INDELIBLE_MESSAGE);
+
+        if (Objects.isNull(firstUndeliverable)) {
+            firstUndeliverable = newNode;
+        }
+
+        if (Objects.isNull(firstDeliverableCandidate)) {
+            firstDeliverableCandidate = newNode;
+        }
+    }
+
     /**
      * Remove a message from the buffer.
      *
@@ -219,7 +242,10 @@ public class QueueBuffer {
 
         node.item = null;
         size.decrementAndGet();
-        deliverableMessageCount.decrementAndGet();
+        if (node.state.get() != Node.INDELIBLE_MESSAGE) {
+            deliverableMessageCount.decrementAndGet();
+        }
+
         messagesInFlight.decrementAndGet();
         submitMessageReads();
     }
@@ -263,7 +289,7 @@ public class QueueBuffer {
 
         if (deliverableCandidate != firstUndeliverable) {
 
-            if (deliverableCandidate.state.get() != Node.FULL_MESSAGE) {
+            if (!deliverableCandidate.hasContent()) {
                 return null;
             }
 
@@ -271,7 +297,7 @@ public class QueueBuffer {
 
             recordRemovingMessageForDelivery();
             return deliverableCandidate.item;
-        } else if (firstUndeliverable != null && firstUndeliverable.state.get() == Node.FULL_MESSAGE) {
+        } else if (firstUndeliverable != null && firstUndeliverable.hasContent()) {
             Node newDeliverable = firstUndeliverable;
             firstDeliverableCandidate = firstUndeliverable.next;
             pushFirstUndeliverableCursor();
@@ -294,7 +320,7 @@ public class QueueBuffer {
     private void pushFirstUndeliverableCursor() {
         firstUndeliverable = firstUndeliverable.next;
 
-        while (firstUndeliverable != null && firstUndeliverable.state.get() == Node.FULL_MESSAGE) {
+        while (firstUndeliverable != null && firstUndeliverable.hasContent()) {
             firstUndeliverable = firstUndeliverable.next;
         }
     }
@@ -350,6 +376,7 @@ public class QueueBuffer {
         private static final int BARE_MESSAGE = 0;
         private static final int SUBMITTED_FOR_FILLING = 1;
         private static final int FULL_MESSAGE = 2;
+        private static final int INDELIBLE_MESSAGE = 3;
         private Message item;
         private Node next;
         private Node prev;
@@ -359,6 +386,11 @@ public class QueueBuffer {
             this.item = element;
             this.next = next;
             this.prev = prev;
+        }
+
+        public boolean hasContent() {
+            int stateValue = state.get();
+            return stateValue == FULL_MESSAGE || stateValue == INDELIBLE_MESSAGE;
         }
     }
 
