@@ -145,6 +145,9 @@ public class DbBackedQueueImpl extends Queue {
     @Override
     public int clear() {
         String queueName = getName();
-        return buffer.clear(message -> dbMessageStore.detach(queueName, message.getDetachableMessage()));
+        return buffer.clear(message -> {
+            dbMessageStore.detach(queueName, message.getDetachableMessage());
+            message.release();
+        });
     }
 }

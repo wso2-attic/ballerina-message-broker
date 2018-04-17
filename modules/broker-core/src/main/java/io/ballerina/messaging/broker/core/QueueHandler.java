@@ -256,12 +256,13 @@ public final class QueueHandler {
         bindingChangeListenersMap.put(binding, bindingChangeListener);
     }
 
-    public void releaseResources() throws BrokerException {
+    public int releaseResources() throws BrokerException {
         closeAllConsumers();
         for (Map.Entry<Binding, ThrowingConsumer<Binding, BrokerException>> entry
                 : bindingChangeListenersMap.entrySet()) {
             entry.getValue().accept(entry.getKey());
         }
+        return redeliveryQueue.clear() + queue.clear();
     }
 
     public void removeBinding(Binding binding) {

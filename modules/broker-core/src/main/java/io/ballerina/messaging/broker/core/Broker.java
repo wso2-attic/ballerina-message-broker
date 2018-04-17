@@ -89,8 +89,9 @@ public interface Broker {
      * Delete consumer
      *
      * @param consumer consumer to delete
+     * @return True if the undelying queue is deleted, false otherwise.
      */
-    void removeConsumer(Consumer consumer);
+    boolean removeConsumer(Consumer consumer);
 
     /**
      * Create exchange if not exist

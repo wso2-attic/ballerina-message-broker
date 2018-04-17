@@ -104,8 +104,8 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public void removeConsumer(Consumer consumer) {
-        broker.removeConsumer(consumer);
+    public boolean removeConsumer(Consumer consumer) {
+        return broker.removeConsumer(consumer);
     }
 
     @Override

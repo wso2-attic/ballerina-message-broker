@@ -345,7 +345,7 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public void removeConsumer(Consumer consumer) {
+    public boolean removeConsumer(Consumer consumer) {
         lock.readLock().lock();
         boolean queueDeletable = false;
         QueueHandler queueHandler;
@@ -375,6 +375,7 @@ public final class BrokerImpl implements Broker {
                 LOGGER.warn("Exception while auto deleting the queue " + queueHandler.getQueue(), e);
             }
         }
+        return queueDeletable;
     }
 
     @Override
@@ -531,6 +532,7 @@ public final class BrokerImpl implements Broker {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
 
             if (Objects.isNull(queueHandler)) {
+                message.release();
                 throw new ResourceNotFoundException("Queue [ " + queueName + " ] Not found");
             }
             queueHandler.requeue(message);

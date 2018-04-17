@@ -118,6 +118,7 @@ public class MemQueueImpl extends Queue {
     @Override
     public int clear() {
         int queueSize = queue.size();
+        queue.forEach(Message::release);
         queue.clear();
         return queueSize;
     }
