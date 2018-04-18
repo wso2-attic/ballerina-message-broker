@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.store;
 
 import com.lmax.disruptor.EventHandler;
+import io.ballerina.messaging.broker.common.DaoException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.store.dao.MessageDao;
 import org.slf4j.Logger;
@@ -42,15 +43,18 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
 
     private final int maxBatchSize;
 
-    private final Map<Long, List<Message>> readList;
-
     private final TransactionData transactionData;
+
+    private final List<DbOperation> transactionEvents;
+
+    private final List<DbOperation> readEvents;
 
     public DbAccessHandler(MessageDao messageDao, int maxBatchSize) {
         this.messageDao = messageDao;
         this.maxBatchSize = maxBatchSize;
-        readList = new HashMap<>(maxBatchSize);
         transactionData = new TransactionData();
+        readEvents = new ArrayList<>(maxBatchSize);
+        transactionEvents = new ArrayList<>(maxBatchSize);
     }
 
     @Override
@@ -67,18 +71,12 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
 
         switch (event.getType()) {
             case INSERT_MESSAGE:
-                transactionData.addEnqueueMessage(event.getMessage());
-                break;
             case DELETE_MESSAGE:
-                transactionData.addDeletableMessage(event.getMessageId());
-                break;
             case DETACH_MSG_FROM_QUEUE:
-                transactionData.detach(event.getQueueName(), event.getMessageId());
+                transactionEvents.add(event);
                 break;
             case READ_MSG_DATA:
-                List<Message> messages = readList.computeIfAbsent(event.getBareMessage().getInternalId(),
-                        messageId -> new ArrayList<>());
-                messages.add(event.getBareMessage());
+                readEvents.add(event);
                 break;
             case NO_OP:
                 break;
@@ -88,22 +86,69 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
                 }
         }
 
-        if (isBatchReady(endOfBatch, transactionData)) {
-            messageDao.persist(transactionData);
-            transactionData.clear();
-        }
+        processTransactions(endOfBatch);
+        processMessageReads(endOfBatch);
+    }
 
-        if (isBatchReady(endOfBatch, readList.values())) {
-            messageDao.read(readList);
-            readList.clear();
+    private void processTransactions(boolean endOfBatch) {
+        if (isBatchReady(endOfBatch, transactionEvents)) {
+            try {
+                clusterTransactionEvents();
+                messageDao.persist(transactionData);
+            } catch (DaoException e) {
+                transactionEvents.forEach(eventObject -> eventObject.setExceptionObject(e));
+            } finally {
+                transactionData.clear();
+                transactionEvents.clear();
+            }
         }
+    }
+
+    private void clusterTransactionEvents() {
+        transactionEvents.forEach(txEvent -> {
+            switch (txEvent.getType()) {
+                case INSERT_MESSAGE:
+                    transactionData.addEnqueueMessage(txEvent.getMessage());
+                    break;
+                case DELETE_MESSAGE:
+                    transactionData.addDeletableMessage(txEvent.getMessageId());
+                    break;
+                case DETACH_MSG_FROM_QUEUE:
+                    transactionData.detach(txEvent.getQueueName(), txEvent.getMessageId());
+                    break;
+                default:
+                    LOGGER.error("Invalid transaction event collected {}", txEvent.getType());
+            }
+        });
+    }
+
+    private void processMessageReads(boolean endOfBatch) {
+        if (isBatchReady(endOfBatch, readEvents)) {
+            try {
+                messageDao.read(getUniqueMessageList());
+            } catch (DaoException e) {
+                readEvents.forEach(eventObject -> eventObject.setExceptionObject(e));
+            } finally {
+                readEvents.clear();
+            }
+        }
+    }
+
+    private Map<Long, List<Message>> getUniqueMessageList() {
+        Map<Long, List<Message>> readList = new HashMap<>(maxBatchSize);
+
+        readEvents.forEach(action -> readList.computeIfAbsent(action.getBareMessage().getInternalId(),
+                                                              messageId -> new ArrayList<>())
+                                             .add(action.getBareMessage()));
+
+        return readList;
+    }
+
+    private boolean isBatchComplete(int collectionSize, boolean endOfBatch) {
+        return collectionSize >= maxBatchSize || endOfBatch;
     }
 
     private boolean isBatchReady(boolean endOfBatch, Collection collection) {
-        return !collection.isEmpty() && (collection.size() >= maxBatchSize || endOfBatch);
-    }
-
-    private boolean isBatchReady(boolean endOfBatch, TransactionData transactionData) {
-        return !transactionData.isEmpty() && (transactionData.size() >= maxBatchSize || endOfBatch);
+        return !collection.isEmpty() && isBatchComplete(collection.size(), endOfBatch);
     }
 }

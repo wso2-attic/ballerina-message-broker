@@ -26,14 +26,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Disruptor exception handler.
  */
-public class LogExceptionHandler implements ExceptionHandler<DbOperation> {
+public class DbStoreExceptionHandler implements ExceptionHandler<DbOperation> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LogExceptionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbStoreExceptionHandler.class);
 
     @Override
     public void handleEventException(Throwable throwable, long sequence, DbOperation event) {
-        LOGGER.error("Error occurred while processing event for sequence " + sequence
-                + " db operation " + event, throwable);
+        event.setExceptionObject(throwable);
     }
 
     @Override

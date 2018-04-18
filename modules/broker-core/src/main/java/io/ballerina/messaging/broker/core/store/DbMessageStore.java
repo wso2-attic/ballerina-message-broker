@@ -70,7 +70,7 @@ public class DbMessageStore extends MessageStore {
                                     bufferSize, namedThreadFactory, ProducerType.MULTI, new
                                             SleepingBlockingWaitStrategy());
 
-        disruptor.setDefaultExceptionHandler(new LogExceptionHandler());
+        disruptor.setDefaultExceptionHandler(new DbStoreExceptionHandler());
 
         disruptor.handleEventsWith(new DbEventMatcher(bufferSize))
                  .then(new DbAccessHandler(messageDao, maxDbBatchSize))
