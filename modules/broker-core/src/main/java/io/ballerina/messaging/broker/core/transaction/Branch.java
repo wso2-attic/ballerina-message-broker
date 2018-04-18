@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.core.transaction;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.QueueHandler;
 import io.ballerina.messaging.broker.core.store.MessageStore;
@@ -140,8 +141,8 @@ public class Branch implements EnqueueDequeueStrategy {
     }
 
     @Override
-    public void dequeue(String queueName, Message message) throws BrokerException {
-        QueueHandler queueHandler = broker.dequeue(xid, queueName, message);
+    public void dequeue(String queueName, DetachableMessage detachableMessage) throws BrokerException {
+        QueueHandler queueHandler = broker.dequeue(xid, queueName, detachableMessage);
         affectedQueueHandlers.add(queueHandler);
     }
 

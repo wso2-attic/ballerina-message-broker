@@ -51,10 +51,10 @@ public interface Broker {
      * Acknowledge single or a given set of messages. Removes the message from underlying queue.
      *
      * @param queueName name of the queue the relevant messages belongs to
-     * @param message   delivery tag of the message sent by the broker
+     * @param detachableMessage   detachable message
      * @throws BrokerException if an internal error occurred
      */
-    void acknowledge(String queueName, Message message) throws BrokerException;
+    void acknowledge(String queueName, DetachableMessage detachableMessage) throws BrokerException;
 
     /**
      * Preparing transaction to enqueue messages.
@@ -71,11 +71,11 @@ public interface Broker {
      *
      * @param xid       id of the distributed transaction
      * @param queueName name of the queue the  relevant message belongs to
-     * @param message   name of the queue the  relevant message belongs to
+     * @param detachableMessage   name of the queue the  relevant message belongs to
      * @return subscription of the queue
      * @throws BrokerException if  an internal error occurred
      */
-    QueueHandler dequeue(Xid xid, String queueName, Message message) throws BrokerException;
+    QueueHandler dequeue(Xid xid, String queueName, DetachableMessage detachableMessage) throws BrokerException;
 
     /**
      * Adds a consumer for a queue. Queue will be the queue returned from {@link Consumer#getQueueName()}
@@ -89,8 +89,9 @@ public interface Broker {
      * Delete consumer
      *
      * @param consumer consumer to delete
+     * @return True if the undelying queue is deleted, false otherwise.
      */
-    void removeConsumer(Consumer consumer);
+    boolean removeConsumer(Consumer consumer);
 
     /**
      * Create exchange if not exist

@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.util;
 
 import io.ballerina.messaging.broker.core.Consumer;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
 import io.ballerina.messaging.broker.core.QueueHandler;
@@ -145,6 +146,29 @@ public final class MessageTracer {
             traceBuilder.xid(xid);
             LOGGER.trace(traceBuilder.buildTrace(description));
         }
+    }
+
+    public static void trace(DetachableMessage detachableMessage, QueueHandler queueHandler, String description) {
+        if (LOGGER.isTraceEnabled() && Objects.nonNull(queueHandler)) {
+            TraceBuilder traceBuilder = getTraceBuilder(detachableMessage, queueHandler);
+            LOGGER.trace(traceBuilder.buildTrace(description));
+        }
+    }
+
+    public static void trace(DetachableMessage detachableMessage, Xid xid,
+                             QueueHandler queueHandler, String description) {
+        if (LOGGER.isTraceEnabled() && Objects.nonNull(queueHandler)) {
+            TraceBuilder traceBuilder = getTraceBuilder(detachableMessage, queueHandler);
+            traceBuilder.xid(xid);
+            LOGGER.trace(traceBuilder.buildTrace(description));
+        }
+    }
+
+    private static TraceBuilder getTraceBuilder(DetachableMessage detachableMessage, QueueHandler queueHandler) {
+        TraceBuilder traceBuilder = new TraceBuilder();
+        traceBuilder.internalId(detachableMessage.getInternalId())
+                    .queueName(queueHandler.getQueue().getName());
+        return traceBuilder;
     }
 
     private static TraceBuilder getTraceBuilder(Message message, QueueHandler queueHandler) {

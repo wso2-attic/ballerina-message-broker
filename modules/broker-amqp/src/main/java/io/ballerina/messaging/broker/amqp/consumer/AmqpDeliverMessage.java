@@ -69,15 +69,12 @@ public class AmqpDeliverMessage {
     public void write(ChannelHandlerContext ctx) {
         if (channel.isClosed()) {
             try {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Requeueing message since subscriber is already closed. {}", message);
-                }
+                LOGGER.debug("Requeueing message since subscriber is already closed. {}", message);
                 broker.requeue(queueName, message);
             } catch (BrokerException e) {
                 LOGGER.error("Error while requeueing message {} for queue {}", message, queueName, e);
             } catch (ResourceNotFoundException e) {
-                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found",
-                            e);
+                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found", e);
             }
         } else if (!channel.isFlowEnabled()) {
             channel.hold(this);

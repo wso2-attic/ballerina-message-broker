@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core.queue;
 
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Queue;
 
@@ -41,8 +42,6 @@ public class MemQueueImpl extends Queue {
 
     private final Map<Xid, List<Message>> pendingEnqueueMessages;
 
-    private final Map<Xid, List<Message>> pendingDequeueMessages;
-
     public MemQueueImpl(String queueName, int capacity, boolean autoDelete) {
         this(queueName, false, capacity, autoDelete);
     }
@@ -52,7 +51,6 @@ public class MemQueueImpl extends Queue {
         this.capacity = capacity;
         queue = new LinkedBlockingDeque<>(capacity);
         pendingEnqueueMessages = new ConcurrentHashMap<>();
-        pendingDequeueMessages = new ConcurrentHashMap<>();
     }
 
     /**
@@ -88,11 +86,6 @@ public class MemQueueImpl extends Queue {
 
     @Override
     public void commit(Xid xid) {
-        List<Message> dequeueMessages = pendingDequeueMessages.get(xid);
-        if (Objects.nonNull(dequeueMessages)) {
-            queue.removeAll(dequeueMessages);
-        }
-
         List<Message> messages = pendingEnqueueMessages.get(xid);
         if (Objects.nonNull(messages)) {
             queue.addAll(messages);
@@ -101,8 +94,10 @@ public class MemQueueImpl extends Queue {
 
     @Override
     public void rollback(Xid xid) {
-        pendingDequeueMessages.remove(xid);
-        pendingEnqueueMessages.remove(xid);
+        List<Message> messages = pendingEnqueueMessages.remove(xid);
+        if (Objects.nonNull(messages)) {
+            messages.forEach(Message::release);
+        }
     }
 
     @Override
@@ -111,19 +106,19 @@ public class MemQueueImpl extends Queue {
     }
 
     @Override
-    public void detach(Message message) {
-        // nothing to do
+    public void detach(DetachableMessage detachableMessage) {
+        // Nothing to do.
     }
 
     @Override
-    public void prepareDetach(Xid xid, Message message) {
-        List<Message> dequeueMessages = pendingDequeueMessages.computeIfAbsent(xid, k -> new ArrayList<>());
-        dequeueMessages.add(message);
+    public void prepareDetach(Xid xid, DetachableMessage detachableMessage) {
+        // Nothing to do.
     }
 
     @Override
     public int clear() {
         int queueSize = queue.size();
+        queue.forEach(Message::release);
         queue.clear();
         return queueSize;
     }

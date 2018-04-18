@@ -85,8 +85,8 @@ public class DbMessageStore extends MessageStore {
     }
 
     @Override
-    void detachFromQueue(String queueName, Message message) {
-        disruptor.publishEvent(DETACH_FROM_QUEUE, queueName, message.getInternalId());
+    void detachFromQueue(String queueName, long messageId) {
+        disruptor.publishEvent(DETACH_FROM_QUEUE, queueName, messageId);
     }
 
     @Override
