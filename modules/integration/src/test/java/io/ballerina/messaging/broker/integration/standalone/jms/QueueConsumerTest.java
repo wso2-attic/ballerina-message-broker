@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -91,6 +92,51 @@ public class QueueConsumerTest {
             Message message = consumer.receive(5000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
         }
+
+        connection.close();
+    }
+
+    @Parameters({ "broker-port", "admin-username", "admin-password", "broker-hostname" })
+    @Test
+    public void testConsumerProducerWithNonPersistenceMessages(String port,
+                                                               String adminUsername,
+                                                               String adminPassword,
+                                                               String brokerHostname) throws Exception {
+        String queueName = "testConsumerProducerWithNonPersistenceMessages";
+        InitialContext initialContextForQueue = ClientHelper
+                .getInitialContextBuilder(adminUsername, adminPassword, brokerHostname, port)
+                .withQueue(queueName)
+                .build();
+
+        ConnectionFactory connectionFactory
+                = (ConnectionFactory) initialContextForQueue.lookup(ClientHelper.CONNECTION_FACTORY);
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // publish 100 messages
+        Session producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Queue queue = producerSession.createQueue(queueName);
+        MessageProducer producer = producerSession.createProducer(queue);
+
+        int numberOfMessages = 1100;
+        for (int i = 0; i < numberOfMessages; i++) {
+            TextMessage message = producerSession.createTextMessage("Test message " + i);
+            producer.send(message, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+        }
+        producerSession.close();
+
+        // Consume published messages
+        Session subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Destination subscriberDestination = (Destination) initialContextForQueue.lookup(queueName);
+        MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
+
+        for (int i = 0; i < numberOfMessages; i++) {
+            Message message = consumer.receive(5000);
+            Assert.assertNotNull(message, "Message #" + i + " was not received");
+        }
+
+        Message message = consumer.receive(5000);
+        Assert.assertNull(message, "Messages should not receive after acknowledging all");
 
         connection.close();
     }

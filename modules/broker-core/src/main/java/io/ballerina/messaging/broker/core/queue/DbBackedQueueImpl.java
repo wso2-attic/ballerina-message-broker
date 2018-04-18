@@ -86,8 +86,10 @@ public class DbBackedQueueImpl extends Queue {
     public boolean enqueue(Message message) throws BrokerException {
         if (message.getMetadata().isPersistent()) {
             dbMessageStore.attach(getName(), message.getInternalId());
+            buffer.add(message);
+        } else {
+            buffer.addIndelibleMessage(message);
         }
-        buffer.add(message);
         return true;
     }
 
