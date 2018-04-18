@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -42,29 +41,16 @@ public class Message {
 
     private final List<ContentChunk> contentChunks;
 
-    private boolean redelivered = false;
-
-    private int redeliveryCount;
-
-    private final Set<String> queueSet;
-
-    private final DetachableMessage detachableMessage;
-
-    /**
-     * Unique id of the message.
-     */
-    private final long internalId;
+    private final MessageDataHolder messageDataHolder;
 
     public Message(long internalId, Metadata metadata) {
-        this(internalId, metadata, ConcurrentHashMap.newKeySet());
+        this(internalId, metadata, ConcurrentHashMap.newKeySet(), 0);
     }
 
-    private Message(long internalId, Metadata metadata, Set<String> queueSet) {
-        this.internalId = internalId;
+    private Message(long internalId, Metadata metadata, Set<String> queueSet, int redeliveryCount) {
         this.metadata = metadata;
         this.contentChunks = new ArrayList<>();
-        this.queueSet = queueSet;
-        detachableMessage = new DetachableMessage(internalId, queueSet);
+        messageDataHolder = new MessageDataHolder(internalId, queueSet, redeliveryCount);
     }
 
     public Metadata getMetadata() {
@@ -81,7 +67,7 @@ public class Message {
 
     public void release() {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Release message with id: {}", internalId, new Throwable());
+            LOGGER.debug("Release message with id: {}", getInternalId(), new Throwable());
         }
         for (ContentChunk contentChunk : contentChunks) {
             contentChunk.release();
@@ -90,11 +76,9 @@ public class Message {
 
     public Message shallowCopy() {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Shallow copy message id: {}", internalId, new Throwable());
+            LOGGER.debug("Shallow copy message id: {}", getInternalId(), new Throwable());
         }
-        Message message = new Message(internalId, metadata, queueSet);
-        message.redelivered = redelivered;
-        message.redeliveryCount = redeliveryCount;
+        Message message = new Message(getInternalId(), metadata, getAttachedDurableQueues(), getRedeliveryCount());
         shallowCopyContent(message);
         return message;
     }
@@ -106,12 +90,12 @@ public class Message {
      * @return shallow copy of the message
      */
     public Message bareShallowCopy() {
-        return new Message(internalId, null, queueSet);
+        return new Message(getInternalId(), null, messageDataHolder.getAttachedQueues(), getRedeliveryCount());
     }
 
     public Message shallowCopyWith(long newMessageId, String routingKey, String exchangeName) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Shallow copy message with id: {} newId: {}", internalId, newMessageId, new Throwable());
+            LOGGER.debug("Shallow copy message with id: {} newId: {}", getInternalId(), newMessageId, new Throwable());
         }
         Message message = new Message(newMessageId, metadata.shallowCopyWith(routingKey, exchangeName));
         shallowCopyContent(message);
@@ -123,49 +107,44 @@ public class Message {
     }
 
     public void addAttachedDurableQueue(String queueName) {
-        queueSet.add(queueName);
+        messageDataHolder.attachQueue(queueName);
     }
 
     public boolean hasAttachedDurableQueues() {
-        return !queueSet.isEmpty();
+        return messageDataHolder.hasAttachedDurableQueues();
     }
 
-    public void removeAttachedDurableQueue(String queueName) {
-        queueSet.remove(queueName);
-    }
-
-    public Collection<String> getAttachedDurableQueues() {
-        return queueSet;
+    public Set<String> getAttachedDurableQueues() {
+        return messageDataHolder.getAttachedQueues();
     }
 
     public long getInternalId() {
-        return internalId;
+        return messageDataHolder.getInternalId();
     }
 
     /**
      * Set redelivery flag.
      */
     public int setRedeliver() {
-        redelivered = true;
-        return ++redeliveryCount;
+        return messageDataHolder.setRedeliver();
     }
 
     /**
      * Getter for redeliveryCount.
      */
     public int getRedeliveryCount() {
-        return redeliveryCount;
+        return messageDataHolder.getRedeliveryCount();
     }
 
     /**
      * Check if redelivery flag is set.
      */
     public boolean isRedelivered() {
-        return redelivered;
+        return messageDataHolder.isRedelivered();
     }
 
     public DetachableMessage getDetachableMessage() {
-        return detachableMessage;
+        return messageDataHolder;
     }
 
     @Override
@@ -186,5 +165,62 @@ public class Message {
         metadata = null;
         release();
         contentChunks.clear();
+    }
+
+    /**
+     * Internal message data holder class. This acts as the detachable message implementation as well.
+     */
+    private static class MessageDataHolder implements DetachableMessage {
+
+        private final long internalId;
+
+        private final Set<String> queueSet;
+
+        private boolean redelivered = false;
+
+        private int redeliveryCount;
+
+        private MessageDataHolder(long internalId, Set<String> queueSet, int redeliveryCount) {
+            this.internalId = internalId;
+            this.queueSet = queueSet;
+            this.redeliveryCount = redeliveryCount;
+        }
+
+        @Override
+        public long getInternalId() {
+            return internalId;
+        }
+
+        @Override
+        public void removeAttachedDurableQueue(String queueName) {
+            queueSet.remove(queueName);
+        }
+
+        @Override
+        public boolean hasAttachedDurableQueues() {
+            return !queueSet.isEmpty();
+        }
+
+        @Override
+        public Set<String> getAttachedQueues() {
+            return queueSet;
+        }
+
+        void attachQueue(String queueName) {
+            queueSet.add(queueName);
+        }
+
+        int setRedeliver() {
+            redelivered = true;
+            return ++redeliveryCount;
+        }
+
+        int getRedeliveryCount() {
+            return redeliveryCount;
+        }
+
+        boolean isRedelivered() {
+            return redelivered;
+        }
     }
 }

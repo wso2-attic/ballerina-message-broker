@@ -24,26 +24,13 @@ import java.util.Set;
  * Message with only the fields needed to handle a queue detach event. Detach events are triggered
  * when a message acknowledgement is sent for message delivery.
  */
-public class DetachableMessage {
+public interface DetachableMessage {
 
-    private final long internalMessageId;
+    long getInternalId();
 
-    private final Set<String> attachedDurableQueueSet;
+    void removeAttachedDurableQueue(String queueName);
 
-    DetachableMessage(long internalMessageId, Set<String> queueSet) {
-        this.internalMessageId = internalMessageId;
-        this.attachedDurableQueueSet = queueSet;
-    }
+    boolean hasAttachedDurableQueues();
 
-    public long getInternalId() {
-        return internalMessageId;
-    }
-
-    public void removeAttachedDurableQueue(String queueName) {
-        attachedDurableQueueSet.remove(queueName);
-    }
-
-    public boolean hasAttachedDurableQueues() {
-        return !attachedDurableQueueSet.isEmpty();
-    }
+    Set<String> getAttachedQueues();
 }

@@ -210,9 +210,9 @@ public class AmqpChannel {
             try {
                 broker.requeue(queueName, message);
             } catch (BrokerException e) {
-                LOGGER.error("Error while requeueing message {} for queue ()", message, queueName, e);
+                LOGGER.error("Error while requeueing message [{}] for queue ()", message, queueName, e);
             } catch (ResourceNotFoundException e) {
-                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found", e);
+                LOGGER.warn("Cannot requeue message [{}] since queue {} is not found", message, queueName, e);
             }
         }
     }
