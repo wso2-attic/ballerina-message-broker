@@ -22,26 +22,22 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 
 /**
  * Test class to detect any memory leak reports in the log file.
  */
 public class ByteBufLeakDetector {
 
-    private static final String LOG_FILE_NAME = "memory-leak-detector.log";
-
     /**
      * Ideally this file should be empty. If any memory leaks found the stack traces from the leak detector will be
      * printed to this log file.
-     * 
-     * @throws FileNotFoundException Throws if the file is not created.
      */
     @Test
-    public void checkMemoryLeakLogs() throws FileNotFoundException {
+    public void checkMemoryLeakLogs() {
         String logFilePath = System.getProperty("testng.logs.directory");
         File file = new File(logFilePath);
-        Assert.assertEquals(file.length(), 0, "Memory leaks detected! Check for error details at "
+        Assert.assertTrue(file.exists(), "Memory leak detector log file not found [" + logFilePath + "]");
+        Assert.assertEquals(file.length(), 0, "Memory leaks detected! Check for error details in "
                 + file.getAbsolutePath());
     }
 }
