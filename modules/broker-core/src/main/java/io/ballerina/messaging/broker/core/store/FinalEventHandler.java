@@ -52,9 +52,7 @@ public class FinalEventHandler implements EventHandler<DbOperation> {
                 case NO_OP:
                     break;
                 default:
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.error("Unknown event type " + event.getType());
-                    }
+                    LOGGER.error("Unknown event type {}", event.getType());
             }
         } finally {
             event.clear();
@@ -67,7 +65,7 @@ public class FinalEventHandler implements EventHandler<DbOperation> {
                 Message message = event.getBareMessage();
 
                 event.getQueueBuffer().markMessageFillFailed(message);
-                LOGGER.warn("Message read failed for message " + message.getInternalId());
+                LOGGER.warn("Message read failed for message {}", message.getInternalId());
                 break;
             case INSERT_MESSAGE:
             case DELETE_MESSAGE:
@@ -80,9 +78,7 @@ public class FinalEventHandler implements EventHandler<DbOperation> {
             case NO_OP:
                 break;
             default:
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.error("Unknown event type " + event.getType());
-                }
+                LOGGER.error("Unknown event type {}", event.getType(), exceptionObject);
         }
     }
 

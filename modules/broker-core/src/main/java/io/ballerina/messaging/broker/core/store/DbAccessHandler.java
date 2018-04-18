@@ -116,6 +116,8 @@ public class DbAccessHandler implements EventHandler<DbOperation> {
                 case DETACH_MSG_FROM_QUEUE:
                     transactionData.detach(txEvent.getQueueName(), txEvent.getMessageId());
                     break;
+                default:
+                    LOGGER.error("Invalid transaction event collected {}", txEvent.getType());
             }
         });
     }
