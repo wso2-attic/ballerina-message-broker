@@ -24,13 +24,15 @@ import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
  * Factory class for {@link QueueBuffer}.
  */
 public class QueueBufferFactory {
+    private final int indelibleMessageLimit;
     private int inMemoryCacheLimit;
 
     public QueueBufferFactory(BrokerCoreConfiguration configuration) {
         inMemoryCacheLimit = Integer.parseInt(configuration.getDurableQueueInMemoryCacheLimit());
+        indelibleMessageLimit = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
     }
 
     public QueueBuffer createBuffer(QueueBuffer.MessageReader messageReader) {
-        return new QueueBuffer(inMemoryCacheLimit, messageReader);
+        return new QueueBuffer(inMemoryCacheLimit, indelibleMessageLimit, messageReader);
     }
 }

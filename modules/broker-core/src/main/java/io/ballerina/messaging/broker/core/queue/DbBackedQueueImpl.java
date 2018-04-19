@@ -53,8 +53,10 @@ public class DbBackedQueueImpl extends Queue {
 
     private final Map<Xid, List<DetachableMessage>> pendingDequeueMessages;
 
-    public DbBackedQueueImpl(String queueName, boolean autoDelete,
-                             DbMessageStore dbMessageStore, QueueBufferFactory queueBufferFactory)
+    public DbBackedQueueImpl(String queueName,
+                             boolean autoDelete,
+                             DbMessageStore dbMessageStore,
+                             QueueBufferFactory queueBufferFactory)
             throws BrokerException {
         super(queueName, true, autoDelete);
         this.dbMessageStore = dbMessageStore;
@@ -88,10 +90,10 @@ public class DbBackedQueueImpl extends Queue {
         if (message.getMetadata().isPersistent()) {
             dbMessageStore.attach(getName(), message.getInternalId());
             buffer.add(message);
+            return true;
         } else {
-            buffer.addIndelibleMessage(message);
+            return buffer.addIndelibleMessage(message);
         }
-        return true;
     }
 
     @Override

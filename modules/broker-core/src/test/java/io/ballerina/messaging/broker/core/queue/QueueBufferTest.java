@@ -41,7 +41,7 @@ public class QueueBufferTest {
 
     @Test
     public void testAdd() {
-        QueueBuffer queueBuffer = new QueueBuffer(10, messageReader);
+        QueueBuffer queueBuffer = new QueueBuffer(10, 0, messageReader);
         for (int i = 0; i < 10; i++) {
             Message message = new Message(i + 1, mockMetadata);
             queueBuffer.add(message);
@@ -58,7 +58,7 @@ public class QueueBufferTest {
 
     @Test
     public void testBareAdd() {
-        QueueBuffer queueBuffer = new QueueBuffer(10, messageReader);
+        QueueBuffer queueBuffer = new QueueBuffer(10, 0, messageReader);
         for (int i = 0; i < 12; i++) {
             Message message = new Message(i + 1, null);
             queueBuffer.addBareMessage(message);
@@ -73,8 +73,44 @@ public class QueueBufferTest {
     }
 
     @Test
+    public void testIndelibleAdd() {
+        QueueBuffer queueBuffer = new QueueBuffer(5, 10, messageReader);
+        for (int i = 0; i < 10; i++) {
+            Message message = new Message(i + 1, mockMetadata);
+            queueBuffer.addIndelibleMessage(message);
+        }
+
+        for (int i = 0; i < 10; i++) {
+            Message message = queueBuffer.getFirstDeliverable();
+            Assert.assertNotNull(message.getMetadata(), "Messages returned from #getFirstDeliverable() should never "
+                    + "be empty");
+            queueBuffer.remove(message.getInternalId());
+        }
+    }
+
+    @Test
+    public void testIndelibleAddBeyondLimit() {
+        QueueBuffer queueBuffer = new QueueBuffer(5, 10, messageReader);
+        for (int i = 0; i < 10; i++) {
+            Message message = new Message(i + 1, mockMetadata);
+            queueBuffer.addIndelibleMessage(message);
+        }
+
+        Message extraMessage = new Message(11, mockMetadata);
+        Assert.assertFalse(queueBuffer.addIndelibleMessage(extraMessage),
+                           "Messages should not be accepted beyond limit");
+
+        for (int i = 0; i < 10; i++) {
+            Message message = queueBuffer.getFirstDeliverable();
+            Assert.assertNotNull(message.getMetadata(), "Messages returned from #getFirstDeliverable() should never "
+                    + "be empty");
+            queueBuffer.remove(message.getInternalId());
+        }
+    }
+
+    @Test
     public void testSize() {
-        QueueBuffer queueBuffer = new QueueBuffer(10, messageReader);
+        QueueBuffer queueBuffer = new QueueBuffer(10, 0, messageReader);
         for (int i = 0; i < 12; i++) {
             Message message = new Message(i + 1, mockMetadata);
             queueBuffer.add(message);
@@ -84,8 +120,8 @@ public class QueueBufferTest {
     }
 
     @Test
-    public void testGetFirstDeliverable() throws Exception {
-        QueueBuffer queueBuffer = new QueueBuffer(10, messageReader);
+    public void testGetFirstDeliverable() {
+        QueueBuffer queueBuffer = new QueueBuffer(10, 0, messageReader);
         for (int i = 0; i < 12; i++) {
             Message message = new Message(i + 1, mockMetadata);
             queueBuffer.add(message);
