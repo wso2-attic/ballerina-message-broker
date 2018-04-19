@@ -240,6 +240,14 @@ public class QueueBuffer {
             node.next = null;
         }
 
+        // We need to move all cursors pointed to the deleting node
+        if (node == firstDeliverableCandidate) {
+            firstDeliverableCandidate = firstDeliverableCandidate.next;
+        }
+        if (node == firstUndeliverable) {
+            firstUndeliverable = firstUndeliverable.next;
+        }
+
         node.item = null;
         size.decrementAndGet();
         if (node.state.get() != Node.INDELIBLE_MESSAGE) {

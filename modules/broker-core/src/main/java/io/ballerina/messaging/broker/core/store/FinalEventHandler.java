@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.store;
 
 import com.lmax.disruptor.EventHandler;
 import io.ballerina.messaging.broker.core.Message;
+import io.ballerina.messaging.broker.core.queue.QueueBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,16 @@ public class FinalEventHandler implements EventHandler<DbOperation> {
         try {
             switch (event.getType()) {
                 case READ_MSG_DATA:
-                    event.getQueueBuffer().markMessageFilled(event.getBareMessage());
+                    Message message = event.getBareMessage();
+                    QueueBuffer queueBuffer = event.getQueueBuffer();
+
+                    if (message.hasContent()) {
+                        queueBuffer.markMessageFilled(message);
+                    } else {
+                        LOGGER.error("Message [] was not read from the DB. Therefore dropping message",
+                                     message.getInternalId());
+                        queueBuffer.remove(message);
+                    }
                     break;
                 case INSERT_MESSAGE:
                 case DELETE_MESSAGE:

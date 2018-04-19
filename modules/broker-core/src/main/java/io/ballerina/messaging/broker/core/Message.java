@@ -166,4 +166,13 @@ public class Message {
         release();
         contentChunks.clear();
     }
+
+    /**
+     * Check whether message content is not cleared.
+     *
+     * @return true if message content is available, false otherwise
+     */
+    public boolean hasContent() {
+        return metadata != null;
+    }
 }
