@@ -53,7 +53,7 @@ public class FinalEventHandler implements EventHandler<DbOperation> {
                     } else {
                         LOGGER.error("Message [] was not read from the DB. Therefore dropping message",
                                      message.getInternalId());
-                        queueBuffer.remove(message);
+                        queueBuffer.remove(message.getInternalId());
                     }
                     break;
                 case INSERT_MESSAGE:

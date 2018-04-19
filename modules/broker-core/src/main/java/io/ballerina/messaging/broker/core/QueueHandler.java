@@ -138,9 +138,9 @@ public final class QueueHandler {
         queue.prepareEnqueue(xid, message);
     }
 
-    void prepareForDetach(Xid xid, Message message) throws BrokerException {
-        MessageTracer.trace(message, xid, this, MessageTracer.PREPARE_DEQUEUE);
-        queue.prepareDetach(xid, message);
+    void prepareForDetach(Xid xid, DetachableMessage detachableMessage) throws BrokerException {
+        MessageTracer.trace(detachableMessage, xid, this, MessageTracer.PREPARE_DEQUEUE);
+        queue.prepareDetach(xid, detachableMessage);
     }
 
     public void commit(Xid xid) {
@@ -173,14 +173,14 @@ public final class QueueHandler {
     /**
      * Removes the message from the queue.
      *
-     * @param message message to be removed.
+     * @param detachableMessage message to be removed.
      *
      * @throws BrokerException throws on failure to dequeue the message.
      */
-    void dequeue(Message message) throws BrokerException {
-        queue.detach(message);
+    void dequeue(DetachableMessage detachableMessage) throws BrokerException {
+        queue.detach(detachableMessage);
         metricManager.removeInMemoryMessage();
-        MessageTracer.trace(message, this, MessageTracer.ACKNOWLEDGE);
+        MessageTracer.trace(detachableMessage, this, MessageTracer.ACKNOWLEDGE);
     }
 
     public void requeue(Message message) throws BrokerException {
@@ -256,12 +256,13 @@ public final class QueueHandler {
         bindingChangeListenersMap.put(binding, bindingChangeListener);
     }
 
-    public void releaseResources() throws BrokerException {
+    public int releaseResources() throws BrokerException {
         closeAllConsumers();
         for (Map.Entry<Binding, ThrowingConsumer<Binding, BrokerException>> entry
                 : bindingChangeListenersMap.entrySet()) {
             entry.getValue().accept(entry.getKey());
         }
+        return redeliveryQueue.clear() + queue.clear();
     }
 
     public void removeBinding(Binding binding) {

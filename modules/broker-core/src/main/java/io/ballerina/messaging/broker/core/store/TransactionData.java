@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core.store;
 
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class TransactionData {
 
     private final Map<String, QueueDetachEventList> detachMessageMap;
 
-    private final Map<String, List<Message>> preparedDetachEventMap;
+    private final Map<String, List<DetachableMessage>> preparedDetachEventMap;
 
     private final List<Long> deleteMessageIdList;
 
@@ -71,8 +72,9 @@ public class TransactionData {
         detachOperationsCount++;
     }
 
-    public void prepareForDetach(String queueName, Message message) {
-        List<Message> preparedDetachList = preparedDetachEventMap.computeIfAbsent(queueName, k -> new ArrayList<>());
+    public void prepareForDetach(String queueName, DetachableMessage message) {
+        List<DetachableMessage> preparedDetachList =
+                preparedDetachEventMap.computeIfAbsent(queueName, k -> new ArrayList<>());
         preparedDetachList.add(message);
         preparedDetachEventCount++;
     }
@@ -89,7 +91,7 @@ public class TransactionData {
         return detachMessageMap;
     }
 
-    public Map<String, List<Message>> getPreparedDetachEventMap() {
+    public Map<String, List<DetachableMessage>> getPreparedDetachEventMap() {
         return preparedDetachEventMap;
     }
 

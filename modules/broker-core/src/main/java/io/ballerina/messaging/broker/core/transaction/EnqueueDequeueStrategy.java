@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 
 /**
@@ -44,8 +45,8 @@ public interface EnqueueDequeueStrategy {
      * transactional.
      *
      * @param queueName name of the relevant queue
-     * @param message {@link Message} to be removed
+     * @param detachableMessage {@link Message} to be removed
      * @throws BrokerException throws on dequeue operation failure
      */
-    void dequeue(String queueName, Message message) throws BrokerException;
+    void dequeue(String queueName, DetachableMessage detachableMessage) throws BrokerException;
 }

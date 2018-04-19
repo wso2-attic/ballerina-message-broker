@@ -31,6 +31,7 @@ import io.ballerina.messaging.broker.core.BrokerImpl;
 import io.ballerina.messaging.broker.integration.util.DbUtils;
 import io.ballerina.messaging.broker.integration.util.TestUtils;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
+import io.netty.util.ResourceLeakDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
@@ -58,6 +59,7 @@ public class DefaultSuiteInitializer {
     public void beforeSuite(String port, String sslPort, String hostname, String adminUsername, String adminPassword,
             String restPort, ITestContext context)
             throws Exception {
+        ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
         LOGGER.info("Starting broker on " + port + " for suite " + context.getSuite().getName());
         StartupContext startupContext = TestUtils.initStartupContext(port, sslPort, hostname, restPort);
 
@@ -89,7 +91,8 @@ public class DefaultSuiteInitializer {
     }
 
     @AfterSuite
-    public void afterSuite(ITestContext context) throws Exception {
+    public void afterSuite(ITestContext context) {
+        System.gc(); // Hint JVM to clear unreference objects. Just to help detect ByteBuf object leaks.
         restServer.stop();
         server.stop();
         broker.stopMessageDelivery();

@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.store;
 
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.queue.QueueBuffer;
 
@@ -76,16 +77,17 @@ public abstract class MessageStore {
         return transactionData;
     }
 
-    public synchronized void detach(String queueName, final Message message) {
+    public synchronized void detach(String queueName, DetachableMessage message) {
         message.removeAttachedDurableQueue(queueName);
         if (!message.hasAttachedDurableQueues()) {
             deleteMessage(message.getInternalId());
         } else {
-            detachFromQueue(queueName, message);
+            detachFromQueue(queueName, message.getInternalId());
         }
+
     }
 
-    public synchronized void detach(Xid xid, String queueName, Message message) throws BrokerException {
+    public synchronized void detach(Xid xid, String queueName, DetachableMessage message) throws BrokerException {
         TransactionData transactionData = getTransactionData(xid);
         synchronized (transactionData) {
             transactionData.prepareForDetach(queueName, message);
@@ -120,10 +122,10 @@ public abstract class MessageStore {
     }
 
     private void updateDeletableMessages(TransactionData transactionData) {
-        Map<String, List<Message>> preparedDetachEventMap = transactionData.getPreparedDetachEventMap();
-        for (Map.Entry<String, List<Message>> entry: preparedDetachEventMap.entrySet()) {
+        Map<String, List<DetachableMessage>> preparedDetachEventMap = transactionData.getPreparedDetachEventMap();
+        for (Map.Entry<String, List<DetachableMessage>> entry: preparedDetachEventMap.entrySet()) {
             String queueName = entry.getKey();
-            for (Message message: entry.getValue()) {
+            for (DetachableMessage message: entry.getValue()) {
                 message.removeAttachedDurableQueue(queueName);
                 if (!message.hasAttachedDurableQueues()) {
                     transactionData.addDeletableMessage(message.getInternalId());
@@ -151,7 +153,7 @@ public abstract class MessageStore {
 
     abstract void publishMessageToStore(Message message);
 
-    abstract void detachFromQueue(String queueName, Message message);
+    abstract void detachFromQueue(String queueName, long messageId);
 
     abstract void deleteMessage(long messageId);
 

@@ -35,11 +35,11 @@ public class NullMessageStore extends MessageStore {
 
     @Override
     void publishMessageToStore(Message message) {
-        // Do nothing
+        message.release();
     }
 
     @Override
-    void detachFromQueue(String queueName, Message message) {
+    void detachFromQueue(String queueName, long messageId) {
         // Do nothing
     }
 

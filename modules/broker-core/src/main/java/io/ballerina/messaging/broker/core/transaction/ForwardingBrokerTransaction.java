@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 
 import java.util.concurrent.TimeUnit;
@@ -39,8 +40,8 @@ public class ForwardingBrokerTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void dequeue(String queue, Message message) throws BrokerException {
-        brokerTransaction.dequeue(queue, message);
+    public void dequeue(String queue, DetachableMessage detachableMessage) throws BrokerException {
+        brokerTransaction.dequeue(queue, detachableMessage);
     }
 
     @Override

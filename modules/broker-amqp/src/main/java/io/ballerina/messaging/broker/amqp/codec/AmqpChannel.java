@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -209,10 +210,9 @@ public class AmqpChannel {
             try {
                 broker.requeue(queueName, message);
             } catch (BrokerException e) {
-                LOGGER.error("Error while requeueing message {} for queue ()", message, queueName, e);
+                LOGGER.error("Error while requeueing message [{}] for queue ()", message, queueName, e);
             } catch (ResourceNotFoundException e) {
-                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found",
-                            e);
+                LOGGER.warn("Cannot requeue message [{}] since queue {} is not found", message, queueName, e);
             }
         }
     }
@@ -229,7 +229,10 @@ public class AmqpChannel {
 
     private void closeConsumer(Consumer consumer) {
         try {
-            broker.removeConsumer(consumer);
+            boolean queueDeleted = broker.removeConsumer(consumer);
+            if (queueDeleted) {
+                unackedMessageMap.releaseAndRemoveMessages(consumer.getQueueName());
+            }
         } finally {
             metricManager.decrementConsumerCount();
         }
@@ -247,9 +250,9 @@ public class AmqpChannel {
             MessageTracer.trace(description, traceChannelIdField, new TraceField(DELIVERY_TAG_FIELD_NAME, deliveryTag));
         }
         if (ackData != null) {
-            transaction.dequeue(ackData.getQueueName(), ackData.getMessage());
+            transaction.dequeue(ackData.getQueueName(), ackData.getMessage().getDetachableMessage());
             if (!transaction.inTransactionBlock()) {
-                ackData = unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
+                unackedMessageMap.removeMarkedAcknowledgment(deliveryTag);
                 ackData.getMessage().release();
             }
         } else {
@@ -331,8 +334,7 @@ public class AmqpChannel {
             try {
                 broker.requeue(queueName, message);
             } catch (ResourceNotFoundException e) {
-                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found",
-                            e);
+                LOGGER.warn("Cannot requeue message [" + message + "] since queue [" + queueName + "] is not found", e);
             }
         }
     }
@@ -508,10 +510,7 @@ public class AmqpChannel {
 
         void put(long deliveryTag, AckData ackData) {
             pendingAcknowledgments.put(deliveryTag, ackData);
-
-            if (hasRoom.get() && pendingAcknowledgments.size() >= prefetchCount) {
-                hasRoom.set(false);
-            }
+            checkAndDisableHasRoom();
         }
 
         Collection<AckData> removeAll() {
@@ -538,10 +537,7 @@ public class AmqpChannel {
         void resetMarkedAcknowledgments() {
             pendingAcknowledgments.putAll(markedAcknowledgments);
             markedAcknowledgments.clear();
-
-            if (hasRoom.get() && pendingAcknowledgments.size() >= prefetchCount) {
-                hasRoom.set(false);
-            }
+            checkAndDisableHasRoom();
         }
 
         Collection<AckData> removeMarkedAcknowledgments() {
@@ -549,7 +545,29 @@ public class AmqpChannel {
             markedAcknowledgments.clear();
             checkAndEnableHasRoom();
             return ackedMessages;
+        }
+        private void checkAndDisableHasRoom() {
+            if (hasRoom.get() && pendingAcknowledgments.size() >= prefetchCount) {
+                hasRoom.set(false);
+            }
+        }
 
+        void releaseAndRemoveMessages(String queueName) {
+            releaseAndRemoveMessagesFromMap(queueName, pendingAcknowledgments);
+            releaseAndRemoveMessagesFromMap(queueName, markedAcknowledgments);
+            checkAndEnableHasRoom();
+        }
+
+        private void releaseAndRemoveMessagesFromMap(String queueName, Map<Long, AckData> map) {
+            Iterator<Map.Entry<Long, AckData>> iterator = map.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Long, AckData> entry = iterator.next();
+                AckData ackData = entry.getValue();
+                if (ackData.getQueueName().equals(queueName)) {
+                    ackData.getMessage().release();
+                    iterator.remove();
+                }
+            }
         }
     }
 }

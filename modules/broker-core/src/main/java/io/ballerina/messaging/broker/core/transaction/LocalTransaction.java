@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.transaction;
 
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,11 +61,10 @@ public class LocalTransaction implements BrokerTransaction {
     }
 
     @Override
-    public void dequeue(String queueName, Message message) {
-
+    public void dequeue(String queueName, DetachableMessage detachableMessage) {
         try {
             createBranchIfNeeded();
-            branch.dequeue(queueName, message.shallowCopy());
+            branch.dequeue(queueName, detachableMessage);
         } catch (BrokerException e) {
             preConditionFailed = true;
             errorMessageBuilder.append(e.getMessage()).append('\n');

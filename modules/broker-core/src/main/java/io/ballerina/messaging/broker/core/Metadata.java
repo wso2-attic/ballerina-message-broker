@@ -25,15 +25,11 @@ import io.ballerina.messaging.broker.common.data.types.ShortShortInt;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Object representation of a message metadata.
  */
 public class Metadata {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
 
     public static final ShortString DELIVERY_MODE = ShortString.parseString("deliveryMode");
 
@@ -99,10 +95,6 @@ public class Metadata {
 
     public long getContentLength() {
         return contentLength;
-    }
-
-    public Metadata shallowCopy() {
-        return shallowCopyWith(routingKey, exchangeName);
     }
 
     public Metadata shallowCopyWith(String routingKey, String exchangeName) {

@@ -106,9 +106,9 @@ public abstract class Queue {
 
     public abstract Message dequeue();
 
-    public abstract void detach(Message message) throws BrokerException;
+    public abstract void detach(DetachableMessage detachableMessage) throws BrokerException;
 
-    public abstract void prepareDetach(Xid xid, Message message) throws BrokerException;
+    public abstract void prepareDetach(Xid xid, DetachableMessage detachableMessage) throws BrokerException;
 
     public abstract int clear();
 }

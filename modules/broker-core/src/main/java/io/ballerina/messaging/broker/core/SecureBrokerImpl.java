@@ -54,7 +54,7 @@ public class SecureBrokerImpl implements Broker {
      */
     private final AuthorizationHandler authHandler;
 
-    public SecureBrokerImpl(Broker broker, Subject subject, AuthorizationHandler authHandler) {
+    SecureBrokerImpl(Broker broker, Subject subject, AuthorizationHandler authHandler) {
         this.broker = broker;
         this.subject = subject;
         this.authHandler = authHandler;
@@ -67,15 +67,17 @@ public class SecureBrokerImpl implements Broker {
                                message.getMetadata().getExchangeName(), ResourceAction.PUBLISH, subject);
             broker.publish(message);
         } catch (AuthException e) {
+            message.release();
             throw new BrokerAuthException(e.getMessage(), e);
         } catch (AuthNotFoundException e) {
+            message.release();
             throw new BrokerAuthNotFoundException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void acknowledge(String queueName, Message message) throws BrokerException {
-        broker.acknowledge(queueName, message);
+    public void acknowledge(String queueName, DetachableMessage detachableMessage) throws BrokerException {
+        broker.acknowledge(queueName, detachableMessage);
     }
 
     @Override
@@ -84,8 +86,8 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public QueueHandler dequeue(Xid xid, String queueName, Message message) throws BrokerException {
-        return broker.dequeue(xid, queueName, message);
+    public QueueHandler dequeue(Xid xid, String queueName, DetachableMessage detachableMessage) throws BrokerException {
+        return broker.dequeue(xid, queueName, detachableMessage);
     }
 
     @Override
@@ -102,8 +104,8 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public void removeConsumer(Consumer consumer) {
-        broker.removeConsumer(consumer);
+    public boolean removeConsumer(Consumer consumer) {
+        return broker.removeConsumer(consumer);
     }
 
     @Override
