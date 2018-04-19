@@ -21,6 +21,9 @@ package io.ballerina.messaging.broker.integration.standalone;
 
 import io.ballerina.messaging.broker.amqp.Server;
 import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
+import io.ballerina.messaging.broker.auth.authorization.provider.MemoryDacHandler;
+import io.ballerina.messaging.broker.auth.authorization.provider.NoOpMacHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
@@ -64,6 +67,19 @@ public class InMemorySuiteInitializer {
                                                         BrokerCommonConfiguration.class);
 
         commonConfiguration.setEnableInMemoryMode(true);
+
+        BrokerAuthConfiguration brokerAuthConfiguration
+                = configProvider.getConfigurationObject(BrokerAuthConfiguration.NAMESPACE,
+                BrokerAuthConfiguration.class);
+
+        brokerAuthConfiguration.getAuthorization()
+                .setEnabled(true);
+        brokerAuthConfiguration.getAuthorization()
+                .getDiscretionaryAccessController()
+                .setClassName(MemoryDacHandler.class.getCanonicalName());
+        brokerAuthConfiguration.getAuthorization()
+                .getMandatoryAccessController()
+                .setClassName(NoOpMacHandler.class.getCanonicalName());
 
         AuthManager authManager = new AuthManager(startupContext);
 

@@ -56,17 +56,17 @@ public class NoOpAuthorizer implements Authorizer {
 
     @Override
     public boolean addGroupsToResource(String resourceType, String resourceName, String action, List<String> groups) {
-        return false;
+        return true;
     }
 
     @Override
     public boolean removeGroupFromResource(String resourceType, String resourceName, String action, String group) {
-        return false;
+        return true;
     }
 
     @Override
     public boolean changeResourceOwner(String resourceType, String resourceName, String owner) {
-        return false;
+        return true;
     }
 
     @Override

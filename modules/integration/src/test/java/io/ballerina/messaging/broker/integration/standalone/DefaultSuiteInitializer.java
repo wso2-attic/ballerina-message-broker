@@ -69,6 +69,8 @@ public class DefaultSuiteInitializer {
                                                         BrokerAuthConfiguration.class);
 
         brokerAuthConfiguration.getAuthorization()
+                               .setEnabled(true);
+        brokerAuthConfiguration.getAuthorization()
                                .getDiscretionaryAccessController()
                                .setClassName(RdbmsDacHandler.class.getCanonicalName());
         brokerAuthConfiguration.getAuthorization()

@@ -75,7 +75,7 @@ public class BrokerRestApiClient {
     public void createQueue(String queueName, boolean durable, boolean autoDelete) throws IOException {
         // create a queue
         QueueCreateRequest request = new QueueCreateRequest()
-                .name(queueName).durable(durable).autoDelete(false);
+                .name(queueName).durable(durable).autoDelete(autoDelete);
 
         HttpPost httpPost = new HttpPost(apiBasePath + QueuesApiDelegate.QUEUES_API_PATH);
         ClientHelper.setAuthHeader(httpPost, userName, password);
