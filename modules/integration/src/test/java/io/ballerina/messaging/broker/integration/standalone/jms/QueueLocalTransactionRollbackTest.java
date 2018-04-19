@@ -195,23 +195,27 @@ public class QueueLocalTransactionRollbackTest {
         producerSession.close();
 
         for (int i = 0; i < (numberOfMessages / 2); i++) {
-            Message message = consumer1.receive(1000);
+            Message message = consumer1.receive(5000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
         }
         // consumer1 rollback all received messages
         subscriberSession1.rollback();
+        subscriberSession1.close();
 
         for (int i = 0; i < (numberOfMessages / 2); i++) {
-            Message message = consumer2.receive(1000);
+            Message message = consumer2.receive(5000);
             Assert.assertNotNull(message, "Message #" + i + " was not received");
         }
         // consumer2 rollback all received messages
         subscriberSession2.rollback();
+        subscriberSession2.close();
 
+        subscriberSession1 = connection.createSession(true, Session.SESSION_TRANSACTED);
+        consumer1 = subscriberSession1.createConsumer(subscriberDestination);
         // consumer1 receive all messages again after rollback
         int numberOfMessagesAfterRollbackConsumer1 = 0;
         for (int i = 0; i < (numberOfMessages / 2); i++) {
-            Message message = consumer1.receive(1000);
+            Message message = consumer1.receive(5000);
             Assert.assertNotNull(message, "Message #" + i + " was not received after rollback");
             numberOfMessagesAfterRollbackConsumer1++;
         }
@@ -220,11 +224,14 @@ public class QueueLocalTransactionRollbackTest {
                 + (numberOfMessages / 2) + " messages");
 
         subscriberSession1.commit();
+        subscriberSession1.close();
 
+        subscriberSession2 = connection.createSession(true, Session.SESSION_TRANSACTED);
+        consumer2 = subscriberSession2.createConsumer(subscriberDestination);
         // consumer2 receive all messages again after rollback
         int numberOfMessagesAfterRollbackConsumer2 = 0;
         for (int i = 0; i < (numberOfMessages / 2); i++) {
-            Message message = consumer2.receive(1000);
+            Message message = consumer2.receive(5000);
             Assert.assertNotNull(message, "Message #" + i + " was not received after rollback");
             numberOfMessagesAfterRollbackConsumer2++;
         }
@@ -234,12 +241,14 @@ public class QueueLocalTransactionRollbackTest {
 
         subscriberSession2.commit();
 
+        subscriberSession1 = connection.createSession(true, Session.SESSION_TRANSACTED);
+        consumer1 = subscriberSession1.createConsumer(subscriberDestination);
         // consumer1 check remain messages after commit
-        Message consumer1RemainingMessage = consumer1.receive(1000);
+        Message consumer1RemainingMessage = consumer1.receive(5000);
         Assert.assertNull(consumer1RemainingMessage, "Messages should not receive after commit");
 
         // consumer2 check remain messages after commit
-        Message consumer2RemainingMessage = consumer2.receive(1000);
+        Message consumer2RemainingMessage = consumer2.receive(5000);
         Assert.assertNull(consumer2RemainingMessage, "Messages should not receive after commit");
 
         subscriberSession1.close();
