@@ -144,7 +144,7 @@ public class QueuesApiDelegate {
             queueArray = new ArrayList<>(queueHandlers.size());
             for (QueueHandler handler : queueHandlers) {
                 // Add if filter is not set or durability equals to filer value.
-                if (!filterByDurability || durable == handler.getQueue().isDurable()) {
+                if (!filterByDurability || durable == handler.getUnmodifiableQueue().isDurable()) {
                     queueArray.add(toQueueMetadata(handler));
                 }
             }
@@ -158,15 +158,15 @@ public class QueuesApiDelegate {
 
     private QueueMetadata toQueueMetadata(QueueHandler queueHandler) throws BrokerException {
         QueueMetadata queueMetadata = new QueueMetadata();
-        queueMetadata.name(queueHandler.getQueue().getName())
-                .durable(queueHandler.getQueue().isDurable())
-                .autoDelete(queueHandler.getQueue().isAutoDelete())
-                .capacity(queueHandler.getQueue().capacity())
+        queueMetadata.name(queueHandler.getUnmodifiableQueue().getName())
+                .durable(queueHandler.getUnmodifiableQueue().isDurable())
+                .autoDelete(queueHandler.getUnmodifiableQueue().isAutoDelete())
+                .capacity(queueHandler.getUnmodifiableQueue().capacity())
                 .consumerCount(queueHandler.consumerCount())
                 .size(queueHandler.size());
         try {
             AuthResource authResource = authorizer.getAuthResource(ResourceType.QUEUE.toString(),
-                                                      queueHandler.getQueue().getName());
+                                                      queueHandler.getUnmodifiableQueue().getName());
             if (Objects.nonNull(authResource)) {
                 queueMetadata.owner(authResource.getOwner())
                         .permissions(toActionUserGroupsMapping(authResource.getActionsUserGroupsMap()));

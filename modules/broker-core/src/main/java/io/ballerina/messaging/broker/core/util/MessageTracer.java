@@ -167,13 +167,13 @@ public final class MessageTracer {
     private static TraceBuilder getTraceBuilder(DetachableMessage detachableMessage, QueueHandler queueHandler) {
         TraceBuilder traceBuilder = new TraceBuilder();
         traceBuilder.internalId(detachableMessage.getInternalId())
-                    .queueName(queueHandler.getQueue().getName());
+                    .queueName(queueHandler.getUnmodifiableQueue().getName());
         return traceBuilder;
     }
 
     private static TraceBuilder getTraceBuilder(Message message, QueueHandler queueHandler) {
         Metadata metadata = message.getMetadata();
-        String queueName = queueHandler.getQueue().getName();
+        String queueName = queueHandler.getUnmodifiableQueue().getName();
         TraceBuilder traceBuilder = new TraceBuilder().internalId(message.getInternalId());
 
         // Metadata can be null if we clear message when in-memory queue limit is exceeded
@@ -189,7 +189,8 @@ public final class MessageTracer {
 
     public static void trace(Xid xid, QueueHandler queueHandler, String description) {
         if (LOGGER.isTraceEnabled() && Objects.nonNull(queueHandler)) {
-            TraceBuilder traceBuilder = new TraceBuilder().xid(xid).queueName(queueHandler.getQueue().getName());
+            TraceBuilder traceBuilder = new TraceBuilder().xid(xid)
+                                                          .queueName(queueHandler.getUnmodifiableQueue().getName());
             LOGGER.trace(traceBuilder.buildTrace(description));
         }
     }

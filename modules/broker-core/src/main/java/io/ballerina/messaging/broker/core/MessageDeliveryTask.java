@@ -52,7 +52,7 @@ final class MessageDeliveryTask extends Task {
 
     @Override
     public String getId() {
-        return queueHandler.getQueue().getName();
+        return queueHandler.getUnmodifiableQueue().getName();
     }
 
     @Override
@@ -71,7 +71,7 @@ final class MessageDeliveryTask extends Task {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Consumer {} is not ready for consuming messages from {}",
                                  consumer,
-                                 queueHandler.getQueue().getName());
+                                 queueHandler.getUnmodifiableQueue().getName());
                 }
 
                 if (consumer.equals(previousConsumer)) {

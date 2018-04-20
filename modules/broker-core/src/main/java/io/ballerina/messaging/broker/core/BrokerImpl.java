@@ -356,8 +356,8 @@ public final class BrokerImpl implements Broker {
             if (queueHandler != null) {
                 synchronized (queueHandler) {
                     if (queueHandler.removeConsumer(consumer) && queueHandler.consumerCount() == 0) {
-                        deliveryTaskService.remove(queueHandler.getQueue().getName());
-                        if (queueHandler.getQueue().isAutoDelete()) {
+                        deliveryTaskService.remove(queueHandler.getUnmodifiableQueue().getName());
+                        if (queueHandler.getUnmodifiableQueue().isAutoDelete()) {
                             queueDeletable = true;
                         }
                     }
@@ -370,11 +370,11 @@ public final class BrokerImpl implements Broker {
         // queue delete is done after releasing the read lock since we cannot upgrade to write lock from a read lock.
         if (queueDeletable) {
             try {
-                deleteQueue(queueHandler.getQueue().getName(), true, false);
+                deleteQueue(queueHandler.getUnmodifiableQueue().getName(), true, false);
             } catch (ValidationException | ResourceNotFoundException | BrokerException e) {
                 // We do not propagate the error to transport layer since we should not get an error for a queue
                 // delete initiated from server.
-                LOGGER.warn("Exception while auto deleting the queue {}", queueHandler.getQueue(), e);
+                LOGGER.warn("Exception while auto deleting the queue {}", queueHandler.getUnmodifiableQueue(), e);
             }
         }
         return queueDeletable;
@@ -489,7 +489,7 @@ public final class BrokerImpl implements Broker {
                 throw new ValidationException("Unknown queue name: " + queueName);
             }
 
-            exchange.unbind(queueHandler.getQueue(), routingKey);
+            exchange.unbind(queueHandler.getUnmodifiableQueue(), routingKey);
         } finally {
             lock.writeLock().unlock();
         }
