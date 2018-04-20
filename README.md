@@ -21,6 +21,7 @@ Please follow the steps below to build message broker from source code.
 .
 ├── bin
 │   ├── broker-admin.sh
+│   ├── broker-admin.bat
 │   ├── broker.bat
 │   ├── broker.sh
 │   ├── ciphertool.bat
@@ -46,8 +47,9 @@ Please follow the steps below to build message broker from source code.
 - **bin/broker.sh** - executable used to run message broker
 - **bin/broker.bat** - windows executable used to run message broker
 - **bin/broker-admin.sh** - executable used to start message broker cli client
+- **bin/broker-admin.bat** - windows executable used to start message broker cli client
 - **bin/ciphertool.sh** - executable used to encrypt plain text passwords define in configuration file
-- **bin/ciphertool.bat** - executable used to encrypt plain text passwords define in configuration file
+- **bin/ciphertool.bat** - windows executable used to encrypt plain text passwords define in configuration file
 - **conf/admin-service-transports.yaml** - admin rest service related configuration file
 - **conf/broker.yaml** - main configuration file
 - **conf/log4j.properties** - logging configuration file
