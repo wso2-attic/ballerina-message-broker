@@ -27,6 +27,8 @@ import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resourc
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.AuthResourceDao;
 import io.ballerina.messaging.broker.auth.authorization.authorizer.rdbms.resource.dao.impl.AuthResourceInMemoryDao;
 import io.ballerina.messaging.broker.common.StartupContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -35,11 +37,17 @@ import java.util.Map;
  * This implementation used when there is no auth manager set to the startup context.
  */
 public class MemoryDacHandler extends DiscretionaryAccessController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MemoryDacHandler.class);
     private AuthResourceDao resourceDao = new AuthResourceInMemoryDao();
 
     @Override
     public void initialize(StartupContext startupContext, UserStore userStore, Map<String, String> properties) {
-        //do nothing as authorization disabled
+        try {
+            persistDefaultAuthResources();
+        } catch (AuthServerException e) {
+            LOGGER.error("Error occurred while persisting auth resources.", e);
+        }
     }
 
     @Override
@@ -75,5 +83,12 @@ public class MemoryDacHandler extends DiscretionaryAccessController {
     @Override
     public AuthResource getAuthResource(String resourceType, String resourceName) throws AuthServerException {
         return resourceDao.read(resourceType, resourceName);
+    }
+
+    private void persistDefaultAuthResources() throws AuthServerException {
+        addResource("exchange", "<<default>>", "admin");
+        addResource("exchange", "amq.direct", "admin");
+        addResource("exchange", "amq.topic", "admin");
+        addResource("queue", "amq.dlq", "admin");
     }
 }
