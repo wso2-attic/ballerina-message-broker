@@ -168,6 +168,15 @@ public class Message {
     }
 
     /**
+     * Check whether message content is not cleared.
+     *
+     * @return true if message content is available, false otherwise
+     */
+    public boolean hasContent() {
+        return Objects.nonNull(metadata);
+    }
+
+    /**
      * Internal message data holder class. This acts as the detachable message implementation as well.
      */
     private static class MessageDataHolder implements DetachableMessage {
