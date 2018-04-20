@@ -47,6 +47,9 @@ ballerina.broker.core:
   # The time that the delivery task will wait when the queue is empty or no consumers are available for message
   # delivery in milliseconds.
   idleTaskDelay: 50
+  # Messages are delivered to consumers in batches by the delivery task. Following configuration changes the default
+  # message delivery batch size.
+  deliveryBatchSize: 1000
 
 # Broker auth related configurations.
 ballerina.broker.auth:

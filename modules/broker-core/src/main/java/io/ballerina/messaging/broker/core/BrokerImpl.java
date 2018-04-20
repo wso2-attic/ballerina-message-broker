@@ -105,6 +105,8 @@ public final class BrokerImpl implements Broker {
 
     private final MessageStore messageStore;
 
+    private final MessageDeliveryTaskFactory messageDeliveryTaskFactory;
+
     public BrokerImpl(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
         metricManager = getMetricManager(metrics);
@@ -120,7 +122,7 @@ public final class BrokerImpl implements Broker {
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
         this.deliveryTaskService = createTaskExecutorService(configuration);
-
+        this.messageDeliveryTaskFactory = new MessageDeliveryTaskFactory(configuration.getDeliveryTask());
         initDefaultDeadLetterQueue();
 
         this.brokerTransactionFactory = new BrokerTransactionFactory(this, messageStore);
@@ -332,7 +334,7 @@ public final class BrokerImpl implements Broker {
             if (queueHandler != null) {
                 synchronized (queueHandler) {
                     if (queueHandler.addConsumer(consumer) && queueHandler.consumerCount() == 1) {
-                        deliveryTaskService.add(new MessageDeliveryTask(queueHandler));
+                        deliveryTaskService.add(messageDeliveryTaskFactory.create(queueHandler));
                     }
                 }
             } else {

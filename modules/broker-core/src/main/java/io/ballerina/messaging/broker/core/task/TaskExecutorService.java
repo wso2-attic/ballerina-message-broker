@@ -156,7 +156,7 @@ public final class TaskExecutorService<T extends Task> {
      * Stop processing the tasks.
      */
     public synchronized void stop() {
-        log.info("Stopping task manager. Task count " + taskHolderDelayQueue.size());
+        log.info("Stopping task manager. Task count {}", taskHolderDelayQueue.size());
         for (TaskProcessor taskProcessor : taskProcessorQueue) {
             taskProcessor.deactivate();
         }
@@ -195,7 +195,7 @@ public final class TaskExecutorService<T extends Task> {
             value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE",
             justification = "Return future ignored since the execution needs be done asynchronously.")
     public synchronized void start() {
-        log.info("Starting task manager. Task count " + taskHolderDelayQueue.size());
+        log.info("Starting task manager. Task count {}", taskHolderDelayQueue.size());
 
         for (int i = 0; i < workerCount; i++) {
             TaskProcessor taskProcessor =
@@ -237,10 +237,10 @@ public final class TaskExecutorService<T extends Task> {
                 taskHolderRegistry.put(task.getId(), taskHolder);
                 taskHolderDelayQueue.add(taskHolder);
                 if (log.isDebugEnabled()) {
-                    log.debug("Task added. ID " + task.getId() + " Total Tasks " + taskHolderDelayQueue.size());
+                    log.debug("Task added. ID {} Total Tasks {}", task.getId(), taskHolderDelayQueue.size());
                 }
             } catch (Throwable e) {
-                log.error("Error occurred while adding Task " + task, e);
+                log.error("Error occurred while adding Task {}", task, e);
             }
         }
     }
@@ -262,10 +262,10 @@ public final class TaskExecutorService<T extends Task> {
                 TaskHolder taskHolder = taskHolderRegistry.remove(id);
                 taskHolder.disableProcessing(); // disable processors from processing the task
                 if (log.isDebugEnabled()) {
-                    log.debug("Task removed. ID " + taskHolder.getId() + " Total tasks " + taskHolderDelayQueue.size());
+                    log.debug("Task removed. ID {} Total tasks {}", taskHolder.getId(), taskHolderDelayQueue.size());
                 }
             } catch (Throwable e) {
-                log.error("Error occurred while removing task. Task id " + id, e);
+                log.error("Error occurred while removing task. Task id {}", id, e);
             }
         }
     }
@@ -279,7 +279,7 @@ public final class TaskExecutorService<T extends Task> {
 
         @Override
         public void handleException(Throwable throwable, String id) {
-            log.error("Error occurred while processing task. Task id " + id, throwable);
+            log.error("Error occurred while processing task. Task id {}", id, throwable);
         }
     }
 }

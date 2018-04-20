@@ -33,18 +33,21 @@ final class MessageDeliveryTask extends Task {
 
     private final QueueHandler queueHandler;
 
-    MessageDeliveryTask(QueueHandler queueHandler) {
+    private final int deliveryBatchSize;
+
+    MessageDeliveryTask(QueueHandler queueHandler, int deliveryBatchSize) {
         this.queueHandler = queueHandler;
+        this.deliveryBatchSize = deliveryBatchSize;
     }
 
     @Override
     public void onAdd() {
-
+        // ignore
     }
 
     @Override
     public void onRemove() {
-
+        // ignore
     }
 
     @Override
@@ -85,8 +88,7 @@ final class MessageDeliveryTask extends Task {
                     MessageTracer.trace(message, queueHandler, MessageTracer.DELIVER);
                     consumer.send(message);
                     deliveredCount++;
-                    // TODO: make the value configurable
-                    if (deliveredCount == 1000) {
+                    if (deliveredCount == deliveryBatchSize) {
                         break;
                     }
                 } else {
