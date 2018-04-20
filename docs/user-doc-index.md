@@ -10,4 +10,4 @@
 - [Using JMS selectors](user/jms-selector-guide.md)
 - [Local Transaction](user/local-transaction.md)
 - [Broker Admin Command Line Interface (CLI)](user/cli-client.md)
-- [Embed Message Broker](user/embed-message-broker.md)
+- [Embedding Message Broker](user/embedding-message-broker.md)
