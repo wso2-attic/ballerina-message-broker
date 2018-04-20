@@ -27,7 +27,8 @@ These configurations are defined under the namespace `ballerina.broker.core`.
 | Config                      | Default Value                          | Description                                   |
 |-----------------------------| ---------------------------------------|-----------------------------------------------|
 | nonDurableQueueMaxDepth     | 10000                                  | Maximum number of messages kept in a non-durable queue. Increasing this number can increase the memory consumption. | 
-| durableQueueInMemoryCacheLimit | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. | 
+| maxPersistedChunkSize     | 65500                                  | Maximum size of a chunk that is persisted. We will have to change this value depending on the underline database used. We have used the  frame size as the limit. |
+| durableQueueInMemoryCacheLimit | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. |
 | deliveryTask:workerCount    | 5                                      | Number of concurrent workers used to process the delivery tasks. |
 | deliveryTask:idleTaskDelay  | 50                                     | The time that the delivery task will wait when the queue is empty or no consumers are available for message delivery in milliseconds.  |
 | authenticator:loginModule   | io.ballerina.messaging.broker.core .security.authentication.jaas.BrokerLoginModule | JAAS login module used to authenticate users. |
