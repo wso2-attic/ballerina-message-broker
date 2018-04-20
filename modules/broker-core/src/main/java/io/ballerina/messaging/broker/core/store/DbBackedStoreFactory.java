@@ -43,7 +43,7 @@ public class DbBackedStoreFactory implements StoreFactory {
     public DbBackedStoreFactory(DataSource dataSource,
                                 BrokerMetricManager metricManager,
                                 BrokerCoreConfiguration configuration) {
-        daoFactory = new DaoFactory(dataSource, metricManager);
+        daoFactory = new DaoFactory(dataSource, metricManager, configuration);
         this.metricManager = metricManager;
         this.configuration = configuration;
         dbMessageStore = new DbMessageStore(daoFactory.createMessageDao(), 32768, 1024);
