@@ -58,7 +58,7 @@ public class EmbeddedBrokerConfiguration {
     private int authorizationCacheSize = 5000;
 
     /**
-     * Set broker run non persistent mode
+     * Set broker run non persistent mode.
      *
      * @param inMemoryMode true to enable and default is false
      * @return builder object
@@ -69,7 +69,7 @@ public class EmbeddedBrokerConfiguration {
     }
 
     /**
-     * Set AMQP listener port
+     * Set AMQP listener port.
      *
      * @param port amqp port
      * @return builder object
@@ -80,7 +80,7 @@ public class EmbeddedBrokerConfiguration {
     }
 
     /**
-     * Set AMQP SSL listener port
+     * Set AMQP SSL listener port.
      *
      * @param sslPort amqp ssl port
      * @return builder object
@@ -91,7 +91,7 @@ public class EmbeddedBrokerConfiguration {
     }
 
     /**
-     * Set SSL transport resources
+     * Set SSL transport resources.
      *
      * @param keyStore           fully qualified path of jks
      * @param keyStorePassword   jks password
@@ -119,7 +119,7 @@ public class EmbeddedBrokerConfiguration {
     }
 
     /**
-     * Setup default Hikari datasource with given parameters
+     * Setup default Hikari datasource with given parameters.
      *
      * @param driver   driver name
      * @param url      connection url
@@ -139,7 +139,7 @@ public class EmbeddedBrokerConfiguration {
     }
 
     /**
-     * Set external datasource to connect with configured database
+     * Set external datasource to connect with configured database.
      *
      * @param datasource an implementation of {@link DataSource}
      * @return builder object
@@ -150,7 +150,7 @@ public class EmbeddedBrokerConfiguration {
     }
 
     /**
-     * Set custom implementation for broker authentication
+     * Set custom implementation for broker authentication.
      *
      * @param authenticator an implementation of {@link Authenticator}
      * @return builder object
@@ -162,7 +162,7 @@ public class EmbeddedBrokerConfiguration {
     }
 
     /**
-     * Set additional properties required for custom authenticator
+     * Set additional properties required for custom authenticator.
      *
      * @param authenticatorProperties property map consist of name and object
      * @return builder object
@@ -173,7 +173,7 @@ public class EmbeddedBrokerConfiguration {
     }
 
     /**
-     * Set custom implementation for broker authorization
+     * Set custom implementation for broker authorization.
      *
      * @param mandatoryAccessController     an implementation of {@link MandatoryAccessController}
      * @param discretionaryAccessController an implementation of {@link DiscretionaryAccessController}

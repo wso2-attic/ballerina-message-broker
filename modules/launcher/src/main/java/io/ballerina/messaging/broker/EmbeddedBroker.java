@@ -58,7 +58,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Start broker with configuration that has been set on the instance
+     * Start broker with configuration that has been set on the instance.
      *
      * @throws Exception if issue occurred while starting
      */
@@ -81,7 +81,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Stop broker instance
+     * Stop broker instance.
      *
      * @throws Exception if issue occurred while stopping
      */
@@ -93,7 +93,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Setup broker commond configuration
+     * Setup broker commond configuration.
      *
      * @param startupContext startup context
      * @param configProvider to register {@link BrokerCoreConfiguration} object
@@ -109,7 +109,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Setup broker core configuration
+     * Setup broker core configuration.
      *
      * @param configProvider to register {@link BrokerCoreConfiguration} object
      */
@@ -119,7 +119,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Setup amqp server configuration such as port and ssl configuration
+     * Setup amqp server configuration such as port and ssl configuration.
      *
      * @param configProvider to register {@link AmqpServerConfiguration} object
      */
@@ -138,7 +138,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Setup authentication and authorization configuration in the broker
+     * Setup authentication and authorization configuration in the broker.
      *
      * @param configProvider to register {@link BrokerAuthConfiguration} object
      */
@@ -175,7 +175,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Setup datasource with default parameters
+     * Setup datasource with default parameters.
      *
      * @param startupContext to register configured {@link DataSource} object
      */
@@ -216,7 +216,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Setup default authenticator or custom authenticator
+     * Setup default authenticator or custom authenticator.
      *
      * @param authenticationConfiguration to set authenticator
      * @param authenticatorConfiguration  to set authenticator implementation
@@ -235,7 +235,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Setup default mac handler or custom mac handler
+     * Setup default mac handler or custom mac handler.
      *
      * @param authorizationConfiguration to set mac handler
      */
@@ -252,7 +252,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Setup default userstore or custom userstore implementation
+     * Setup default userstore or custom userstore implementation.
      *
      * @param authorizationConfiguration to set userstore
      */
@@ -269,7 +269,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Setup default dac handler or custom dac handler
+     * Setup default dac handler or custom dac handler.
      *
      * @param authorizationConfiguration to set dac handler
      */
@@ -287,7 +287,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * setup authorization cache configuration
+     * setup authorization cache configuration.
      *
      * @param authorizationConfiguration to set timeout and size parameter
      */
@@ -301,7 +301,7 @@ public class EmbeddedBroker {
     }
 
     /**
-     * Register broker configuration
+     * Register broker configuration.
      */
     static class ConfigProvider implements BrokerConfigProvider {
 
