@@ -42,6 +42,10 @@ public class QueueBuffer {
     private final int inMemoryLimit;
 
     /**
+     * Maximum number of indelible messages kept in the queue buffer.
+     */
+    private final int indelibleMessageLimit;
+    /**
      * Used to submit read requests for a message.
      */
     private final MessageReader messageReader;
@@ -67,6 +71,11 @@ public class QueueBuffer {
     private AtomicInteger undeliveredMessageCount = new AtomicInteger(0);
 
     /**
+     * Total Number of undelivered messages in the buffer.
+     */
+    private AtomicInteger indelibleMessageCount = new AtomicInteger(0);
+
+    /**
      * Pointer to first deliverable candidate node.
      */
     private Node firstDeliverableCandidate;
@@ -86,8 +95,9 @@ public class QueueBuffer {
      */
     private Map<Long, Node> keyMap = new ConcurrentHashMap<>();
 
-    QueueBuffer(int inMemoryLimit, MessageReader messageReader) {
+    QueueBuffer(int inMemoryLimit, int indelibleMessageLimit, MessageReader messageReader) {
         this.inMemoryLimit = inMemoryLimit;
+        this.indelibleMessageLimit = indelibleMessageLimit;
         this.messageReader = messageReader;
     }
 
@@ -129,9 +139,15 @@ public class QueueBuffer {
      *
      * @param message message
      */
-    public synchronized void addIndelibleMessage(Message message) {
+    public synchronized boolean addIndelibleMessage(Message message) {
+        int newIndelibleMessageCount = indelibleMessageCount.get() + 1;
+        if (newIndelibleMessageCount > indelibleMessageLimit) {
+            return false;
+        }
+
         linkLast(message);
         postProcessIndelibleMessage();
+        return true;
     }
 
     /**
@@ -191,6 +207,7 @@ public class QueueBuffer {
     private void postProcessIndelibleMessage() {
         Node newNode = last;
         newNode.state.set(Node.INDELIBLE_MESSAGE);
+        indelibleMessageCount.incrementAndGet();
 
         if (Objects.isNull(firstUndeliverable)) {
             firstUndeliverable = newNode;
@@ -244,6 +261,8 @@ public class QueueBuffer {
         size.decrementAndGet();
         if (node.state.get() != Node.INDELIBLE_MESSAGE) {
             deliverableMessageCount.decrementAndGet();
+        } else {
+            indelibleMessageCount.decrementAndGet();
         }
 
         messagesInFlight.decrementAndGet();
