@@ -173,7 +173,7 @@ public class Message {
      * @return true if message content is available, false otherwise
      */
     public boolean hasContent() {
-        return metadata != null;
+        return Objects.nonNull(metadata);
     }
 
     /**

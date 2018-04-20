@@ -51,7 +51,7 @@ public class FinalEventHandler implements EventHandler<DbOperation> {
                     if (message.hasContent()) {
                         queueBuffer.markMessageFilled(message);
                     } else {
-                        LOGGER.error("Message [] was not read from the DB. Therefore dropping message",
+                        LOGGER.error("Message {} was not read from the DB. Therefore dropping message",
                                      message.getInternalId());
                         queueBuffer.remove(message.getInternalId());
                     }
