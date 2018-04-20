@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.core.store.dao.impl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.ballerina.messaging.broker.common.BaseDao;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.ChunkConverter;
 import io.ballerina.messaging.broker.core.ContentChunk;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
@@ -48,15 +49,19 @@ import javax.sql.DataSource;
 class MessageCrudOperationsDao extends BaseDao {
 
     private final BrokerMetricManager metricManager;
+    private final ChunkConverter chunkConverter;
 
     /**
      * temp storage for messages loaded from DB when restarting the message broker.
      */
     private Map<Long, Message> storedMessageCache = new ConcurrentHashMap<>();
 
-    MessageCrudOperationsDao(DataSource dataSource, BrokerMetricManager metricManager) {
+    MessageCrudOperationsDao(DataSource dataSource,
+                             BrokerMetricManager metricManager,
+                             ChunkConverter chunkConverter) {
         super(dataSource);
         this.metricManager = metricManager;
+        this.chunkConverter = chunkConverter;
     }
 
     @SuppressFBWarnings(
@@ -102,7 +107,11 @@ class MessageCrudOperationsDao extends BaseDao {
     }
 
     private void prepareContent(PreparedStatement contentStmt, Message message) throws SQLException {
-        for (ContentChunk chunk : message.getContentChunks()) {
+        List<ContentChunk> contentChunks = message.getContentChunks();
+        long contentLength = message.getMetadata().getContentLength();
+
+        List<ContentChunk> convertedChunks = chunkConverter.convert(contentChunks, contentLength);
+        for (ContentChunk chunk : convertedChunks) {
             contentStmt.setLong(1, message.getInternalId());
             contentStmt.setLong(2, chunk.getOffset());
             contentStmt.setBytes(3, chunk.getBytes());

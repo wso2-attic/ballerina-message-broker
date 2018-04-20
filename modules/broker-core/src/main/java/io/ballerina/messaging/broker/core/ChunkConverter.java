@@ -14,20 +14,21 @@ public class ChunkConverter {
         this.maxChunkSizeLimit = maxChunkSizeLimit;
     }
 
-    public List<ContentChunk> convert(List<ContentChunk> chunkList, int totalLength) {
+    public List<ContentChunk> convert(List<ContentChunk> chunkList, long totalLength) {
         if (chunkList.isEmpty() || isChunksUnderLimit(chunkList)) {
             return chunkList;
         }
 
         ArrayList<ContentChunk> convertedChunks = new ArrayList<>();
 
-        int pendingBytes = totalLength;
-        int offset = 0;
+        long pendingBytes = totalLength;
+        long offset = 0;
         ContentReader contentReader = new ContentReader(chunkList);
 
         while (pendingBytes > 0) {
-            int newBufferLength = Math.min(pendingBytes, maxChunkSizeLimit);
-            ContentChunk newChunk = new ContentChunk(offset, contentReader.getNextBytes(newBufferLength));
+            long newBufferLength = Math.min(pendingBytes, maxChunkSizeLimit);
+            ContentChunk newChunk = new ContentChunk(offset,
+                                                     contentReader.getNextBytes((int) newBufferLength));
             convertedChunks.add(newChunk);
 
             pendingBytes = pendingBytes - newBufferLength;

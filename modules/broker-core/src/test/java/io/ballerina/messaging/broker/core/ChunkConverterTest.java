@@ -97,13 +97,14 @@ public class ChunkConverterTest {
     }
 
     private static class RandomStringGenerator {
-        private static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        private static final String ALPHA_NUM_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         private static Random rnd = new Random();
 
         private static String randomString(int len) {
             StringBuilder sb = new StringBuilder(len);
-            for (int i = 0; i < len; i++)
-                sb.append(AB.charAt(rnd.nextInt(AB.length())));
+            for (int i = 0; i < len; i++) {
+                sb.append(ALPHA_NUM_CHARS.charAt(rnd.nextInt(ALPHA_NUM_CHARS.length())));
+            }
             return sb.toString();
         }
     }

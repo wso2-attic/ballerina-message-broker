@@ -42,6 +42,8 @@ public class BrokerCoreConfiguration {
 
     private String durableQueueInMemoryCacheLimit = "10000";
 
+    private String maxPersistedChunkSize = "65500";
+
     private DeliveryTask deliveryTask = new DeliveryTask();
 
     /**
@@ -64,6 +66,17 @@ public class BrokerCoreConfiguration {
 
     public void setDurableQueueInMemoryCacheLimit(String durableQueueInMemoryCacheLimit) {
         this.durableQueueInMemoryCacheLimit = durableQueueInMemoryCacheLimit;
+    }
+
+    /**
+     * Getter for maxPersistedChunkSize.
+     */
+    public String getMaxPersistedChunkSize() {
+        return maxPersistedChunkSize;
+    }
+
+    public void setMaxPersistedChunkSize(String maxPersistedChunkSize) {
+        this.maxPersistedChunkSize = maxPersistedChunkSize;
     }
 
     /**

@@ -19,6 +19,8 @@
 
 package io.ballerina.messaging.broker.core.store.dao.impl;
 
+import io.ballerina.messaging.broker.core.ChunkConverter;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.dao.BindingDao;
 import io.ballerina.messaging.broker.core.store.dao.ExchangeDao;
@@ -34,10 +36,16 @@ public class DaoFactory {
 
     private final DataSource dataSource;
     private final BrokerMetricManager metricManager;
+    private final int maxPersistedChunkSize;
+    private ChunkConverter chunkConverter;
 
-    public DaoFactory(DataSource dataSource, BrokerMetricManager metricManager) {
+    public DaoFactory(DataSource dataSource,
+                      BrokerMetricManager metricManager,
+                      BrokerCoreConfiguration configuration) {
         this.dataSource = dataSource;
         this.metricManager = metricManager;
+        maxPersistedChunkSize = Integer.parseInt(configuration.getMaxPersistedChunkSize());
+        chunkConverter = new ChunkConverter(maxPersistedChunkSize);
     }
 
     public QueueDao createQueueDao() {
@@ -45,8 +53,8 @@ public class DaoFactory {
     }
 
     public MessageDao createMessageDao() {
-        return new MessageDaoImpl(new MessageCrudOperationsDao(dataSource, metricManager),
-                                  new DtxCrudOperationsDao(dataSource));
+        return new MessageDaoImpl(new MessageCrudOperationsDao(dataSource, metricManager, chunkConverter),
+                                  new DtxCrudOperationsDao(dataSource, chunkConverter));
     }
 
     public ExchangeDao createExchangeDao() {

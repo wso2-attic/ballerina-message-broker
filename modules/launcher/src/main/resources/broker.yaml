@@ -40,6 +40,10 @@ ballerina.broker.core:
  # performance while increasing the memory consumption.
  durableQueueInMemoryCacheLimit: 10000
 
+ # Maximum size of a chunk that is persisted. We will have to change this value depending on the underline database
+ # used. We have used the  frame size as the limit.
+ maxPersistedChunkSize: 65500
+
  # Configuration related to message delivery task
  deliveryTask:
   # Number of concurrent workers used to process the delivery tasks.
