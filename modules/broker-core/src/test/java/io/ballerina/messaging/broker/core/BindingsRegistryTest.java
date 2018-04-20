@@ -80,7 +80,7 @@ public class BindingsRegistryTest {
         }
         Assert.assertEquals(bindings.size(), 1);
 
-        Binding binding = new Binding(queueHandler.getQueue(), queueName, getFieldTable(selectorOne));
+        Binding binding = new Binding(queueHandler.getUnmodifiableQueue(), queueName, getFieldTable(selectorOne));
         Assert.assertTrue(bindings.contains(binding));
     }
 

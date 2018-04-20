@@ -64,14 +64,14 @@ public final class QueueRegistry {
             if (Objects.isNull(queueHandler)) {
                 if (durable) {
                     queueHandler = queueHandlerFactory.createDurableQueueHandler(queueName, autoDelete);
-                    queueDao.persist(queueHandler.getQueue());
+                    queueDao.persist(queueHandler.getUnmodifiableQueue());
                 } else {
                     queueHandler = queueHandlerFactory.createNonDurableQueueHandler(queueName, autoDelete);
                 }
                 queueHandlerMap.put(queueName, queueHandler);
                 return true;
-            } else if (queueHandler.getQueue().isDurable() != durable
-                       || queueHandler.getQueue().isAutoDelete() != autoDelete) {
+            } else if (queueHandler.getUnmodifiableQueue().isDurable() != durable
+                       || queueHandler.getUnmodifiableQueue().isAutoDelete() != autoDelete) {
                 throw new BrokerException(
                         "Existing queue [ " + queueName + " ] does not match given parameters.");
             } else {
@@ -96,7 +96,7 @@ public final class QueueRegistry {
                     + " ] is not empty and the ifEmpty parameter is set.");
         } else {
             queueHandlerMap.remove(queueName);
-            queueDao.delete(queueHandler.getQueue());
+            queueDao.delete(queueHandler.getUnmodifiableQueue());
             return queueHandler.releaseResources();
         }
     }

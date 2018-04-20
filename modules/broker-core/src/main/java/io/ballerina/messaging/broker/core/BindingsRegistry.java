@@ -63,7 +63,7 @@ public final class BindingsRegistry {
     void bind(QueueHandler queueHandler, String bindingKey, FieldTable arguments) throws BrokerException,
             ValidationException {
         BindingSet bindingSet = bindingPatternToBindingsMap.computeIfAbsent(bindingKey, k -> new BindingSet());
-        Queue queue = queueHandler.getQueue();
+        Queue queue = queueHandler.getUnmodifiableQueue();
         Binding binding = new Binding(queue, bindingKey, arguments);
         boolean success = bindingSet.add(binding);
 
@@ -107,7 +107,7 @@ public final class BindingsRegistry {
         bindingDao.retrieveBindingsForExchange(exchange.getName(), (queueName, bindingKey, filterTable) -> {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
 
-            Binding binding = new Binding(queueHandler.getQueue(), bindingKey, filterTable);
+            Binding binding = new Binding(queueHandler.getUnmodifiableQueue(), bindingKey, filterTable);
             BindingSet bindingSet = bindingPatternToBindingsMap.computeIfAbsent(bindingKey, k -> new BindingSet());
             bindingSet.add(binding);
             queueHandler.addBinding(binding, bindingDeleteListener);

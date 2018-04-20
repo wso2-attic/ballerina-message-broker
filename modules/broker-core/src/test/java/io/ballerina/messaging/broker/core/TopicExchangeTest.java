@@ -94,7 +94,7 @@ public class TopicExchangeTest {
         DbBackedQueueHandlerFactory factory = new DbBackedQueueHandlerFactory(null, new NullBrokerMetricManager(),
                                                                               new BrokerCoreConfiguration());
         QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
-        Queue queue = handler.getQueue();
+        Queue queue = handler.getUnmodifiableQueue();
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);
         topicExchange.unbind(queue, subscribedPattern);
 

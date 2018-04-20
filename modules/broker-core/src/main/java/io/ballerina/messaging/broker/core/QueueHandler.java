@@ -77,7 +77,7 @@ public final class QueueHandler {
         bindingChangeListenersMap = new ConcurrentHashMap<>();
     }
 
-    public Queue getQueue() {
+    public Queue getUnmodifiableQueue() {
         return unmodifiableQueueView;
     }
 
