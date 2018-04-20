@@ -30,6 +30,7 @@ These configurations are defined under the namespace `ballerina.broker.core`.
 | durableQueueInMemoryCacheLimit | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. | 
 | deliveryTask:workerCount    | 5                                      | Number of concurrent workers used to process the delivery tasks. |
 | deliveryTask:idleTaskDelay  | 50                                     | The time that the delivery task will wait when the queue is empty or no consumers are available for message delivery in milliseconds.  |
+| deliveryTask:deliveryBatchSize | 1000                                | Messages are delivered to consumers in batches by the delivery task. Following configuration changes the default message delivery batch size.
 | authenticator:loginModule   | io.ballerina.messaging.broker.core .security.authentication.jaas.BrokerLoginModule | JAAS login module used to authenticate users. |
 
 ### AMQP transport configurations

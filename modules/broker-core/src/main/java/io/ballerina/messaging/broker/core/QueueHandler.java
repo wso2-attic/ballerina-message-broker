@@ -66,7 +66,6 @@ public final class QueueHandler {
         this.queue = queue;
         queue.setQueueHandler(this);
         unmodifiableQueueView = new UnmodifiableQueueWrapper(queue);
-        // TODO: take message count from queue configuration
         // We create an unbounded redelivery queue since we keep the messages which are already in memory which does
         // not increase memory usage. When loading data to memory we should consider messages in both queue and
         // redelivery queue data structures.

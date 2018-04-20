@@ -85,6 +85,8 @@ public class BrokerCoreConfiguration {
 
         private String idleTaskDelay = "50";
 
+        private String deliveryBatchSize = "1000";
+
         /**
          * Getter for workerCount.
          */
@@ -105,6 +107,14 @@ public class BrokerCoreConfiguration {
 
         public void setIdleTaskDelay(String idleTaskDelay) {
             this.idleTaskDelay = idleTaskDelay;
+        }
+
+        public String getDeliveryBatchSize() {
+            return deliveryBatchSize;
+        }
+
+        public void setDeliveryBatchSize(String deliveryBatchSize) {
+            this.deliveryBatchSize = deliveryBatchSize;
         }
     }
 }
