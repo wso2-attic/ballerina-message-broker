@@ -36,7 +36,6 @@ public class DaoFactory {
 
     private final DataSource dataSource;
     private final BrokerMetricManager metricManager;
-    private final int maxPersistedChunkSize;
     private ChunkConverter chunkConverter;
 
     public DaoFactory(DataSource dataSource,
@@ -44,7 +43,7 @@ public class DaoFactory {
                       BrokerCoreConfiguration configuration) {
         this.dataSource = dataSource;
         this.metricManager = metricManager;
-        maxPersistedChunkSize = Integer.parseInt(configuration.getMaxPersistedChunkSize());
+        int maxPersistedChunkSize = Integer.parseInt(configuration.getMaxPersistedChunkSize());
         chunkConverter = new ChunkConverter(maxPersistedChunkSize);
     }
 
