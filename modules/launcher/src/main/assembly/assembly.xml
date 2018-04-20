@@ -59,6 +59,7 @@
                 <include>broker.sh</include>
                 <include>broker.bat</include>
                 <include>broker-admin.sh</include>
+                <include>broker-admin.bat</include>
                 <include>ciphertool.sh</include>
                 <include>ciphertool.bat</include>
             </includes>

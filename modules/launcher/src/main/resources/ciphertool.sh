@@ -62,11 +62,15 @@ fi
 echo JAVA_HOME environment variable is set to $JAVA_HOME
 echo MESSAGE_BROKER_HOME environment variable is set to $MESSAGE_BROKER_HOME
 
-cd "$MESSAGE_BROKER_HOME";
+MESSAGE_BROKER_CLASSPATH="$MESSAGE_BROKER_HOME/lib/*"
 
 $JAVACMD \
+    -Xms256m -Xmx1024m \
+    -XX:+HeapDumpOnOutOfMemoryError \
+    -XX:HeapDumpPath="$MESSAGE_BROKER_HOME/heap-dump.hprof" \
+    -classpath "$MESSAGE_BROKER_CLASSPATH" \
     -Dmessage.broker.home="$MESSAGE_BROKER_HOME" \
     -Dbroker.config="$MESSAGE_BROKER_HOME/conf/broker.yaml" \
-    -cp "lib/*" io.ballerina.messaging.secvault.ciphertool.CipherToolInitializer $*
+    io.ballerina.messaging.secvault.ciphertool.CipherToolInitializer $*
 
 echo DONE!

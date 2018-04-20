@@ -88,11 +88,7 @@ if [ "$CMD" = "--debug" ]; then
   echo "Please start the remote debugging client to continue..."
 fi
 
-MESSAGE_BROKER_CLASSPATH=""
-for j in "$MESSAGE_BROKER_HOME"/lib/*.jar
-do
-    MESSAGE_BROKER_CLASSPATH="$MESSAGE_BROKER_CLASSPATH":$j
-done
+MESSAGE_BROKER_CLASSPATH="$MESSAGE_BROKER_HOME/lib/*"
 
 # Add following options in java command to enable remote JMX monitoring.
 # Please note that you have to use the machine IP instead of '127.0.0.1'.

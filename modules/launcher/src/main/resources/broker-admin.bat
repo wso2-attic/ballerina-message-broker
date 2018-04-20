@@ -26,28 +26,24 @@ if not exist "%JAVA_HOME%\bin\java.exe" goto noJavaHome
 goto checkServer
 
 :noJavaHome
-echo "You must set the JAVA_HOME variable before running BROKER."
+echo "You must set the JAVA_HOME variable before running the Broker"
 goto end
 
-rem ----- Only set MESSAGE_BROKER_HOME if not already set ----------------------------
+rem ----- set MESSAGE_BROKER_HOME ----------------------------
 :checkServer
 rem %~sdp0 is expanded pathname of the current script under NT with spaces in the path removed
-if "%MESSAGE_BROKER_HOME%"=="" set MESSAGE_BROKER_HOME=%~sdp0..
+set MESSAGE_BROKER_HOME=%~sdp0..
 SET curDrive=%cd:~0,1%
-SET wsasDrive=%MESSAGE_BROKER_HOME:~0,1%
+SET brokerDrive=%MESSAGE_BROKER_HOME:~0,1%
 if not "%curDrive%" == "%brokerDrive%" %brokerDrive%:
 
-goto runTool
+goto runCli
 
 rem ----------------- Execute The Requested Command ----------------------------
-:runTool
-echo JAVA_HOME environment variable is set to %JAVA_HOME%
-echo MESSAGE_BROKER_HOME environment variable is set to %MESSAGE_BROKER_HOME%
+:runCli
 
-set CMD_LINE_ARGS= -Dmessage.broker.home="%MESSAGE_BROKER_HOME%"  -Dbroker.config="%MESSAGE_BROKER_HOME%\conf\broker.yaml"
-"%JAVA_HOME%\bin\java" -classpath %MESSAGE_BROKER_HOME%\lib\* %CMD_LINE_ARGS% io.ballerina.messaging.secvault.ciphertool.CipherToolInitializer %*
-
-echo DONE!
+set CMD_LINE_ARGS= -Dmessage.broker.home="%MESSAGE_BROKER_HOME%"  -Dbroker.config="%MESSAGE_BROKER_HOME%\conf\cli-config.yaml"
+"%JAVA_HOME%\bin\java" -classpath %MESSAGE_BROKER_HOME%\lib\* %CMD_LINE_ARGS% io.ballerina.messaging.broker.client.Main %0 %*
 
 :end
 goto endlocal
