@@ -30,7 +30,7 @@ import java.net.URISyntaxException;
 public class HttpClientHelper {
 
     public static String getRestApiBasePath(String brokerHost, String port) throws URISyntaxException {
-        return "http://" + brokerHost + ":" + port + BrokerAdminService.API_BASE_PATH;
+        return "https://" + brokerHost + ":" + port + BrokerAdminService.API_BASE_PATH;
     }
 
     public static <T> T getResponseMessage(CloseableHttpResponse response, Class<T> responseType) throws IOException {

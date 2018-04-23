@@ -81,6 +81,10 @@ public class DefaultSuiteInitializer {
         DataSource dataSource = DbUtils.getDataSource();
         startupContext.registerService(DataSource.class, dataSource);
 
+        // set client truststore for SSL communication between client and message broker
+        System.setProperty("javax.net.ssl.trustStore", "src/test/resources/security/client-truststore.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "ballerina");
+
         AuthManager authManager = new AuthManager(startupContext);
 
         authManager.start();
@@ -94,6 +98,9 @@ public class DefaultSuiteInitializer {
 
     @AfterSuite
     public void afterSuite(ITestContext context) {
+        // clear client truststore
+        System.clearProperty("javax.net.ssl.trustStore");
+        System.clearProperty("javax.net.ssl.trustStorePassword");
         System.gc(); // Hint JVM to clear unreference objects. Just to help detect ByteBuf object leaks.
         restServer.stop();
         server.stop();

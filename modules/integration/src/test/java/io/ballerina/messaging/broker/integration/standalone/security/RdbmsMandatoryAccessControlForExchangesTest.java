@@ -93,8 +93,8 @@ public class RdbmsMandatoryAccessControlForExchangesTest {
         CloseableHttpResponse response = client.execute(httpPost);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
-        Assert.assertEquals(response.getFirstHeader(HttpHeaders.LOCATION).getValue(),
-                apiBasePath + "/exchanges/" + "adminUserExchange", "Incorrect location header");
+        Assert.assertTrue(response.getFirstHeader(HttpHeaders.LOCATION)
+                        .getValue().contains("/exchanges/" + "adminUserExchange"), "Incorrect location header");
 
     }
 

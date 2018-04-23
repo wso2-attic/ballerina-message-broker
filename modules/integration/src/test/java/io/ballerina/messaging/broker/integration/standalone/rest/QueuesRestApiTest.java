@@ -110,8 +110,8 @@ public class QueuesRestApiTest {
         CloseableHttpResponse response = client.execute(httpPost);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
-        Assert.assertEquals(response.getFirstHeader(HttpHeaders.LOCATION).getValue(),
-                            apiBasePath + "/queues/" + queueName,
+        Assert.assertTrue(response.getFirstHeader(HttpHeaders.LOCATION)
+                        .getValue().contains("/queues/" + queueName),
                             "Incorrect location header");
 
         String body = responseHandler.handleResponse(response);

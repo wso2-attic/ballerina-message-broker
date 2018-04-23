@@ -112,8 +112,8 @@ public class ExchangesRestApiTest {
         CloseableHttpResponse response = client.execute(httpPost);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
-        Assert.assertEquals(response.getFirstHeader(HttpHeaders.LOCATION).getValue(),
-                            apiBasePath + "/exchanges/" + exchangeName,
+        Assert.assertTrue(response.getFirstHeader(HttpHeaders.LOCATION)
+                        .getValue().contains("/exchanges/" + exchangeName),
                             "Incorrect location header");
 
 
