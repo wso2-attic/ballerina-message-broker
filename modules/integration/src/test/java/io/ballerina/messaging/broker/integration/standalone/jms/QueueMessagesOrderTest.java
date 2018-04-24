@@ -232,7 +232,7 @@ public class QueueMessagesOrderTest {
             try {
                 for (int i = 0; i < numberOfMessages; i++) {
 
-                    TextMessage message = (TextMessage) consumerOne.receive(1000);
+                    TextMessage message = (TextMessage) consumerOne.receive(5000);
                     if (Objects.isNull(message)) {
                         break;
                     }
@@ -252,7 +252,7 @@ public class QueueMessagesOrderTest {
             try {
                 for (int i = 0; i < numberOfMessages; i++) {
 
-                    TextMessage message = (TextMessage) consumerTwo.receive(1000);
+                    TextMessage message = (TextMessage) consumerTwo.receive(5000);
                     if (Objects.isNull(message)) {
                         break;
                     }
