@@ -36,7 +36,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -48,6 +47,9 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Tests for Exchange resource permission grant REST API.
@@ -82,8 +84,8 @@ public class ExchangesGrantRestApiTest {
     }
 
     @BeforeMethod
-    public void setup() throws URISyntaxException {
-        client = HttpClients.createDefault();
+    public void setup() throws URISyntaxException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        client = HttpClientHelper.prepareClient();
         brokerRestApiClient = new BrokerRestApiClient(userName, password, port, brokerHost);
     }
 

@@ -35,7 +35,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -47,6 +46,9 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -81,8 +83,9 @@ public class RdbmsDiscretionaryAccessControlForQueuesTest {
     public void setup(String brokerHostname,
                       String port,
                       String adminUsername,
-                      String adminPassword) throws URISyntaxException {
-        client = HttpClients.createDefault();
+                      String adminPassword) throws URISyntaxException, NoSuchAlgorithmException, KeyStoreException,
+            KeyManagementException {
+        client = HttpClientHelper.prepareClient();
         brokerRestApiClient = new BrokerRestApiClient(adminUsername, adminPassword, port, brokerHostname);
     }
 

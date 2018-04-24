@@ -22,10 +22,21 @@ package io.ballerina.messaging.broker.integration.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import javax.net.ssl.SSLContext;
 
 public class HttpClientHelper {
 
@@ -39,5 +50,12 @@ public class HttpClientHelper {
         return objectMapper.readValue(responsePayloadString, responseType);
     }
 
-
+    public static CloseableHttpClient prepareClient()
+            throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        SSLContext sslContext = SSLContexts.custom()
+                .loadTrustMaterial(null, (TrustStrategy) (chain, authType) -> true).build();
+        SSLConnectionSocketFactory factory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+        HttpClientBuilder builder = HttpClients.custom().setSSLSocketFactory(factory);
+        return builder.build();
+    }
 }

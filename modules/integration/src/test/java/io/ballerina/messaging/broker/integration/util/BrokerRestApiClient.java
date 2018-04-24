@@ -35,11 +35,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.testng.Assert;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Rest api client class to for testing purposes
@@ -57,11 +59,12 @@ public class BrokerRestApiClient {
     private final ObjectMapper objectMapper;
 
     public BrokerRestApiClient(String userName, String password,
-                               String restPort, String hostname) throws URISyntaxException {
+                               String restPort, String hostname) throws URISyntaxException, NoSuchAlgorithmException,
+            KeyStoreException, KeyManagementException {
         this.userName = userName;
         this.password = password;
         this.apiBasePath = HttpClientHelper.getRestApiBasePath(hostname, restPort);
-        this.httpClient = HttpClients.createDefault();
+        this.httpClient = HttpClientHelper.prepareClient();
         objectMapper = new ObjectMapper();
     }
 
