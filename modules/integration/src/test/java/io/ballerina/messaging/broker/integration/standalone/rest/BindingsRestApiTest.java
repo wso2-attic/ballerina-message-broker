@@ -36,7 +36,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -47,6 +46,9 @@ import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -83,8 +85,8 @@ public class BindingsRestApiTest {
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
     @BeforeMethod
     public void setup(String username, String password, String brokerHost, String brokerPort)
-            throws IOException, TimeoutException {
-        client = HttpClients.createDefault();
+            throws IOException, TimeoutException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        client = HttpClientHelper.prepareClient();
         amqpConnection = ClientHelper.getAmqpConnection(username, password, brokerHost, brokerPort);
         this.username = username;
         this.password = password;

@@ -37,7 +37,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -48,6 +47,9 @@ import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
@@ -79,8 +81,8 @@ public class QueuesRestApiTest {
     }
 
     @BeforeMethod
-    public void setup() {
-        client = HttpClients.createDefault();
+    public void setup() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        client = HttpClientHelper.prepareClient();
     }
 
     @AfterClass
@@ -110,8 +112,8 @@ public class QueuesRestApiTest {
         CloseableHttpResponse response = client.execute(httpPost);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_CREATED);
-        Assert.assertEquals(response.getFirstHeader(HttpHeaders.LOCATION).getValue(),
-                            apiBasePath + "/queues/" + queueName,
+        Assert.assertTrue(response.getFirstHeader(HttpHeaders.LOCATION)
+                        .getValue().contains("/queues/" + queueName),
                             "Incorrect location header");
 
         String body = responseHandler.handleResponse(response);
