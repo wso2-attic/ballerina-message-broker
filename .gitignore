@@ -33,3 +33,6 @@ target
 /modules/features/io.ballerina.messaging.broker.feature/src/main/resources/database
 /modules/features/io.ballerina.messaging.broker.feature/src/main/resources/dbscripts
 /modules/broker-core/.swagger-codegen/
+
+/dockerfiles/files/*
+!/dockerfiles/files/.gitkeep
