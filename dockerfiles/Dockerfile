@@ -38,7 +38,7 @@ ARG BROKER_HOME=${USER_HOME}/${BROKER_DISTRIBUTION}
 RUN addgroup -S ${USER_GROUP} && adduser -S -G ${USER_GROUP} ${USER}
 
 # Copy message broker distribution to user's home directory
-COPY --chown=ballerina:wso2 ${FILES}/${BROKER_DISTRIBUTION} ${BROKER_HOME}
+COPY --chown=ballerina:ballerina ${FILES}/${BROKER_DISTRIBUTION} ${BROKER_HOME}
 
 # set the user and work directory
 USER ${USER}
