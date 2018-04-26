@@ -22,7 +22,7 @@ MAINTAINER WSO2 Docker Maintainers "dev@wso2.org"
 
 # User details
 ARG USER=ballerina
-ARG USER_GROUP=wso2
+ARG USER_GROUP=ballerina
 ARG USER_HOME=/home/${USER}
 
 # Resource directory
@@ -44,7 +44,7 @@ COPY --chown=ballerina:wso2 ${FILES}/${BROKER_DISTRIBUTION} ${BROKER_HOME}
 USER ${USER}
 WORKDIR ${USER_HOME}
 
-# set environment variable
+# Set environment variable
 ENV BROKER_HOME ${BROKER_HOME}
 
 # Expose broker ports
