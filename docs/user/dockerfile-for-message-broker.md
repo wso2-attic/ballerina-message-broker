@@ -8,10 +8,10 @@ and run with desired Java distribution.
 
 ## How to build an image and run
 
-1. Build the ballerina-message-broker repo to generated the distribution.
+1. Download released distribution or build the ballerina-message-broker repo to generated the distribution. You can 
+find the generated distribution in **modules/launcher/target** folder.
 
-2. You can find the distribution in **modules/launcher/target** folder. Extract the zip file and copy it to the 
-**dockerfiles/files** folder.
+2. Extract the zip file and copy it to the **dockerfiles/files** folder.
 
 3. Open the **dockerfiles/Dockerfile** and edit **BROKER_VERSION** according to the built version. The current version 
 is **0.970.0.rc1**. 
