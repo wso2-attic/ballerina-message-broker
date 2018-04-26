@@ -44,9 +44,9 @@ public class DeleteExchangeCmd extends DeleteCmd {
                required = true)
     private String exchangeName;
 
-    @Parameter(names = { "--unused", "-u" },
-               description = "delete only if the exchange is not in use")
-    private boolean ifUnused = false;
+    @Parameter(names = { "--force-used", "-u" },
+               description = "force delete already in use exchange")
+    private boolean forceUsed = false;
 
     public DeleteExchangeCmd(String rootCommand) {
         super(rootCommand);
@@ -63,8 +63,8 @@ public class DeleteExchangeCmd extends DeleteCmd {
         HttpClient httpClient = new HttpClient(configuration);
         HttpRequest httpRequest = new HttpRequest(Constants.EXCHANGES_URL_PARAM + exchangeName);
 
-        if (ifUnused) {
-            httpRequest.setQueryParameters("?ifUnused=true");
+        if (forceUsed) {
+            httpRequest.setQueryParameters("?ifUnused=false");
         }
 
         // do DELETE

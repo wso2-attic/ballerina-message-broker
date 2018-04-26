@@ -100,10 +100,10 @@ Result output format (--output, -o) (default: table) (allowed values: table, csv
 Exchanges can be deleted from the Broker using the CLI.
 
 #### Command format:
-`./broker-admin.sh delete exchange (exchange_name)? (--unused|-u)? (global_flags)*`
+`./broker-admin.sh delete exchange (exchange_name)? (--force-used|-u)? (global_flags)*`
 
 #### Options:
-Delete only if unused (--unused, -u) (default: false/not set by default) 
+Force delete exchange with bindings (--force-used, -u) (default: false/not set by default)
 
 #### Sample commands:
 Delete a specific exchange if its unused<br/>
@@ -156,14 +156,14 @@ Result output format (--output, -o) (default: table) (allowed values: table, csv
 Queues can be deleted from the Broker using the CLI.
 
 #### Command format:
-`./broker-admin.sh delete queue (queue_name)? (--unused|-u)? (--empty|-e)? (global_flags)*`
+`./broker-admin.sh delete queue (queue_name)? (--force-used|-u)? (--force-non-empty|-e)? (global_flags)*`
 
 #### Options:
-- Delete only if unused (--unused, -u) (default: false/not set by default)<br/> 
-- Delete only if empty (--empty, -e) (default: false/not set by default) 
+- Force delete queue with consumers (--force-used, -u) (default: false/not set by default)<br/>
+- Force delete non empty queue (--force-non-empty, -e) (default: false/not set by default)
 
 #### Sample commands:
-Delete a specific exchange if its unused<br/>
+Delete a specific exchange if it's unused<br/>
 `./broker-admin.sh delete exchange my_exchange -u`
 
 ## 4. Bindings related administrative operations

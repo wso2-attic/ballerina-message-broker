@@ -44,13 +44,13 @@ public class DeleteQueueCmd extends DeleteCmd {
                required = true)
     private String queueName;
 
-    @Parameter(names = { "--unused", "-u" },
-               description = "delete only if the queue is not in use")
-    private boolean ifUnused = false;
+    @Parameter(names = { "--force-used", "-u" },
+               description = "force delete already in use queue")
+    private boolean forceUsed = false;
 
-    @Parameter(names = { "--empty", "-e" },
-               description = "delete only if the queue is empty")
-    private boolean ifEmpty = false;
+    @Parameter(names = { "--force-non-empty", "-e" },
+               description = "force delete non empty queue")
+    private boolean forceNonEmpty = false;
 
     public DeleteQueueCmd(String rootCommand) {
         super(rootCommand);
@@ -67,7 +67,8 @@ public class DeleteQueueCmd extends DeleteCmd {
         HttpClient httpClient = new HttpClient(configuration);
         HttpRequest httpRequest = new HttpRequest(Constants.QUEUES_URL_PARAM + queueName);
 
-        httpRequest.setQueryParameters("?ifUnused=" + String.valueOf(ifUnused) + "&ifEmpty=" + String.valueOf(ifEmpty));
+        httpRequest.setQueryParameters("?ifUnused=" + String.valueOf(!forceUsed)
+                                               + "&ifEmpty=" + String.valueOf(!forceNonEmpty));
 
         // do DELETE
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_DELETE);
