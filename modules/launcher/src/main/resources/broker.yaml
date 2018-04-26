@@ -95,7 +95,7 @@ ballerina.broker.auth:
 # AMQP transport related configurations.
 ballerina.broker.transport.amqp:
  # Hostname configuration used in creating the server socket
- hostName: localhost
+ hostName: 0.0.0.0
 
  # Maximum number of redeliveries before publishing a message to the DLX (dead letter exchange).
  maxRedeliveryCount: 5
