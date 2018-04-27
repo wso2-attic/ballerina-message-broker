@@ -27,7 +27,7 @@ version is **0.970.0**.
     
 ## Docker image in Docker Hub
 
-1. Pull Ballerina Message Broker from the [Docker Hub](https://hub.docker.com/r/ballerina/ballerina/) with relevant tag. 
+1. Pull Ballerina Message Broker from the [Docker Hub](https://hub.docker.com/r/ballerina/message-broker/) with relevant tag. 
     ```
     docker pull ballerina/message-broker:0.970.0
     ```
