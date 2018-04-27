@@ -24,3 +24,15 @@ version is **0.970.0**.
     ```
     docker run -d -p 5672:5672 -p 8672:8672 -p 9000:9000 message-broker:0.970.0
     ```
+    
+## Docker image in Docker Hub
+
+1. Pull Ballerina Message Broker from the [Docker Hub](https://hub.docker.com/r/ballerina/ballerina/) with relevant tag. 
+    ```
+    docker pull ballerina/message-broker:0.970.0
+    ```
+    
+2. Run Ballerina Message Broker docker image.
+    ```
+    docker run -d -p 5672:5672 -p 8672:8672 -p 9000:9000 ballerina/message-broker:0.970.0
+    ```
