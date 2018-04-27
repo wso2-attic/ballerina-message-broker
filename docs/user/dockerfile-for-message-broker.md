@@ -18,9 +18,9 @@ version is **0.970.0**.
 
 4. Navigate to **dockerfiles** folder and run docker build command.
     ```
-    docker build -t message-broker:0.970.0.rc1 .
+    docker build -t message-broker:0.970.0 .
     ```
 5. Run Ballerina Message Broker docker image.
     ```
-    docker run -d -p 5672:5672 -p 8672:8672 -p 9000:9000 message-broker:0.970.0.rc1
+    docker run -d -p 5672:5672 -p 8672:8672 -p 9000:9000 message-broker:0.970.0
     ```
