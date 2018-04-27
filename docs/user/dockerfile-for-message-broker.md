@@ -14,7 +14,7 @@ find the generated distribution in **modules/launcher/target** folder.
 2. Extract the zip file and copy it to the **dockerfiles/files** folder.
 
 3. Open the **dockerfiles/Dockerfile** and edit **BROKER_VERSION** according to the released version. The current 
-version is **0.970.0.rc1**. 
+version is **0.970.0**.
 
 4. Navigate to **dockerfiles** folder and run docker build command.
     ```
