@@ -23,7 +23,7 @@ Please follow the steps below to build message broker from source code.
 │   ├── broker-admin.sh
 │   ├── broker-admin.bat
 │   ├── broker.bat
-│   ├── broker.sh
+│   ├── broker
 │   ├── ciphertool.bat
 │   └── ciphertool.sh
 ├── conf
@@ -44,7 +44,7 @@ Please follow the steps below to build message broker from source code.
 
 ```
 
-- **bin/broker.sh** - executable used to run message broker
+- **bin/broker** - executable used to run message broker
 - **bin/broker.bat** - windows executable used to run message broker
 - **bin/broker-admin.sh** - executable used to start message broker cli client
 - **bin/broker-admin.bat** - windows executable used to start message broker cli client

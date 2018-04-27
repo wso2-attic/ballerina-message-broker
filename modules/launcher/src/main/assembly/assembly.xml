@@ -56,7 +56,7 @@
             <directory>src/main/resources/</directory>
             <outputDirectory>bin</outputDirectory>
             <includes>
-                <include>broker.sh</include>
+                <include>broker</include>
                 <include>broker.bat</include>
                 <include>broker-admin.sh</include>
                 <include>broker-admin.bat</include>

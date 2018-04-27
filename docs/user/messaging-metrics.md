@@ -120,7 +120,7 @@ These configs are extracted from the
 
 ### Accessing JMX Remotely
 
-If you need to access JMX interface remotely you will have to add following JVM parameters in the broker.sh file 
+If you need to access JMX interface remotely you will have to add following JVM parameters in the 'broker' file
 where we have defined the Java command to run broker. Please note that you have to use the machine IP instead of 
 `127 .0.0.1`. 
 

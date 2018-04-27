@@ -51,4 +51,4 @@ ENV BROKER_HOME ${BROKER_HOME}
 EXPOSE 5672 8672 9000
 
 # Execute broker startup script
-CMD ["sh", "-c", "${BROKER_HOME}/bin/broker.sh"]
+CMD ["sh", "-c", "${BROKER_HOME}/bin/broker"]

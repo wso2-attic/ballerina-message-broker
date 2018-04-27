@@ -82,6 +82,6 @@ implementation details.
         };
 
 2. Set the jaas config file path with java system property with name java.security.auth.login.config. As an example
-property can be added to broker.sh (located at <BROKER_HOME>/bin/broker.sh) .
+property can be added to broker (located at <BROKER_HOME>/bin/broker) .
 
         -Djava.security.auth.login.config="<Path to file>/jaas.conf" \
