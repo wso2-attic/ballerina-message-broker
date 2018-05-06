@@ -21,6 +21,8 @@ package io.ballerina.messaging.broker.core.queue;
 
 import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +37,8 @@ import java.util.function.Consumer;
  * Used to track messages for the queue.
  */
 public class QueueBuffer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueueBuffer.class);
 
     /**
      * Maximum number of messages held in memory.
@@ -174,7 +178,7 @@ public class QueueBuffer {
      */
     private void postProcessDeliverableNode() {
         Node newNode = last;
-        if (size.get() > inMemoryLimit) {
+        if ((size.get() - indelibleMessageCount.get()) > inMemoryLimit) {
 
             if (Objects.isNull(firstUndeliverable)) {
                 firstUndeliverable = newNode;
@@ -356,10 +360,11 @@ public class QueueBuffer {
         int fillableMessageCount = inMemoryLimit - deliverableMessageCount.get();
 
         Node undeliverableNode = this.firstUndeliverable;
-        while (fillableMessageCount-- > 0 && undeliverableNode != null) {
+        while (fillableMessageCount > 0 && undeliverableNode != null) {
             if (undeliverableNode.state.compareAndSet(Node.BARE_MESSAGE, Node.SUBMITTED_FOR_FILLING)) {
                 Message message = undeliverableNode.item;
                 messageReader.fill(this, message);
+                fillableMessageCount--;
             } else {
                 break;
             }
@@ -369,21 +374,27 @@ public class QueueBuffer {
     }
 
     public void markMessageFilled(Message message) {
-        Node node = keyMap.get(message.getInternalId());
+        long messageId = message.getInternalId();
+        Node node = keyMap.get(messageId);
         if (Objects.nonNull(node)) {
             node.state.set(Node.FULL_MESSAGE);
             deliverableMessageCount.incrementAndGet();
+        } else {
+            LOGGER.warn("Could not find message {} for marking content filling", messageId);
         }
     }
 
     public void markMessageFillFailed(Message message) {
-        Node node = keyMap.get(message.getInternalId());
+        long messageId = message.getInternalId();
+        Node node = keyMap.get(messageId);
         if (Objects.nonNull(node)) {
             node.state.set(Node.BARE_MESSAGE);
+        } else {
+            LOGGER.warn("Could not find message {} for marking content filling failure", messageId);
         }
     }
 
-    public synchronized void addAll(List<Message> messages) {
+    synchronized void addAll(List<Message> messages) {
         for (Message message: messages) {
             add(message);
         }
@@ -422,7 +433,7 @@ public class QueueBuffer {
             this.prev = prev;
         }
 
-        public boolean hasContent() {
+        boolean hasContent() {
             int stateValue = state.get();
             return stateValue == FULL_MESSAGE || stateValue == INDELIBLE_MESSAGE;
         }
