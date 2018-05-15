@@ -46,6 +46,8 @@ public class BrokerCoreConfiguration {
 
     private DeliveryTask deliveryTask = new DeliveryTask();
 
+    private MessageExpiryTask messageExpiryTask = new MessageExpiryTask();
+
     /**
      * Getter for nonDurableQueueMaxDepth.
      */
@@ -88,6 +90,44 @@ public class BrokerCoreConfiguration {
 
     public void setDeliveryTask(DeliveryTask deliveryTask) {
         this.deliveryTask = deliveryTask;
+    }
+
+    public MessageExpiryTask getMessageExpiryTask() {
+        return messageExpiryTask;
+    }
+
+    /**
+     * Represent MessageExpiryTask related configurations
+     */
+    public static class MessageExpiryTask {
+
+        private String workerCount = "5";
+        private String idleTaskDelay = "50";
+        private String expiryCheckBatchSize = "1000";
+
+        public String getWorkerCount() {
+            return workerCount;
+        }
+
+        public void setWorkerCount(String workerCount) {
+            this.workerCount = workerCount;
+        }
+
+        public String getIdleTaskDelay() {
+            return idleTaskDelay;
+        }
+
+        public void setIdleTaskDelay(String idleTaskDelay) {
+            this.idleTaskDelay = idleTaskDelay;
+        }
+
+        public String getExpiryCheckBatchSize() {
+            return expiryCheckBatchSize;
+        }
+
+        public void setExpiryCheckBatchSize(String expiryCheckBatchSize) {
+            this.expiryCheckBatchSize = expiryCheckBatchSize;
+        }
     }
 
     /**

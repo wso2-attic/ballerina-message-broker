@@ -42,6 +42,7 @@ import io.ballerina.messaging.broker.core.store.DbBackedStoreFactory;
 import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
 import io.ballerina.messaging.broker.core.store.MessageStore;
 import io.ballerina.messaging.broker.core.store.StoreFactory;
+import io.ballerina.messaging.broker.core.task.Task;
 import io.ballerina.messaging.broker.core.task.TaskExecutorService;
 import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
 import io.ballerina.messaging.broker.core.transaction.BrokerTransactionFactory;
@@ -99,6 +100,8 @@ public final class BrokerImpl implements Broker {
 
     private final TaskExecutorService<MessageDeliveryTask> deliveryTaskService;
 
+    private final TaskExecutorService<Task> messageExpiryTaskService;
+
     private final ExchangeRegistry exchangeRegistry;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -106,6 +109,8 @@ public final class BrokerImpl implements Broker {
     private final MessageStore messageStore;
 
     private final MessageDeliveryTaskFactory messageDeliveryTaskFactory;
+
+    private final MessageExpiryTaskFactory messageExpiryTaskFactory;
 
     public BrokerImpl(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
@@ -121,7 +126,15 @@ public final class BrokerImpl implements Broker {
         queueRegistry = storeFactory.getQueueRegistry();
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
-        this.deliveryTaskService = createTaskExecutorService(configuration);
+        this.deliveryTaskService = createDeliveryTaskExecutorService(configuration);
+        this.messageExpiryTaskService = createMessageExpiryTaskExecutorService();
+        DLXMover dlxMover = new DLXMover() {
+            @Override
+            public void moveMessageToDlc(String queueName, Message message) throws BrokerException {
+                moveToDlc(queueName, message);
+            }
+        };
+        this.messageExpiryTaskFactory = new MessageExpiryTaskFactory(configuration.getMessageExpiryTask(), dlxMover);
         this.messageDeliveryTaskFactory = new MessageDeliveryTaskFactory(configuration.getDeliveryTask());
         initDefaultDeadLetterQueue();
 
@@ -198,12 +211,19 @@ public final class BrokerImpl implements Broker {
         }
     }
 
-    private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerCoreConfiguration configuration) {
+    private TaskExecutorService<MessageDeliveryTask>
+    createDeliveryTaskExecutorService(BrokerCoreConfiguration configuration) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageDeliveryTaskThreadPool-%d")
                 .build();
         int workerCount = Integer.parseInt(configuration.getDeliveryTask().getWorkerCount());
         int idleTaskDelay = Integer.parseInt(configuration.getDeliveryTask().getIdleTaskDelay());
         return new TaskExecutorService<>(workerCount, idleTaskDelay, threadFactory);
+    }
+
+    private TaskExecutorService<Task> createMessageExpiryTaskExecutorService() {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageExpiryTaskThreadPool-%d")
+                .build();
+        return new TaskExecutorService<>(5, 50, threadFactory);
     }
 
     @Override
@@ -418,10 +438,15 @@ public final class BrokerImpl implements Broker {
         lock.writeLock().lock();
         try {
             boolean queueAdded = queueRegistry.addQueue(queueName, passive, durable, autoDelete);
+            QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
             if (queueAdded) {
-                QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
                 // We need to bind every queue to the default exchange
                 exchangeRegistry.getDefaultExchange().bind(queueHandler, queueName, FieldTable.EMPTY_TABLE);
+            } else {
+                // Do not check expired messages in DLQ
+                if (!queueName.equals(DEFAULT_DEAD_LETTER_QUEUE)) {
+                    messageExpiryTaskService.add(messageExpiryTaskFactory.create(queueHandler));
+                }
             }
             return queueAdded;
         } finally {
@@ -434,6 +459,7 @@ public final class BrokerImpl implements Broker {
             ValidationException, ResourceNotFoundException {
         lock.writeLock().lock();
         try {
+            messageExpiryTaskService.remove(queueName);
             return queueRegistry.removeQueue(queueName, ifUnused, ifEmpty);
         } finally {
             lock.writeLock().unlock();
@@ -520,6 +546,8 @@ public final class BrokerImpl implements Broker {
     public void stopMessageDelivery() {
         LOGGER.info("Stopping message delivery threads.");
         deliveryTaskService.stop();
+        LOGGER.info("Stopping message expiry checking threads.");
+        messageExpiryTaskService.stop();
     }
 
     @Override
@@ -662,6 +690,8 @@ public final class BrokerImpl implements Broker {
         public void startMessageDelivery() {
             LOGGER.info("Starting message delivery threads.");
             deliveryTaskService.start();
+            LOGGER.info("Starting message expiry checking threads.");
+            messageExpiryTaskService.start();
         }
 
         public void shutdown() {

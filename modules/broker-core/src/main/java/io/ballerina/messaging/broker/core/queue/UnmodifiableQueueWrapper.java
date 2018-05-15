@@ -23,7 +23,7 @@ import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Queue;
 import io.ballerina.messaging.broker.core.QueueHandler;
-
+import java.util.Set;
 import javax.transaction.xa.Xid;
 
 /**
@@ -76,6 +76,11 @@ public class UnmodifiableQueueWrapper extends Queue {
     @Override
     public Message dequeue() {
         throw new UnsupportedOperationException("Queue " + queue.getName() + " is unmodifiable");
+    }
+
+    @Override
+    public void getExpired(Set<Message> expiredMessages, int capacity) {
+        queue.getExpired(expiredMessages, capacity);
     }
 
     @Override

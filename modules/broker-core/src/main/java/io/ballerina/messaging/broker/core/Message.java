@@ -19,6 +19,8 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.data.types.FieldValue;
+import io.ballerina.messaging.broker.common.data.types.ShortString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +52,8 @@ public class Message {
     private Message(long internalId, Metadata metadata, Set<String> queueSet, int redeliveryCount) {
         this.metadata = metadata;
         this.contentChunks = new ArrayList<>();
-        messageDataHolder = new MessageDataHolder(internalId, queueSet, redeliveryCount);
+        long expiryTimestamp = extractExpiryTimestamp(metadata);
+        messageDataHolder = new MessageDataHolder(internalId, expiryTimestamp, queueSet, redeliveryCount);
     }
 
     public Metadata getMetadata() {
@@ -177,11 +180,44 @@ public class Message {
     }
 
     /**
+     * Get expire timestamp
+     *
+     * @return get expire timestamp as a {@link java.lang.Long}
+     */
+    public long getExpiryTimestamp() {
+        return messageDataHolder.getExpiryTimestamp();
+    }
+
+    /**
+     * Check if message is expired w:r:t current time
+     * @return true if expired
+     */
+    public boolean checkIfExpired() {
+        return System.currentTimeMillis() > getExpiryTimestamp();
+    }
+
+    private long extractExpiryTimestamp(Metadata metadata) {
+        long expiryTimestamp = 0;
+        if (metadata != null) {
+            FieldValue expiryFieldValue = metadata.getProperties().getValue(Metadata.EXPIRATION);
+            if (expiryFieldValue != null) {
+                ShortString expiryTime = (ShortString) expiryFieldValue.getValue();
+                if (!expiryTime.isEmpty()) {
+                    expiryTimestamp = Long.parseLong(expiryTime.toString());
+                }
+            }
+        }
+        return expiryTimestamp;
+    }
+
+    /**
      * Internal message data holder class. This acts as the detachable message implementation as well.
      */
     private static class MessageDataHolder implements DetachableMessage {
 
         private final long internalId;
+
+        private final long expiryTimestamp;
 
         private final Set<String> queueSet;
 
@@ -189,8 +225,9 @@ public class Message {
 
         private int redeliveryCount;
 
-        private MessageDataHolder(long internalId, Set<String> queueSet, int redeliveryCount) {
+        private MessageDataHolder(long internalId, long expiryTimestamp, Set<String> queueSet, int redeliveryCount) {
             this.internalId = internalId;
+            this.expiryTimestamp = expiryTimestamp;
             this.queueSet = queueSet;
             this.redeliveryCount = redeliveryCount;
         }
@@ -198,6 +235,11 @@ public class Message {
         @Override
         public long getInternalId() {
             return internalId;
+        }
+
+        @Override
+        public long getExpiryTimestamp() {
+            return expiryTimestamp;
         }
 
         @Override

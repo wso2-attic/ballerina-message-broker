@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import javax.transaction.xa.Xid;
@@ -103,6 +104,20 @@ public class MemQueueImpl extends Queue {
     @Override
     public Message dequeue() {
         return queue.poll();
+    }
+
+    @Override
+    public void getExpired(Set<Message> expiredMessages, int capacity) {
+        int capacityCounter = 0;
+        for (Message message : queue) {
+            if (message.checkIfExpired()) {
+                expiredMessages.add(message);
+                capacityCounter = capacityCounter + 1;
+                if (capacityCounter >= capacity) {
+                    break;
+                }
+            }
+        }
     }
 
     @Override
