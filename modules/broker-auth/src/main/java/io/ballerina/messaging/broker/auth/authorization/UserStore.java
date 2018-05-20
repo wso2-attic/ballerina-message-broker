@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Interface represents user store for broker users which provide authorization groups..
+ * Interface represents user store for broker users which provide authorization groups.
  */
 public interface UserStore {
 
@@ -39,7 +39,7 @@ public interface UserStore {
     void initialize(StartupContext startupContext, Map<String, String> properties) throws Exception;
 
     /**
-     * Get set of user Groups for the user
+     * Get set of user Groups for the user.
      *
      * @param userId user id
      * @return set of user groups
@@ -58,7 +58,7 @@ public interface UserStore {
     AuthResult authenticate(String username, char... credentials) throws AuthException;
 
     /**
-     * Verify given username against underlying user store
+     * Verify given username against underlying user store.
      *
      * @param username username to verify
      * @return true or false based on the verification

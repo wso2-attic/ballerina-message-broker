@@ -33,12 +33,12 @@ import io.ballerina.messaging.broker.core.Message;
 import javax.security.auth.Subject;
 
 /**
- * Forward specific transaction operations
+ * Forward specific transaction operations.
  */
 public class SecureBrokerTransaction extends ForwardingBrokerTransaction {
 
     /**
-     * Username entity
+     * Username entity.
      */
     private final Subject subject;
     /**

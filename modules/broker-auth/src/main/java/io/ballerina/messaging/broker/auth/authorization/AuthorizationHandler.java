@@ -150,7 +150,7 @@ public class AuthorizationHandler {
     }
 
     /**
-     * Extract username from the {@link Subject}
+     * Extract username from the {@link Subject}.
      *
      * @param subject an entity with username
      * @return username

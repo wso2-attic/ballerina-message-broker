@@ -44,37 +44,37 @@ import javax.transaction.xa.Xid;
 public class Branch implements EnqueueDequeueStrategy {
 
     /**
-     * States of a {@link Branch}
+     * States of a {@link Branch}.
      */
     public enum State {
 
         /**
-         * Branch is registered in {@link Registry}
+         * Branch is registered in {@link Registry}.
          */
         ACTIVE,
 
         /**
-         * Branch can only be rolled back
+         * Branch can only be rolled back.
          */
         ROLLBACK_ONLY,
 
         /**
-         * Branch received a prepare call and in the process of persisting
+         * Branch received a prepare call and in the process of persisting.
          */
         PRE_PREPARE,
 
         /**
-         * Branch was unregistered from {@link Registry}
+         * Branch was unregistered from {@link Registry}.
          */
         FORGOTTEN,
 
         /**
-         * Branch expired
+         * Branch expired.
          */
         TIMED_OUT,
 
         /**
-         * Branch is in prepared state. Branch can only be committed or rolled back after this
+         * Branch is in prepared state. Branch can only be committed or rolled back after this.
          */
         PREPARED,
 
@@ -84,12 +84,12 @@ public class Branch implements EnqueueDequeueStrategy {
         PARTIAL_RESTORE,
 
         /**
-         * Branch heuristically committed
+         * Branch heuristically committed.
          */
         HEUR_COM,
 
         /**
-         * Branch heuristically rolled back
+         * Branch heuristically rolled back.
          */
         HEUR_RB;
     }
@@ -101,11 +101,11 @@ public class Branch implements EnqueueDequeueStrategy {
     private enum SessionState {
 
         /**
-         * Branch is registered in {@link Registry}
+         * Branch is registered in {@link Registry}.
          */
         ACTIVE,
         /**
-         * The branch was suspended in a dtx.end
+         * The branch was suspended in a dtx.end.
          */
         SUSPENDED
     }
@@ -204,7 +204,7 @@ public class Branch implements EnqueueDequeueStrategy {
     }
 
     /**
-     * Resume a session if it is suspended
+     * Resume a session if it is suspended.
      *
      * @param sessionId session identifier of the session
      */
@@ -229,7 +229,7 @@ public class Branch implements EnqueueDequeueStrategy {
     }
 
     /**
-     * Check if a session is associated with the branch
+     * Check if a session is associated with the branch.
      *
      * @param sessionId session identifier of the session
      * @return True is the session is associated with the branch
@@ -250,7 +250,7 @@ public class Branch implements EnqueueDequeueStrategy {
     }
 
     /**
-     * Check if there are any associated sessions
+     * Check if there are any associated sessions.
      *
      * @return True if there are any associated sessions, false otherwise
      */

@@ -26,7 +26,7 @@ import io.ballerina.messaging.broker.common.StartupContext;
 import javax.security.auth.Subject;
 
 /**
- * Implementation to return new {@link SecureBrokerImpl} object providing {@link Subject}
+ * Implementation to return new {@link SecureBrokerImpl} object providing {@link Subject}.
  */
 public class SecureBrokerFactory implements BrokerFactory {
 

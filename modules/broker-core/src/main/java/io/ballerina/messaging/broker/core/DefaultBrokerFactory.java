@@ -23,7 +23,7 @@ import io.ballerina.messaging.broker.common.StartupContext;
 import javax.security.auth.Subject;
 
 /**
- * Implementation to return the {@link BrokerImpl} object
+ * Implementation to return the {@link BrokerImpl} object.
  */
 public class DefaultBrokerFactory implements BrokerFactory {
 
