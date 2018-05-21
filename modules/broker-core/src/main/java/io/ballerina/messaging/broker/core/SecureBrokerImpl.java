@@ -42,11 +42,11 @@ import javax.transaction.xa.Xid;
 public class SecureBrokerImpl implements Broker {
 
     /**
-     * Wrapper object of the {@link BrokerImpl}
+     * Wrapper object of the {@link BrokerImpl}.
      */
     private final Broker broker;
     /**
-     * Username entity
+     * Username entity.
      */
     private final Subject subject;
     /**

@@ -165,7 +165,7 @@ public class AuthManager {
     }
 
     /**
-     * Provides broker authorization enabled
+     * Provides broker authorization enabled.
      *
      * @return broker authorization enabled or not
      */

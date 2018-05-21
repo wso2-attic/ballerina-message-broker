@@ -21,7 +21,7 @@ package io.ballerina.messaging.broker.core;
 import javax.security.auth.Subject;
 
 /**
- * Generic broker factory to get the broker object based on implementation
+ * Generic broker factory to get the broker object based on implementation.
  */
 public interface BrokerFactory {
 

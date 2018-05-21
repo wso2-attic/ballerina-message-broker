@@ -30,7 +30,7 @@ import java.util.Set;
 import javax.transaction.xa.Xid;
 
 /**
- * Interface represents broker APIs
+ * Interface represents broker APIs.
  */
 public interface Broker {
 
@@ -67,7 +67,7 @@ public interface Broker {
     Set<QueueHandler> enqueue(Xid xid, Message message) throws BrokerException;
 
     /**
-     * Preparing transaction to dequeue messages
+     * Preparing transaction to dequeue messages.
      *
      * @param xid       id of the distributed transaction
      * @param queueName name of the queue the  relevant message belongs to
@@ -94,7 +94,7 @@ public interface Broker {
     boolean removeConsumer(Consumer consumer);
 
     /**
-     * Create exchange if not exist
+     * Create exchange if not exist.
      *
      * @param exchangeName exchange name
      * @param type         exchange type
@@ -107,7 +107,7 @@ public interface Broker {
             throws BrokerException, ValidationException;
 
     /**
-     * Create an exchange with given parameters
+     * Create an exchange with given parameters.
      *
      * @param exchangeName exchange name
      * @param type         exchange type
@@ -119,7 +119,7 @@ public interface Broker {
             ValidationException;
 
     /**
-     * Delete given exchange
+     * Delete given exchange.
      *
      * @param exchangeName exchange name
      * @param ifUnused     exchange has no bindings
@@ -131,7 +131,7 @@ public interface Broker {
             throws BrokerException, ValidationException, ResourceNotFoundException;
 
     /**
-     * Create given queue
+     * Create given queue.
      *
      * @param queueName  name of the underlying queue
      * @param passive    do not create queue
@@ -146,7 +146,7 @@ public interface Broker {
             throws BrokerException, ValidationException;
 
     /**
-     * Delete given queue
+     * Delete given queue.
      *
      * @param queueName queue name
      * @param ifUnused  queue has consumers
@@ -167,7 +167,7 @@ public interface Broker {
     boolean queueExists(String queueName);
 
     /**
-     * Bind queue to exchange
+     * Bind queue to exchange.
      *
      * @param queueName    queue name
      * @param exchangeName exchange name
@@ -180,7 +180,7 @@ public interface Broker {
               String routingKey, FieldTable arguments) throws BrokerException, ValidationException;
 
     /**
-     * Unbind queue from exchange
+     * Unbind queue from exchange.
      *
      * @param queueName    queue name
      * @param exchangeName exchange name
@@ -192,7 +192,7 @@ public interface Broker {
             throws BrokerException, ValidationException;
 
     /**
-     * Send a signal to start delivering messages to consumers
+     * Send a signal to start delivering messages to consumers.
      */
     void startMessageDelivery();
 
@@ -207,12 +207,12 @@ public interface Broker {
     int purgeQueue(String queueName) throws ResourceNotFoundException, ValidationException;
 
     /**
-     * Stop delivery task
+     * Stop delivery task.
      */
     void stopMessageDelivery();
 
     /**
-     * Retrieve given queue
+     * Retrieve given queue.
      *
      * @param queueName queue name
      * @return selected queue
@@ -220,7 +220,7 @@ public interface Broker {
     QueueHandler getQueue(String queueName) throws BrokerException, ResourceNotFoundException;
 
     /**
-     * Generate unique message id
+     * Generate unique message id.
      *
      * @return a message id
      */
@@ -229,7 +229,7 @@ public interface Broker {
     }
 
     /**
-     * Requeue a given message
+     * Requeue a given message.
      *
      * @param queueName queue name
      * @param message   message to requeue
@@ -238,26 +238,26 @@ public interface Broker {
     void requeue(String queueName, Message message) throws BrokerException, ResourceNotFoundException;
 
     /**
-     * Retrieve all queues
+     * Retrieve all queues.
      *
      * @return collection of queue
      */
     Collection<QueueHandler> getAllQueues() throws BrokerException;
 
     /**
-     * Send a signal to stop delivering messages to consumers
+     * Send a signal to stop delivering messages to consumers.
      */
     void shutdown();
 
     /**
-     * Retrieve all exchanges
+     * Retrieve all exchanges.
      *
      * @return collection of exchange
      */
     Collection<Exchange> getAllExchanges() throws BrokerException;
 
     /**
-     * Move given message to dead letter channel
+     * Move given message to dead letter channel.
      *
      * @param queueName queue name
      * @param message   message to move to dead letter channel
@@ -266,7 +266,7 @@ public interface Broker {
     void moveToDlc(String queueName, Message message) throws BrokerException;
 
     /**
-     * Retrieve all bindings for  given exchange
+     * Retrieve all bindings for  given exchange.
      *
      * @param exchangeName exchange name
      * @return Collection of binding
@@ -275,7 +275,7 @@ public interface Broker {
     Map<String, BindingSet> getAllBindingsForExchange(String exchangeName) throws ValidationException;
 
     /**
-     * Retrieve given exchange
+     * Retrieve given exchange.
      *
      * @param exchangeName exchange name
      * @return selected exchange
@@ -283,7 +283,7 @@ public interface Broker {
     Exchange getExchange(String exchangeName) throws BrokerException;
 
     /**
-     * Start local transaction flow
+     * Start local transaction flow.
      *
      * @return local transactional object
      */

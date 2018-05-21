@@ -116,7 +116,7 @@ public class BrokerAuthConfiguration {
         }
 
         /**
-         * Getter for mandatoryAccessController
+         * Getter for mandatoryAccessController.
          */
         public MacConfigurations getMandatoryAccessController() {
             return mandatoryAccessController;
@@ -127,7 +127,7 @@ public class BrokerAuthConfiguration {
         }
 
         /**
-         * Getter for discretionaryAccessController
+         * Getter for discretionaryAccessController.
          */
         public DacConfigurations getDiscretionaryAccessController() {
             return discretionaryAccessController;

@@ -56,7 +56,7 @@ public class DefaultAuthorizer implements Authorizer {
     private UserStore userStore;
 
     /**
-     * Cache which store user id vs  user cache entry
+     * Cache which store user id vs  user cache entry.
      */
     private LoadingCache<String, UserCacheEntry> userCache;
     private DiscretionaryAccessController externalDacHandler;

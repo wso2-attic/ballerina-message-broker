@@ -41,7 +41,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 /**
- * Delegate class to handle authorization grant events
+ * Delegate class to handle authorization grant events.
  */
 public class AuthGrantApiDelegate {
 

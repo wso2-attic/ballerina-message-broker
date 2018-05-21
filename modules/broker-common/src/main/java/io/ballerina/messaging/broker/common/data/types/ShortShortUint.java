@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.common.data.types;
 import io.netty.buffer.ByteBuf;
 
 /**
- * AMQP short-short-uint
+ * AMQP short-short-uint.
  */
 public class ShortShortUint implements EncodableData {
 

@@ -32,7 +32,7 @@ public interface BindingsRegistryListener {
     void onBind(String routingKey);
 
     /**
-     * Trigger when unbind event in {@link BindingsRegistry#unbind}
+     * Trigger when unbind event in {@link BindingsRegistry#unbind}.
      *
      * @param routingKey       name of the binding key
      * @param isLastSubscriber whether last subscriber or not to invoke topic matcher remove
@@ -40,7 +40,7 @@ public interface BindingsRegistryListener {
     void onUnbind(String routingKey, boolean isLastSubscriber);
 
     /**
-     * Trigger when retrieve bindings from database in {@link BindingsRegistry#retrieveAllBindingsForExchange}
+     * Trigger when retrieve bindings from database in {@link BindingsRegistry#retrieveAllBindingsForExchange}.
      *
      * @param routingKey name of the binding key
      */

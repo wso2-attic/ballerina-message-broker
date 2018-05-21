@@ -32,7 +32,7 @@ import java.util.Set;
 public interface AuthScopeStore {
 
     /**
-     * Authorize user for given resource and action
+     * Authorize user for given resource and action.
      *
      * @param authScopeName an authScopeName
      * @param userGroups    set of user groups of user

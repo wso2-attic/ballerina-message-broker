@@ -23,7 +23,7 @@ import java.util.Objects;
 import javax.security.auth.Subject;
 
 /**
- * A principal that is just a wrapper for a simple username
+ * A principal that is just a wrapper for a simple username.
  */
 public class UsernamePrincipal implements Principal {
 
