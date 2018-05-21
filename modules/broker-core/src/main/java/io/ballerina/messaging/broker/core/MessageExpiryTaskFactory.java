@@ -31,8 +31,8 @@ public class MessageExpiryTaskFactory {
     private DLXMover dlxMover;
 
     MessageExpiryTaskFactory(BrokerCoreConfiguration.MessageExpiryTask config, DLXMover dlxMover) {
-        this.expiryCheckBatchSize = 1000;
-        this.moveToDLX = false;
+        this.expiryCheckBatchSize = Integer.parseInt(config.getExpiryCheckBatchSize());
+        this.moveToDLX = Boolean.parseBoolean(config.getMoveToDLX());
         this.dlxMover = dlxMover;
     }
 

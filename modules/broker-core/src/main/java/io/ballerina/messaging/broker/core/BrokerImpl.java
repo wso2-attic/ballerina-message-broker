@@ -127,7 +127,7 @@ public final class BrokerImpl implements Broker {
         exchangeRegistry.retrieveFromStore(queueRegistry);
 
         this.deliveryTaskService = createDeliveryTaskExecutorService(configuration);
-        this.messageExpiryTaskService = createMessageExpiryTaskExecutorService();
+        this.messageExpiryTaskService = createMessageExpiryTaskExecutorService(configuration);
         DLXMover dlxMover = new DLXMover() {
             @Override
             public void moveMessageToDlc(String queueName, Message message) throws BrokerException {
@@ -220,10 +220,12 @@ public final class BrokerImpl implements Broker {
         return new TaskExecutorService<>(workerCount, idleTaskDelay, threadFactory);
     }
 
-    private TaskExecutorService<Task> createMessageExpiryTaskExecutorService() {
+    private TaskExecutorService<Task> createMessageExpiryTaskExecutorService(BrokerCoreConfiguration configuration) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageExpiryTaskThreadPool-%d")
                 .build();
-        return new TaskExecutorService<>(5, 50, threadFactory);
+        int workerCount = Integer.parseInt(configuration.getMessageExpiryTask().getWorkerCount());
+        int idleTaskDelay = Integer.parseInt(configuration.getMessageExpiryTask().getIdleTaskDelay());
+        return new TaskExecutorService<>(workerCount, idleTaskDelay, threadFactory);
     }
 
     @Override

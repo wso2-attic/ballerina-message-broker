@@ -96,6 +96,10 @@ public class BrokerCoreConfiguration {
         return messageExpiryTask;
     }
 
+    public void setMessageExpiryTask(MessageExpiryTask messageExpiryTask) {
+        this.messageExpiryTask = messageExpiryTask;
+    }
+
     /**
      * Represent MessageExpiryTask related configurations
      */
@@ -104,6 +108,7 @@ public class BrokerCoreConfiguration {
         private String workerCount = "5";
         private String idleTaskDelay = "50";
         private String expiryCheckBatchSize = "1000";
+        private String moveToDLX = "false";
 
         public String getWorkerCount() {
             return workerCount;
@@ -127,6 +132,14 @@ public class BrokerCoreConfiguration {
 
         public void setExpiryCheckBatchSize(String expiryCheckBatchSize) {
             this.expiryCheckBatchSize = expiryCheckBatchSize;
+        }
+
+        public String getMoveToDLX() {
+            return moveToDLX;
+        }
+
+        public void setMoveToDLX(String moveToDLX) {
+            this.moveToDLX = moveToDLX;
         }
     }
 

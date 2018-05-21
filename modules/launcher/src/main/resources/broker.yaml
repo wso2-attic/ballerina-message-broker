@@ -55,6 +55,20 @@ ballerina.broker.core:
   # message delivery batch size.
   deliveryBatchSize: 1000
 
+ # Configuration related to message expiry task
+ MessageExpiryTask:
+  # Number of concurrent workers used to process message expiry checking tasks
+  workerCount: 5
+  # The time that the message expiry task will wait when the queue is empty or no expired messages are available
+  # in milliseconds.
+  idleTaskDelay: 50
+  # Message expiry is checked in batches. Following configuration will change size of a batch of messages being
+  # considered for expiry.
+  expiryCheckBatchSize: 1000
+  # This configuration decided whether to move expired messages to DLX or to delete from message store
+  moveToDLX: false
+
+
 # Broker auth related configurations.
 ballerina.broker.auth:
  # Broker authentication related configurations.
