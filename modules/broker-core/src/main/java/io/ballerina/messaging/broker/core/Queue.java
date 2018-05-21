@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core;
 
+import java.util.Set;
 import javax.transaction.xa.Xid;
 
 /**
@@ -105,6 +106,8 @@ public abstract class Queue {
     public abstract void rollback(Xid xid);
 
     public abstract Message dequeue();
+
+    public abstract void getExpired(Set<Message> expiredMessages, int capacity);
 
     public abstract void detach(DetachableMessage detachableMessage) throws BrokerException;
 

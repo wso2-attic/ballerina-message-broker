@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.transaction.xa.Xid;
 
@@ -131,6 +132,11 @@ public class DbBackedQueueImpl extends Queue {
     @Override
     public Message dequeue() {
         return buffer.getFirstDeliverable();
+    }
+
+    @Override
+    public void getExpired(Set<Message> expiredMessages, int capacity) {
+        buffer.peekExpiredMessages(expiredMessages, capacity);
     }
 
     @Override

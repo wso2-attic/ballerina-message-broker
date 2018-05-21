@@ -122,10 +122,11 @@ class MessageCrudOperationsDao extends BaseDao {
     private void prepareMetadata(PreparedStatement metadataStmt, Message message) throws SQLException {
         Metadata metadata = message.getMetadata();
         metadataStmt.setLong(1, message.getInternalId());
-        metadataStmt.setString(2, metadata.getExchangeName());
-        metadataStmt.setString(3, metadata.getRoutingKey());
-        metadataStmt.setLong(4, metadata.getContentLength());
-        metadataStmt.setBytes(5, metadata.getPropertiesAsBytes());
+        metadataStmt.setLong(2, message.getExpiryTimestamp());
+        metadataStmt.setString(3, metadata.getExchangeName());
+        metadataStmt.setString(4, metadata.getRoutingKey());
+        metadataStmt.setLong(5, metadata.getContentLength());
+        metadataStmt.setBytes(6, metadata.getPropertiesAsBytes());
         metadataStmt.addBatch();
     }
 

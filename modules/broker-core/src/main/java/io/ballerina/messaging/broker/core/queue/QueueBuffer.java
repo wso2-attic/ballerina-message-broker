@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -397,6 +398,36 @@ public class QueueBuffer {
     synchronized void addAll(List<Message> messages) {
         for (Message message: messages) {
             add(message);
+        }
+    }
+
+    public synchronized void peekExpiredMessages(Set<Message> messages, int capacity) {
+        int messageCounter = 0;
+
+        Node deliverableCandidate = firstDeliverableCandidate;
+
+        if (deliverableCandidate != firstUndeliverable) {
+            if (!deliverableCandidate.hasContent()) {
+                return;
+            }
+        } else if (firstUndeliverable != null && firstUndeliverable.hasContent()) {
+            deliverableCandidate = firstUndeliverable;
+        } else {
+            return;
+        }
+        if (deliverableCandidate.item.checkIfExpired()) {
+            messages.add(deliverableCandidate.item);
+            messageCounter = messageCounter + 1;
+        }
+        while (messageCounter <= capacity) {
+            deliverableCandidate = deliverableCandidate.next;
+            if (deliverableCandidate == null) {
+                break;
+            }
+            if (deliverableCandidate.item.checkIfExpired()) {
+                messages.add(deliverableCandidate.item);
+                messageCounter = messageCounter + 1;
+            }
         }
     }
 

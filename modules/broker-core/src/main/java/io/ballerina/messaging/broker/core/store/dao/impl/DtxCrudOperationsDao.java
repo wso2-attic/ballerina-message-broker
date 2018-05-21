@@ -118,10 +118,11 @@ public class DtxCrudOperationsDao extends BaseDao {
             throws SQLException {
         insertMetadataStatement.setLong(1, internalXid);
         insertMetadataStatement.setLong(2, message.getInternalId());
-        insertMetadataStatement.setString(3, message.getMetadata().getExchangeName());
-        insertMetadataStatement.setString(4, message.getMetadata().getRoutingKey());
-        insertMetadataStatement.setLong(5, message.getMetadata().getContentLength());
-        insertMetadataStatement.setBytes(6, message.getMetadata().getPropertiesAsBytes());
+        insertMetadataStatement.setLong(3, message.getExpiryTimestamp());
+        insertMetadataStatement.setString(4, message.getMetadata().getExchangeName());
+        insertMetadataStatement.setString(5, message.getMetadata().getRoutingKey());
+        insertMetadataStatement.setLong(6, message.getMetadata().getContentLength());
+        insertMetadataStatement.setBytes(7, message.getMetadata().getPropertiesAsBytes());
         insertMetadataStatement.addBatch();
     }
 

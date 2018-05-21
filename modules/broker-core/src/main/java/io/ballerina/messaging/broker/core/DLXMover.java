@@ -14,25 +14,15 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
+ *
  */
 
 package io.ballerina.messaging.broker.core;
 
-import java.util.Set;
-
 /**
- * Message with only the fields needed to handle a queue detach event. Detach events are triggered
- * when a message acknowledgement is sent for message delivery.
+ * Interface for an implementation supporting to move messages to DLX
  */
-public interface DetachableMessage {
+public interface DLXMover {
 
-    long getInternalId();
-
-    long getExpiryTimestamp();
-
-    void removeAttachedDurableQueue(String queueName);
-
-    boolean hasAttachedDurableQueues();
-
-    Set<String> getAttachedQueues();
+     void moveMessageToDlc(String queueName, Message message) throws BrokerException;
 }

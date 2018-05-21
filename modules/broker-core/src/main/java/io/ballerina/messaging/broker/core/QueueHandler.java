@@ -153,14 +153,26 @@ public final class QueueHandler {
     }
 
     /**
-     * Retrieves next available message for delivery. If the queue is empty, null is returned.
+     * Retrieves next available non-expired message for delivery. If the queue is empty, null is returned.
      *
      * @return Message
      */
     Message takeForDelivery() {
-        Message message = redeliveryQueue.dequeue();
+        Message message;
+        while (true) {
+            message = redeliveryQueue.dequeue();
+            if (message == null || !message.checkIfExpired()) {
+                break;
+            }
+        }
+
         if (message == null) {
-            message = queue.dequeue();
+            while (true) {
+                message = queue.dequeue();
+                if (message == null || !message.checkIfExpired()) {
+                    break;
+                }
+            }
             MessageTracer.trace(message, this, MessageTracer.RETRIEVE_FOR_DELIVERY);
         } else {
             MessageTracer.trace(message, this, MessageTracer.RETRIEVE_FOR_REDELIVERY);
@@ -279,5 +291,25 @@ public final class QueueHandler {
             throw new ValidationException("Cannot purge queue " + queue.getName() + " since there " + consumerCount()
                                                   + " active consumer(s)");
         }
+    }
+
+    /**
+     * Get name of underlying queue
+     *
+     * @return name of queue
+     */
+    public String getName() {
+        return queue.getName();
+    }
+
+    /**
+     * Get expired messages of the underlying queue
+     *
+     * @param expiredMessages      Set<Message> to fill expired messages
+     * @param expiryCheckBatchSize maximum number of expired messages to read
+     */
+    public void getExpired(Set<Message> expiredMessages, int expiryCheckBatchSize) {
+        redeliveryQueue.getExpired(expiredMessages, expiryCheckBatchSize);
+        queue.getExpired(expiredMessages, expiryCheckBatchSize - expiredMessages.size());
     }
 }
