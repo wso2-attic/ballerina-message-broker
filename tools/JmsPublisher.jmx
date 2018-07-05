@@ -15,10 +15,10 @@
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp elementType="LoopController" enabled="true" guiclass="LoopControlPanel" name="ThreadGroup.main_controller" testclass="LoopController" testname="Loop Controller">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">10000</stringProp>
+          <stringProp name="LoopController.loops">${__P(LOOP_COUNT,10000)}</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">0</stringProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(THREAD_COUNT,1)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(RAMP_TIME,0)}</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"/>
         <stringProp name="ThreadGroup.delay"/>
@@ -27,7 +27,7 @@
         <PublisherSampler enabled="true" guiclass="JMSPublisherGui" testclass="PublisherSampler" testname="JMS Publisher">
           <stringProp name="jms.jndi_properties">false</stringProp>
           <stringProp name="jms.initial_context_factory">org.wso2.andes.jndi.PropertiesFileInitialContextFactory</stringProp>
-          <stringProp name="jms.provider_url">/home/hasithaj/Desktop/jndi.properties</stringProp>
+          <stringProp name="jms.provider_url">${__P(JNDI_URL,0;)}</stringProp>
           <stringProp name="jms.connection_factory">QueueConnectionFactory</stringProp>
           <stringProp name="jms.topic">QueueName</stringProp>
           <stringProp name="jms.expiration"/>
@@ -35,7 +35,7 @@
           <stringProp name="jms.priority"/>
           <stringProp name="jms.security_principle"/>
           <stringProp name="jms.security_credentials"/>
-          <stringProp name="jms.text_message">Testing Performance</stringProp>
+          <stringProp name="jms.text_message">${__P(MESSAGE,0;)}</stringProp>
           <stringProp name="jms.input_file"/>
           <stringProp name="jms.random_path"/>
           <stringProp name="jms.config_choice">jms_use_text</stringProp>

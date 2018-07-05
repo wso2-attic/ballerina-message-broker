@@ -32,7 +32,7 @@ loop_count = <number_of_loops>
 thread_count = <number_of_threads>
 ramp_time = <ramp_time>
 jmeter_home = <jmeter_home>/jmeter
-
+message = <file_location_of_the_message_to_send>
 ```
 4.Run ```mvn clean install``` on the project and obtain the ```performance-testing-tool-1.0-SNAPSHOT-jar-with-dependencies.jar```.<br><br>
 5.Execute the jar using ```java -jar performance-testing-tool-1.0-SNAPSHOT-jar-with-dependencies.jar -p <testplan.properties file location>```

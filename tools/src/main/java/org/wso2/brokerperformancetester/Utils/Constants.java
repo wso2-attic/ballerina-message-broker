@@ -23,6 +23,7 @@ package org.wso2.brokerperformancetester.Utils;
  * Constants need to execute the Application
  */
 public class Constants {
+
     // x-paths
     public static final String XPATH_THREAD_GROUP = "/jmeterTestPlan/hashTree/hashTree/ThreadGroup";
     public static final String XPATH_PUBLISHER_SAMPLER = "/jmeterTestPlan/hashTree/hashTree/hashTree/PublisherSampler";
@@ -36,6 +37,7 @@ public class Constants {
     public static final String THREAD_COUNT = "thread_count";
     public static final String RAMP_TIME = "ramp_time";
     public static final String JMETER_HOME = "jmeter_home";
+    public static final String MESSAGE = "message";
 
     // xml tag constants
     public static final String XML_STRING_PROP = "stringProp";

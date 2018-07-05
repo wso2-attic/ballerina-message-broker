@@ -26,7 +26,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 import org.wso2.brokerperformancetester.Utils.ToolConfiguration;
-import org.wso2.brokerperformancetester.Utils.XMLUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,8 +55,10 @@ public class Application {
                     int loopCount = toolConfiguration.getLoopCount();
                     int threadCount = toolConfiguration.getThreadCount();
                     int rampTime = toolConfiguration.getRampTime();
-                    new XMLUtils(jndiPath, loopCount, threadCount, rampTime).generateTestPlan();
-                    String jmeterCommand = toolConfiguration.getJmeterHome() + " -n -t JmsPublisher.jmx";
+                    String message = toolConfiguration.getMessage();
+                    String jmeterCommand = toolConfiguration.getJmeterHome() + " -n -t JmsPublisher.jmx -DTHREAD_COUNT="
+                            + threadCount + " -DRAMP_TIME=" + rampTime + " -DLOOP_COUNT=" + loopCount + " -DJNDI_URL="
+                            + jndiPath + " -DMESSAGE=" + message.replaceAll("\n", "");
                     Process jmeterProcess = Runtime.getRuntime().exec(jmeterCommand);
                     BufferedReader processOutput = new BufferedReader(new InputStreamReader(jmeterProcess.getInputStream()));
                     String output;

@@ -19,6 +19,11 @@
 
 package org.wso2.brokerperformancetester.Utils;
 
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
@@ -26,13 +31,17 @@ import java.util.Properties;
  */
 public class ToolConfiguration {
 
+    private static final Logger LOG = Logger.getLogger(ToolConfiguration.class);
+
     private String jndiPropertyPath = null;
     private int loopCount = 10000;
     private int threadCount = 1;
     private int rampTime = 0;
     private String jmeterHome = "";
+    private String message = "";
 
     public ToolConfiguration(String folderPath) {
+
         Properties properties = new PropertyUtils(folderPath).get();
         if (properties.getProperty(Constants.JNDI_PROPERTY_FILE_LOCATION) != null) {
             this.jndiPropertyPath = properties.getProperty(Constants.JNDI_PROPERTY_FILE_LOCATION);
@@ -49,25 +58,43 @@ public class ToolConfiguration {
         if (properties.getProperty(Constants.JMETER_HOME) != null) {
             this.jmeterHome = properties.getProperty(Constants.JMETER_HOME);
         }
+        String messageFilePath = properties.getProperty(Constants.MESSAGE);
+        if (messageFilePath != null) {
+            try {
+                this.message = new String(Files.readAllBytes(Paths.get(messageFilePath)));
+            } catch (IOException e) {
+                LOG.error("Error while retrieving message from given path " + messageFilePath + "." + e.getMessage());
+            }
+        }
     }
 
     public String getJndiPropertyPath() {
+
         return jndiPropertyPath;
     }
 
     public int getLoopCount() {
+
         return loopCount;
     }
 
     public int getThreadCount() {
+
         return threadCount;
     }
 
     public int getRampTime() {
+
         return rampTime;
     }
 
     public String getJmeterHome() {
+
         return jmeterHome;
+    }
+
+    public String getMessage() {
+
+        return message;
     }
 }

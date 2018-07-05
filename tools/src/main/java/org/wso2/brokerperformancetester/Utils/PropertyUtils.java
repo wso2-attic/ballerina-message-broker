@@ -34,10 +34,12 @@ public class PropertyUtils {
     private String filePath;
 
     PropertyUtils(String filePath) {
+
         this.filePath = filePath;
     }
 
     public Properties get() {
+
         Properties props = null;
         try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
             props = new Properties();
