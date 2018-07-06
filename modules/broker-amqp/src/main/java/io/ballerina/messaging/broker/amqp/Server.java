@@ -32,7 +32,11 @@ import io.ballerina.messaging.broker.amqp.codec.handlers.BlockingTaskHandler;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
 import io.ballerina.messaging.broker.amqp.metrics.DefaultAmqpMetricManager;
 import io.ballerina.messaging.broker.amqp.metrics.NullAmqpMetricManager;
+import io.ballerina.messaging.broker.amqp.rest.api.ConnectionsApi;
 import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.BasicHaListener;
@@ -42,6 +46,7 @@ import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
 import io.ballerina.messaging.broker.core.SecureBrokerFactory;
+import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -56,7 +61,6 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.metrics.core.MetricService;
-
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -87,6 +91,7 @@ public class Server {
     private EventExecutorGroup ioExecutors;
     private Channel plainServerChannel;
     private Channel sslServerChannel;
+    private AmqpConnectionManager connectionManager;
 
     /**
      * The {@link HaStrategy} for which the HA listener is registered.
@@ -145,6 +150,7 @@ public class Server {
                                                             configuration);
         amqMethodRegistryFactory = new AmqMethodRegistryFactory(authenticationStrategy);
         amqpChannelFactory = new AmqpChannelFactory(configuration, metricManager);
+        initConnectionsRestApi(startupContext);
     }
 
     private void shutdownExecutors() {
@@ -206,7 +212,7 @@ public class Server {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory))
+                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory, connectionManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
@@ -227,7 +233,7 @@ public class Server {
                          .addLast(sslHandlerFactory.create())
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory))
+                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory, connectionManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
@@ -359,6 +365,26 @@ public class Server {
             }
         }
 
+    }
+
+    /**
+     * Initializes the rest API to handle connections.
+     *
+     * @param startupContext {@link StartupContext} holding the services exposed at the broker runtime
+     */
+    private void initConnectionsRestApi(StartupContext startupContext) {
+        BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
+        connectionManager = new AmqpConnectionManager();
+        if (Objects.nonNull(serviceRunner)) {
+            AuthManager authManager = startupContext.getService(AuthManager.class);
+            Authorizer dacHandler;
+            if (null != authManager && authManager.isAuthenticationEnabled() && authManager.isAuthorizationEnabled()) {
+                dacHandler = authManager.getAuthorizer();
+            } else {
+                dacHandler = new NoOpAuthorizer();
+            }
+            serviceRunner.deploy(new ConnectionsApi(connectionManager, new AuthorizationHandler(dacHandler)));
+        }
     }
 
 }

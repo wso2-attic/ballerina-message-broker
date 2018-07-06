@@ -33,7 +33,8 @@ public enum ResourceAuthScope {
     QUEUES_CONSUME("queues:consume"),
     RESOURCE_GRANT_PERMISSION("resources:grant"),
     SCOPES_UPDATE("scopes:update"),
-    SCOPES_GET("scopes:get");
+    SCOPES_GET("scopes:get"),
+    CONNECTIONS_GET("connections:get");
 
     private String name;
 
