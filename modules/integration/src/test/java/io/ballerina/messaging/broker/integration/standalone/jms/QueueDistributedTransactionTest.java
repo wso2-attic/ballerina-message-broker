@@ -116,6 +116,7 @@ public class QueueDistributedTransactionTest {
 
         session.close();
         xaConnection.close();
+        connection.close();
     }
 
     @Test
