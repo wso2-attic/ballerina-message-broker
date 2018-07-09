@@ -80,7 +80,7 @@ public class Server {
     private static final int BLOCKING_TASK_EXECUTOR_THREADS = 32;
 
     /**
-     * Socket receive and send buffer size in bytes. 
+     * Socket receive and send buffer size in bytes.
      */
     private static final int SOCKET_BUFFER_SIZE = 1048576;
 
@@ -141,7 +141,8 @@ public class Server {
 
         AuthenticationStrategy authenticationStrategy
                 = AuthenticationStrategyFactory.getStrategy(startupContext.getService(AuthManager.class),
-                                                                  brokerFactory);
+                                                            brokerFactory,
+                                                            configuration);
         amqMethodRegistryFactory = new AmqMethodRegistryFactory(authenticationStrategy);
     }
 
