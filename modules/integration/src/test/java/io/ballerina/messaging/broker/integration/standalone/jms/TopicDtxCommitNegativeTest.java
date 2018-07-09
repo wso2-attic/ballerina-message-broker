@@ -83,6 +83,7 @@ public class TopicDtxCommitNegativeTest {
         xaResource = xaSession.getXAResource();
         xaResource.rollback(xid);
         xaSession.close();
+        xaTopicConnection.close();
         xaConnection.close();
     }
 
