@@ -79,6 +79,11 @@ public class Server {
      */
     private static final int BLOCKING_TASK_EXECUTOR_THREADS = 32;
 
+    /**
+     * Socket receive and send buffer size in bytes. 
+     */
+    private static final int SOCKET_BUFFER_SIZE = 1048576;
+
     private final BrokerFactory brokerFactory;
     private final AmqpServerConfiguration configuration;
     private final AmqpMetricManager metricManager;
@@ -249,6 +254,8 @@ public class Server {
              .channel(NioServerSocketChannel.class)
              .childHandler(new SocketChannelInitializer(ioExecutors))
              .option(ChannelOption.SO_BACKLOG, 128)
+             .childOption(ChannelOption.SO_RCVBUF, SOCKET_BUFFER_SIZE)
+             .childOption(ChannelOption.SO_SNDBUF, SOCKET_BUFFER_SIZE)
              .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
@@ -268,6 +275,8 @@ public class Server {
              .channel(NioServerSocketChannel.class)
              .childHandler(new SslSocketChannelInitializer(ioExecutors, new SslHandlerFactory(configuration)))
              .option(ChannelOption.SO_BACKLOG, 128)
+             .childOption(ChannelOption.SO_RCVBUF, SOCKET_BUFFER_SIZE)
+             .childOption(ChannelOption.SO_SNDBUF, SOCKET_BUFFER_SIZE)
              .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
