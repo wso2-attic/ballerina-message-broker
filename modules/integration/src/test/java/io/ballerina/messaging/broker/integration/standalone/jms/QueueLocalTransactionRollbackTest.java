@@ -283,10 +283,16 @@ public class QueueLocalTransactionRollbackTest {
         for (int i = 0; i < numberOfMessages; i++) {
             producer.send(producerSession.createTextMessage("Test message " + i));
         }
-        // rollback all sent messages
-        producerSession.rollback();
-        producerSession.close();
-        connection.close();
+        //catch exception and re-throw it since we need the connection to be closed
+        try {
+            // rollback all sent messages
+            producerSession.rollback();
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            producerSession.close();
+            connection.close();
+        }
     }
 
     @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})

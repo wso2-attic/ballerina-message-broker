@@ -329,10 +329,16 @@ public class QueueLocalTransactionCommitTest {
         for (int i = 0; i < numberOfMessages; i++) {
             producer.send(producerSession.createTextMessage("Test message " + i));
         }
-        // commit all sent messages on non transactional session
-        producerSession.commit();
-        producerSession.close();
-        connection.close();
+        //catch exception and re-throw it since we need the connection to be closed
+        try {
+            // commit all sent messages on non transactional session
+            producerSession.commit();
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            producerSession.close();
+            connection.close();
+        }
     }
 
     @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})

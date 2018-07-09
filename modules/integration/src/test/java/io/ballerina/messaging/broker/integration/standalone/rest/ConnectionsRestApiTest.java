@@ -107,7 +107,7 @@ public class ConnectionsRestApiTest {
         String body = EntityUtils.toString(response.getEntity());
         ConnectionMetadata[] connectionMetadata = objectMapper.readValue(body, ConnectionMetadata[].class);
         Assert.assertEquals(connectionMetadata.length, connectionCount, 
-                            "Connection metadata list shouldn't be empty.");
+                            "Incorrect connection count.");
 
         //Assert populated data inside the connection
         for (int i = 0; i < connectionCount; i++) {
