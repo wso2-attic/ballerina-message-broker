@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.amqp;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelFactory;
 import io.ballerina.messaging.broker.amqp.codec.auth.AuthenticationStrategy;
 import io.ballerina.messaging.broker.amqp.codec.auth.AuthenticationStrategyFactory;
 import io.ballerina.messaging.broker.amqp.codec.frames.AmqMethodRegistryFactory;
@@ -100,7 +101,11 @@ public class Server {
 
     private ServerHelper serverHelper;
 
+    /**
+     * Factory classes.
+     */
     private AmqMethodRegistryFactory amqMethodRegistryFactory;
+    private AmqpChannelFactory amqpChannelFactory;
 
     public Server(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
@@ -144,6 +149,7 @@ public class Server {
                                                             brokerFactory,
                                                             configuration);
         amqMethodRegistryFactory = new AmqMethodRegistryFactory(authenticationStrategy);
+        amqpChannelFactory = new AmqpChannelFactory(configuration, metricManager);
     }
 
     private void shutdownExecutors() {
@@ -205,7 +211,7 @@ public class Server {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, metricManager))
+                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
@@ -226,7 +232,7 @@ public class Server {
                          .addLast(sslHandlerFactory.create())
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, metricManager))
+                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
