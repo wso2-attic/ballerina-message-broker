@@ -18,6 +18,7 @@
  */
 package io.ballerina.messaging.broker.amqp.codec.auth;
 
+import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 
@@ -30,9 +31,11 @@ public class AuthenticationStrategyFactory {
 
     private AuthenticationStrategyFactory() {}
 
-    public static AuthenticationStrategy getStrategy(AuthManager authManager, BrokerFactory brokerFactory) {
+    public static AuthenticationStrategy getStrategy(AuthManager authManager,
+                                                     BrokerFactory brokerFactory,
+                                                     AmqpServerConfiguration configuration) {
         if (Objects.nonNull(authManager) && authManager.isAuthenticationEnabled()) {
-            return new SaslAuthenticationStrategy(authManager, brokerFactory);
+            return new SaslAuthenticationStrategy(authManager, brokerFactory, configuration);
         } else {
             return new NoAuthenticationStrategy(brokerFactory);
         }
