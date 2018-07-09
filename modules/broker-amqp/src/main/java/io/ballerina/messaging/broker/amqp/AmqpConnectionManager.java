@@ -21,7 +21,12 @@ package io.ballerina.messaging.broker.amqp;
 
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * AmqpConnectionManager stores the list of amqp connection established and manages those connections.
@@ -31,10 +36,10 @@ public class AmqpConnectionManager {
     /**
      * List of {@link AmqpConnectionHandler} representing AMQP connections.
      */
-    private List<AmqpConnectionHandler> connectionHandlers;
+    private final Map<Integer, AmqpConnectionHandler> connectionHandlers;
 
     AmqpConnectionManager() {
-        connectionHandlers = new ArrayList<>();
+        connectionHandlers = Collections.synchronizedMap(new LinkedHashMap<>());
     }
 
     /**
@@ -43,9 +48,7 @@ public class AmqpConnectionManager {
      * @param handler {@link AmqpConnectionHandler} representing AMQP connections
      */
     public void addConnectionHandler(AmqpConnectionHandler handler) {
-        synchronized (connectionHandlers) {
-            connectionHandlers.add(handler);
-        }
+        connectionHandlers.put(handler.getId(), handler);
     }
 
     /**
@@ -54,9 +57,7 @@ public class AmqpConnectionManager {
      * @param handler {@link AmqpConnectionHandler} representing AMQP connections
      */
     public void removeConnectionHandler(AmqpConnectionHandler handler) {
-        synchronized (connectionHandlers) {
-            connectionHandlers.remove(handler);
-        }
+        connectionHandlers.remove(handler.getId());
     }
 
     /**
@@ -65,8 +66,20 @@ public class AmqpConnectionManager {
      * @return a list of {@link AmqpConnectionHandler} representing AMQP connections
      */
     public List<AmqpConnectionHandler> getConnections() {
-        synchronized (connectionHandlers) {
-            return new ArrayList<>(connectionHandlers);
+        return new ArrayList<>(connectionHandlers.values());
+    }
+
+    /**
+     * Closes an AMQP connection specified by the identifier.
+     *
+     * @param id the connection identifier
+     */
+    public void forceDisconnect(int id) {
+        AmqpConnectionHandler connectionHandler = connectionHandlers.get(id);
+        if (Objects.nonNull(connectionHandler)) {
+            connectionHandler.forceDisconnect();
+        } else {
+            throw new NoSuchElementException("Connection id " + id + " does not exist.");
         }
     }
 }

@@ -20,15 +20,18 @@
 package io.ballerina.messaging.broker.amqp.codec.handlers;
 
 import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
+import io.ballerina.messaging.broker.amqp.codec.AmqConstant;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannelFactory;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.frames.AmqpBadMessage;
+import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionClose;
 import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionStart;
 import io.ballerina.messaging.broker.amqp.codec.frames.GeneralFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.ProtocolInitFrame;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
+import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.Broker;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -50,6 +53,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
     private Broker broker;
     private final AmqpMetricManager metricManager;
+    private ChannelHandlerContext ctx;
 
     /**
      * Connection identifier which uniquely defines a connection.
@@ -98,6 +102,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         nettyChannel = ctx.channel();
+        this.ctx = ctx;
         nettyChannel.closeFuture().addListener(future -> ctx.fireChannelRead((BlockingTask) this::onConnectionClose));
         remoteAddress = ctx.channel().remoteAddress().toString();
         ctx.fireChannelRead((BlockingTask) () -> connectionManager.addConnectionHandler(this));
@@ -262,5 +267,14 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      */
     public int getId() {
         return id;
+    }
+
+    /**
+     * Sends a connection close frame to the client.
+     */
+    public void forceDisconnect() {
+        ctx.writeAndFlush(new ConnectionClose(AmqConstant.CONNECTION_FORCED,
+                                              ShortString.parseString("Broker forced disconnection"),
+                                              0, 0));
     }
 }
