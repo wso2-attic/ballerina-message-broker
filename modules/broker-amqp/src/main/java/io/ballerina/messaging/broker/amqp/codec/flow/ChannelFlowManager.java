@@ -49,6 +49,7 @@ public class ChannelFlowManager {
         if (messagesInFlight > highLimit && inflowEnabled) {
             inflowEnabled = false;
             ctx.writeAndFlush(new ChannelFlow(channel.getChannelId(), false));
+            ctx.channel().config().setAutoRead(false);
             LOGGER.info("Inflow disabled for channel {}-{}", channel.getChannelId(), ctx.channel().remoteAddress());
         }
     }
@@ -58,6 +59,7 @@ public class ChannelFlowManager {
         if (messagesInFlight < lowLimit && !inflowEnabled) {
             inflowEnabled = true;
             ctx.writeAndFlush(new ChannelFlow(channel.getChannelId(), true));
+            ctx.channel().config().setAutoRead(true);
             LOGGER.info("Inflow enabled for channel {}-{}", channel.getChannelId(), ctx.channel().remoteAddress());
         }
     }
