@@ -19,8 +19,8 @@
 
 package io.ballerina.messaging.broker.amqp.codec.handlers;
 
-import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelFactory;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.frames.AmqpBadMessage;
@@ -47,19 +47,22 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConnectionHandler.class);
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
-    private final AmqpServerConfiguration configuration;
     private Broker broker;
     private final AmqpMetricManager metricManager;
+
+    /**
+     * Used to create AMQP channel Objects.
+     */
+    private AmqpChannelFactory amqpChannelFactory;
 
     /**
      * Underline netty connection.
      */
     private Channel nettyChannel;
 
-    public AmqpConnectionHandler(AmqpServerConfiguration configuration,
-                                 AmqpMetricManager metricManager) {
-        this.configuration = configuration;
+    public AmqpConnectionHandler(AmqpMetricManager metricManager, AmqpChannelFactory amqpChannelFactory) {
         this.metricManager = metricManager;
+        this.amqpChannelFactory = amqpChannelFactory;
         metricManager.incrementConnectionCount();
     }
 
@@ -130,7 +133,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
             throw new ConnectionException(ConnectionException.CHANNEL_ERROR,
                     "Channel ID " + channelId + " Already exists");
         }
-        channels.put(channelId, new AmqpChannel(configuration, broker, channelId, metricManager, this));
+        channels.put(channelId, amqpChannelFactory.createChannel(broker, channelId, this));
         metricManager.incrementChannelCount();
     }
 
