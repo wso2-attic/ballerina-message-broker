@@ -1,0 +1,45 @@
+[
+  {
+    "_id": "5b3caf09694fc61f319a39ad",
+    "index": 0,
+    "guid": "836e347b-b486-4070-af16-50b113073268",
+    "isActive": true,
+    "picture": "http://placehold.it/32x32",
+    "age": 32,
+    "eyeColor": "green",
+    "name": "Wendi Hopkins",
+    "gender": "female",
+    "company": "KIGGLE",
+    "email": "wendihopkins@kiggle.com",
+    "phone": "+1 (876) 528-3301",
+    "address": "466 Glenmore Avenue Avenu, Lafferty, Northern Mariana Islands, 2033",
+    "registered": "2015-11-10T10:53:55 -06:-30",
+    "latitude": -66.31989,
+    "longitude": -93.935016,
+    "tags": [
+      "exercitation",
+      "minim",
+      "amet",
+      "ad",
+      "qui",
+      "laboris",
+      "laborum"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Burnett Decker"
+      },
+      {
+        "id": 1,
+        "name": "Herrera Chapman"
+      },
+      {
+        "id": 2,
+        "name": "Wells Kramer"
+      }
+    ],
+    "greeting": "Hello, Wendi Hopkins! You have 8 unread messages.",
+    "favoriteFruit": "strawberry"
+  }
+]

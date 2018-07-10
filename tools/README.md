@@ -25,14 +25,42 @@ connectionfactory.QueueConnectionFactory = amqp://admin:admin@clientID/carbon?br
 # queue.[jndiName] = [physicalName]
 queue.QueueName = <queue_name>
 ```
-3.Create a testplan.properties files including following results.
+
+3.Download the jmx file in test_plan folder to your local machine
+
+4.Create a properties files including following details.
 ```properties
-jndi_file= <jndi_file_location>
-loop_count = <number_of_loops>
+jmeter_home = <jmeter_home>
+jmx_file_location =<jmx_file_location>
+jndi_file_location= <jndi_file_location>
 thread_count = <number_of_threads>
 ramp_time = <ramp_time>
-jmeter_home = <jmeter_home>/jmeter
-message = <file_location_of_the_message_to_send>
+message_size = <size_of_the_message>
+time_duration= <test_time_in_seconds>
+throughput= <throughput_need_to_be_maintained>
 ```
-4.Run ```mvn clean install``` on the project and obtain the ```performance-testing-tool-1.0-SNAPSHOT-jar-with-dependencies.jar```.<br><br>
-5.Execute the jar using ```java -jar performance-testing-tool-1.0-SNAPSHOT-jar-with-dependencies.jar -p <testplan.properties file location>```
+4.Run ```./broker_performance_test.sh <location_of_properties_file>```
+
+Upon completion of the test,you'll be directed to a web interface which contains the summary of the results obtained by the test.
+
+![statistics.png](scripts/images/Statistics.png)
+![throughput.png](scripts/images/Throughput.png)
+
+## Special Notes
+
+- Use 1,10,100,1000 as inputs to the message_size paramter in properties file.
+    - 1 = 1 KB message
+    - 10 = 10 KB message
+    - 100 = 100KB message
+    - 1000 = 1MB message 
+  
+- Following values are used as default values for some of the above mentioned parameters.
+    - thread_count = 1
+    - ramp_time = 0
+    - message_size = 10
+    - time_duration = 900 (900 seconds = 15 minutes)
+    - throughput = 5000 (5000 messages/seconds)
+    
+
+
+
