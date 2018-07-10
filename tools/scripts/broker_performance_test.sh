@@ -31,7 +31,7 @@ fi
 properties_file_location=$1
 
 # hash-map to store user desired parameters
-declare -A user_inputs=(["jmeter_home"]="" ["jndi_file_location"]="" ["jmx_file_location"]="" ["thread_count"]="10000" ["loop_count"]="1" ["ramp_time"]="0" ["time_duration"]="900" ["throughput"]="5000" ["message_size"]="10")
+declare -A user_inputs=(["jmeter_home"]="" ["jndi_file_location"]="" ["jmx_file_location"]="" ["thread_count"]="10000" ["loop_count"]="1" ["ramp_time"]="0" ["duration_of_the_test"]="900" ["throughput"]="5000" ["message_size"]="10")
 
 # Method to extract values from property file
 getProperty()
@@ -74,7 +74,7 @@ case ${user_inputs["message_size"]} in
 message=`cat $text_message_file_location`
 
 # execute jmeter command
-${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DRAMP_TIME=${user_inputs["ramp_time"]} -DTIME_DURATION=${user_inputs["time_duration"]} -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l logs/test_results.jtl -e -o report/
+${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DRAMP_TIME=${user_inputs["ramp_time"]} -DDURATION_OF_THE_TEST=${user_inputs["duration_of_the_test"]} -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l logs/test_results.jtl -e -o report/
 
 # open report
 xdg-open report/index.html

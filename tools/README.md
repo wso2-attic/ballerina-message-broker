@@ -36,7 +36,7 @@ jndi_file_location= <jndi_file_location>
 thread_count = <number_of_threads>
 ramp_time = <ramp_time>
 message_size = <size_of_the_message>
-time_duration= <test_time_in_seconds>
+duration_of_the_test = <test_time_in_seconds>
 throughput= <throughput_need_to_be_maintained>
 ```
 4.Run ```./broker_performance_test.sh <location_of_properties_file>```
@@ -58,7 +58,7 @@ Upon completion of the test,you'll be directed to a web interface which contains
     - thread_count = 1
     - ramp_time = 0
     - message_size = 10
-    - time_duration = 900 (900 seconds = 15 minutes)
+    - duration_of_the_test = 900 (900 seconds = 15 minutes)
     - throughput = 5000 (5000 messages/seconds)
     
 

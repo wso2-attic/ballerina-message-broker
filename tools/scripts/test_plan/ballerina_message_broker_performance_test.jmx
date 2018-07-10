@@ -58,7 +58,7 @@
             <collectionProp name="2008970322">
               <stringProp name="216161393">${__P(THROUGHPUT,1;)}</stringProp>
               <stringProp name="216161393">${__P(THROUGHPUT,1;)}</stringProp>
-              <stringProp name="-1405926517">${__P(TIME_DURATION,900;)}</stringProp>
+              <stringProp name="-1405926517">${__P(DURATION_OF_THE_TEST,900;)}</stringProp>
             </collectionProp>
           </collectionProp>
         </kg.apc.jmeter.timers.VariableThroughputTimer>
