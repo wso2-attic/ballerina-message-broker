@@ -44,6 +44,10 @@ public class BrokerCoreConfiguration {
 
     private String maxPersistedChunkSize = "65500";
 
+    private int disruptorBufferSize = 32768;
+
+    private int maxDbWriteBatchSize = 1024;
+
     private DeliveryTask deliveryTask = new DeliveryTask();
 
     /**
@@ -77,6 +81,28 @@ public class BrokerCoreConfiguration {
 
     public void setMaxPersistedChunkSize(String maxPersistedChunkSize) {
         this.maxPersistedChunkSize = maxPersistedChunkSize;
+    }
+
+    /**
+     * Getter for disruptorBufferSize.
+     */
+    public int getDisruptorBufferSize() {
+        return disruptorBufferSize;
+    }
+
+    public void setDisruptorBufferSize(int disruptorBufferSize) {
+        this.disruptorBufferSize = disruptorBufferSize;
+    }
+
+    /**
+     * Getter for maxDbWriteBatchSize.
+     */
+    public int getMaxDbWriteBatchSize() {
+        return maxDbWriteBatchSize;
+    }
+
+    public void setMaxDbWriteBatchSize(int maxDbWriteBatchSize) {
+        this.maxDbWriteBatchSize = maxDbWriteBatchSize;
     }
 
     /**

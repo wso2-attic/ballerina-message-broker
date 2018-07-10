@@ -29,6 +29,8 @@ These configurations are defined under the namespace `ballerina.broker.core`.
 | nonDurableQueueMaxDepth     | 10000                                  | Maximum number of messages kept in a non-durable queue. Increasing this number can increase the memory consumption. | 
 | maxPersistedChunkSize     | 65500                                  | Maximum size of a chunk that is persisted. We will have to change this value depending on the underline database used. We have used the  frame size as the limit. |
 | durableQueueInMemoryCacheLimit | 10000                                  | Maximum number of messages cached in-memory for faster delivery. Increasing this number can result in better throughput while increasing the memory consumption. |
+| disruptorBufferSize | 32768                                  | Size of the disruptor buffer used to handle message persistence asynchronously. Downside of increasing the buffer size is increased memory usage. The value should be a power of 2. E.g. 4096, 8192, 16384, 32768.|
+| maxDbWriteBatchSize | 1024                                  | Maximum number of messages in a batch when persisting messages. |
 | deliveryTask:workerCount    | 5                                      | Number of concurrent workers used to process the delivery tasks. |
 | deliveryTask:idleTaskDelay  | 50                                     | The time that the delivery task will wait when the queue is empty or no consumers are available for message delivery in milliseconds.  |
 | deliveryTask:deliveryBatchSize | 1000                                | Messages are delivered to consumers in batches by the delivery task. Following configuration changes the default message delivery batch size.
