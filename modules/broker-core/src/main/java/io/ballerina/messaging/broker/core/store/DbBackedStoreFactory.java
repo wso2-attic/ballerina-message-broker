@@ -46,7 +46,9 @@ public class DbBackedStoreFactory implements StoreFactory {
         daoFactory = new DaoFactory(dataSource, metricManager, configuration);
         this.metricManager = metricManager;
         this.configuration = configuration;
-        dbMessageStore = new DbMessageStore(daoFactory.createMessageDao(), 32768, 1024);
+        int disruptorBufferSize = configuration.getDisruptorBufferSize();
+        int maxDbBatchSize = configuration.getMaxDbWriteBatchSize();
+        dbMessageStore = new DbMessageStore(daoFactory.createMessageDao(), disruptorBufferSize, maxDbBatchSize);
     }
 
     @Override
