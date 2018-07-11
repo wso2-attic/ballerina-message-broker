@@ -16,10 +16,10 @@
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <intProp name="LoopController.loops">-1</intProp>
+          <stringProp name="LoopController.loops">${__P(LOOP_COUNT,1)}</stringProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">${__P(THREAD_COUNT,1)}</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">${__P(RAMP_TIME,0)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">0</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
@@ -50,15 +50,10 @@
         <hashTree/>
         <kg.apc.jmeter.timers.VariableThroughputTimer guiclass="kg.apc.jmeter.timers.VariableThroughputTimerGui" testclass="kg.apc.jmeter.timers.VariableThroughputTimer" testname="jp@gc - Throughput Shaping Timer" enabled="true">
           <collectionProp name="load_profile">
-            <collectionProp name="308127476">
-              <stringProp name="49">1</stringProp>
-              <stringProp name="216161393">${__P(THROUGHPUT,1;)}</stringProp>
-              <stringProp name="53">5</stringProp>
-            </collectionProp>
-            <collectionProp name="2008970322">
+            <collectionProp name="-1265899165">
               <stringProp name="216161393">${__P(THROUGHPUT,1;)}</stringProp>
               <stringProp name="216161393">${__P(THROUGHPUT,1;)}</stringProp>
-              <stringProp name="-1405926517">${__P(DURATION_OF_THE_TEST,900;)}</stringProp>
+              <stringProp name="1056992630">${__P(DURATION_OF_THE_TEST,900;)}</stringProp>
             </collectionProp>
           </collectionProp>
         </kg.apc.jmeter.timers.VariableThroughputTimer>

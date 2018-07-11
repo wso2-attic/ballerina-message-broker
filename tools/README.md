@@ -8,35 +8,22 @@ This tool allows ballerina message broker developers to get an idea about the pe
 
 ## How to use 
 
-1.Copy following jars to JMETER_HOME/lib.
+1. Copy following jars to JMETER_HOME/lib.
 
-- andes-client-0.13.wso2v8.jar
-- geronimo-jms_1.1_spec-1.1.0.wso2v1.jar
-- slf4j-1.5.10.wso2v1.jar
+    - andes-client-0.13.wso2v8.jar
+    - geronimo-jms_1.1_spec-1.1.0.wso2v1.jar
+    - slf4j-1.5.10.wso2v1.jar
 
-2.Create jndi.properties file
+2. Create a queue named micro_benchmark_queue in broker
 
-```properties
-# register some connection factories
-# connectionfactory.[jndiname] = [ConnectionURL]
-connectionfactory.QueueConnectionFactory = amqp://admin:admin@clientID/carbon?brokerlist='tcp://localhost:<port>'
- 
-# register some queues in JNDI using the form
-# queue.[jndiName] = [physicalName]
-queue.QueueName = <queue_name>
-```
-
-3.Download the jmx file in test_plan folder to your local machine
-
-4.Create a properties files including following details.
+3. Include the following details in ballerina_message_broker_performance_test.properties file which is located at resources/.
 ```properties
 jmeter_home = <jmeter_home>
 jmx_file_location = <jmx_file_location>
 jndi_file_location = <jndi_file_location>
 thread_count = <number_of_threads>
-ramp_time = <ramp_time>
 message_size = <size_of_the_message>
-duration_of_the_test = <test_time_in_seconds>
+number_of_messages = <number_of_messages_need_to_be_published>
 throughput= <throughput_need_to_be_maintained>
 ```
 4.Run ```./broker_performance_test.sh <location_of_properties_file>```
@@ -48,19 +35,18 @@ Upon completion of the test,you'll be directed to a web interface which contains
 
 ## Special Notes
 
-- Use 1,10,100,1000 as inputs to the message_size paramter in properties file.
-    - 1 = 1 KB message
-    - 10 = 10 KB message
-    - 100 = 100KB message
-    - 1000 = 1MB message 
+- Use 1KB , 10KB , 100KB , 1MB as inputs to the message_size paramter in properties file.
+    - 1KB = 1 KB message
+    - 10KB = 10 KB message
+    - 100KB = 100KB message
+    - 1MB = 1MB message 
   
 - Following values are used as default values for some of the above mentioned parameters.
     - jmx_file_location = test_plan/ballerina_message_broker_performance_test.jmx
     - jndi_file_location = resources/jndi.properties
     - thread_count = 1
-    - ramp_time = 0
     - message_size = 10
-    - duration_of_the_test = 900 (900 seconds = 15 minutes)
+    - number_of_messages = 1000000
     - throughput = 5000 (5000 messages/seconds)
     
 

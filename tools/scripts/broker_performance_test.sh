@@ -17,14 +17,9 @@
 #!/bin/bash
 
 # deleting existing folders
-if [ -e logs/ ];
+if [ ! -e target/ ];
 then
-    rm -r logs/
-fi
-
-if [ -e report/ ];
-then
-    rm -r report/
+    mkdir target
 fi
 
 # get the properties file location
@@ -36,7 +31,7 @@ if [ "$properties_file_location" == '' ]
     fi
 
 # hash-map to store user desired parameters
-declare -A user_inputs=(["jmeter_home"]="" ["jndi_file_location"]="resources/jndi.properties" ["jmx_file_location"]="test_plan/ballerina_message_broker_performance_test.jmx" ["thread_count"]="10000" ["loop_count"]="1" ["ramp_time"]="0" ["duration_of_the_test"]="900" ["throughput"]="5000" ["message_size"]="10")
+declare -A user_inputs=(["jmeter_home"]="" ["jndi_file_location"]="resources/jndi.properties" ["jmx_file_location"]="test_plan/ballerina_message_broker_performance_test.jmx" ["thread_count"]="1" ["number_of_messages"]="1000000" ["throughput"]="5000" ["message_size"]="10KB")
 
 # Method to extract values from property file
 getProperty()
@@ -56,21 +51,25 @@ do
 done
 
 # Summarizing inputs
-echo The test plan is set to loop count - ${user_inputs["loop_count"]}, thread count - ${user_inputs["thread_count"]},ramp time - ${user_inputs["ramp_time"]} and throughput - ${user_inputs["throughput"]}
 echo JMX file location is set to - ${user_inputs["jmx_file_location"]}
 echo JNDI properties file location is set to - ${user_inputs["jndi_file_location"]}
 echo Jmeter home is set to - ${user_inputs["jmeter_home"]}
+echo Starting test process with ${user_inputs["number_of_messages"]} messages and a and throughput - ${user_inputs["throughput"]}
+
+# calculate loop count
+loop_count=$(echo "${user_inputs["number_of_messages"]}/${user_inputs["thread_count"]}+1" | bc)
+duration_of_the_test=$(echo "${user_inputs["number_of_messages"]}/${user_inputs["throughput"]}" | bc)
 
 # variable to store message math
 text_message_file_location="sample_messages/1kB.json"
 case ${user_inputs["message_size"]} in
-	10)
+	10KB)
 		text_message_file_location="sample_messages/10kB.json"
 		;;
-	100)
+	100KB)
         text_message_file_location="sample_messages/100kB.json"
 		;;
-	1000)
+	1MB)
 		text_message_file_location="sample_messages/1MB.json"
 		;;
   esac
@@ -78,16 +77,20 @@ case ${user_inputs["message_size"]} in
 # retrieve the message
 message=`cat $text_message_file_location`
 
+# create folder to store report files
+folder_name=$(date '+%d-%m-%Y-%H-%M-%S')
+mkdir target/"$folder_name"
+
+# execute jmeter command
 if [ ${user_inputs["jmeter_home"]} != '' ]
         then
             # if user specified jmeter home
-            ${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DRAMP_TIME=${user_inputs["ramp_time"]} -DDURATION_OF_THE_TEST=${user_inputs["duration_of_the_test"]} -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l logs/test_results.jtl -e -o report/
+            ${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
         else
             # if jmeter_home is already configured
-            jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DRAMP_TIME=${user_inputs["ramp_time"]} -DDURATION_OF_THE_TEST=${user_inputs["duration_of_the_test"]} -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l logs/test_results.jtl -e -o report/
+            jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
     fi
 
-# execute jmeter command
-
 # open report
-xdg-open report/index.html
+xdg-open target/"$folder_name"/report/index.html
+exit
