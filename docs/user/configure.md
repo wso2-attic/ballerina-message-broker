@@ -42,6 +42,7 @@ These configurations are defined under the namespace `ballerina.broker.transport
 |-----------------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------|
 | hostName                    | localhost                                    | Hostname configuration used in creating the server socket                                                    |
 | maxRedeliveryCount          | 5                                            | Maximum number of redeliveries before publishing a message to the DLX (dead letter exchange).                |
+| socketBufferSize            | 1048576                                      | Max send and receive buffer sizes of the sockets created by the AMQP server.                                |
 | channelFlow:lowLimit        | 100                                          | The low limit used to enable channel flow when it is disabled. Value corresponds to the number of messages.  |
 | channelFlow:highLimit       | 1000                                         | The high limit used to disable channel flow when it is enabled. Value corresponds to the number of messages. |
 | plain:port                  | 5672                                         | Port used for the nonsecured transport.                                                                      |

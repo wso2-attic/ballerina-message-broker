@@ -156,7 +156,7 @@ public class AmqpChannel {
         this.flowManager = new ChannelFlowManager(this,
                                                   configuration.getChannelFlow().getLowLimit(),
                                                   configuration.getChannelFlow().getHighLimit());
-        this.maxRedeliveryCount = Integer.parseInt(configuration.getMaxRedeliveryCount());
+        this.maxRedeliveryCount = configuration.getMaxRedeliveryCount();
         traceChannelIdField = new TraceField(CHANNEL_ID_FIELD_NAME, channelId);
     }
 
