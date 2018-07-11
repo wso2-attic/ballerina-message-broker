@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.amqp.codec.flow;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.frames.ChannelFlow;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelHandlerContext;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -40,7 +41,9 @@ public class ChannelFlowManagerTest {
     public void setUp() throws Exception {
         AmqpChannel channel = Mockito.mock(AmqpChannel.class);
         ctx = Mockito.mock(ChannelHandlerContext.class);
-        Mockito.when(ctx.channel()).thenReturn(Mockito.mock(Channel.class));
+        Channel mockChannel = Mockito.mock(Channel.class);
+        Mockito.when(mockChannel.config()).thenReturn(Mockito.mock(ChannelConfig.class));
+        Mockito.when(ctx.channel()).thenReturn(mockChannel);
         channelFlowManager = new ChannelFlowManager(channel, 2, 10);
 
         argumentCaptor = ArgumentCaptor.forClass(ChannelFlow.class);

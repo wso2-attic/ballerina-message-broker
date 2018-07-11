@@ -18,6 +18,7 @@
  */
 package io.ballerina.messaging.broker.amqp.codec.auth;
 
+import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionSecure;
 import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionTune;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
@@ -46,9 +47,14 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
 
     public static final String SASL_SERVER_ATTRIBUTE = "broker.sasl.server";
 
-    SaslAuthenticationStrategy(AuthManager authManager, BrokerFactory brokerFactory) {
+    private String hostName;
+
+    SaslAuthenticationStrategy(AuthManager authManager,
+                               BrokerFactory brokerFactory,
+                               AmqpServerConfiguration configuration) {
         this.authManager = authManager;
         this.brokerFactory = brokerFactory;
+        this.hostName = configuration.getHostName();
     }
 
     @Override
@@ -86,7 +92,7 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
                        ShortString mechanism, LongString response) throws BrokerException {
         try {
             SaslServer saslServer = authManager
-                    .createSaslServer(connectionHandler.getConfiguration().getHostName(), mechanism.toString());
+                    .createSaslServer(hostName, mechanism.toString());
             byte[] challenge = saslServer.evaluateResponse(response.getBytes());
             if (saslServer.isComplete()) {
                 Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());

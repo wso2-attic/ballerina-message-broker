@@ -30,7 +30,9 @@ public class AmqpServerConfiguration {
 
     private String hostName = "localhost";
 
-    private String maxRedeliveryCount = "5";
+    private int maxRedeliveryCount = 5;
+
+    private int socketBufferSize = 1048576;
 
     private FlowDetails channelFlow = new FlowDetails();
 
@@ -52,12 +54,23 @@ public class AmqpServerConfiguration {
     /**
      * Getter for maxRedeliveryCount.
      */
-    public String getMaxRedeliveryCount() {
+    public int getMaxRedeliveryCount() {
         return maxRedeliveryCount;
     }
 
-    public void setMaxRedeliveryCount(String maxRedeliveryCount) {
+    public void setMaxRedeliveryCount(int maxRedeliveryCount) {
         this.maxRedeliveryCount = maxRedeliveryCount;
+    }
+
+    /**
+     * Getter for socketBufferSize.
+     */
+    public int getSocketBufferSize() {
+        return socketBufferSize;
+    }
+
+    public void setSocketBufferSize(int socketBufferSize) {
+        this.socketBufferSize = socketBufferSize;
     }
 
     /**

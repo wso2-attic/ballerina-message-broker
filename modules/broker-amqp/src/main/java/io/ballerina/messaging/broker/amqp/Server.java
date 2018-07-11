@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.amqp;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelFactory;
 import io.ballerina.messaging.broker.amqp.codec.auth.AuthenticationStrategy;
 import io.ballerina.messaging.broker.amqp.codec.auth.AuthenticationStrategyFactory;
 import io.ballerina.messaging.broker.amqp.codec.frames.AmqMethodRegistryFactory;
@@ -79,7 +80,6 @@ public class Server {
      */
     private static final int BLOCKING_TASK_EXECUTOR_THREADS = 32;
 
-    private final BrokerFactory brokerFactory;
     private final AmqpServerConfiguration configuration;
     private final AmqpMetricManager metricManager;
     private EventLoopGroup bossGroup;
@@ -95,7 +95,11 @@ public class Server {
 
     private ServerHelper serverHelper;
 
+    /**
+     * Factory classes.
+     */
     private AmqMethodRegistryFactory amqMethodRegistryFactory;
+    private AmqpChannelFactory amqpChannelFactory;
 
     public Server(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
@@ -115,6 +119,7 @@ public class Server {
         }
 
         AuthManager authManager = startupContext.getService(AuthManager.class);
+        BrokerFactory brokerFactory;
         if (null != authManager && authManager.isAuthenticationEnabled() && authManager.isAuthorizationEnabled()) {
             brokerFactory = new SecureBrokerFactory(startupContext);
         } else {
@@ -128,16 +133,18 @@ public class Server {
         ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS, blockingTaskThreadFactory);
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
-            serverHelper = new ServerHelper();
+            serverHelper = new ServerHelper(configuration);
         } else {
             LOGGER.info("AMQP Transport is in PASSIVE mode"); //starts up in passive mode
-            serverHelper = new HaEnabledServerHelper();
+            serverHelper = new HaEnabledServerHelper(configuration);
         }
 
         AuthenticationStrategy authenticationStrategy
                 = AuthenticationStrategyFactory.getStrategy(startupContext.getService(AuthManager.class),
-                                                                  brokerFactory);
+                                                            brokerFactory,
+                                                            configuration);
         amqMethodRegistryFactory = new AmqMethodRegistryFactory(authenticationStrategy);
+        amqpChannelFactory = new AmqpChannelFactory(configuration, metricManager);
     }
 
     private void shutdownExecutors() {
@@ -199,7 +206,7 @@ public class Server {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, metricManager))
+                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
@@ -220,13 +227,21 @@ public class Server {
                          .addLast(sslHandlerFactory.create())
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, metricManager))
+                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
     }
 
     private class ServerHelper {
+        /**
+         * Socket receive and send buffer size in bytes.
+         */
+        private final int socketBufferSize;
+
+        private ServerHelper(AmqpServerConfiguration configurations) {
+            this.socketBufferSize = configurations.getSocketBufferSize();
+        }
 
         public void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
                 NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
@@ -249,6 +264,8 @@ public class Server {
              .channel(NioServerSocketChannel.class)
              .childHandler(new SocketChannelInitializer(ioExecutors))
              .option(ChannelOption.SO_BACKLOG, 128)
+             .childOption(ChannelOption.SO_RCVBUF, socketBufferSize)
+             .childOption(ChannelOption.SO_SNDBUF, socketBufferSize)
              .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
@@ -268,6 +285,8 @@ public class Server {
              .channel(NioServerSocketChannel.class)
              .childHandler(new SslSocketChannelInitializer(ioExecutors, new SslHandlerFactory(configuration)))
              .option(ChannelOption.SO_BACKLOG, 128)
+             .childOption(ChannelOption.SO_RCVBUF, socketBufferSize)
+             .childOption(ChannelOption.SO_SNDBUF, socketBufferSize)
              .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
@@ -287,7 +306,8 @@ public class Server {
 
         private BasicHaListener basicHaListener;
 
-        HaEnabledServerHelper() {
+        HaEnabledServerHelper(AmqpServerConfiguration configurations) {
+            super(configurations);
             basicHaListener = new BasicHaListener(this);
             haStrategy.registerListener(basicHaListener, 2);
         }

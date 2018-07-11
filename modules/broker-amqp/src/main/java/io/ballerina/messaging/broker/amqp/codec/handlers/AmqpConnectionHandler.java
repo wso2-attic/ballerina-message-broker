@@ -19,8 +19,8 @@
 
 package io.ballerina.messaging.broker.amqp.codec.handlers;
 
-import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelFactory;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.frames.AmqpBadMessage;
@@ -29,11 +29,13 @@ import io.ballerina.messaging.broker.amqp.codec.frames.GeneralFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.ProtocolInitFrame;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
 import io.ballerina.messaging.broker.core.Broker;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -45,19 +47,28 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConnectionHandler.class);
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
-    private final AmqpServerConfiguration configuration;
     private Broker broker;
     private final AmqpMetricManager metricManager;
 
-    public AmqpConnectionHandler(AmqpServerConfiguration configuration,
-                                 AmqpMetricManager metricManager) {
-        this.configuration = configuration;
+    /**
+     * Used to create AMQP channel Objects.
+     */
+    private AmqpChannelFactory amqpChannelFactory;
+
+    /**
+     * Underline netty connection.
+     */
+    private Channel nettyChannel;
+
+    public AmqpConnectionHandler(AmqpMetricManager metricManager, AmqpChannelFactory amqpChannelFactory) {
         this.metricManager = metricManager;
+        this.amqpChannelFactory = amqpChannelFactory;
         metricManager.incrementConnectionCount();
     }
 
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        ctx.channel().closeFuture().addListener(future -> ctx.fireChannelRead((BlockingTask) this::onConnectionClose));
+        nettyChannel = ctx.channel();
+        nettyChannel.closeFuture().addListener(future -> ctx.fireChannelRead((BlockingTask) this::onConnectionClose));
     }
 
     @Override
@@ -71,6 +82,30 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
             // TODO need to send error back to client
             ctx.close();
         }
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        if (!ctx.channel().isWritable()) {
+            ctx.channel().config().setAutoRead(false);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Auto read set to false in channel {}", getRemoteAddress(ctx));
+            }
+        }
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) {
+        if (ctx.channel().isWritable()) {
+            ctx.channel().config().setAutoRead(true);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Auto read set to true in channel {}", getRemoteAddress(ctx));
+            }
+        }
+    }
+
+    private SocketAddress getRemoteAddress(ChannelHandlerContext ctx) {
+        return ctx.channel().remoteAddress();
     }
 
     @Override
@@ -98,7 +133,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
             throw new ConnectionException(ConnectionException.CHANNEL_ERROR,
                     "Channel ID " + channelId + " Already exists");
         }
-        channels.put(channelId, new AmqpChannel(configuration, broker, channelId, metricManager));
+        channels.put(channelId, amqpChannelFactory.createChannel(broker, channelId, this));
         metricManager.incrementChannelCount();
     }
 
@@ -151,12 +186,12 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Returns the @{@link AmqpServerConfiguration} for the amq connection.
+     * Check whether the underline connection is writable. A connection can become unwritable when the outbound
+     * buffer is full.
      *
-     * @return Configuration
+     * @return true if the connection is writable, false otherwise
      */
-    public AmqpServerConfiguration getConfiguration() {
-        return configuration;
+    public boolean isWritable() {
+        return nettyChannel.isWritable();
     }
-
 }

@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.amqp.codec;
 
 import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.amqp.codec.flow.ChannelFlowManager;
+import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.amqp.consumer.AckData;
 import io.ballerina.messaging.broker.amqp.consumer.AmqpConsumer;
 import io.ballerina.messaging.broker.amqp.consumer.AmqpDeliverMessage;
@@ -82,6 +83,11 @@ public class AmqpChannel {
 
     private final AmqpMetricManager metricManager;
 
+    /**
+     * Underline AMQP connection which was used to create the channel.
+     */
+    private AmqpConnectionHandler connection;
+
     private final Map<ShortString, AmqpConsumer> consumerMap;
 
     private final InMemoryMessageAggregator messageAggregator;
@@ -138,17 +144,19 @@ public class AmqpChannel {
     public AmqpChannel(AmqpServerConfiguration configuration,
                        Broker broker,
                        int channelId,
-                       AmqpMetricManager metricManager) {
+                       AmqpMetricManager metricManager,
+                       AmqpConnectionHandler connection) {
         this.broker = broker;
         this.channelId = channelId;
         this.metricManager = metricManager;
+        this.connection = connection;
         this.consumerMap = new HashMap<>();
         this.transaction = new AutoCommitTransaction(broker);
         this.messageAggregator = new InMemoryMessageAggregator(transaction);
         this.flowManager = new ChannelFlowManager(this,
                                                   configuration.getChannelFlow().getLowLimit(),
                                                   configuration.getChannelFlow().getHighLimit());
-        this.maxRedeliveryCount = Integer.parseInt(configuration.getMaxRedeliveryCount());
+        this.maxRedeliveryCount = configuration.getMaxRedeliveryCount();
         traceChannelIdField = new TraceField(CHANNEL_ID_FIELD_NAME, channelId);
     }
 
@@ -349,7 +357,7 @@ public class AmqpChannel {
      * @return true if messages can be delivered through the channel, false otherwise
      */
     public boolean isReady() {
-        return flow.get() && hasRoom.get() && !closed.get();
+        return connection.isWritable() && flow.get() && hasRoom.get() && !closed.get();
     }
 
     /**
