@@ -30,8 +30,13 @@ fi
 # get the properties file location
 properties_file_location=$1
 
+if [ "$properties_file_location" == '' ]
+        then
+            properties_file_location=resources/ballerina_message_broker_performance_test.properties
+    fi
+
 # hash-map to store user desired parameters
-declare -A user_inputs=(["jmeter_home"]="" ["jndi_file_location"]="" ["jmx_file_location"]="" ["thread_count"]="10000" ["loop_count"]="1" ["ramp_time"]="0" ["duration_of_the_test"]="900" ["throughput"]="5000" ["message_size"]="10")
+declare -A user_inputs=(["jmeter_home"]="" ["jndi_file_location"]="resources/jndi.properties" ["jmx_file_location"]="test_plan/ballerina_message_broker_performance_test.jmx" ["thread_count"]="10000" ["loop_count"]="1" ["ramp_time"]="0" ["duration_of_the_test"]="900" ["throughput"]="5000" ["message_size"]="10")
 
 # Method to extract values from property file
 getProperty()
@@ -73,8 +78,16 @@ case ${user_inputs["message_size"]} in
 # retrieve the message
 message=`cat $text_message_file_location`
 
+if [ ${user_inputs["jmeter_home"]} != '' ]
+        then
+            # if user specified jmeter home
+            ${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DRAMP_TIME=${user_inputs["ramp_time"]} -DDURATION_OF_THE_TEST=${user_inputs["duration_of_the_test"]} -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l logs/test_results.jtl -e -o report/
+        else
+            # if jmeter_home is already configured
+            jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DRAMP_TIME=${user_inputs["ramp_time"]} -DDURATION_OF_THE_TEST=${user_inputs["duration_of_the_test"]} -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l logs/test_results.jtl -e -o report/
+    fi
+
 # execute jmeter command
-${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DRAMP_TIME=${user_inputs["ramp_time"]} -DDURATION_OF_THE_TEST=${user_inputs["duration_of_the_test"]} -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l logs/test_results.jtl -e -o report/
 
 # open report
 xdg-open report/index.html

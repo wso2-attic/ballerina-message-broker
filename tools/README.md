@@ -1,6 +1,6 @@
 # Performance testing tool for ballerina-message-broker 
 
-This tool allows ballerina message broker developers to get an idea about the performance of the message broker after a modification is done in the code.Following criteria is going to be used in evaluating the performance.
+This tool allows ballerina message broker developers to get an idea about the performance of the message broker after a modification is done in the code. Following criteria is going to be used in evaluating the performance.
 
 - Connection Load  - The number of message producers, or message consumers, or the number of concurrent connections a system can support.
 - Message throughput - The number of messages or message bytes that can be pumped through a messaging system per second.
@@ -31,8 +31,8 @@ queue.QueueName = <queue_name>
 4.Create a properties files including following details.
 ```properties
 jmeter_home = <jmeter_home>
-jmx_file_location =<jmx_file_location>
-jndi_file_location= <jndi_file_location>
+jmx_file_location = <jmx_file_location>
+jndi_file_location = <jndi_file_location>
 thread_count = <number_of_threads>
 ramp_time = <ramp_time>
 message_size = <size_of_the_message>
@@ -55,6 +55,8 @@ Upon completion of the test,you'll be directed to a web interface which contains
     - 1000 = 1MB message 
   
 - Following values are used as default values for some of the above mentioned parameters.
+    - jmx_file_location = test_plan/ballerina_message_broker_performance_test.jmx
+    - jndi_file_location = resources/jndi.properties
     - thread_count = 1
     - ramp_time = 0
     - message_size = 10
