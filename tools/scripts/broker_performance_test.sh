@@ -16,7 +16,7 @@
 
 #!/usr/bin/env bash
 
-# deleting existing folders
+# check for target folder
 if [ ! -e target/ ];
 then
     mkdir target
