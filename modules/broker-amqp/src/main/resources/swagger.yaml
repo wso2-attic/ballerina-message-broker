@@ -1,0 +1,80 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Broker Admin API
+  description: Message Broker AMQP Connection Management API
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+schemes:
+  - https
+  - http
+securityDefinitions:
+  basicAuth:
+    type: basic
+
+# Apply to the whole API
+security:
+  - basicAuth: []
+basePath: /broker/v1.0
+produces:
+  - application/json
+paths:
+  /transports/amqp/connections:
+      get:
+        operationId: getAllConnections
+        summary: Get all connections
+        description: Retrieves all connections to the broker
+        produces:
+          - application/json
+        responses:
+          '200':
+            description: List of active Connections
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/ConnectionMetadata'
+          '401':
+            description: Authentication information is missing or invalid
+            headers:
+              WWW_Authenticate:
+                type: string
+            schema:
+              $ref: '#/definitions/Error'
+definitions:
+  ConnectionMetadata:
+      title: Connection Metadata
+      type: object
+      required:
+        - id
+        - remoteAddress
+        - channelCount
+        - connectedTime
+      properties:
+        id:
+          type: integer
+          description: Connection identifier
+        remoteAddress:
+          type: string
+          description: >-
+            The ip address of the connected client. This could be the same
+            for multiple connections.
+        channelCount:
+          type: integer
+          description: Number of active channels registered for each connection
+        connectedTime:
+          type: integer
+          format: int64
+          description: The time at which the connection was established
+  Error:
+      title: Error Response
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int64
+        message:
+          type: string
+          description: Error message.

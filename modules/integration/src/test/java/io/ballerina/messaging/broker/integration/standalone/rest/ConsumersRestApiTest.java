@@ -222,6 +222,8 @@ public class ConsumersRestApiTest {
         Error error = objectMapper.readValue(errorMessage, Error.class);
 
         Assert.assertFalse(error.getMessage().isEmpty(), "Error message should be non empty.");
+        queueSession.close();
+        connection.close();
     }
 
     @Parameters({"admin-username", "admin-password"})
