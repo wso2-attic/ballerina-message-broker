@@ -47,6 +47,7 @@ import io.ballerina.messaging.broker.rest.config.RestServerConfiguration;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -118,7 +119,7 @@ public class BrokerNode {
         ClassLoader classLoader = getClass().getClassLoader();
         URL resource = classLoader.getResource(BrokerAuthConstants.USERS_FILE_NAME);
         if (resource != null) {
-            System.setProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG, resource.getFile());
+            System.setProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG, Paths.get(resource.toURI()).toString());
         }
 
         BrokerAuthConfiguration brokerAuthConfiguration = new BrokerAuthConfiguration();
