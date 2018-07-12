@@ -29,9 +29,10 @@ import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.rest.config.RestServerConfiguration;
-import org.wso2.carbon.config.ConfigurationException;
 
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 /**
@@ -40,7 +41,7 @@ import java.util.HashMap;
 public class TestUtils {
 
     public static StartupContext initStartupContext(String port, String sslPort, String hostname, String restPort)
-            throws ConfigurationException {
+            throws URISyntaxException {
         StartupContext startupContext = new StartupContext();
         TestConfigProvider configProvider = new TestConfigProvider();
 
@@ -72,7 +73,7 @@ public class TestUtils {
         ClassLoader classLoader = TestUtils.class.getClassLoader();
         URL resource = classLoader.getResource(BrokerAuthConstants.USERS_FILE_NAME);
         if (resource != null) {
-            System.setProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG, resource.getFile());
+            System.setProperty(BrokerAuthConstants.SYSTEM_PARAM_USERS_CONFIG, Paths.get(resource.toURI()).toString());
         }
 
 
