@@ -23,7 +23,7 @@ package io.ballerina.messaging.broker.auth.authorization.enums;
  */
 public enum ResourceType {
 
-    EXCHANGE("exchange"), QUEUE("queue");
+    EXCHANGE("exchange"), QUEUE("queue"), CONNECTION("connection");
 
     private String name;
 

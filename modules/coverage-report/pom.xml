@@ -55,6 +55,8 @@
                                     **/*io/ballerina/messaging/broker/core/selector/generated/**/*,
                                     **/*io/ballerina/messaging/broker/core/rest/api/*,
                                     **/*io/ballerina/messaging/broker/core/rest/model/*,
+                                    **/*io/ballerina/messaging/broker/amqp/rest/api/*,
+                                    **/*io/ballerina/messaging/broker/amqp/rest/model/*,
                                 </exclude>
                             </excludes>
                         </configuration>

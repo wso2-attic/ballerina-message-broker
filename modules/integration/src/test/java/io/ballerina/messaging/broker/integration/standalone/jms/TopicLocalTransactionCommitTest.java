@@ -158,9 +158,9 @@ public class TopicLocalTransactionCommitTest {
     @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
     public void testOneSubscriberCommitOneSubscriberRollbackOnePublisherCommitTransaction(String port,
-                                                                                          String adminUsername,
-                                                                                          String adminPassword,
-                                                                                          String brokerHostname)
+            String adminUsername,
+            String adminPassword,
+            String brokerHostname)
             throws NamingException, JMSException {
         String topicName = "testOneSubscriberCommitOneSubscriberRollbackOnePublisherCommitTransaction";
         int numberOfMessages = 100;
@@ -219,8 +219,10 @@ public class TopicLocalTransactionCommitTest {
             numberOfMessagesAfterRollback++;
         }
         Assert.assertEquals(numberOfMessages, numberOfMessagesAfterRollback, "Only "
-                + numberOfMessagesAfterRollback + " messages received after rollback but expect "
-                + numberOfMessages + " messages");
+                                                                             + numberOfMessagesAfterRollback
+                                                                             + " messages received after rollback but"
+                                                                             + " expect "
+                                                                             + numberOfMessages + " messages");
 
         subscriberSession2.commit();
 
@@ -236,9 +238,9 @@ public class TopicLocalTransactionCommitTest {
     @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
     public void testPublisherNotCommitTransaction(String port,
-                                                  String adminUsername,
-                                                  String adminPassword,
-                                                  String brokerHostname) throws NamingException, JMSException {
+            String adminUsername,
+            String adminPassword,
+            String brokerHostname) throws NamingException, JMSException {
         String topicName = "testPublisherNotCommitTransaction";
         int numberOfMessages = 100;
 
@@ -290,9 +292,9 @@ public class TopicLocalTransactionCommitTest {
     @Test(expectedExceptions = javax.jms.IllegalStateException.class,
             expectedExceptionsMessageRegExp = ".*Session is not transacted")
     public void testCommitOnNonTransactionTopicSession(String port,
-                                                       String adminUsername,
-                                                       String adminPassword,
-                                                       String brokerHostname) throws NamingException, JMSException {
+            String adminUsername,
+            String adminPassword,
+            String brokerHostname) throws NamingException, JMSException {
         String topicName = "testCommitOnNonTransactionTopicSession";
         int numberOfMessages = 100;
 
@@ -318,24 +320,31 @@ public class TopicLocalTransactionCommitTest {
         for (int i = 0; i < numberOfMessages; i++) {
             producer.publish(producerSession.createTextMessage("Test message " + i));
         }
-        // commit all publish messages
-        producerSession.commit();
-        producerSession.close();
 
-        Message message = subscriber.receive(1000);
-        Assert.assertNull(message, "Messages should not receive message after calling commit on "
-                + "non transaction channel");
+        try {
+            // commit all publish messages
+            producerSession.commit();
 
-        subscriberSession.close();
-        connection.close();
+            Message message = subscriber.receive(1000);
+            Assert.assertNull(message, "Messages should not receive message after calling commit on "
+                                       + "non transaction channel");
+
+        } catch (JMSException e) {
+            //catch exception and re-throw it since we need the connection to be closed
+            throw e;
+        } finally {
+            producerSession.close();
+            subscriberSession.close();
+            connection.close();
+        }
     }
 
     @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
     public void testPublisherCloseBeforeCommitTransaction(String port,
-                                                          String adminUsername,
-                                                          String adminPassword,
-                                                          String brokerHostname) throws NamingException, JMSException {
+            String adminUsername,
+            String adminPassword,
+            String brokerHostname) throws NamingException, JMSException {
         String topicName = "testPublisherCloseBeforeCommitTransaction";
         int numberOfMessages = 100;
 
