@@ -50,6 +50,14 @@ do
     fi
 done
 
+# validate inputs
+if [ ${user_inputs["thread_count"]} == '0' ]  || [ ${user_inputs["throughput"]} == '0' ]
+    then
+        # Command invoked cannot execute
+        echo Thread count and throughput cannot be zero
+        exit 126
+    fi
+
 # Summarizing inputs
 echo JMX file location is set to - ${user_inputs["jmx_file_location"]}
 echo JNDI properties file location is set to - ${user_inputs["jndi_file_location"]}
