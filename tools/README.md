@@ -4,7 +4,7 @@ This tool allows ballerina message broker developers to get an idea about the pe
 
 - Connection Load  - The number of message producers, or message consumers, or the number of concurrent connections a system can support.
 - Message throughput - The number of messages or message bytes that can be pumped through a messaging system per second.
-- Latency - The time it takes a particular message to be delivered from message producer to message consumer.
+- Latency - The time it takes a for a particular message to be delivered from message producer to message consumer.
 
 ## How to use 
 
@@ -28,7 +28,7 @@ throughput= <throughput_need_to_be_maintained>
 ```
 4.Run ```./broker_performance_test.sh <location_of_properties_file>```
 
-Upon completion of the test,you'll be directed to a web interface which contains the summary of the results obtained by the test.
+Upon completion of the test,you will be directed to a web interface which contains the summary of the results obtained by the test.
 
 ![statistics.png](scripts/images/Statistics.png)
 ![throughput.png](scripts/images/Throughput.png)
