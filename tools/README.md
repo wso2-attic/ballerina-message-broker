@@ -1,10 +1,9 @@
 # Performance testing tool for ballerina-message-broker 
 
-This tool allows ballerina message broker developers to get an idea about the performance of the message broker after a modification is done in the code. Following criteria is going to be used in evaluating the performance.
+This tool allows ballerina message broker developers to get an idea about the performance of the message broker after a modification is done in the code. Following criteria is used in evaluating the performance.
 
-- Connection Load  - The number of message producers, or message consumers, or the number of concurrent connections a system can support.
+- Connection Load  - The number of message producers , or the number of concurrent connections a system can support.
 - Message throughput - The number of messages or message bytes that can be pumped through a messaging system per second.
-- Latency - The time it takes a for a particular message to be delivered from message producer to message consumer.
 
 ## How to use 
 
