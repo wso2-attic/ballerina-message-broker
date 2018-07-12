@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-#!/bin/bash
+#!/usr/bin/env bash
 
 # deleting existing folders
 if [ ! -e target/ ];
@@ -28,7 +28,7 @@ properties_file_location=$1
 if [ "$properties_file_location" == '' ]
         then
             properties_file_location=resources/ballerina_message_broker_performance_test.properties
-    fi
+        fi
 
 # hash-map to store user desired parameters
 declare -A user_inputs=(["jmeter_home"]="" ["jndi_file_location"]="resources/jndi.properties" ["jmx_file_location"]="test_plan/ballerina_message_broker_performance_test.jmx" ["thread_count"]="1" ["number_of_messages"]="1000000" ["throughput"]="5000" ["message_size"]="10KB")
@@ -72,10 +72,7 @@ case ${user_inputs["message_size"]} in
 	1MB)
 		text_message_file_location="sample_messages/1MB.json"
 		;;
-  esac
-
-# retrieve the message
-message=`cat $text_message_file_location`
+esac
 
 # create folder to store report files
 folder_name=$(date '+%d-%m-%Y-%H-%M-%S')
@@ -85,12 +82,21 @@ mkdir target/"$folder_name"
 if [ ${user_inputs["jmeter_home"]} != '' ]
         then
             # if user specified jmeter home
-            ${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+            ${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+            # open report
+            firefox target/"$folder_name"/report/index.html
         else
+            jmeter_console_out="$(command -v jmeter)"
+            if [${jmeter_console_out} == '']
+                then
+                    echo Please set jmeter home or include jmeter_home property in the properties file
+                else
+                    # if jmeter_home is already configured
+                    jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+                    # open report
+                    firefox target/"$folder_name"/report/index.html
+            fi
             # if jmeter_home is already configured
-            jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DMESSAGE="$message"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
-    fi
+            jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+        fi
 
-# open report
-xdg-open target/"$folder_name"/report/index.html
-exit

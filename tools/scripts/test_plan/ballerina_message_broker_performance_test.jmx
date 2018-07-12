@@ -36,16 +36,17 @@
           <stringProp name="jms.priority"></stringProp>
           <stringProp name="jms.security_principle"></stringProp>
           <stringProp name="jms.security_credentials"></stringProp>
-          <stringProp name="jms.text_message">${__P(MESSAGE,&quot;&quot;;)}</stringProp>
-          <stringProp name="jms.input_file"></stringProp>
+          <stringProp name="jms.text_message"></stringProp>
+          <stringProp name="jms.input_file">${__P(FILE_PATH,&quot;&quot;;)}</stringProp>
           <stringProp name="jms.random_path"></stringProp>
-          <stringProp name="jms.config_choice">jms_use_text</stringProp>
+          <stringProp name="jms.config_choice">jms_use_file</stringProp>
           <stringProp name="jms.config_msg_type">jms_text_message</stringProp>
           <stringProp name="jms.iterations">1</stringProp>
           <boolProp name="jms.authenticate">false</boolProp>
           <elementProp name="jms.jmsProperties" elementType="JMSProperties">
             <collectionProp name="JMSProperties.properties"/>
           </elementProp>
+          <stringProp name="jms.file_encoding">UTF-8</stringProp>
         </PublisherSampler>
         <hashTree/>
         <kg.apc.jmeter.timers.VariableThroughputTimer guiclass="kg.apc.jmeter.timers.VariableThroughputTimerGui" testclass="kg.apc.jmeter.timers.VariableThroughputTimer" testname="jp@gc - Throughput Shaping Timer" enabled="true">
