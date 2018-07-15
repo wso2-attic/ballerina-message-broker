@@ -16,22 +16,57 @@
 
 #!/usr/bin/env bash
 
+# variable to store the location of properties file
+properties_file_location="resources/ballerina_message_broker_performance_test.properties"
+
+# variable to store jms destination topic/queue.Default value is queue
+destination="QueueName"
+connection_factory_name="QueueConnectionFactory"
+jndi_file_location="resources/jndi_queue.properties"
+
+# get inputs from the user -p <location of the properties file> -d topic/queue
+while getopts "hp:d:t:h:v" OPTION
+do
+     case $OPTION in
+         p)
+            properties_file_location=$OPTARG
+            break
+            ;;
+         d)
+            case $OPTARG in
+                topic)
+                    destination="TopicName"
+                    connection_factory_name="TopicConnectionFactory"
+                    jndi_file_location="resources/jndi_topic.properties"
+                    ;;
+                ?)
+                echo $OPTARG
+                    echo "$OPTARG is an invalid destination.JMS destination should be a queue or a topic"
+                    exit
+                ;;
+            esac
+            break
+            ;;
+         h)
+            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./broker_performance_test.sh [command].\n\nCommands\n\t-h  ask for help\n\t-p  set the location of the properties file\n\t-d  set jms destination type queue/topic\n"
+            printf "$help_text"
+            exit
+            ;;
+         ?)
+            printf "Invalid command.Run ./broker_performance_test.sh -h for usage.\n"
+            exit
+            ;;
+     esac
+done
+
 # check for target folder
 if [ ! -e target/ ];
 then
     mkdir target
 fi
 
-# get the properties file location
-properties_file_location=$1
-
-if [ "$properties_file_location" == '' ]
-        then
-            properties_file_location=resources/ballerina_message_broker_performance_test.properties
-        fi
-
 # hash-map to store user desired parameters
-declare -A user_inputs=(["jmeter_home"]="" ["jndi_file_location"]="resources/jndi.properties" ["jmx_file_location"]="test_plan/ballerina_message_broker_performance_test.jmx" ["thread_count"]="1" ["number_of_messages"]="1000000" ["throughput"]="5000" ["message_size"]="10KB")
+declare -A user_inputs=(["jmeter_home"]="" ["jmx_file_location"]="test_plan/ballerina_message_broker_performance_test.jmx" ["thread_count"]="1" ["number_of_messages"]="1000000" ["throughput"]="5000" ["message_size"]="10KB")
 
 # Method to extract values from property file
 getProperty()
@@ -54,8 +89,8 @@ done
 if [ ${user_inputs["thread_count"]} == '0' ]  || [ ${user_inputs["throughput"]} == '0' ]
     then
         # Command invoked cannot execute
-        echo Thread count and throughput cannot be zero
-        exit 126
+        echo Thread count and/or throughput cannot be zero
+        exit
     fi
 
 # Summarizing inputs
@@ -90,7 +125,7 @@ mkdir target/"$folder_name"
 if [ ${user_inputs["jmeter_home"]} != '' ]
         then
             # if user specified jmeter home
-            ${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+            ${user_inputs["jmeter_home"]}/jmeter -n -t ${user_inputs["jmx_file_location"]} -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
             # open report
             firefox target/"$folder_name"/report/index.html
         else
@@ -100,11 +135,11 @@ if [ ${user_inputs["jmeter_home"]} != '' ]
                     echo Please set jmeter home or include jmeter_home property in the properties file
                 else
                     # if jmeter_home is already configured
-                    jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+                    jmeter -n -t ${user_inputs["jmx_file_location"]} -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
                     # open report
                     firefox target/"$folder_name"/report/index.html
             fi
             # if jmeter_home is already configured
-            jmeter -n -t ${user_inputs["jmx_file_location"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DJNDI_URL=${user_inputs["jndi_file_location"]} -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+            jmeter -n -t ${user_inputs["jmx_file_location"]} -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
         fi
 
