@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.integration.standalone.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.ballerina.messaging.broker.amqp.codec.AmqConstant;
 import io.ballerina.messaging.broker.core.rest.QueuesApiDelegate;
 import io.ballerina.messaging.broker.core.rest.model.ConsumerMetadata;
 import io.ballerina.messaging.broker.core.rest.model.Error;
@@ -42,6 +43,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -115,6 +117,9 @@ public class ConsumersRestApiTest {
         String body = EntityUtils.toString(response.getEntity());
 
         ConsumerMetadata[] consumers = objectMapper.readValue(body, ConsumerMetadata[].class);
+        for (ConsumerMetadata consumerMetadata : consumers) {
+            validateTransportPropertyExistence(consumerMetadata);
+        }
 
         Assert.assertEquals(consumers.length, 2, "Number of consumers returned is incorrect.");
 
@@ -158,6 +163,7 @@ public class ConsumersRestApiTest {
         Assert.assertTrue(consumers.length > 0, "Number of consumers returned is incorrect.");
 
         int id = consumers[0].getId();
+        validateTransportPropertyExistence(consumers[0]);
         HttpGet getConsumer = new HttpGet(apiBasePath + QueuesApiDelegate.QUEUES_API_PATH + "/"
                                                   + queueName + "/consumers/" + id);
         ClientHelper.setAuthHeader(getConsumer, username, password);
@@ -243,5 +249,11 @@ public class ConsumersRestApiTest {
 
         Assert.assertFalse(error.getMessage().isEmpty(), "Error message shouldn't be empty.");
 
+    }
+
+    private void validateTransportPropertyExistence(ConsumerMetadata consumerMetadata) {
+        Map properties = (Map) consumerMetadata.getTransportProperties();
+        Assert.assertNotNull(properties.get(AmqConstant.TRANSPORT_PROPERTY_CHANNEL_ID));
+        Assert.assertNotNull(properties.get(AmqConstant.TRANSPORT_PROPERTY_CONNECTION_ID));
     }
 }
