@@ -44,6 +44,13 @@ ballerina.broker.core:
  # used. We have used the  frame size as the limit.
  maxPersistedChunkSize: 65500
 
+ # Size of the disruptor buffer used to handle message persistence asynchronously. Downside of increasing the buffer
+ # size is increased memory usage. The value should be a power of 2. E.g. 4096, 8192, 16384, 32768.
+ disruptorBufferSize: 32768
+
+ # Maximum number of messages in a batch when persisting messages.
+ maxDbWriteBatchSize: 1024
+
  # Configuration related to message delivery task
  deliveryTask:
   # Number of concurrent workers used to process the delivery tasks.

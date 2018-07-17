@@ -30,7 +30,7 @@
     <groupId>io.ballerina.messaging</groupId>
     <artifactId>broker-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.970.1-SNAPSHOT</version>
+    <version>0.970.2-SNAPSHOT</version>
     <name>Ballerina Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
@@ -371,6 +371,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven.checkstyle.plugin.version}</version>
                 <dependencies>
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
@@ -383,14 +384,12 @@
                         <id>validate</id>
                         <phase>validate</phase>
                         <configuration>
-                            <configLocation>/checkstyle/checkstyle.xml</configLocation>
-                            <suppressionsLocation>/checkstyle/suppressions.xml</suppressionsLocation>
+                            <configLocation>checkstyle/checkstyle.xml</configLocation>
+                            <suppressionsLocation>checkstyle/suppressions.xml</suppressionsLocation>
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                            <!--Exclude sources-->
-                            <excludes>${maven.checkstyleplugin.excludes}</excludes>
                         </configuration>
                         <goals>
                             <goal>check</goal>
@@ -412,7 +411,7 @@
 
     <properties>
         <broker.package.import.range.version>[0.1.42,1.0.0)</broker.package.import.range.version>
-        <netty.version>4.1.19.Final</netty.version>
+        <netty.version>4.1.25.Final</netty.version>
         <netty.import.package.range.version>(4,5]</netty.import.package.range.version>
         <slf4j.version>1.7.25</slf4j.version>
         <testng.version>6.11</testng.version>
@@ -424,13 +423,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.scm.id>wso2-scm-server</project.scm.id>
         <jacoco.plugin.version>0.7.9</jacoco.plugin.version>
-        <andes.version>3.2.47</andes.version>
+        <andes.version>3.2.70</andes.version>
         <geronimo-jms_1.1_spec.version>1.1.0.wso2v1</geronimo-jms_1.1_spec.version>
         <javacc.plugin.version>2.6</javacc.plugin.version>
-        <maven.checkstyleplugin.excludes>
-            **io/ballerina/messaging/broker/core/selector/generated/*,
-            **/gen/**/*
-        </maven.checkstyleplugin.excludes>
         <carbon.config.version>2.1.5</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
         <hikari.version>2.7.4</hikari.version>
@@ -457,5 +452,6 @@
         <gson.version>2.2.4</gson.version>
         <carbon.metrics.version.range>[2.0,3)</carbon.metrics.version.range>
         <carbon.config.package.import.version.range>[2.0.0, 3.0.0)</carbon.config.package.import.version.range>
+        <maven.checkstyle.plugin.version>3.0.0</maven.checkstyle.plugin.version>
     </properties>
 </project>

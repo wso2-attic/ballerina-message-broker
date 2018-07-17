@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.amqp;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelFactory;
 import io.ballerina.messaging.broker.amqp.codec.auth.AuthenticationStrategy;
 import io.ballerina.messaging.broker.amqp.codec.auth.AuthenticationStrategyFactory;
 import io.ballerina.messaging.broker.amqp.codec.frames.AmqMethodRegistryFactory;
@@ -31,7 +32,11 @@ import io.ballerina.messaging.broker.amqp.codec.handlers.BlockingTaskHandler;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
 import io.ballerina.messaging.broker.amqp.metrics.DefaultAmqpMetricManager;
 import io.ballerina.messaging.broker.amqp.metrics.NullAmqpMetricManager;
+import io.ballerina.messaging.broker.amqp.rest.api.ConnectionsApi;
 import io.ballerina.messaging.broker.auth.AuthManager;
+import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
+import io.ballerina.messaging.broker.auth.authorization.Authorizer;
+import io.ballerina.messaging.broker.auth.authorization.authorizer.empty.NoOpAuthorizer;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.BasicHaListener;
@@ -41,6 +46,7 @@ import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerFactory;
 import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
 import io.ballerina.messaging.broker.core.SecureBrokerFactory;
+import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -55,7 +61,6 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.metrics.core.MetricService;
-
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -79,7 +84,6 @@ public class Server {
      */
     private static final int BLOCKING_TASK_EXECUTOR_THREADS = 32;
 
-    private final BrokerFactory brokerFactory;
     private final AmqpServerConfiguration configuration;
     private final AmqpMetricManager metricManager;
     private EventLoopGroup bossGroup;
@@ -87,6 +91,7 @@ public class Server {
     private EventExecutorGroup ioExecutors;
     private Channel plainServerChannel;
     private Channel sslServerChannel;
+    private AmqpConnectionManager connectionManager;
 
     /**
      * The {@link HaStrategy} for which the HA listener is registered.
@@ -95,7 +100,11 @@ public class Server {
 
     private ServerHelper serverHelper;
 
+    /**
+     * Factory classes.
+     */
     private AmqMethodRegistryFactory amqMethodRegistryFactory;
+    private AmqpChannelFactory amqpChannelFactory;
 
     public Server(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
@@ -115,6 +124,7 @@ public class Server {
         }
 
         AuthManager authManager = startupContext.getService(AuthManager.class);
+        BrokerFactory brokerFactory;
         if (null != authManager && authManager.isAuthenticationEnabled() && authManager.isAuthorizationEnabled()) {
             brokerFactory = new SecureBrokerFactory(startupContext);
         } else {
@@ -128,16 +138,19 @@ public class Server {
         ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS, blockingTaskThreadFactory);
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
-            serverHelper = new ServerHelper();
+            serverHelper = new ServerHelper(configuration);
         } else {
             LOGGER.info("AMQP Transport is in PASSIVE mode"); //starts up in passive mode
-            serverHelper = new HaEnabledServerHelper();
+            serverHelper = new HaEnabledServerHelper(configuration);
         }
 
         AuthenticationStrategy authenticationStrategy
                 = AuthenticationStrategyFactory.getStrategy(startupContext.getService(AuthManager.class),
-                                                                  brokerFactory);
+                                                            brokerFactory,
+                                                            configuration);
         amqMethodRegistryFactory = new AmqMethodRegistryFactory(authenticationStrategy);
+        amqpChannelFactory = new AmqpChannelFactory(configuration, metricManager);
+        initConnectionsRestApi(startupContext);
     }
 
     private void shutdownExecutors() {
@@ -199,7 +212,7 @@ public class Server {
             socketChannel.pipeline()
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, metricManager))
+                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory, connectionManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
@@ -220,13 +233,21 @@ public class Server {
                          .addLast(sslHandlerFactory.create())
                          .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
                          .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(configuration, metricManager))
+                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory, connectionManager))
                          .addLast(ioExecutors, new AmqpMessageWriter())
                          .addLast(ioExecutors, new BlockingTaskHandler());
         }
     }
 
     private class ServerHelper {
+        /**
+         * Socket receive and send buffer size in bytes.
+         */
+        private final int socketBufferSize;
+
+        private ServerHelper(AmqpServerConfiguration configurations) {
+            this.socketBufferSize = configurations.getSocketBufferSize();
+        }
 
         public void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
                 NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
@@ -249,6 +270,8 @@ public class Server {
              .channel(NioServerSocketChannel.class)
              .childHandler(new SocketChannelInitializer(ioExecutors))
              .option(ChannelOption.SO_BACKLOG, 128)
+             .childOption(ChannelOption.SO_RCVBUF, socketBufferSize)
+             .childOption(ChannelOption.SO_SNDBUF, socketBufferSize)
              .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
@@ -268,6 +291,8 @@ public class Server {
              .channel(NioServerSocketChannel.class)
              .childHandler(new SslSocketChannelInitializer(ioExecutors, new SslHandlerFactory(configuration)))
              .option(ChannelOption.SO_BACKLOG, 128)
+             .childOption(ChannelOption.SO_RCVBUF, socketBufferSize)
+             .childOption(ChannelOption.SO_SNDBUF, socketBufferSize)
              .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
@@ -287,7 +312,8 @@ public class Server {
 
         private BasicHaListener basicHaListener;
 
-        HaEnabledServerHelper() {
+        HaEnabledServerHelper(AmqpServerConfiguration configurations) {
+            super(configurations);
             basicHaListener = new BasicHaListener(this);
             haStrategy.registerListener(basicHaListener, 2);
         }
@@ -339,6 +365,26 @@ public class Server {
             }
         }
 
+    }
+
+    /**
+     * Initializes the rest API to handle connections.
+     *
+     * @param startupContext {@link StartupContext} holding the services exposed at the broker runtime
+     */
+    private void initConnectionsRestApi(StartupContext startupContext) {
+        BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
+        connectionManager = new AmqpConnectionManager();
+        if (Objects.nonNull(serviceRunner)) {
+            AuthManager authManager = startupContext.getService(AuthManager.class);
+            Authorizer dacHandler;
+            if (null != authManager && authManager.isAuthenticationEnabled() && authManager.isAuthorizationEnabled()) {
+                dacHandler = authManager.getAuthorizer();
+            } else {
+                dacHandler = new NoOpAuthorizer();
+            }
+            serviceRunner.deploy(new ConnectionsApi(connectionManager, new AuthorizationHandler(dacHandler)));
+        }
     }
 
 }

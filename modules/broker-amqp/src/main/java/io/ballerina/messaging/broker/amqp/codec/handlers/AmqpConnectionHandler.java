@@ -19,8 +19,9 @@
 
 package io.ballerina.messaging.broker.amqp.codec.handlers;
 
-import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
+import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelFactory;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.frames.AmqpBadMessage;
@@ -29,14 +30,16 @@ import io.ballerina.messaging.broker.amqp.codec.frames.GeneralFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.ProtocolInitFrame;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
 import io.ballerina.messaging.broker.core.Broker;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Netty handler for handling an AMQP connection.
@@ -45,19 +48,59 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConnectionHandler.class);
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
-    private final AmqpServerConfiguration configuration;
     private Broker broker;
     private final AmqpMetricManager metricManager;
 
-    public AmqpConnectionHandler(AmqpServerConfiguration configuration,
-                                 AmqpMetricManager metricManager) {
-        this.configuration = configuration;
+    /**
+     * Connection identifier which uniquely defines a connection.
+     */
+    private final int id;
+
+    /**
+     * Generates a unique identifier for each connection handler.
+     */
+    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(0);
+
+    /**
+     * Stores the time at which the connection was established.
+     */
+    private final long connectedTime;
+
+    /**
+     * Stores the remote address of the AMQP client in the form of /ip:port that is connected to the broker.
+     */
+    private String remoteAddress;
+
+    /**
+     * The underlying connection manager that is responsible for managing all AMQP connections through the REST API.
+     */
+    private final AmqpConnectionManager connectionManager;
+
+    /**
+     * Used to create AMQP channel Objects.
+     */
+    private AmqpChannelFactory amqpChannelFactory;
+
+    /**
+     * Underline netty connection.
+     */
+    private Channel nettyChannel;
+
+    public AmqpConnectionHandler(AmqpMetricManager metricManager, AmqpChannelFactory amqpChannelFactory,
+                                 AmqpConnectionManager amqpConnectionManager) {
         this.metricManager = metricManager;
+        this.amqpChannelFactory = amqpChannelFactory;
+        this.connectionManager = amqpConnectionManager;
         metricManager.incrementConnectionCount();
+        this.connectedTime = System.currentTimeMillis();
+        this.id = ID_GENERATOR.incrementAndGet();
     }
 
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        ctx.channel().closeFuture().addListener(future -> ctx.fireChannelRead((BlockingTask) this::onConnectionClose));
+        nettyChannel = ctx.channel();
+        nettyChannel.closeFuture().addListener(future -> ctx.fireChannelRead((BlockingTask) this::onConnectionClose));
+        remoteAddress = ctx.channel().remoteAddress().toString();
+        ctx.fireChannelRead((BlockingTask) () -> connectionManager.addConnectionHandler(this));
     }
 
     @Override
@@ -74,6 +117,30 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        if (!ctx.channel().isWritable()) {
+            ctx.channel().config().setAutoRead(false);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Auto read set to false in channel {}", getRemoteAddress(ctx));
+            }
+        }
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) {
+        if (ctx.channel().isWritable()) {
+            ctx.channel().config().setAutoRead(true);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Auto read set to true in channel {}", getRemoteAddress(ctx));
+            }
+        }
+    }
+
+    private SocketAddress getRemoteAddress(ChannelHandlerContext ctx) {
+        return ctx.channel().remoteAddress();
+    }
+
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         LOGGER.warn("Exception while handling request", cause);
         ctx.close();
@@ -82,6 +149,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     private void onConnectionClose() {
         closeAllChannels();
         metricManager.decrementConnectionCount();
+        connectionManager.removeConnectionHandler(this);
     }
 
     private void handleProtocolInit(ChannelHandlerContext ctx, ProtocolInitFrame msg) {
@@ -98,7 +166,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
             throw new ConnectionException(ConnectionException.CHANNEL_ERROR,
                     "Channel ID " + channelId + " Already exists");
         }
-        channels.put(channelId, new AmqpChannel(configuration, broker, channelId, metricManager));
+        channels.put(channelId, amqpChannelFactory.createChannel(broker, channelId, this));
         metricManager.incrementChannelCount();
     }
 
@@ -151,12 +219,48 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Returns the @{@link AmqpServerConfiguration} for the amq connection.
+     * Check whether the underline connection is writable. A connection can become unwritable when the outbound
+     * buffer is full.
      *
-     * @return Configuration
+     * @return true if the connection is writable, false otherwise
      */
-    public AmqpServerConfiguration getConfiguration() {
-        return configuration;
+    public boolean isWritable() {
+        return nettyChannel.isWritable();
     }
 
+    /**
+     * Returns the remote address of the connection that is established.
+     *
+     * @return the remote address in the format of /ip:port
+     */
+    public String getRemoteAddress() {
+        return remoteAddress;
+    }
+
+    /**
+     * Returns the number of AMQP channels that are created using the underlying connection.
+     *
+     * @return the number of AMQP channels registered
+     */
+    public int getChannelCount() {
+        return channels.size();
+    }
+
+    /**
+     * Returns the time at which the connection was registered.
+     *
+     * @return the timestamp at which the connection was created in the form of milliseconds
+     */
+    public long getConnectedTime() {
+        return connectedTime;
+    }
+
+    /**
+     * Returns the connection identifier.
+     *
+     * @return an integer defining the connection handler
+     */
+    public int getId() {
+        return id;
+    }
 }

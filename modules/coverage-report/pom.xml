@@ -22,7 +22,7 @@
     <parent>
         <groupId>io.ballerina.messaging</groupId>
         <artifactId>broker-parent</artifactId>
-        <version>0.970.1-SNAPSHOT</version>
+        <version>0.970.2-SNAPSHOT</version>
         <relativePath>../..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -55,6 +55,8 @@
                                     **/*io/ballerina/messaging/broker/core/selector/generated/**/*,
                                     **/*io/ballerina/messaging/broker/core/rest/api/*,
                                     **/*io/ballerina/messaging/broker/core/rest/model/*,
+                                    **/*io/ballerina/messaging/broker/amqp/rest/api/*,
+                                    **/*io/ballerina/messaging/broker/amqp/rest/model/*,
                                 </exclude>
                             </excludes>
                         </configuration>

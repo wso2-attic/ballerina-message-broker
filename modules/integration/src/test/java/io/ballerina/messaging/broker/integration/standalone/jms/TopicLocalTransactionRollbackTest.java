@@ -265,16 +265,19 @@ public class TopicLocalTransactionRollbackTest {
         for (int i = 0; i < numberOfMessages; i++) {
             producer.publish(producerSession.createTextMessage("Test message " + i));
         }
-        // commit all publish messages
-        producerSession.rollback();
-        producerSession.close();
-
-        Message message = subscriber.receive(1000);
-        Assert.assertNull(message, "Messages should not receive message after calling rollback on "
-                + "non transaction channel");
-
-        subscriberSession.close();
-        connection.close();
+        try {
+            // commit all publish messages
+            producerSession.rollback();
+            Message message = subscriber.receive(1000);
+            Assert.assertNull(message, "Messages should not receive message after calling rollback on "
+                                       + "non transaction channel");
+        } catch (JMSException e) {
+            throw e;
+        } finally {
+            producerSession.close();
+            subscriberSession.close();
+            connection.close();
+        }
     }
 
     @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
