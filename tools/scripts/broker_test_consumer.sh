@@ -39,6 +39,7 @@ do
                     destination="QueueName"
                     connection_factory_name="QueueConnectionFactory"
                     jndi_file_location="resources/jndi_queue.properties"
+                    jmx_file_location="test_plan/broker_performance_test_queue_consumer.jmx"
                 ;;
                 topic)
                     destination="TopicName"
