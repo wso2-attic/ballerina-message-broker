@@ -25,6 +25,9 @@ package io.ballerina.messaging.broker.amqp.codec;
 public class AmqConstant {
     public static final int COMMAND_INVALID = 503;
 
+    public static final String TRANSPORT_PROPERTY_CHANNEL_ID = "channelId";
+    public static final String TRANSPORT_PROPERTY_CONNECTION_ID = "connectionId";
+
     private AmqConstant() {
     }
 }

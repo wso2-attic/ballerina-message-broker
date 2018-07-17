@@ -347,6 +347,10 @@ public class AmqpChannel {
         }
     }
 
+    public int getConnectionId() {
+        return connection.getId();
+    }
+
     public void setFlow(boolean active) {
         flow.set(active);
     }

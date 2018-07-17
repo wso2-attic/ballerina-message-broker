@@ -102,7 +102,8 @@ public class ConsumersApiDelegate {
         return new ConsumerMetadata()
                 .id(consumer.getId())
                 .isExclusive(consumer.isExclusive())
-                .flowEnabled(consumer.isReady());
+                .flowEnabled(consumer.isReady())
+                .transportProperties(consumer.getTransportProperties());
     }
 
     public Response deleteConsumer(String queueName, Integer consumerId, Subject subject) {
