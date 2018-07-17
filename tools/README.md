@@ -29,7 +29,7 @@ message_size = <size_of_the_message>
 number_of_messages = <number_of_messages_need_to_be_published>
 throughput= <throughput_need_to_be_maintained>
 ```
-2.Run ```./broker_performance_test_publisher.sh -p <location_of_properties_file> -d queue/topic```
+2.Run ```./broker_test_publisher.sh -p <location_of_properties_file> -d queue/topic```
 
 Upon completion of the test,you will be directed to a web interface which contains the summary of the results obtained by the test.
 
@@ -41,9 +41,28 @@ jmeter_home = <jmeter_home>
 thread_count = <number_of_threads>
 number_of_messages = <number_of_messages_need_to_be_published>
 ```
-2.Run ```./broker_performance_test_consumer.sh -p <location_of_properties_file> -d queue/topic```
+2.Run ```./broker_test_consumer.sh -p <location_of_properties_file> -d queue/topic```
 
 Upon completion of the test,you will be directed to a web interface which contains the summary of the results obtained by the test.
+
+### Test scenario - Publish messages to queues/topics and consume them
+
+1.Include the following details in broker_performance_test_publisher.properties file which is located at resources/.
+```properties
+jmeter_home = <jmeter_home>
+thread_count = <number_of_threads>
+message_size = <size_of_the_message>
+number_of_messages = <number_of_messages_need_to_be_published>
+throughput= <throughput_need_to_be_maintained>
+```
+
+2.Include the following details in broker_performance_test_consumer.properties file which is located at resources/.
+```properties
+jmeter_home = <jmeter_home>
+thread_count = <number_of_threads>
+number_of_messages = <number_of_messages_need_to_be_published>
+```
+3.Run ```./broker_test_consumer.sh -p <location_of_properties_file> -d queue/topic```
 
 ## Special Notes
 

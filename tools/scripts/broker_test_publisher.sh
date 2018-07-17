@@ -17,13 +17,13 @@
 #!/usr/bin/env bash
 
 # variable to store the location of properties file
-properties_file_location="resources/broker_performance_test_publisher.properties"
+properties_file_location="resources/broker_test_publisher.properties"
 
 # variable to store jms destination topic/queue.Default value is queue
-destination="QueueName"
-connection_factory_name="QueueConnectionFactory"
-jndi_file_location="resources/jndi_queue.properties"
-jmx_file_location="test_plan/broker_performance_test_publisher.jmx"
+jmx_file_location="test_plan/broker_test_publisher.jmx"
+destination=""
+connection_factory_name=""
+jndi_file_location=""
 
 # get inputs from the user -p <location of the properties file> -d topic/queue
 while getopts "hp:d:t:h:v" OPTION
@@ -35,6 +35,11 @@ do
             ;;
          d)
             case $OPTARG in
+                queue)
+                    destination="QueueName"
+                    connection_factory_name="QueueConnectionFactory"
+                    jndi_file_location="resources/jndi_queue.properties"
+                ;;
                 topic)
                     destination="TopicName"
                     connection_factory_name="TopicConnectionFactory"
@@ -49,12 +54,12 @@ do
             break
             ;;
          h)
-            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./broker_performance_test_publisher.sh [command].\n\nCommands\n\t-h  ask for help\n\t-p  set the location of the properties file\n\t-d  set jms destination type queue/topic\n"
+            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./broker_test_publisher.sh [command].\n\nCommands\n\t-h  ask for help\n\t-p  set the location of the properties file\n\t-d  set jms destination type queue/topic\n"
             printf "$help_text"
             exit
             ;;
          ?)
-            printf "Invalid command.Run ./broker_performance_test_publisher.sh -h for usage.\n"
+            printf "Invalid command.Run ./broker_test_publisher.sh -h for usage.\n"
             exit
             ;;
      esac
@@ -63,7 +68,7 @@ done
 # check for target folder
 if [ ! -e target/ ];
 then
-    mkdir target
+    mkdir -p target/publisher
 fi
 
 # hash-map to store user desired parameters
@@ -118,13 +123,13 @@ esac
 
 # create folder to store report files
 folder_name=$(date '+%d-%m-%Y-%H-%M-%S')
-mkdir target/"$folder_name"
+mkdir -p target/publisher/"$folder_name"
 
 # execute jmeter command
 if [ ${user_inputs["jmeter_home"]} != '' ]
         then
             # if user specified jmeter home
-            ${user_inputs["jmeter_home"]}/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+            ${user_inputs["jmeter_home"]}/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/publisher/"$folder_name"/log/test_results.jtl -e -o target/publisher/"$folder_name"/report/
         else
             jmeter_console_out="$(command -v jmeter)"
             if [${jmeter_console_out} == '']
@@ -133,9 +138,9 @@ if [ ${user_inputs["jmeter_home"]} != '' ]
                 else
                     echo "$jmeter_console_out"
                     # if jmeter_home is already configured
-                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/publisher/"$folder_name"/log/test_results.jtl -e -o target/publisher/"$folder_name"/report/
             fi
         fi
 
 # open report
-firefox target/"$folder_name"/report/index.html
+firefox target/publisher/"$folder_name"/report/index.html

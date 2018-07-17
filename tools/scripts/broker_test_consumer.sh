@@ -17,13 +17,13 @@
 #!/usr/bin/env bash
 
 # variable to store the location of properties file
-properties_file_location="resources/broker_performance_test_consumer.properties"
+properties_file_location="resources/broker_test_consumer.properties"
 
 # variable to store jms destination topic/queue.Default value is queue
-destination="QueueName"
-connection_factory_name="QueueConnectionFactory"
-jndi_file_location="resources/jndi_queue.properties"
-jmx_file_location="test_plan/broker_performance_test_queue_consumer.jmx"
+jmx_file_location="test_plan/broker_test_queue_consumer.jmx"
+destination=""
+connection_factory_name=""
+jndi_file_location=""
 
 # get inputs from the user -p <location of the properties file> -d topic/queue
 while getopts "hp:d:t:h:v" OPTION
@@ -35,11 +35,16 @@ do
             ;;
          d)
             case $OPTARG in
+                queue)
+                    destination="QueueName"
+                    connection_factory_name="QueueConnectionFactory"
+                    jndi_file_location="resources/jndi_queue.properties"
+                ;;
                 topic)
                     destination="TopicName"
                     connection_factory_name="TopicConnectionFactory"
                     jndi_file_location="resources/jndi_topic.properties"
-                    jmx_file_location="test_plan/broker_performance_test_topic_consumer.jmx"
+                    jmx_file_location="test_plan/broker_test_topic_consumer.jmx"
                     ;;
                 ?)
                 echo $OPTARG
@@ -50,12 +55,12 @@ do
             break
             ;;
          h)
-            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./publisher_performance_test.sh [command].\n\nCommands\n\t-h  ask for help\n\t-p  set the location of the properties file\n\t-d  set jms destination type queue/topic\n"
+            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./broker_test_consumer.sh [command].\n\nCommands\n\t-h  ask for help\n\t-p  set the location of the properties file\n\t-d  set jms destination type queue/topic\n"
             printf "$help_text"
             exit
             ;;
          ?)
-            printf "Invalid command.Run ./publisher_performance_test.sh -h for usage.\n"
+            printf "Invalid command.Run ./broker_test_consumer.sh -h for usage.\n"
             exit
             ;;
      esac
@@ -64,7 +69,7 @@ done
 # check for target folder
 if [ ! -e target/ ];
 then
-    mkdir target
+    mkdir -p target/subscriber
 fi
 
 # hash-map to store user desired parameters
@@ -104,13 +109,13 @@ loop_count=$(echo "${user_inputs["number_of_messages"]}/${user_inputs["thread_co
 
 # create folder to store report files
 folder_name=$(date '+%d-%m-%Y-%H-%M-%S')
-mkdir target/"$folder_name"
+mkdir -p target/subscriber/"$folder_name"
 
 # execute jmeter command
 if [ ${user_inputs["jmeter_home"]} != '' ]
         then
             # if user specified jmeter home
-            ${user_inputs["jmeter_home"]}/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DDURABLE_SUB_COUNT=${user_inputs["thread_count"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+            ${user_inputs["jmeter_home"]}/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DDURABLE_SUB_COUNT=${user_inputs["thread_count"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -l target/subscriber/"$folder_name"/log/test_results.jtl -e -o target/subscriber/"$folder_name"/report/
         else
             jmeter_console_out="$(command -v jmeter)"
             if [${jmeter_console_out} == '']
@@ -119,9 +124,9 @@ if [ ${user_inputs["jmeter_home"]} != '' ]
                 else
                     echo "$jmeter_console_out"
                     # if jmeter_home is already configured
-                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DDURABLE_SUB_COUNT=${user_inputs["thread_count"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -l target/"$folder_name"/log/test_results.jtl -e -o target/"$folder_name"/report/
+                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DDURABLE_SUB_COUNT=${user_inputs["thread_count"]} -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -l target/subscriber/"$folder_name"/log/test_results.jtl -e -o target/subscriber/"$folder_name"/report/
             fi
         fi
 
 # open report
-firefox target/"$folder_name"/report/index.html
+firefox target/subscriber/"$folder_name"/report/index.html
