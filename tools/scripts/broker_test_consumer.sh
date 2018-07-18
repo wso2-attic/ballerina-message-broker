@@ -91,7 +91,7 @@ getProperty()
 }
 
 # hash-map to store user desired parameters
-declare -A user_inputs=(["jmeter_home"]="" ["broker_url"]="" ["thread_count"]="1" ["number_of_messages"]="1000000")
+declare -A user_inputs=(["jmeter_home"]="" ["host_url"]="" ["broker_port"]="9000" ["amqp_listener_port"]="5672" ["thread_count"]="1" ["number_of_messages"]="1000000")
 
 for parameter in "${!user_inputs[@]}";
 do
@@ -119,18 +119,35 @@ then
     mkdir -p target/subscriber
 fi
 
+case $queue_name in
+    micro_benchmark_queue1)
+        if [ -e resources/jndi_queue.properties ];
+            then
+                rm resources/jndi_queue.properties
+            fi
+            printf "connectionfactory.QueueConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://${user_inputs["host_url"]}:${user_inputs["amqp_listener_port"]}'\nqueue.QueueName=micro_benchmark_queue1"
+            ;;
+    micro_benchmark_queue2)
+        if [ -e resources/jndi_topic.properties ];
+            then
+                rm resources/jndi_queue.properties
+            fi
+            printf "connectionfactory.TopicConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://${user_inputs["host_url"]}:${user_inputs["amqp_listener_port"]}'\ntopic.TopicName=micro_benchmark_queue2"
+            ;;
+esac
+
 # create queues and bindings to execute tests
-queue_available_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" ${user_inputs["broker_url"]}/broker/v1.0/queues/"$queue_name")
+queue_available_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" https://${user_inputs["host_url"]}:${user_inputs["broker_port"]}/broker/v1.0/queues/"$queue_name")
 # if queue is not available create queue
 if [ "$queue_available_response" == 404 ]
     then
         json_payload='{"name":"'"$queue_name"'", "durable":"true","autoDelete":"true"}'
-        queue_create_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload" -H "Content-Type: application/json" -X POST ${user_inputs["broker_url"]}/broker/v1.0/queues)
+        queue_create_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload" -H "Content-Type: application/json" -X POST https://${user_inputs["host_url"]}:${user_inputs["broker_port"]}/broker/v1.0/queues)
         if [ "$queue_create_response" == "201" ]
             then
                 echo $queue_name created sucessfully.
                 json_payload='{"bindingPattern":"'"$queue_name"'","exchangeName":"'"$exchange_name"'","filterExpression":""}'
-                queue_bind_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload"  -H "Content-Type: application/json" -X POST ${user_inputs["broker_url"]}/broker/v1.0/queues/"$queue_name"/bindings)
+                queue_bind_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload"  -H "Content-Type: application/json" -X POST https://${user_inputs["host_url"]}:${user_inputs["broker_port"]}/broker/v1.0/queues/"$queue_name"/bindings)
                 if [ "$queue_bind_response" == "201" ]
                     then
                         echo "Binding created sucessfully with $queue_name.Exchange name - $exchange_name"

@@ -11,9 +11,7 @@ The tool allows developers to publish/consume messages to/from queues and topics
 
 ## Prerequisite
 
-1. Create two queues ```micro_benchmark_queue1``` and ```micro_benchmark_queue2```.The script uses these queues separately to study the performance of queue and topic operations.
-
-2. Copy following jars to JMETER_HOME/lib.
+1. Copy following jars to JMETER_HOME/lib.
 
     - andes-client-0.13.wso2v8.jar
     - geronimo-jms_1.1_spec-1.1.0.wso2v1.jar
@@ -23,7 +21,9 @@ The tool allows developers to publish/consume messages to/from queues and topics
 
 1. Include the following details in broker_performance_test_publisher.properties file which is located at resources/.
 ```properties
-broker_url=<broker_url>
+host_url=<host_url>
+broker_port=<port_where_broker_starts>
+amqp_listener_port=<port_where_amqp_listener_starts>
 jmeter_home = <jmeter_home>
 thread_count = <number_of_threads>
 message_size = <size_of_the_message>
@@ -40,6 +40,9 @@ Upon completion of the test, you will be directed to a web interface which conta
 
 1. Include the following details in broker_performance_test_consumer.properties file which is located at resources/.
 ```properties
+host_url=<host_url>
+broker_port=<port_where_broker_starts>
+amqp_listener_port=<port_where_amqp_listener_starts>
 jmeter_home = <jmeter_home>
 thread_count = <number_of_threads>
 number_of_messages = <number_of_messages_need_to_be_consumed>
@@ -78,7 +81,9 @@ number_of_messages = <number_of_messages_need_to_be_published>
     - 1MB = 1MB message 
   
 - Following values are used as default values for some of the above mentioned parameters.
+    - broker_port = 9000
+    - amqp_listener_port = 5672
     - thread_count = 1
-    - message_size = 10
+    - message_size = 10KB
     - number_of_messages = 1000000
     - throughput = 5000 (5000 messages/seconds)

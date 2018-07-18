@@ -62,6 +62,6 @@ if [ $is_given_destination == false ];
 
 # execute publisher and consumer at the same time
 ./broker_test_consumer.sh -d "$destination" &
-sleep 2
+sleep 4
 ./broker_test_publisher.sh -d "$destination" &
 wait

@@ -89,7 +89,7 @@ getProperty()
 }
 
 # hash-map to store user desired parameters
-declare -A user_inputs=(["jmeter_home"]="" ["broker_url"]="" ["thread_count"]="1" ["number_of_messages"]="1000000" ["throughput"]="5000" ["message_size"]="10KB")
+declare -A user_inputs=(["jmeter_home"]="" ["host_url"]="" ["broker_port"]="9000" ["amqp_listener_port"]="5672" ["thread_count"]="1" ["number_of_messages"]="1000000" ["throughput"]="5000" ["message_size"]="10KB")
 
 for parameter in "${!user_inputs[@]}";
 do
@@ -100,8 +100,25 @@ do
     fi
 done
 
+case $queue_name in
+    micro_benchmark_queue1)
+        if [ -e resources/jndi_queue.properties ];
+            then
+                 rm resources/jndi_queue.properties
+            fi
+            printf "connectionfactory.QueueConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://${user_inputs["host_url"]}:${user_inputs["amqp_listener_port"]}'\nqueue.QueueName=micro_benchmark_queue1" >> resources/jndi_queue.properties
+        ;;
+    micro_benchmark_queue2)
+        if [ -e resources/jndi_topic.properties ];
+            then
+                 rm resources/jndi_queue.properties
+            fi
+            printf "connectionfactory.TopicConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://${user_inputs["host_url"]}:${user_inputs["amqp_listener_port"]}'\ntopic.TopicName=micro_benchmark_queue2" >> resources/jndi_topic.properties
+        ;;
+esac
+
 # validate inputs
-if [ ${user_inputs["broker_url"]} == '' ]
+if [ ${user_inputs["host_url"]} == '' ]
     then
         echo "broker_url parameter in broker_test_publisher.properties cannot be empty."
         exit
