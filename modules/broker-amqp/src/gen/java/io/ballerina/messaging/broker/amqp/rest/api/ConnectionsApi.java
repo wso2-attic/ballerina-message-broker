@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.amqp.rest.api;
 
 import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
 import io.ballerina.messaging.broker.amqp.rest.ConnectionsApiDelegate;
+import io.ballerina.messaging.broker.amqp.rest.model.ConnectionCloseResponse;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
@@ -28,13 +29,16 @@ import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
 import io.ballerina.messaging.broker.core.rest.model.Error;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import org.wso2.msf4j.Request;
 import javax.security.auth.Subject;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -51,14 +55,34 @@ public class ConnectionsApi {
         this.connectionsApiDelegate = new ConnectionsApiDelegate(connectionManager, dacHandler);
     }
 
+    @DELETE
+    @Path("/{id}")
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Force disconnect the specified connection.", notes = "Disconnects the specified amqp connection if the connection exists in the broker", response = ConnectionCloseResponse.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 202, message = "Connection removal request submitted.", response = ConnectionCloseResponse.class),
+            @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 403, message = "User is not autherized to perform operation", response = Error.class),
+            @ApiResponse(code = 404, message = "The specified resource was not found", response = Error.class)
+    })
+    public Response closeConnection(@Context Request request,
+                                    @PathParam("id") @ApiParam("Identifier of the connection") Integer id) {
+        return connectionsApiDelegate.closeConnection(id, (Subject) request.getSession().getAttribute
+                (BrokerAuthConstants.AUTHENTICATION_ID));
+    }
+
     @GET
     @Produces({ "application/json" })
     @ApiOperation(value = "Get all connections", notes = "Retrieves all connections to the broker", response = ConnectionMetadata.class, responseContainer = "List", authorizations = {
         @Authorization(value = "basicAuth")
     }, tags={  })
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "List of active Connections", response = ConnectionMetadata.class, responseContainer = "List"),
-        @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class)
+            @ApiResponse(code = 200, message = "List of active Connections", response = ConnectionMetadata.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 403, message = "User is not autherized to perform operation", response = Error.class)
     })
     public Response getAllConnections(@Context Request request) {
         return connectionsApiDelegate.getAllConnections((Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));

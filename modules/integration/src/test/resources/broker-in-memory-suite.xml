@@ -45,5 +45,15 @@
             <package name="io.ballerina.messaging.broker.integration.standalone.rest" />
             <!--<package name="io.ballerina.messaging.broker.integration.standalone.cli" />-->
         </packages>
+        <classes>
+            <class name="io.ballerina.messaging.broker.integration.standalone.rest.ConnectionsRestApiTest">
+                <!--exclude these methods since the NoOpMacHandler(which returns true for all authorizations) is used
+                for authorization-->
+                <methods>
+                    <exclude name="testGetConnectionsWithUnauthorizedUser"/>
+                    <exclude name="testCloseConnectionWithUnAuthorizedUSer"/>
+                </methods>
+            </class>
+        </classes>
     </test>
 </suite>

@@ -8,7 +8,6 @@ info:
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 schemes:
   - https
-  - http
 securityDefinitions:
   basicAuth:
     type: basic
@@ -35,12 +34,57 @@ paths:
               items:
                 $ref: '#/definitions/ConnectionMetadata'
           '401':
-            description: Authentication information is missing or invalid
-            headers:
-              WWW_Authenticate:
-                type: string
+            $ref: "#/responses/NotAuthenticated"
+          '403':
+            $ref: "#/responses/Unauthorized"
+  /connections/{id}:
+      parameters:
+        - in: path
+          name: id
+          type: integer
+          required: true
+          description: Identifier of the connection
+      delete:
+        operationId: closeConnection
+        summary: Force disconnect the specified connection.
+        description: >-
+          Disconnects the specified amqp connection if the connection exists in the broker
+        produces:
+          - application/json
+        responses:
+          '202':
+            description: Connection removal request submitted.
+            schema:
+              $ref: '#/definitions/ConnectionCloseResponse'
+          '400':
+            description: Bad request. Invalid request or validation error.
             schema:
               $ref: '#/definitions/Error'
+          '401':
+            $ref: "#/responses/NotAuthenticated"
+          '403':
+            $ref: "#/responses/Unauthorized"
+          '404':
+            $ref: "#/responses/NotFound"
+responses:
+  NotFound:
+    description: The specified resource was not found
+    schema:
+      $ref: '#/definitions/Error'
+  Unauthorized:
+    description: User is not autherized to perform operation
+    headers:
+      WWW_Authenticate:
+        type: string
+    schema:
+      $ref: '#/definitions/Error'
+  NotAuthenticated:
+    description: Authentication information is missing or invalid
+    headers:
+      WWW_Authenticate:
+        type: string
+    schema:
+      $ref: '#/definitions/Error'
 definitions:
   ConnectionMetadata:
       title: Connection Metadata
@@ -66,6 +110,15 @@ definitions:
           type: integer
           format: int64
           description: The time at which the connection was established
+  ConnectionCloseResponse:
+        title: Connection Close Response
+        type: object
+        required:
+          - message
+        properties:
+          message:
+            type: string
+            description: Response message with status of the connection close operation.
   Error:
       title: Error Response
       required:

@@ -21,14 +21,17 @@ package io.ballerina.messaging.broker.amqp.rest;
 
 import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.amqp.rest.model.ConnectionCloseResponse;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import javax.security.auth.Subject;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 /**
@@ -38,7 +41,7 @@ public class ConnectionsApiDelegate {
 
     private final AuthorizationHandler authHandler;
 
-    private AmqpConnectionManager connectionManager;
+    private final AmqpConnectionManager connectionManager;
 
     public ConnectionsApiDelegate(AmqpConnectionManager connectionManager, AuthorizationHandler authHandler) {
         this.authHandler = authHandler;
@@ -62,6 +65,27 @@ public class ConnectionsApiDelegate {
                                                         .connectedTime(connectionHandler.getConnectedTime()));
             }
             return Response.ok().entity(connections).build();
+        } catch (AuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Forces disconnection of the AMQP connection.
+     *
+     * @param id      connection identifier
+     * @param subject authentication subject containing user information of the user that has invoked the API
+     * @return HTTP/1.1 202 accepted with {@link ConnectionCloseResponse}
+     */
+    public Response closeConnection(int id, Subject subject) {
+        try {
+            authHandler.handle(ResourceAuthScope.CONNECTIONS_CLOSE, subject);
+            connectionManager.forceDisconnect(id);
+            return Response.accepted().entity(
+                    new ConnectionCloseResponse().message("Forceful disconnection of connection " + id + " accepted."))
+                           .build();
+        } catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage(), e);
         } catch (AuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
         }

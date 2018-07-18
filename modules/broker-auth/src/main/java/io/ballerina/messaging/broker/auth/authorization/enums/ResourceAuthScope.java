@@ -34,7 +34,8 @@ public enum ResourceAuthScope {
     RESOURCE_GRANT_PERMISSION("resources:grant"),
     SCOPES_UPDATE("scopes:update"),
     SCOPES_GET("scopes:get"),
-    CONNECTIONS_GET("connections:get");
+    CONNECTIONS_GET("connections:get"),
+    CONNECTIONS_CLOSE("connections:close");
 
     private String name;
 
