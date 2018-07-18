@@ -27,6 +27,9 @@ public class AmqConstant {
     //reply code to be used when the broker enforces connection close
     public static final int CONNECTION_FORCED = 320;
 
+    public static final String TRANSPORT_PROPERTY_CHANNEL_ID = "channelId";
+    public static final String TRANSPORT_PROPERTY_CONNECTION_ID = "connectionId";
+
     private AmqConstant() {
     }
 }

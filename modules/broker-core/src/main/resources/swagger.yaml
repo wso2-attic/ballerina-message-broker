@@ -948,6 +948,9 @@ definitions:
       flowEnabled:
         type: boolean
         description: State whether the consumers is actively consuming messages
+      transportProperties:
+        description: Properties inherited by the underlying transport.
+        type: object
   QueueCreateRequest:
     title: Queue Create Request
     type: object

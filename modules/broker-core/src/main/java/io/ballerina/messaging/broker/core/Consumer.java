@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core;
 
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -89,4 +90,6 @@ public abstract class Consumer {
     public int hashCode() {
         return Integer.hashCode(id);
     }
+
+    public abstract Properties getTransportProperties();
 }

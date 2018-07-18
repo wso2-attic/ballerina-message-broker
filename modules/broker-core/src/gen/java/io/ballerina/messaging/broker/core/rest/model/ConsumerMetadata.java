@@ -28,11 +28,12 @@ import java.util.Objects;
 
 
 public class ConsumerMetadata   {
-  
+
   private @Valid Integer id = null;
   private @Valid String consumerTag = null;
   private @Valid Boolean isExclusive = null;
   private @Valid Boolean flowEnabled = null;
+  private @Valid Object transportProperties = null;
 
   /**
    * unique id of the consumer
@@ -42,7 +43,7 @@ public class ConsumerMetadata   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "unique id of the consumer")
   @JsonProperty("id")
   @NotNull
@@ -61,7 +62,7 @@ public class ConsumerMetadata   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "identifier given by the channel")
   @JsonProperty("consumerTag")
   @NotNull
@@ -80,7 +81,7 @@ public class ConsumerMetadata   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "State whether only this consumer can consume from the queue.")
   @JsonProperty("isExclusive")
   @NotNull
@@ -99,7 +100,7 @@ public class ConsumerMetadata   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "State whether the consumers is actively consuming messages")
   @JsonProperty("flowEnabled")
   @NotNull
@@ -110,9 +111,27 @@ public class ConsumerMetadata   {
     this.flowEnabled = flowEnabled;
   }
 
+  /**
+   * Properties inherited by the underlying transport.
+   **/
+  public ConsumerMetadata transportProperties(Object transportProperties) {
+    this.transportProperties = transportProperties;
+    return this;
+  }
+
+
+  @ApiModelProperty(value = "Properties inherited by the underlying transport.")
+  @JsonProperty("transportProperties")
+  public Object getTransportProperties() {
+    return transportProperties;
+  }
+  public void setTransportProperties(Object transportProperties) {
+    this.transportProperties = transportProperties;
+  }
+
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(java.lang.Object o) {
     if (this == o) {
       return true;
     }
@@ -121,25 +140,27 @@ public class ConsumerMetadata   {
     }
     ConsumerMetadata consumerMetadata = (ConsumerMetadata) o;
     return Objects.equals(id, consumerMetadata.id) &&
-        Objects.equals(consumerTag, consumerMetadata.consumerTag) &&
-        Objects.equals(isExclusive, consumerMetadata.isExclusive) &&
-        Objects.equals(flowEnabled, consumerMetadata.flowEnabled);
+           Objects.equals(consumerTag, consumerMetadata.consumerTag) &&
+           Objects.equals(isExclusive, consumerMetadata.isExclusive) &&
+           Objects.equals(flowEnabled, consumerMetadata.flowEnabled) &&
+           Objects.equals(transportProperties, consumerMetadata.transportProperties);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, consumerTag, isExclusive, flowEnabled);
+    return Objects.hash(id, consumerTag, isExclusive, flowEnabled, transportProperties);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class ConsumerMetadata {\n");
-    
+
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    consumerTag: ").append(toIndentedString(consumerTag)).append("\n");
     sb.append("    isExclusive: ").append(toIndentedString(isExclusive)).append("\n");
     sb.append("    flowEnabled: ").append(toIndentedString(flowEnabled)).append("\n");
+    sb.append("    transportProperties: ").append(toIndentedString(transportProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -148,7 +169,7 @@ public class ConsumerMetadata   {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(Object o) {
+  private String toIndentedString(java.lang.Object o) {
     if (o == null) {
       return "null";
     }
