@@ -17,6 +17,7 @@
 #!/usr/bin/env bash
 
 destination=""
+is_given_destination=false
 
 # get inputs from the user -p <location of the properties file> -d topic/queue
 while getopts "hp:d:t:h:v" OPTION
@@ -25,10 +26,12 @@ do
          d)
             case $OPTARG in
                 queue)
+                     is_given_destination=true
                      destination="queue"
                 ;;
                 topic)
-                    destination="topic"
+                     is_given_destination=true
+                     destination="topic"
                 ;;
                 ?)
                     echo $OPTARG
@@ -49,6 +52,13 @@ do
             ;;
      esac
 done
+
+
+if [ $is_given_destination == false ];
+    then
+        printf 'A JMS destination should be provided.\nRun ./broker_test_scenario.sh -h for usage.\n'
+        exit
+    fi
 
 # execute publisher and consumer at the same time
 ./broker_test_consumer.sh -d "$destination" &

@@ -5,7 +5,7 @@ This tool allows ballerina message broker developers to get an idea about the pe
 - Connection Load  - The number of message producers , or the number of concurrent connections a system can support.
 - Message throughput - The number of messages or message bytes that can be pumped through a messaging system per second.
 
-At the moment the tool allows developers to publish/consume messages to/from queues and topics and test the performance and get a report of the result.
+The tool allows developers to publish/consume messages to/from queues and topics and test the performance and get a report of the result.
 
 # How to use
 
@@ -23,6 +23,7 @@ At the moment the tool allows developers to publish/consume messages to/from que
 
 1. Include the following details in broker_performance_test_publisher.properties file which is located at resources/.
 ```properties
+broker_url=<broker_url>
 jmeter_home = <jmeter_home>
 thread_count = <number_of_threads>
 message_size = <size_of_the_message>
@@ -31,7 +32,9 @@ throughput= <throughput_need_to_be_maintained>
 ```
 2.Run ```./broker_test_publisher.sh -p <location_of_properties_file> -d queue/topic```
 
-Upon completion of the test,you will be directed to a web interface which contains the summary of the results obtained by the test.
+- -p is an optional paramter.If not provided ```resources/broker_test_publisher.properties``` is set as the properties file location 
+
+Upon completion of the test, you will be directed to a web interface which contains the summary of the results obtained by the test.
 
 ### Consume messages from queues/topics
 
@@ -39,11 +42,13 @@ Upon completion of the test,you will be directed to a web interface which contai
 ```properties
 jmeter_home = <jmeter_home>
 thread_count = <number_of_threads>
-number_of_messages = <number_of_messages_need_to_be_published>
+number_of_messages = <number_of_messages_need_to_be_consumed>
 ```
 2.Run ```./broker_test_consumer.sh -p <location_of_properties_file> -d queue/topic```
 
-Upon completion of the test,you will be directed to a web interface which contains the summary of the results obtained by the test.
+- -p is an optional paramter.If not provided ```resources/broker_test_consumer.properties``` is set as the properties file location 
+
+Upon completion of the test, you will be directed to a web interface which contains the summary of the results obtained by the test.
 
 ### Test scenario - Publish messages to queues/topics and consume them
 
@@ -77,7 +82,3 @@ number_of_messages = <number_of_messages_need_to_be_published>
     - message_size = 10
     - number_of_messages = 1000000
     - throughput = 5000 (5000 messages/seconds)
-    
-
-
-

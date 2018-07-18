@@ -24,6 +24,9 @@ jmx_file_location="test_plan/broker_test_queue_consumer.jmx"
 destination=""
 connection_factory_name=""
 jndi_file_location=""
+is_given_destination=false
+queue_name=""
+exchange_name=""
 
 # get inputs from the user -p <location of the properties file> -d topic/queue
 while getopts "hp:d:t:h:v" OPTION
@@ -36,16 +39,22 @@ do
          d)
             case $OPTARG in
                 queue)
+                    is_given_destination=true
                     destination="QueueName"
                     connection_factory_name="QueueConnectionFactory"
                     jndi_file_location="resources/jndi_queue.properties"
                     jmx_file_location="test_plan/broker_test_queue_consumer.jmx"
+                    queue_name="micro_benchmark_queue1"
+                    exchange_name="amq.direct"
                 ;;
                 topic)
+                    is_given_destination=true
                     destination="TopicName"
                     connection_factory_name="TopicConnectionFactory"
                     jndi_file_location="resources/jndi_topic.properties"
                     jmx_file_location="test_plan/broker_test_topic_consumer.jmx"
+                    queue_name="micro_benchmark_queue2"
+                    exchange_name="amq.topic"
                     ;;
                 ?)
                 echo $OPTARG
@@ -67,14 +76,11 @@ do
      esac
 done
 
-# check for target folder
-if [ ! -e target/ ];
-then
-    mkdir -p target/subscriber
-fi
-
-# hash-map to store user desired parameters
-declare -A user_inputs=(["jmeter_home"]="" ["thread_count"]="1" ["number_of_messages"]="1000000")
+if [ $is_given_destination == false ];
+    then
+        printf 'A JMS destination should be provided.\nRun ./broker_test_consumer.sh -h for usage.\n'
+        exit
+    fi
 
 # Method to extract values from property file
 getProperty()
@@ -83,6 +89,9 @@ getProperty()
     local user_value=`cat ${properties_file_location} | grep ${property_key} | cut -d'=' -f2`
     echo "$user_value"
 }
+
+# hash-map to store user desired parameters
+declare -A user_inputs=(["jmeter_home"]="" ["broker_url"]="" ["thread_count"]="1" ["number_of_messages"]="1000000")
 
 for parameter in "${!user_inputs[@]}";
 do
@@ -94,11 +103,47 @@ do
 done
 
 # validate inputs
-if [ ${user_inputs["thread_count"]} == '0' ]
+if [${user_inputs["broker_url"]} == '']
     then
-        # Command invoked cannot execute
-        echo Thread count cannot be zero
+        echo "broker_url parameter in broker_test_consumer.properties cannot be empty."
         exit
+    elif  [ ${user_inputs["thread_count"]} == '0' ]
+        then
+            echo "thread_count parameter in broker_test_consumer.properties cannot be empty."
+            exit
+    fi
+
+# create target folder if not exist
+if [ ! -e target/ ];
+then
+    mkdir -p target/subscriber
+fi
+
+# create queues and bindings to execute tests
+queue_available_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" ${user_inputs["broker_url"]}/broker/v1.0/queues/"$queue_name")
+# if queue is not available create queue
+if [ "$queue_available_response" == 404 ]
+    then
+        json_payload='{"name":"'"$queue_name"'", "durable":"true","autoDelete":"true"}'
+        queue_create_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload" -H "Content-Type: application/json" -X POST ${user_inputs["broker_url"]}/broker/v1.0/queues)
+        if [ "$queue_create_response" == "201" ]
+            then
+                echo $queue_name created sucessfully.
+                json_payload='{"bindingPattern":"'"$queue_name"'","exchangeName":"'"$exchange_name"'","filterExpression":""}'
+                queue_bind_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload"  -H "Content-Type: application/json" -X POST ${user_inputs["broker_url"]}/broker/v1.0/queues/"$queue_name"/bindings)
+                if [ "$queue_bind_response" == "201" ]
+                    then
+                        echo "Binding created sucessfully with $queue_name.Exchange name - $exchange_name"
+                    else
+                        echo "Error occured while creating binding.Response code $queue_bind_response"
+                        exit
+                    fi
+            else
+                echo "Error occured while creating queue $queue_name.Response code $queue_create_response"
+                exit
+            fi
+    else
+        echo "$queue_name is already available."
     fi
 
 # Summarizing inputs
@@ -106,7 +151,7 @@ echo Jmeter home is set to - ${user_inputs["jmeter_home"]}
 echo Starting test process with a throughput - ${user_inputs["throughput"]}
 
 # calculate loop count
-loop_count=$(echo "${user_inputs["number_of_messages"]}/${user_inputs["thread_count"]}+1" | bc)
+loop_count=$(echo "${user_inputs["number_of_messages"]}/${user_inputs["thread_count"]}" | bc)
 
 # create folder to store report files
 folder_name=$(date '+%d-%m-%Y-%H-%M-%S')
@@ -130,4 +175,4 @@ if [ ${user_inputs["jmeter_home"]} != '' ]
         fi
 
 # open report
-firefox target/subscriber/"$folder_name"/report/index.html
+echo A report of the test results is generated at target/publisher/"$folder_name"/report
