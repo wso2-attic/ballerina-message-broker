@@ -60,8 +60,20 @@ if [ $is_given_destination == false ];
         exit
     fi
 
+time=$(date '+%d-%m-%Y-%H-%M-%S')
+broker_consumer_log=broker_consumer_"$time".log
+broker_publisher_log=broker_publisher_"$time".log
+
+# create log folder if not exist
+if [ ! -e logs ];
+    then
+        mkdir -p logs
+    fi
+
 # execute publisher and consumer at the same time
-./broker_test_consumer.sh -d "$destination" &
+echo "Starting message consumer."
+printf $(./broker_test_consumer.sh -s "test_scenario/$time" -d "$destination" &) >> logs/"$broker_consumer_log"
 sleep 4
-./broker_test_publisher.sh -d "$destination" &
-wait
+echo "Starting message pubisher"
+printf $(./broker_test_publisher.sh -s "test_scenario/$time" -d "$destination" & >> logs/"$broker_publisher_log")
+#wait
