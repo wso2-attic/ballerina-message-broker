@@ -27,9 +27,10 @@ jndi_file_location=""
 is_given_destination=false
 queue_name=""
 exchange_name=""
+base_file_location="/publisher"
 
 # get inputs from the user -p <location of the properties file> -d topic/queue
-while getopts "hp:d:t:h:v" OPTION
+while getopts "hp:d:s:h:v:t" OPTION
 do
      case $OPTION in
          p)
@@ -61,6 +62,9 @@ do
                 ;;
             esac
             break
+            ;;
+         s)
+            base_file_location="$OPTARG/publisher"
             ;;
          h)
             help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./broker_test_publisher.sh [command].\n\nCommands\n\t-h  ask for help\n\t-p  set the location of the properties file\n\t-d  set jms destination type queue/topic\n"
@@ -111,7 +115,7 @@ case $queue_name in
     micro_benchmark_queue2)
         if [ -e resources/jndi_topic.properties ];
             then
-                 rm resources/jndi_queue.properties
+                 rm resources/jndi_topic.properties
             fi
             printf "connectionfactory.TopicConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://${user_inputs["host_url"]}:${user_inputs["amqp_listener_port"]}'\ntopic.TopicName=micro_benchmark_queue2" >> resources/jndi_topic.properties
         ;;
@@ -133,23 +137,23 @@ if [ ${user_inputs["host_url"]} == '' ]
     fi
 
 # create target folder if not exist
-if [ ! -e target/ ];
+if [ ! -e target/"$base_file_location" ];
     then
-        mkdir -p target/publisher
+        mkdir -p target/"$base_file_location"
     fi
 
 # create queues and bindings to execute tests
-queue_available_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" ${user_inputs["broker_url"]}/broker/v1.0/queues/"$queue_name")
+queue_available_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" https://${user_inputs["host_url"]}:${user_inputs["broker_port"]}/broker/v1.0/queues/"$queue_name")
 # if queue is not available create queue
 if [ "$queue_available_response" == 404 ]
     then
         json_payload='{"name":"'"$queue_name"'", "durable":"true","autoDelete":"true"}'
-        queue_create_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload" -H "Content-Type: application/json" -X POST ${user_inputs["broker_url"]}/broker/v1.0/queues)
+        queue_create_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload" -H "Content-Type: application/json" -X POST https://${user_inputs["host_url"]}:${user_inputs["broker_port"]}/broker/v1.0/queues)
         if [ "$queue_create_response" == "201" ]
             then
                 echo $queue_name created sucessfully.
                 json_payload='{"bindingPattern":"'"$queue_name"'","exchangeName":"'"$exchange_name"'","filterExpression":""}'
-                queue_bind_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload"  -H "Content-Type: application/json" -X POST ${user_inputs["broker_url"]}/broker/v1.0/queues/"$queue_name"/bindings)
+                queue_bind_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload"  -H "Content-Type: application/json" -X POST https://${user_inputs["host_url"]}:${user_inputs["broker_port"]}/broker/v1.0/queues/"$queue_name"/bindings)
                 if [ "$queue_bind_response" == "201" ]
                     then
                         echo "Binding created sucessfully with $queue_name.Exchange name - $exchange_name"
@@ -165,7 +169,7 @@ if [ "$queue_available_response" == 404 ]
         echo "$queue_name is already available."
     fi
 
-# Summarizing inputs
+## Summarizing inputs
 echo Jmeter home is set to - ${user_inputs["jmeter_home"]}
 echo Starting test process with ${user_inputs["number_of_messages"]} messages and a and throughput - ${user_inputs["throughput"]}
 
@@ -196,24 +200,25 @@ esac
 
 # create folder to store report files
 folder_name=$(date '+%d-%m-%Y-%H-%M-%S')
-mkdir -p target/publisher/"$folder_name"
+mkdir -p target/"$base_file_location"/"$folder_name"
 
 # execute jmeter command
 if [ ${user_inputs["jmeter_home"]} != '' ]
         then
             # if user specified jmeter home
-            ${user_inputs["jmeter_home"]}/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/publisher/"$folder_name"/log/test_results.jtl -e -o target/publisher/"$folder_name"/report/
+            ${user_inputs["jmeter_home"]}/bin/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
         else
             jmeter_console_out="$(command -v jmeter)"
             if [${jmeter_console_out} == '']
                 then
                     echo Please set jmeter home or include jmeter_home property in the properties file
+                    exit
                 else
                     echo "$jmeter_console_out"
                     # if jmeter_home is already configured
-                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/publisher/"$folder_name"/log/test_results.jtl -e -o target/publisher/"$folder_name"/report/
+                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${user_inputs["thread_count"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DTHROUGHPUT=${user_inputs["throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
             fi
         fi
 
 # log report location
-echo A report of the test results is generated at target/publisher/"$folder_name"/report
+echo A report of the test results is generated at target/"$base_file_location"/"$folder_name"/report
