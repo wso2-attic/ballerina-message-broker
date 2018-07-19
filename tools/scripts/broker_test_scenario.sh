@@ -76,4 +76,4 @@ printf $(./broker_test_consumer.sh -s "test_scenario/$time" -d "$destination" &)
 sleep 4
 echo "Starting message pubisher"
 printf $(./broker_test_publisher.sh -s "test_scenario/$time" -d "$destination" & >> logs/"$broker_publisher_log")
-#wait
+wait
