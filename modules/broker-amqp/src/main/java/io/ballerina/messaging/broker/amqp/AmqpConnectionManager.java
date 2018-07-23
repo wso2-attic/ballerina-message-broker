@@ -19,8 +19,10 @@
 
 package io.ballerina.messaging.broker.amqp;
 
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelView;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -80,6 +82,21 @@ public class AmqpConnectionManager {
             connectionHandler.forceDisconnect();
         } else {
             throw new NoSuchElementException("Connection id " + id + " does not exist.");
+        }
+    }
+
+    /**
+     * Retrieves the AMQP channels that are created on a given connection.
+     *
+     * @return a list of {@link AmqpChannelView} representing AMQP channels
+     */
+    public Collection<AmqpChannelView> getChannelViews(int connectionId) {
+        AmqpConnectionHandler connectionHandler;
+        connectionHandler = connectionHandlers.get(connectionId);
+        if (Objects.nonNull(connectionHandler)) {
+            return connectionHandler.getChannelViews();
+        } else {
+            throw new NoSuchElementException("Connection id " + connectionId + " does not exist.");
         }
     }
 }

@@ -23,6 +23,8 @@ import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
 import io.ballerina.messaging.broker.amqp.codec.AmqConstant;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannelFactory;
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelView;
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelWrapper;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.frames.AmqpBadMessage;
@@ -39,7 +41,9 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.SocketAddress;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,6 +55,14 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpConnectionHandler.class);
     private final Map<Integer, AmqpChannel> channels = new HashMap<>();
+
+    /**
+     * Holds the views of AMQP channel with disabled operations on them.
+     * <p>
+     * A {@link LinkedHashMap} is used since the channels need to be sorted according to their channel Id.
+     */
+    private final Map<Integer, AmqpChannelView> channelViews = new LinkedHashMap<>();
+    
     private Broker broker;
     private final AmqpMetricManager metricManager;
     private ChannelHandlerContext ctx;
@@ -171,7 +183,9 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
             throw new ConnectionException(ConnectionException.CHANNEL_ERROR,
                     "Channel ID " + channelId + " Already exists");
         }
-        channels.put(channelId, amqpChannelFactory.createChannel(broker, channelId, this));
+        channel = amqpChannelFactory.createChannel(broker, channelId, this);
+        channels.put(channelId, channel);
+        channelViews.put(channelId, new AmqpChannelWrapper(channel));
         metricManager.incrementChannelCount();
     }
 
@@ -276,5 +290,14 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         ctx.writeAndFlush(new ConnectionClose(AmqConstant.CONNECTION_FORCED,
                                               ShortString.parseString("Broker forced disconnection"),
                                               0, 0));
+    }
+
+    /**
+     * Retrieves a view of AMQP channels registered with disabled operations on channels.
+     *
+     * @return {@link AmqpChannelView} representing the view of actual AMQP channels
+     */
+    public Collection<AmqpChannelView> getChannelViews() {
+        return channelViews.values();
     }
 }

@@ -36,6 +36,8 @@ import io.ballerina.messaging.broker.core.Consumer;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.transaction.AutoCommitTransaction;
 import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
+import io.ballerina.messaging.broker.core.transaction.DistributedTransaction;
+import io.ballerina.messaging.broker.core.transaction.LocalTransaction;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
 import io.ballerina.messaging.broker.core.util.TraceField;
 import io.netty.channel.ChannelHandlerContext;
@@ -59,7 +61,7 @@ import javax.transaction.xa.Xid;
 /**
  * AMQP channel representation.
  */
-public class AmqpChannel {
+public class AmqpChannel implements AmqpChannelView {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpChannel.class);
 
@@ -141,6 +143,11 @@ public class AmqpChannel {
      */
     private int prefetchCount;
 
+    /**
+     * The time at which the channel was created.
+     */
+    private long createdTime;
+
     public AmqpChannel(AmqpServerConfiguration configuration,
                        Broker broker,
                        int channelId,
@@ -158,6 +165,7 @@ public class AmqpChannel {
                                                   configuration.getChannelFlow().getHighLimit());
         this.maxRedeliveryCount = configuration.getMaxRedeliveryCount();
         traceChannelIdField = new TraceField(CHANNEL_ID_FIELD_NAME, channelId);
+        this.createdTime = System.currentTimeMillis();
     }
 
     public void declareExchange(String exchangeName, String exchangeType, boolean passive, boolean durable)
@@ -276,11 +284,47 @@ public class AmqpChannel {
         return deliveryTagGenerator.incrementAndGet();
     }
 
-    /**
-     * Getter for channelId.
-     */
+    @Override
     public int getChannelId() {
         return channelId;
+    }
+
+    @Override
+    public int getConsumerCount() {
+        return consumerMap.size();
+    }
+
+    @Override
+    public int getUnackedMessageCount() {
+        return unackedMessageMap.pendingAcknowledgments.size();
+    }
+
+    @Override
+    public int getDeliveryPendingMessageCount() {
+        return deliveryPendingMessages.size();
+    }
+
+    @Override
+    public String getTransactionType() {
+        String transactionType = "unidentified";
+        if (transaction instanceof AutoCommitTransaction) {
+            transactionType = "AutoCommit";
+        } else if (transaction instanceof LocalTransaction) {
+            transactionType = "LocalTransaction";
+        } else if (transaction instanceof DistributedTransaction) {
+            transactionType = "DistributedTransaction";
+        }
+        return transactionType;
+    }
+
+    @Override
+    public int getPrefetchCount() {
+        return prefetchCount;
+    }
+
+    @Override
+    public long getCreatedTime() {
+        return createdTime;
     }
 
     public void recordMessageDelivery(long deliveryTag, AckData ackData) {
@@ -368,6 +412,7 @@ public class AmqpChannel {
      * Indicate if the channel is closed by client.
      * @return true if channel is closed, false otherwise
      */
+    @Override
     public boolean isClosed() {
         return closed.get();
     }
@@ -377,6 +422,7 @@ public class AmqpChannel {
      *
      * @return true if flow is enabled. false otherwise
      */
+    @Override
     public boolean isFlowEnabled() {
         return flow.get();
     }
