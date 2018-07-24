@@ -36,6 +36,7 @@ public enum ResourceAuthScope {
     SCOPES_GET("scopes:get"),
     CONNECTIONS_GET("connections:get"),
     CONNECTIONS_CLOSE("connections:close"),
+    CHANNEL_CLOSE("channels:close"),
     CHANNELS_GET("channels:get");
 
     private String name;

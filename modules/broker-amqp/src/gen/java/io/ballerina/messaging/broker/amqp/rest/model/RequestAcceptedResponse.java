@@ -19,23 +19,26 @@
 
 package io.ballerina.messaging.broker.amqp.rest.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
-import java.util.Objects;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
-/**
- * Connection close response received upon in invocation of the rest api to delete connection.
- */
-public class ConnectionCloseResponse   {
+import javax.validation.constraints.*;
+import javax.validation.Valid;
+
+
+import io.swagger.annotations.*;
+
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+
+public class RequestAcceptedResponse   {
 
     private @Valid String message = null;
 
     /**
      * Response message with status of the connection close operation.
      **/
-    public ConnectionCloseResponse message(String message) {
+    public RequestAcceptedResponse message(String message) {
         this.message = message;
         return this;
     }
@@ -60,8 +63,8 @@ public class ConnectionCloseResponse   {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        ConnectionCloseResponse connectionCloseResponse = (ConnectionCloseResponse) o;
-        return Objects.equals(message, connectionCloseResponse.message);
+        RequestAcceptedResponse requestAcceptedResponse = (RequestAcceptedResponse) o;
+        return Objects.equals(message, requestAcceptedResponse.message);
     }
 
     @Override
@@ -72,7 +75,7 @@ public class ConnectionCloseResponse   {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class ConnectionCloseResponse {\n");
+        sb.append("class RequestAcceptedResponse {\n");
 
         sb.append("    message: ").append(toIndentedString(message)).append("\n");
         sb.append("}");

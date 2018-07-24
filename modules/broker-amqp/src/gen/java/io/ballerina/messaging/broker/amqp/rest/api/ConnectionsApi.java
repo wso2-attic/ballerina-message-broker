@@ -22,8 +22,8 @@ package io.ballerina.messaging.broker.amqp.rest.api;
 import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
 import io.ballerina.messaging.broker.amqp.rest.ConnectionsApiDelegate;
 import io.ballerina.messaging.broker.amqp.rest.model.ChannelMetadata;
-import io.ballerina.messaging.broker.amqp.rest.model.ConnectionCloseResponse;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
+import io.ballerina.messaging.broker.amqp.rest.model.RequestAcceptedResponse;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.core.rest.BrokerAdminService;
@@ -59,11 +59,11 @@ public class ConnectionsApi {
     @DELETE
     @Path("/{id}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Force disconnect the specified connection.", notes = "Disconnects the specified amqp connection if the connection exists in the broker", response = ConnectionCloseResponse.class, authorizations = {
+    @ApiOperation(value = "Force disconnect the specified connection.", notes = "Disconnects the specified amqp connection if the connection exists in the broker", response = RequestAcceptedResponse.class, authorizations = {
             @Authorization(value = "basicAuth")
     }, tags={  })
     @ApiResponses(value = {
-            @ApiResponse(code = 202, message = "Connection removal request submitted.", response = ConnectionCloseResponse.class),
+            @ApiResponse(code = 202, message = "Connection removal request submitted.", response = RequestAcceptedResponse.class),
             @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 403, message = "User is not autherized to perform operation", response = Error.class),
@@ -88,6 +88,26 @@ public class ConnectionsApi {
     })
     public Response getAllConnections(@Context Request request) {
         return connectionsApiDelegate.getAllConnections((Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+    }
+
+    @DELETE
+    @Path("/{connectionId}/channels/{channelId}")
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Force disconnect the specified channel.", notes = "Disconnects the specified amqp channel if an active channel exists in the broker", response = RequestAcceptedResponse.class, authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 202, message = "Channel removal request submitted.", response = RequestAcceptedResponse.class),
+            @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 403, message = "User is not autherized to perform operation", response = Error.class),
+            @ApiResponse(code = 404, message = "The specified resource was not found", response = Error.class)
+    })
+    public Response closeChannel(@Context Request request,
+                                 @PathParam("connectionId") @ApiParam("Identifier of the connection") Integer connectionId,
+                                 @PathParam("channelId") @ApiParam("Identifier of the channel") Integer channelId) {
+        return connectionsApiDelegate.closeChannel(connectionId, channelId,
+                                                   (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
     @GET

@@ -75,13 +75,34 @@ public class AmqpConnectionManager {
      * Closes an AMQP connection specified by the identifier.
      *
      * @param id the connection identifier
+     * @param reason reason to close connection
      */
-    public void forceDisconnect(int id) {
+    public void forceDisconnect(int id, String reason) {
         AmqpConnectionHandler connectionHandler = connectionHandlers.get(id);
         if (Objects.nonNull(connectionHandler)) {
-            connectionHandler.forceDisconnect();
+            connectionHandler.forceDisconnect(reason);
         } else {
-            throw new NoSuchElementException("Connection id " + id + " does not exist.");
+            throw new NoSuchElementException(createConnectionIdDoesNotExistMessage(id));
+        }
+    }
+
+    /**
+     * Closes an AMQP channel specified by the connection id and the channel id.
+     *  @param connectionId unique integer representing the connection
+     * @param channelId    integer representing the channel id within the connection id
+     * @param reason reason to close channel
+     */
+    public void forceDisconnectChannel(int connectionId, int channelId, String reason) {
+        AmqpConnectionHandler connectionHandler = connectionHandlers.get(connectionId);
+        if (Objects.nonNull(connectionHandler)) {
+            if (Objects.nonNull(connectionHandler.getChannel(channelId))) {
+                connectionHandler.forceDisconnectChannel(channelId, reason);
+            } else {
+                throw new NoSuchElementException(
+                        "Channel id " + channelId + " does not exist for connection " + connectionId);
+            }
+        } else {
+            throw new NoSuchElementException(createConnectionIdDoesNotExistMessage(connectionId));
         }
     }
 
@@ -96,7 +117,11 @@ public class AmqpConnectionManager {
         if (Objects.nonNull(connectionHandler)) {
             return connectionHandler.getChannelViews();
         } else {
-            throw new NoSuchElementException("Connection id " + connectionId + " does not exist.");
+            throw new NoSuchElementException(createConnectionIdDoesNotExistMessage(connectionId));
         }
+    }
+
+    private String createConnectionIdDoesNotExistMessage(int connectionId) {
+        return "Connection id " + connectionId + " does not exist.";
     }
 }
