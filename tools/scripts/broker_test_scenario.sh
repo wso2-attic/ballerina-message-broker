@@ -19,7 +19,7 @@
 destination=""
 is_given_destination=false
 
-# get inputs from the user -p <location of the properties file> -d topic/queue
+# get inputs from the user -d topic/queue
 while getopts "hp:d:t:h:v" OPTION
 do
      case $OPTION in
