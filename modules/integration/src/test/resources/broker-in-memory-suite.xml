@@ -52,6 +52,7 @@
                 <methods>
                     <exclude name="testGetConnectionsWithUnauthorizedUser"/>
                     <exclude name="testCloseConnectionWithUnAuthorizedUSer"/>
+                    <exclude name="testCloseChannelWithUnAuthorizedUSer"/>
                     <exclude name="testGetChannelsForConnectionWithUnauthorizedUser"/>
                 </methods>
             </class>
