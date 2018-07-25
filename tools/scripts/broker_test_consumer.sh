@@ -100,7 +100,7 @@ getProperty()
 }
 
 # hash-map to store user test plan inputs
-declare -A testplan_user_inputs=(["JmeterHome"]="" ["NumberOfMessages"]="1000000" ["ThreadCount"]="5000")
+declare -A testplan_user_inputs=(["JmeterHome"]="" ["BrokerPort"]="9000" ["AMQPListenerPort"]="5672" ["NumberOfMessages"]="1000000" ["ThreadCount"]="5000")
 
 for parameter in "${!testplan_user_inputs[@]}";
 do
@@ -134,14 +134,14 @@ case $queue_name in
             then
                  rm resources/jndi_queue.properties
             fi
-            printf "connectionfactory.QueueConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://"$host_url":5672'\nqueue.QueueName=micro_benchmark_queue1" >> resources/jndi_queue.properties
+            printf "connectionfactory.QueueConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://"$host_url":${testplan_user_inputs["AMQPListenerPort"]}'\nqueue.QueueName=micro_benchmark_queue1" >> resources/jndi_queue.properties
         ;;
     micro_benchmark_queue2)
         if [ -e resources/jndi_topic.properties ];
             then
                  rm resources/jndi_topic.properties
             fi
-            printf "connectionfactory.TopicConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://"$host_url":5672'\ntopic.TopicName=micro_benchmark_queue2" >> resources/jndi_topic.properties
+            printf "connectionfactory.TopicConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://"$host_url":${testplan_user_inputs["AMQPListenerPort"]}'\ntopic.TopicName=micro_benchmark_queue2" >> resources/jndi_topic.properties
         ;;
 esac
 
@@ -152,17 +152,17 @@ if [ ! -e target/"$base_file_location" ];
     fi
 
 # create queues and bindings to execute tests
-queue_available_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" https://"$host_url":9000/broker/v1.0/queues/"$queue_name")
+queue_available_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" "$host_url":${testplan_user_inputs["BrokerPort"]}/broker/v1.0/queues/"$queue_name")
 # if queue is not available create queue
 if [ "$queue_available_response" == 404 ]
     then
         json_payload='{"name":"'"$queue_name"'", "durable":"true","autoDelete":"true"}'
-        queue_create_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload" -H "Content-Type: application/json" -X POST https://"$host_url":9000/broker/v1.0/queues)
+        queue_create_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload" -H "Content-Type: application/json" -X POST "$host_url":${testplan_user_inputs["BrokerPort"]}/broker/v1.0/queues)
         if [ "$queue_create_response" == "201" ]
             then
                 echo $queue_name created sucessfully.
                 json_payload='{"bindingPattern":"'"$queue_name"'","exchangeName":"'"$exchange_name"'","filterExpression":""}'
-                queue_bind_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload"  -H "Content-Type: application/json" -X POST https://"$host_url":9000/broker/v1.0/queues/"$queue_name"/bindings)
+                queue_bind_response=$(curl -k -u admin:admin -o /dev/null -s -w "%{http_code}\n" -d "$json_payload"  -H "Content-Type: application/json" -X POST "$host_url":${testplan_user_inputs["BrokerPort"]}/broker/v1.0/queues/"$queue_name"/bindings)
                 if [ "$queue_bind_response" == "201" ]
                     then
                         echo "Binding created sucessfully with $queue_name.Exchange name - $exchange_name"
@@ -179,6 +179,8 @@ if [ "$queue_available_response" == 404 ]
     fi
 
 ## Summarizing inputs
+echo Host is set to "$host_url"
+echo Broker port is set to ${testplan_user_inputs["BrokerPort"]} and AMQP listener port is set to ${testplan_user_inputs["AMQPListenerPort"]}
 echo Jmeter home is set to - ${testplan_user_inputs["JmeterHome"]}
 
 # create folder to store report files
