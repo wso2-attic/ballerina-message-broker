@@ -63,7 +63,7 @@ do
             break
             ;;
           h)
-            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./broker_test_consumer.sh [command].\n\nCommands\n\t-h  ask for help\n\t-i  set the location of the infrastructure properties file\n\t-t  set the location of the testplan properties file\n\t-d  set jms destination type queue/topic\n"
+            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./run_broker_consumer.sh [command].\n\nCommands\n\t-h  ask for help\n\t-i  set the location of the infrastructure properties file\n\t-t  set the location of the testplan properties file\n\t-d  set jms destination type queue/topic\n"
             printf "$help_text"
             exit
             ;;
@@ -78,7 +78,7 @@ do
             base_file_location="$OPTARG/consumer"
             ;;
          ?)
-            printf "Invalid command.Run ./broker_test_consumer.sh -h for usage.\n"
+            printf "Invalid command.Run ./run_broker_consumer.sh -h for usage.\n"
             exit
             ;;
      esac
@@ -86,7 +86,7 @@ done
 
 if [ $is_given_destination == false ];
     then
-        printf 'A JMS destination should be provided.\nRun ./broker_test_consumer.sh -h for usage.\n'
+        printf 'A JMS destination should be provided.\nRun ./run_broker_consumer.sh -h for usage.\n'
         exit
     fi
 

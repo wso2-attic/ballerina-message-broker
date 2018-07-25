@@ -36,7 +36,7 @@ The tool allows developers to publish/consume messages to/from queues and topics
     AMQPListenerPort=<amqp_listener_port>
     ```
 
-3. Run ```./broker_test_publisher.sh -i <location_of_infrastructure_properties_file> -t<location_of_testplan_properties_file> -d queue/topic```
+3. Run ```./run_broker_publisher.sh -i <location_of_infrastructure_properties_file> -t <location_of_testplan_properties_file> -d queue/topic```
 
 - -i and -t are optional parameters.If not provided ```resources/broker_test_infrastructure.properties``` and ```resources/broker_test_plan.properties``` are set as default file locations
 
@@ -57,7 +57,7 @@ NumberOfMessages = <number_of_messages_need_to_be_published>
     BrokerPort=<broker_port>
     AMQPListenerPort=<amqp_listener_port>
     ```
-Run ```./broker_test_publisher.sh -i <location_of_infrastructure_properties_file> -t<location_of_testplan_properties_file> -d queue/topic```
+Run ```./run_broker_consumer.sh -i <location_of_infrastructure_properties_file> -t <location_of_testplan_properties_file> -d queue/topic```
 
 - -i and -t are optional parameters.If not provided ```resources/broker_test_infrastructure.properties``` and ```resources/broker_test_plan.properties``` are set as default file locations
 
@@ -65,7 +65,7 @@ Upon completion of the test, you will be directed to a web interface which conta
 
 ### Test scenario - Publish messages to queues/topics and consume them
 
-1.Run ```./broker_test_consumer.sh -d queue/topic```
+1.Run ```./run_broker_test_consumer.sh -d queue/topic```
 
 ## Special Notes
 
