@@ -274,6 +274,10 @@ Resources:
           echo PATH=/opt/wso2/workspace/maven/bin/:$PATH >> /etc/environment
 
           source /etc/environment
+          # clone repository and execute python scripts
+          git clone https://github.com/hasithajayasundara/broker-performance-test-tools.git
+          cd broker-performance-test-tools/
+          ./perf-test-runner.sh
 
           cat /dev/null > ~/.bash_history && history -c
           ${CustomUserData}
