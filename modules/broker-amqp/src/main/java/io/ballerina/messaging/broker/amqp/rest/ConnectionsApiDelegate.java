@@ -23,14 +23,15 @@ import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannelView;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.amqp.rest.model.ChannelMetadata;
+import io.ballerina.messaging.broker.amqp.rest.model.CloseConnectionResponse;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
 import io.ballerina.messaging.broker.amqp.rest.model.RequestAcceptedResponse;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
+import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import javax.security.auth.Subject;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
@@ -76,18 +77,27 @@ public class ConnectionsApiDelegate {
      * Forces disconnection of the AMQP connection.
      *
      * @param id      connection identifier
+     * @param force   indicates if the connection should be closed forcefully or not
      * @param subject authentication subject containing user information of the user that has invoked the API
      * @return HTTP/1.1 202 accepted with {@link RequestAcceptedResponse}
      */
-    public Response closeConnection(int id, Subject subject) {
+    public Response closeConnection(int id, boolean force, Subject subject) {
         try {
             authHandler.handle(ResourceAuthScope.CONNECTIONS_CLOSE, subject);
-            connectionManager.forceDisconnect(id, "Connection close request received from REST API.");
+            int registeredChannelCount;
+            if (force) {
+                registeredChannelCount = connectionManager.forceCloseConnection(id,
+                                                                                "Forced connection close request "
+                                                                                + "received from REST API.");
+            } else {
+                registeredChannelCount = connectionManager.closeConnection(id,
+                                                                           "Connection close request received from "
+                                                                           + "REST API.");
+            }
             return Response.accepted()
-                           .entity(new RequestAcceptedResponse().message(
-                                   "Forceful disconnection of connection " + id + " accepted."))
+                           .entity(new CloseConnectionResponse().numberOfChannelsRegistered(registeredChannelCount))
                            .build();
-        } catch (NoSuchElementException e) {
+        } catch (ResourceNotFoundException e) {
             throw new NotFoundException(e.getMessage(), e);
         } catch (AuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
@@ -109,10 +119,10 @@ public class ConnectionsApiDelegate {
                                                                               + "REST API.");
             return Response.accepted()
                            .entity(new RequestAcceptedResponse().message(
-                                   "Forceful disconnection of channel " + channelId + " of connection " + connectionId
-                                   + " accepted."))
+                                   "Request accepted for forceful disconnection of channel " + channelId + " of "
+                                   + "connection " + connectionId))
                            .build();
-        } catch (NoSuchElementException e) {
+        } catch (ResourceNotFoundException e) {
             throw new NotFoundException(e.getMessage(), e);
         } catch (AuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
@@ -143,7 +153,7 @@ public class ConnectionsApiDelegate {
             return Response.ok().entity(channels).build();
         } catch (AuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
-        } catch (NoSuchElementException e) {
+        } catch (ResourceNotFoundException e) {
             throw new NotFoundException(e.getMessage(), e);
         }
     }

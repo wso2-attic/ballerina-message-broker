@@ -21,13 +21,13 @@ package io.ballerina.messaging.broker.amqp;
 
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannelView;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /**
@@ -74,35 +74,44 @@ public class AmqpConnectionManager {
     /**
      * Closes an AMQP connection specified by the identifier.
      *
-     * @param id the connection identifier
+     * @param id     the connection identifier
      * @param reason reason to close connection
+     * @return integer representing the number of channels registered
+     * @throws ResourceNotFoundException if the the specified connection id does not exist
      */
-    public void forceDisconnect(int id, String reason) {
-        AmqpConnectionHandler connectionHandler = connectionHandlers.get(id);
-        if (Objects.nonNull(connectionHandler)) {
-            connectionHandler.forceDisconnect(reason);
-        } else {
-            throw new NoSuchElementException(createConnectionIdDoesNotExistMessage(id));
-        }
+    public int closeConnection(int id, String reason) throws ResourceNotFoundException {
+        AmqpConnectionHandler connectionHandler = getConnection(id);
+        return connectionHandler.closeConnection(reason);
+    }
+
+    /**
+     * Forces disconnection of an AMQP connection specified by the identifier from the broker side.
+     *
+     * @param id     the connection identifier
+     * @param reason reason to close connection
+     * @return integer representing the number of channels registered
+     * @throws ResourceNotFoundException if the the specified connection id does not exist
+     */
+    public int forceCloseConnection(int id, String reason) throws ResourceNotFoundException {
+        AmqpConnectionHandler connectionHandler = getConnection(id);
+        return connectionHandler.forceCloseConnection(reason);
     }
 
     /**
      * Closes an AMQP channel specified by the connection id and the channel id.
-     *  @param connectionId unique integer representing the connection
+     *
+     * @param connectionId unique integer representing the connection
      * @param channelId    integer representing the channel id within the connection id
-     * @param reason reason to close channel
+     * @param reason       reason to close channel
      */
-    public void forceDisconnectChannel(int connectionId, int channelId, String reason) {
-        AmqpConnectionHandler connectionHandler = connectionHandlers.get(connectionId);
-        if (Objects.nonNull(connectionHandler)) {
-            if (Objects.nonNull(connectionHandler.getChannel(channelId))) {
-                connectionHandler.forceDisconnectChannel(channelId, reason);
-            } else {
-                throw new NoSuchElementException(
-                        "Channel id " + channelId + " does not exist for connection " + connectionId);
-            }
+    public void forceDisconnectChannel(int connectionId, int channelId, String reason) throws
+            ResourceNotFoundException {
+        AmqpConnectionHandler connectionHandler = getConnection(connectionId);
+        if (Objects.nonNull(connectionHandler.getChannel(channelId))) {
+            connectionHandler.forceDisconnectChannel(channelId, reason);
         } else {
-            throw new NoSuchElementException(createConnectionIdDoesNotExistMessage(connectionId));
+            throw new ResourceNotFoundException(
+                    "Channel id " + channelId + " does not exist for connection " + connectionId);
         }
     }
 
@@ -111,17 +120,17 @@ public class AmqpConnectionManager {
      *
      * @return a list of {@link AmqpChannelView} representing AMQP channels
      */
-    public Collection<AmqpChannelView> getChannelViews(int connectionId) {
-        AmqpConnectionHandler connectionHandler;
-        connectionHandler = connectionHandlers.get(connectionId);
-        if (Objects.nonNull(connectionHandler)) {
-            return connectionHandler.getChannelViews();
-        } else {
-            throw new NoSuchElementException(createConnectionIdDoesNotExistMessage(connectionId));
-        }
+    public Collection<AmqpChannelView> getChannelViews(int connectionId) throws ResourceNotFoundException {
+        AmqpConnectionHandler connectionHandler = getConnection(connectionId);
+        return connectionHandler.getChannelViews();
     }
 
-    private String createConnectionIdDoesNotExistMessage(int connectionId) {
-        return "Connection id " + connectionId + " does not exist.";
+    private AmqpConnectionHandler getConnection(int connectionId) throws ResourceNotFoundException {
+        AmqpConnectionHandler connectionHandler = connectionHandlers.get(connectionId);
+        if (Objects.nonNull(connectionHandler)) {
+            return connectionHandler;
+        } else {
+            throw new ResourceNotFoundException("Connection id " + connectionId + " does not exist.");
+        }
     }
 }
