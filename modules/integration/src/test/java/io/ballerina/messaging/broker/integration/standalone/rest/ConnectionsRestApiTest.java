@@ -68,6 +68,8 @@ public class ConnectionsRestApiTest {
 
     private static final String CONNECTIONS_API_PATH = "/transports/amqp/connections";
 
+    private static final String FORCE_TRUE_QUERY_PARAM = "?force=true";
+
     @Parameters({"broker-hostname", "broker-rest-port"})
     @BeforeClass
     public void setUp(String brokerHost, String port) throws Exception {
@@ -221,6 +223,48 @@ public class ConnectionsRestApiTest {
         Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_FORBIDDEN,
                             "Incorrect status code while closing connections");
         connection.close();
+    }
+
+    @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
+    @Test
+    public void testForceCloseConnections(String username, String password, String hostName, String port) throws
+            Exception {
+
+        int connectionCount = 3;
+        //Create 3 connections each having 0, 1 and 2 channels respectively
+        List<Connection> connections = new ArrayList<>(connectionCount);
+        for (int i = 0; i < connectionCount; i++) {
+            connections.add(createConnection(i, username, password, hostName, port));
+        }
+
+        ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
+        Assert.assertEquals(connectionMetadataBeforeClosing.length, connectionCount,
+                            "Incorrect connection count before closing connection.");
+
+        //Send delete request
+        HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
+                                               + connectionMetadataBeforeClosing[1].getId() + FORCE_TRUE_QUERY_PARAM);
+        ClientHelper.setAuthHeader(httpDelete, username, password);
+        CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
+        Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
+                            "Incorrect status code while closing connections");
+
+        //Assert connection details after delete
+        int expectedConnectionCount = connectionCount - 1;
+        ConnectionMetadata[] connectionMetadataAfterClosing = waitForConnectionUpdate(expectedConnectionCount,
+                                                                                      username, password);
+        Assert.assertEquals(connectionMetadataAfterClosing.length, expectedConnectionCount,
+                            "Incorrect connection count after closing connection.");
+
+        //Remove closed connection
+        connections.remove(1);
+
+        Assert.assertEquals(connectionMetadataAfterClosing[0].getId(), connectionMetadataBeforeClosing[0].getId(),
+                            "Connection " + connectionMetadataBeforeClosing[0].getId() + " does not exist.");
+        Assert.assertEquals(connectionMetadataAfterClosing[1].getId(), connectionMetadataBeforeClosing[2].getId(),
+                            "Connection " + connectionMetadataBeforeClosing[2].getId() + " does not exist.");
+
+        closeConnections(connections);
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
