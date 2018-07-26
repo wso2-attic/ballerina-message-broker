@@ -28,6 +28,7 @@ import io.ballerina.messaging.broker.amqp.codec.AmqpChannelWrapper;
 import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
 import io.ballerina.messaging.broker.amqp.codec.ConnectionException;
 import io.ballerina.messaging.broker.amqp.codec.frames.AmqpBadMessage;
+import io.ballerina.messaging.broker.amqp.codec.frames.ChannelClose;
 import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionClose;
 import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionStart;
 import io.ballerina.messaging.broker.amqp.codec.frames.GeneralFrame;
@@ -62,7 +63,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * A {@link LinkedHashMap} is used since the channels need to be sorted according to their channel Id.
      */
     private final Map<Integer, AmqpChannelView> channelViews = new LinkedHashMap<>();
-    
+
     private Broker broker;
     private final AmqpMetricManager metricManager;
     private ChannelHandlerContext ctx;
@@ -285,11 +286,24 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * Sends a connection close frame to the client.
+     * @param reason reason to disconnect connection
      */
-    public void forceDisconnect() {
+    public void forceDisconnect(String reason) {
         ctx.writeAndFlush(new ConnectionClose(AmqConstant.CONNECTION_FORCED,
-                                              ShortString.parseString("Broker forced disconnection"),
+                                              ShortString.parseString("Broker forced close connection. " + reason),
                                               0, 0));
+    }
+
+    /**
+     * Sends a channel close frame to the client.
+     *
+     * @param channelId the identifier of the channel
+     * @param reason reason to disconnection channel
+     */
+    public void forceDisconnectChannel(int channelId, String reason) {
+        ctx.writeAndFlush(new ChannelClose(channelId, AmqConstant.CHANNEL_CLOSED,
+                                           ShortString.parseString("Broker forced close channel. " + reason),
+                                           0, 0));
     }
 
     /**

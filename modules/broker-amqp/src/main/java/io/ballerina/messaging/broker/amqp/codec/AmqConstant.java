@@ -24,8 +24,16 @@ package io.ballerina.messaging.broker.amqp.codec;
  */
 public class AmqConstant {
     public static final int COMMAND_INVALID = 503;
-    //reply code to be used when the broker enforces connection close
+
+    /**
+     * Reply code to be used when the broker enforces connection close.
+     */
     public static final int CONNECTION_FORCED = 320;
+
+    /**
+     * Reply code to be used when the broker enforces channel close.
+     */
+    public static final int CHANNEL_CLOSED = 410;
 
     public static final String TRANSPORT_PROPERTY_CHANNEL_ID = "channelId";
     public static final String TRANSPORT_PROPERTY_CONNECTION_ID = "connectionId";

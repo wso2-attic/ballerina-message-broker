@@ -57,9 +57,43 @@ paths:
           '202':
             description: Connection removal request submitted.
             schema:
-              $ref: '#/definitions/ConnectionCloseResponse'
+              $ref: '#/definitions/RequestAcceptedResponse'
           '400':
             $ref: "#/responses/BadRequest"
+          '401':
+            $ref: "#/responses/NotAuthenticated"
+          '403':
+            $ref: "#/responses/Unauthorized"
+          '404':
+            $ref: "#/responses/NotFound"
+  /connections/{connectionId}/channels/{channelId}:
+    parameters:
+      - in: path
+        name: connectionId
+        type: integer
+        required: true
+        description: Identifier of the connection
+      - in: path
+        name: channelId
+        type: integer
+        required: true
+        description: Identifier of the channel
+    delete:
+        operationId: closeChannel
+        summary: Force disconnect the specified channel.
+        description: >-
+          Disconnects the specified amqp channel if an active channel exists in the broker
+        produces:
+          - application/json
+        responses:
+          '202':
+            description: Channel removal request submitted.
+            schema:
+              $ref: '#/definitions/RequestAcceptedResponse'
+          '400':
+            description: Bad request. Invalid request or validation error.
+            schema:
+              $ref: '#/definitions/Error'
           '401':
             $ref: "#/responses/NotAuthenticated"
           '403':
@@ -143,7 +177,7 @@ definitions:
           type: integer
           format: int64
           description: The time at which the connection was established
-  ConnectionCloseResponse:
+  RequestAcceptedResponse:
         title: Connection Close Response
         type: object
         required:

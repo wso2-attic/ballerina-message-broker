@@ -23,8 +23,8 @@ import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannelView;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.amqp.rest.model.ChannelMetadata;
-import io.ballerina.messaging.broker.amqp.rest.model.ConnectionCloseResponse;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
+import io.ballerina.messaging.broker.amqp.rest.model.RequestAcceptedResponse;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
@@ -77,14 +77,40 @@ public class ConnectionsApiDelegate {
      *
      * @param id      connection identifier
      * @param subject authentication subject containing user information of the user that has invoked the API
-     * @return HTTP/1.1 202 accepted with {@link ConnectionCloseResponse}
+     * @return HTTP/1.1 202 accepted with {@link RequestAcceptedResponse}
      */
     public Response closeConnection(int id, Subject subject) {
         try {
             authHandler.handle(ResourceAuthScope.CONNECTIONS_CLOSE, subject);
-            connectionManager.forceDisconnect(id);
-            return Response.accepted().entity(
-                    new ConnectionCloseResponse().message("Forceful disconnection of connection " + id + " accepted."))
+            connectionManager.forceDisconnect(id, "Connection close request received from REST API.");
+            return Response.accepted()
+                           .entity(new RequestAcceptedResponse().message(
+                                   "Forceful disconnection of connection " + id + " accepted."))
+                           .build();
+        } catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage(), e);
+        } catch (AuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Forces disconnection of an AMQP channel.
+     *
+     * @param connectionId connection identifier
+     * @param channelId    channel id
+     * @param subject      authentication subject containing user information of the user that has invoked the API
+     * @return HTTP/1.1 202 accepted with {@link RequestAcceptedResponse}
+     */
+    public Response closeChannel(Integer connectionId, Integer channelId, Subject subject) {
+        try {
+            authHandler.handle(ResourceAuthScope.CHANNEL_CLOSE, subject);
+            connectionManager.forceDisconnectChannel(connectionId, channelId, "Channel close request received from "
+                                                                              + "REST API.");
+            return Response.accepted()
+                           .entity(new RequestAcceptedResponse().message(
+                                   "Forceful disconnection of channel " + channelId + " of connection " + connectionId
+                                   + " accepted."))
                            .build();
         } catch (NoSuchElementException e) {
             throw new NotFoundException(e.getMessage(), e);

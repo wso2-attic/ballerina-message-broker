@@ -157,8 +157,8 @@ public class ConnectionsRestApiTest {
                 "Incorrect connection count before closing connection.");
 
         //Send delete request
-        HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/" +
-                                               connectionMetadataBeforeClosing[1].getId());
+        HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
+                                               + connectionMetadataBeforeClosing[1].getId());
         ClientHelper.setAuthHeader(httpDelete, username, password);
         CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
         Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_ACCEPTED,
@@ -269,6 +269,90 @@ public class ConnectionsRestApiTest {
         connection.close();
     }
 
+    @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
+    @Test
+    public void testCloseChannels(String username, String password, String hostName, String port) throws Exception {
+
+        int channelCount = 3;
+        //Create 3 connections each having 0, 1 and 2 channels respectively
+        Connection connections;
+        connections = createConnection(channelCount, username, password, hostName, port);
+
+        ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
+        Assert.assertEquals(connectionMetadataBeforeClosing.length, 1,
+                            "Incorrect connection count before closing channel.");
+        Assert.assertEquals(connectionMetadataBeforeClosing[0].getChannelCount().intValue(), channelCount,
+                            "Incorrect channel count before closing channel.");
+
+        //Send delete request
+        HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
+                                               + connectionMetadataBeforeClosing[0].getId() + "/" + "channels" + "/2");
+        ClientHelper.setAuthHeader(httpDelete, username, password);
+        CloseableHttpResponse channelCloseResponse = client.execute(httpDelete);
+        Assert.assertEquals(channelCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_ACCEPTED,
+                            "Incorrect status code while closing connections");
+
+        //Assert connection details after delete
+        int expectedChannelCount = channelCount - 1;
+        ConnectionMetadata[] connectionMetadataAfterClosing = waitForChannelUpdate(expectedChannelCount, username,
+                                                                                   password);
+        Assert.assertEquals(connectionMetadataAfterClosing[0].getChannelCount().intValue(), expectedChannelCount,
+                            "Incorrect connection count after closing connection.");
+
+        connections.close();
+    }
+
+    @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
+    @Test
+    public void testCloseNonExistentChannel(String username, String password, String hostName, String port)
+            throws Exception {
+
+        Connection connection = createConnection(2, username, password, hostName, port);
+        ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
+        Assert.assertEquals(connectionMetadataBeforeClosing.length, 1,
+                            "Incorrect connection count before closing connection.");
+
+        //Send delete request with invalid connection identifier
+        HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
+                                               + connectionMetadataBeforeClosing[0].getId() + 1 + "/channels/1");
+        ClientHelper.setAuthHeader(httpDelete, username, password);
+        CloseableHttpResponse channelCloseResponseForInvalidConnectionId = client.execute(httpDelete);
+        Assert.assertEquals(channelCloseResponseForInvalidConnectionId.getStatusLine().getStatusCode(),
+                            HttpStatus.SC_NOT_FOUND,
+                            "Incorrect status code while closing channel with invalid connection id");
+
+        //Send delete request with invalid channel identifier
+        HttpDelete httpInvalidChannelDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
+                                                             + connectionMetadataBeforeClosing[0].getId()
+                                                             + "/channels/3");
+        ClientHelper.setAuthHeader(httpInvalidChannelDelete, username, password);
+        CloseableHttpResponse channelCloseResponseForInvalidChannelId = client.execute(httpInvalidChannelDelete);
+        Assert.assertEquals(channelCloseResponseForInvalidChannelId.getStatusLine().getStatusCode(),
+                            HttpStatus.SC_NOT_FOUND,
+                            "Incorrect status code while closing channel with invalid channel id");
+        connection.close();
+    }
+
+    @Parameters({"admin-username", "admin-password", "test-username", "test-password", "broker-hostname",
+            "broker-port"})
+    @Test
+    public void testCloseChannelWithUnAuthorizedUSer(String adminUserName, String adminPassword,
+                                                     String testUsername, String testPassword, String hostName,
+                                                     String port) throws Exception {
+
+        Connection connection = createConnection(2, adminUserName, adminPassword, hostName, port);
+        ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(adminUserName, adminPassword);
+
+        //Send delete request with invalid connection identifier
+        HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
+                                               + connectionMetadataBeforeClosing[0].getId() + "/channels/1");
+        ClientHelper.setAuthHeader(httpDelete, testUsername, testPassword);
+        CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
+        Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_FORBIDDEN,
+                            "Incorrect status code while closing channels with unauthorized user");
+        connection.close();
+    }
+
     /**
      * Creates a AMQP connection with the number of channels specified, registered on top of it.
      *
@@ -282,7 +366,7 @@ public class ConnectionsRestApiTest {
      * @throws JMSException    if an error occurs while creating/starting the connection/session
      */
     private Connection createConnection(int numberOfChannels, String userName, String password, String hostName,
-            String port) throws NamingException, JMSException {
+                                        String port) throws NamingException, JMSException {
 
         InitialContext initialContext
                 = ClientHelper.getInitialContextBuilder(userName, password, hostName, port).build();
@@ -356,6 +440,18 @@ public class ConnectionsRestApiTest {
                   .until(() -> {
                       connectionMetadataAfterClosing[0] = getConnections(userName, password);
                       return connectionMetadataAfterClosing[0].length == expectedConnectionCount;
+                  });
+        return connectionMetadataAfterClosing[0];
+    }
+
+    private ConnectionMetadata[] waitForChannelUpdate(int expectedChannelCount, String userName,
+                                                         String password) throws Exception {
+        final ConnectionMetadata[][] connectionMetadataAfterClosing = new ConnectionMetadata[1][1];
+        Awaitility.await().atMost(5, TimeUnit.SECONDS)
+                  .pollDelay(500, TimeUnit.MILLISECONDS)
+                  .until(() -> {
+                      connectionMetadataAfterClosing[0] = getConnections(userName, password);
+                      return connectionMetadataAfterClosing[0][0].getChannelCount() == expectedChannelCount;
                   });
         return connectionMetadataAfterClosing[0];
     }
