@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.amqp.rest.api;
 
 import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
 import io.ballerina.messaging.broker.amqp.rest.ConnectionsApiDelegate;
+import io.ballerina.messaging.broker.amqp.rest.model.ChannelMetadata;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionCloseResponse;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
@@ -77,14 +78,34 @@ public class ConnectionsApi {
     @GET
     @Produces({ "application/json" })
     @ApiOperation(value = "Get all connections", notes = "Retrieves all connections to the broker", response = ConnectionMetadata.class, responseContainer = "List", authorizations = {
-        @Authorization(value = "basicAuth")
+            @Authorization(value = "basicAuth")
     }, tags={  })
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "List of active Connections", response = ConnectionMetadata.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 403, message = "User is not autherized to perform operation", response = Error.class)
     })
     public Response getAllConnections(@Context Request request) {
         return connectionsApiDelegate.getAllConnections((Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
+    }
+
+    @GET
+    @Path("/{connectionId}/channels")
+    @Produces({ "application/json" })
+    @ApiOperation(value = "Get all channels for connection", notes = "Retrieves all AMQP channels established on an AMQP connection", response = ChannelMetadata.class, responseContainer = "List", authorizations = {
+            @Authorization(value = "basicAuth")
+    }, tags={  })
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "List of channels created on the connection", response = ChannelMetadata.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
+            @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
+            @ApiResponse(code = 403, message = "User is not autherized to perform operation", response = Error.class),
+            @ApiResponse(code = 404, message = "The specified resource was not found", response = Error.class)
+    })
+    public Response getAllChannelsForConnection(@Context Request request,
+                                                @PathParam("connectionId")
+                                                @ApiParam("Identifier of the connection") Integer connectionId) {
+        return connectionsApiDelegate.getAllChannels(connectionId, (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 }

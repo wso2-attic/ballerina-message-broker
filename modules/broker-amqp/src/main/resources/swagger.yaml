@@ -33,6 +33,8 @@ paths:
               type: array
               items:
                 $ref: '#/definitions/ConnectionMetadata'
+          '400':
+            $ref: "#/responses/BadRequest"
           '401':
             $ref: "#/responses/NotAuthenticated"
           '403':
@@ -57,16 +59,47 @@ paths:
             schema:
               $ref: '#/definitions/ConnectionCloseResponse'
           '400':
-            description: Bad request. Invalid request or validation error.
-            schema:
-              $ref: '#/definitions/Error'
+            $ref: "#/responses/BadRequest"
           '401':
             $ref: "#/responses/NotAuthenticated"
           '403':
             $ref: "#/responses/Unauthorized"
           '404':
             $ref: "#/responses/NotFound"
+  /connections/{connectionId}/channels:
+        parameters:
+          - in: path
+            name: connectionId
+            type: integer
+            required: true
+            description: Identifier of the connection
+        get:
+          operationId: getAllChannelsForConnection
+          summary: Get all channels for connection
+          description: >-
+            Retrieves all AMQP channels established on an AMQP connection
+          produces:
+            - application/json
+          responses:
+            '200':
+              description: List of channels created on the connection
+              schema:
+                type: array
+                items:
+                  $ref: '#/definitions/ChannelMetadata'
+            '400':
+              $ref: "#/responses/BadRequest"
+            '401':
+              $ref: "#/responses/NotAuthenticated"
+            '403':
+              $ref: "#/responses/Unauthorized"
+            '404':
+              $ref: "#/responses/NotFound"
 responses:
+  BadRequest:
+    description: Bad request. Invalid request or validation error.
+    schema:
+      $ref: '#/definitions/Error'
   NotFound:
     description: The specified resource was not found
     schema:
@@ -119,6 +152,43 @@ definitions:
           message:
             type: string
             description: Response message with status of the connection close operation.
+  ChannelMetadata:
+        title: Channel Metadata
+        type: object
+        required:
+          - id
+          - remoteAddress
+          - channelCount
+          - connectedTime
+        properties:
+          id:
+            type: integer
+            description: Channel identifier
+          consumerCount:
+            type: integer
+            description: Number of active consumers created on the channel
+          createdTime:
+            type: integer
+            format: int64
+            description: The time at which the channel was created
+          isClosed:
+            type: boolean
+            description: Is the channel closed
+          unackedMessageCount:
+            type: integer
+            description: Unacknowledged message count
+          isFlowEnabled:
+            type: boolean
+            description: Is flow enabled in the channel
+          deliveryPendingMessageCount:
+            type: integer
+            description: Number of messages to be delivered
+          transactionType:
+            type: string
+            description: Underlying transaction type that is being used
+          prefetchCount:
+            type: integer
+            description: The number of messages that will be prefetched
   Error:
       title: Error Response
       required:

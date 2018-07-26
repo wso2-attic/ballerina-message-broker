@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.integration.standalone.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.ballerina.messaging.broker.amqp.rest.model.ChannelMetadata;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
 import io.ballerina.messaging.broker.integration.util.ClientHelper;
 import io.ballerina.messaging.broker.integration.util.HttpClientHelper;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.jms.Connection;
 import javax.jms.JMSException;
+import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueSession;
@@ -119,7 +121,7 @@ public class ConnectionsRestApiTest {
     public void testGetConnectionsWithInvalidPassword(String username, String password, String hostName, String port)
             throws Exception {
         Connection connection = createConnection(1, username, password, hostName, port);
-        CloseableHttpResponse response = sendGet(username, "invalidPassword");
+        CloseableHttpResponse response = sendGetConnections(username, "invalidPassword");
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_UNAUTHORIZED,
                 "Incorrect status code while retrieving connection");
@@ -132,7 +134,7 @@ public class ConnectionsRestApiTest {
     public void testGetConnectionsWithUnauthorizedUser(String adminUsername, String adminPassword, String username,
                                                        String password, String hostName, String port) throws Exception {
         Connection connection = createConnection(1, adminUsername, adminPassword, hostName, port);
-        CloseableHttpResponse response = sendGet(username, password);
+        CloseableHttpResponse response = sendGetConnections(username, password);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_FORBIDDEN,
                             "Incorrect status code while retrieving connection");
@@ -221,6 +223,52 @@ public class ConnectionsRestApiTest {
         connection.close();
     }
 
+    @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
+    @Test
+    public void testGetChannelsForConnection(String username, String password, String hostName, String port)
+            throws Exception {
+        int channelCount = 3;
+        Connection connection = createConnection(channelCount, username, password, hostName, port);
+        ConnectionMetadata[] connectionMetadata = getConnections(username, password);
+        int connectionId = connectionMetadata[0].getId();
+        ChannelMetadata[] channelMetadata = getChannels(connectionId, username, password);
+        Assert.assertEquals(channelMetadata.length, channelCount, "Incorrect channel count.");
+
+        //Assert populated data inside the connection
+        for (int i = 0; i < channelCount; i++) {
+            Assert.assertNotNull(channelMetadata[i].getId(), "Channel Id cannot be null.");
+            Assert.assertEquals(channelMetadata[i].getConsumerCount().intValue(), i, "Established consumer count is"
+                                                                                     + " incorrect.");
+        }
+        connection.close();
+    }
+
+    @Parameters({"admin-username", "admin-password", "test-username", "test-password", "broker-hostname",
+                 "broker-port"})
+    @Test
+    public void testGetChannelsForConnectionWithUnauthorizedUser(String adminUsername, String adminPassword,
+                                                                 String username, String password, String hostName,
+                                                                 String port) throws Exception {
+        Connection connection = createConnection(1, adminUsername, adminPassword, hostName, port);
+        CloseableHttpResponse response = sendGetChannels(1, username, password);
+
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_FORBIDDEN,
+                            "Incorrect status code while retrieving connection");
+        connection.close();
+    }
+
+    @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
+    @Test
+    public void testGetChannelsForConnectionWithInvalidConnectionId(String adminUsername, String adminPassword,
+                                                                    String hostName, String port) throws Exception {
+        Connection connection = createConnection(1, adminUsername, adminPassword, hostName, port);
+        CloseableHttpResponse response = sendGetChannels(0, adminUsername, adminPassword);
+
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_NOT_FOUND,
+                            "Incorrect status code while retrieving connection");
+        connection.close();
+    }
+
     /**
      * Creates a AMQP connection with the number of channels specified, registered on top of it.
      *
@@ -244,7 +292,17 @@ public class ConnectionsRestApiTest {
         QueueConnection connection = connectionFactory.createQueueConnection();
         connection.start();
         for (int i = 0; i < numberOfChannels; i++) {
-            connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+            QueueSession session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+
+            /*
+              For each channel, create a number of consumers that is equal to the channel number.
+              e.g. if the channel count is 3, channel1 has 1 consumer, channel2 has 2 consumers and channel3 has 3
+              consumers
+            */
+            for (int j = 0; j < i; j++) {
+                Queue queue = session.createQueue("queue");
+                session.createReceiver(queue);
+            }
         }
         return connection;
     }
@@ -262,15 +320,30 @@ public class ConnectionsRestApiTest {
     }
 
     private ConnectionMetadata[] getConnections(String username, String password) throws IOException {
-        CloseableHttpResponse response = sendGet(username, password);
+        CloseableHttpResponse response = sendGetConnections(username, password);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
                             "Incorrect status code while retrieving connection");
         String body = EntityUtils.toString(response.getEntity());
         return objectMapper.readValue(body, ConnectionMetadata[].class);
     }
 
-    private CloseableHttpResponse sendGet(String username, String password) throws IOException {
+    private ChannelMetadata[] getChannels(int connectionId, String username, String password) throws IOException {
+        CloseableHttpResponse response = sendGetChannels(connectionId, username, password);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
+                            "Incorrect status code while retrieving connection");
+        String body = EntityUtils.toString(response.getEntity());
+        return objectMapper.readValue(body, ChannelMetadata[].class);
+    }
+
+    private CloseableHttpResponse sendGetConnections(String username, String password) throws IOException {
         HttpGet httpGet = new HttpGet(apiBasePath + CONNECTIONS_API_PATH);
+        ClientHelper.setAuthHeader(httpGet, username, password);
+        return client.execute(httpGet);
+    }
+
+    private CloseableHttpResponse sendGetChannels(int connectionId, String username, String password) throws
+            IOException {
+        HttpGet httpGet = new HttpGet(apiBasePath + CONNECTIONS_API_PATH + "/" + connectionId + "/channels");
         ClientHelper.setAuthHeader(httpGet, username, password);
         return client.execute(httpGet);
     }

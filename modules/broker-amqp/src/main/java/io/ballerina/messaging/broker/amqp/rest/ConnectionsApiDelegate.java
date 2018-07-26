@@ -20,7 +20,9 @@
 package io.ballerina.messaging.broker.amqp.rest;
 
 import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
+import io.ballerina.messaging.broker.amqp.codec.AmqpChannelView;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.amqp.rest.model.ChannelMetadata;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionCloseResponse;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
 import io.ballerina.messaging.broker.auth.AuthException;
@@ -88,6 +90,35 @@ public class ConnectionsApiDelegate {
             throw new NotFoundException(e.getMessage(), e);
         } catch (AuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Retrieves all active amqp channels created on a connection.
+     *
+     * @param subject The authentication subject containing user information of the user that has invoked the API
+     * @return list of {@link ChannelMetadata}
+     */
+    public Response getAllChannels(Integer connectionId, Subject subject) {
+        try {
+            authHandler.handle(ResourceAuthScope.CHANNELS_GET, subject);
+            List<ChannelMetadata> channels = new ArrayList<>();
+            for (AmqpChannelView channel : connectionManager.getChannelViews(connectionId)) {
+                channels.add(new ChannelMetadata().id(channel.getChannelId())
+                                                  .consumerCount(channel.getConsumerCount())
+                                                  .createdTime(channel.getCreatedTime())
+                                                  .deliveryPendingMessageCount(channel.getDeliveryPendingMessageCount())
+                                                  .isClosed(channel.isClosed())
+                                                  .isFlowEnabled(channel.isFlowEnabled())
+                                                  .prefetchCount(channel.getPrefetchCount())
+                                                  .unackedMessageCount(channel.getUnackedMessageCount())
+                                                  .transactionType(channel.getTransactionType()));
+            }
+            return Response.ok().entity(channels).build();
+        } catch (AuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (NoSuchElementException e) {
+            throw new NotFoundException(e.getMessage(), e);
         }
     }
 }
