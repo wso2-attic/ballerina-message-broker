@@ -20,6 +20,8 @@ package io.ballerina.messaging.broker.client.cmd;
 
 import io.ballerina.messaging.broker.client.cmd.impl.InitCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.RootCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.close.CloseChannelCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.close.CloseCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.create.CreateBindingCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.create.CreateCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.create.CreateExchangeCmd;
@@ -72,6 +74,10 @@ public class CommandFactory {
         return new DeleteCmd(rootCommand);
     }
 
+    public CloseCmd createCloseCommand() {
+        return new CloseCmd(rootCommand);
+    }
+
     public GrantCmd createGrantCommand() {
         return new GrantCmd(rootCommand);
     }
@@ -106,6 +112,10 @@ public class CommandFactory {
 
     public DeleteQueueCmd createDeleteQueueCommand() {
         return new DeleteQueueCmd(rootCommand);
+    }
+
+    public CloseChannelCmd createCloseChannelCommand() {
+        return new CloseChannelCmd(rootCommand);
     }
 
     public ListQueueCmd createListQueueCommand() {

@@ -96,17 +96,19 @@ public class Main {
         // add to root jCommander
         addChildCommand(jCommanderRoot, Constants.CMD_INIT, commandFactory.createInitCommand());
         JCommander jCommanderList = addChildCommand(jCommanderRoot, Constants.CMD_LIST,
-                commandFactory.createListCommand());
+                                                    commandFactory.createListCommand());
         JCommander jCommanderCreate = addChildCommand(jCommanderRoot, Constants.CMD_CREATE,
-                commandFactory.createCreateCommand());
+                                                      commandFactory.createCreateCommand());
         JCommander jCommanderDelete = addChildCommand(jCommanderRoot, Constants.CMD_DELETE,
-                commandFactory.createDeleteCommand());
+                                                      commandFactory.createDeleteCommand());
+        JCommander jCommanderClose = addChildCommand(jCommanderRoot, Constants.CMD_CLOSE,
+                                                        commandFactory.createCloseCommand());
         JCommander jCommanderGrant = addChildCommand(jCommanderRoot, Constants.CMD_GRANT,
-                                                      commandFactory.createGrantCommand());
+                                                     commandFactory.createGrantCommand());
         JCommander jCommanderRevoke = addChildCommand(jCommanderRoot, Constants.CMD_REVOKE,
-                                                     commandFactory.createRevokeCommand());
+                                                      commandFactory.createRevokeCommand());
         JCommander jCommanderTransfer = addChildCommand(jCommanderRoot, Constants.CMD_TRANSFER,
-                                                      commandFactory.createTransferCommand());
+                                                        commandFactory.createTransferCommand());
 
         // secondary level commands
         // add list sub-commands
@@ -123,6 +125,9 @@ public class Main {
         // add delete sub-commands
         addChildCommand(jCommanderDelete, Constants.CMD_EXCHANGE, commandFactory.createDeleteExchangeCommand());
         addChildCommand(jCommanderDelete, Constants.CMD_QUEUE, commandFactory.createDeleteQueueCommand());
+
+        // add close sub-commands
+        addChildCommand(jCommanderClose, Constants.CMD_CHANNEL, commandFactory.createCloseChannelCommand());
 
         // add grant sub-commands
         addChildCommand(jCommanderGrant, Constants.CMD_QUEUE, commandFactory.createGrantQueueCommand());

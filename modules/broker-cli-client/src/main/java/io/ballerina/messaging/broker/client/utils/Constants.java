@@ -36,6 +36,8 @@ public class Constants {
     public static final String PERMISSIONS_ACTION_URL_PARAM = "/permissions/actions/";
     public static final String PERMISSIONS_OWNER_URL_PARAM = "/permissions/owner";
     public static final String PERMISSION_GROUP_URL_PARAM = "/groups";
+    public static final String CONNECTIONS_URL_PARAM = "transports/amqp/connections/";
+    public static final String CHANNELS_URL_PARAM = "channels/";
     public static final String DEFAULT_CONFIG_FILE_PATH = "cli-config.yml";
 
     // Commands/resource types
@@ -43,6 +45,7 @@ public class Constants {
     public static final String CMD_LIST = "list";
     public static final String CMD_CREATE = "create";
     public static final String CMD_DELETE = "delete";
+    public static final String CMD_CLOSE = "close";
     public static final String CMD_GRANT = "grant";
     public static final String CMD_REVOKE = "revoke";
     public static final String CMD_TRANSFER = "transfer";
@@ -51,6 +54,7 @@ public class Constants {
     public static final String CMD_QUEUE = "queue";
     public static final String CMD_BINDING = "binding";
     public static final String CMD_CONSUMER = "consumer";
+    public static final String CMD_CHANNEL = "channel";
 
     public static final String BROKER_ERROR_MSG = "Error while invoking Brokers admin services";
 
