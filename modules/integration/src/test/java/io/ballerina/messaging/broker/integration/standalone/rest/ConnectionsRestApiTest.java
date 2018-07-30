@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.integration.standalone.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ballerina.messaging.broker.amqp.rest.model.ChannelMetadata;
+import io.ballerina.messaging.broker.amqp.rest.model.CloseConnectionResponse;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
 import io.ballerina.messaging.broker.integration.util.ClientHelper;
 import io.ballerina.messaging.broker.integration.util.HttpClientHelper;
@@ -31,6 +32,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.awaitility.Awaitility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -70,11 +73,16 @@ public class ConnectionsRestApiTest {
 
     private static final String FORCE_TRUE_QUERY_PARAM = "?force=true";
 
+    private List<Connection> connections;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionsRestApiTest.class);
+
     @Parameters({"broker-hostname", "broker-rest-port"})
     @BeforeClass
     public void setUp(String brokerHost, String port) throws Exception {
         apiBasePath = HttpClientHelper.getRestApiBasePath(brokerHost, port);
         objectMapper = new ObjectMapper();
+        connections = new ArrayList<>();
     }
 
     @BeforeMethod
@@ -91,6 +99,8 @@ public class ConnectionsRestApiTest {
     @AfterMethod
     public void afterMethod() throws IOException {
         client.close();
+        closeConnections(connections);
+        connections.clear();
     }
 
 
@@ -100,7 +110,6 @@ public class ConnectionsRestApiTest {
 
         int connectionCount = 3;
         //Create 3 connections each having 0, 1 and 2 channels respectively
-        List<Connection> connections = new ArrayList<>(connectionCount);
         for (int i = 0; i < connectionCount; i++) {
             connections.add(createConnection(i, username, password, hostName, port));
         }
@@ -115,19 +124,17 @@ public class ConnectionsRestApiTest {
             Assert.assertEquals(connectionMetadata[i].getChannelCount().intValue(), i, "Established channel count is"
                                                                                        + " incorrect.");
         }
-        closeConnections(connections);
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
     @Test
     public void testGetConnectionsWithInvalidPassword(String username, String password, String hostName, String port)
             throws Exception {
-        Connection connection = createConnection(1, username, password, hostName, port);
+        connections.add(createConnection(1, username, password, hostName, port));
         CloseableHttpResponse response = sendGetConnections(username, "invalidPassword");
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_UNAUTHORIZED,
                 "Incorrect status code while retrieving connection");
-        connection.close();
     }
 
     @Parameters({"admin-username", "admin-password", "test-username", "test-password", "broker-hostname",
@@ -135,12 +142,11 @@ public class ConnectionsRestApiTest {
     @Test
     public void testGetConnectionsWithUnauthorizedUser(String adminUsername, String adminPassword, String username,
                                                        String password, String hostName, String port) throws Exception {
-        Connection connection = createConnection(1, adminUsername, adminPassword, hostName, port);
+        connections.add(createConnection(1, adminUsername, adminPassword, hostName, port));
         CloseableHttpResponse response = sendGetConnections(username, password);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_FORBIDDEN,
                             "Incorrect status code while retrieving connection");
-        connection.close();
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
@@ -149,7 +155,6 @@ public class ConnectionsRestApiTest {
 
         int connectionCount = 3;
         //Create 3 connections each having 0, 1 and 2 channels respectively
-        List<Connection> connections = new ArrayList<>(connectionCount);
         for (int i = 0; i < connectionCount; i++) {
             connections.add(createConnection(i, username, password, hostName, port));
         }
@@ -180,8 +185,6 @@ public class ConnectionsRestApiTest {
                             "Connection " + connectionMetadataBeforeClosing[0].getId() + " does not exist.");
         Assert.assertEquals(connectionMetadataAfterClosing[1].getId(), connectionMetadataBeforeClosing[2].getId(),
                             "Connection " + connectionMetadataBeforeClosing[2].getId() + " does not exist.");
-
-        closeConnections(connections);
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
@@ -189,7 +192,7 @@ public class ConnectionsRestApiTest {
     public void testCloseNonExistentConnection(String username, String password, String hostName, String port)
             throws Exception {
 
-        Connection connection = createConnection(2, username, password, hostName, port);
+        connections.add(createConnection(2, username, password, hostName, port));
         ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
         Assert.assertEquals(connectionMetadataBeforeClosing.length, 1,
                             "Incorrect connection count before closing connection.");
@@ -201,7 +204,6 @@ public class ConnectionsRestApiTest {
         CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
         Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_NOT_FOUND,
                             "Incorrect status code while closing connections");
-        connection.close();
     }
 
     @Parameters({"admin-username", "admin-password", "test-username", "test-password", "broker-hostname",
@@ -210,7 +212,7 @@ public class ConnectionsRestApiTest {
     public void testCloseConnectionWithUnAuthorizedUSer(String adminUserName, String adminPassword, String
             testUsername, String testPassword, String hostName, String port) throws Exception {
 
-        Connection connection = createConnection(2, adminUserName, adminPassword, hostName, port);
+        connections.add(createConnection(2, adminUserName, adminPassword, hostName, port));
         ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(adminUserName, adminPassword);
         Assert.assertEquals(connectionMetadataBeforeClosing.length, 1,
                             "Incorrect connection count before closing connection.");
@@ -222,7 +224,6 @@ public class ConnectionsRestApiTest {
         CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
         Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_FORBIDDEN,
                             "Incorrect status code while closing connections");
-        connection.close();
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
@@ -232,7 +233,6 @@ public class ConnectionsRestApiTest {
 
         int connectionCount = 3;
         //Create 3 connections each having 0, 1 and 2 channels respectively
-        List<Connection> connections = new ArrayList<>(connectionCount);
         for (int i = 0; i < connectionCount; i++) {
             connections.add(createConnection(i, username, password, hostName, port));
         }
@@ -246,8 +246,14 @@ public class ConnectionsRestApiTest {
                                                + connectionMetadataBeforeClosing[1].getId() + FORCE_TRUE_QUERY_PARAM);
         ClientHelper.setAuthHeader(httpDelete, username, password);
         CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
-        Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
+        Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_ACCEPTED,
                             "Incorrect status code while closing connections");
+
+        String body = EntityUtils.toString(connectionCloseResponse.getEntity());
+        CloseConnectionResponse closeConnectionResponse = objectMapper.readValue(body, CloseConnectionResponse.class);
+        Assert.assertEquals(closeConnectionResponse.getNumberOfChannelsRegistered().intValue(),
+                            1,
+                            "Incorrect number of channels registered returned");
 
         //Assert connection details after delete
         int expectedConnectionCount = connectionCount - 1;
@@ -263,8 +269,6 @@ public class ConnectionsRestApiTest {
                             "Connection " + connectionMetadataBeforeClosing[0].getId() + " does not exist.");
         Assert.assertEquals(connectionMetadataAfterClosing[1].getId(), connectionMetadataBeforeClosing[2].getId(),
                             "Connection " + connectionMetadataBeforeClosing[2].getId() + " does not exist.");
-
-        closeConnections(connections);
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
@@ -272,7 +276,7 @@ public class ConnectionsRestApiTest {
     public void testGetChannelsForConnection(String username, String password, String hostName, String port)
             throws Exception {
         int channelCount = 3;
-        Connection connection = createConnection(channelCount, username, password, hostName, port);
+        connections.add(createConnection(channelCount, username, password, hostName, port));
         ConnectionMetadata[] connectionMetadata = getConnections(username, password);
         int connectionId = connectionMetadata[0].getId();
         ChannelMetadata[] channelMetadata = getChannels(connectionId, username, password);
@@ -284,7 +288,6 @@ public class ConnectionsRestApiTest {
             Assert.assertEquals(channelMetadata[i].getConsumerCount().intValue(), i, "Established consumer count is"
                                                                                      + " incorrect.");
         }
-        connection.close();
     }
 
     @Parameters({"admin-username", "admin-password", "test-username", "test-password", "broker-hostname",
@@ -293,24 +296,22 @@ public class ConnectionsRestApiTest {
     public void testGetChannelsForConnectionWithUnauthorizedUser(String adminUsername, String adminPassword,
                                                                  String username, String password, String hostName,
                                                                  String port) throws Exception {
-        Connection connection = createConnection(1, adminUsername, adminPassword, hostName, port);
+        connections.add(createConnection(1, adminUsername, adminPassword, hostName, port));
         CloseableHttpResponse response = sendGetChannels(1, username, password);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_FORBIDDEN,
                             "Incorrect status code while retrieving connection");
-        connection.close();
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
     @Test
     public void testGetChannelsForConnectionWithInvalidConnectionId(String adminUsername, String adminPassword,
                                                                     String hostName, String port) throws Exception {
-        Connection connection = createConnection(1, adminUsername, adminPassword, hostName, port);
+        connections.add(createConnection(1, adminUsername, adminPassword, hostName, port));
         CloseableHttpResponse response = sendGetChannels(0, adminUsername, adminPassword);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_NOT_FOUND,
                             "Incorrect status code while retrieving connection");
-        connection.close();
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
@@ -318,9 +319,7 @@ public class ConnectionsRestApiTest {
     public void testCloseChannels(String username, String password, String hostName, String port) throws Exception {
 
         int channelCount = 3;
-        //Create 3 connections each having 0, 1 and 2 channels respectively
-        Connection connections;
-        connections = createConnection(channelCount, username, password, hostName, port);
+        connections.add(createConnection(channelCount, username, password, hostName, port));
 
         ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
         Assert.assertEquals(connectionMetadataBeforeClosing.length, 1,
@@ -343,7 +342,6 @@ public class ConnectionsRestApiTest {
         Assert.assertEquals(connectionMetadataAfterClosing[0].getChannelCount().intValue(), expectedChannelCount,
                             "Incorrect connection count after closing connection.");
 
-        connections.close();
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
@@ -351,7 +349,7 @@ public class ConnectionsRestApiTest {
     public void testCloseNonExistentChannel(String username, String password, String hostName, String port)
             throws Exception {
 
-        Connection connection = createConnection(2, username, password, hostName, port);
+        connections.add(createConnection(2, username, password, hostName, port));
         ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
         Assert.assertEquals(connectionMetadataBeforeClosing.length, 1,
                             "Incorrect connection count before closing connection.");
@@ -374,7 +372,6 @@ public class ConnectionsRestApiTest {
         Assert.assertEquals(channelCloseResponseForInvalidChannelId.getStatusLine().getStatusCode(),
                             HttpStatus.SC_NOT_FOUND,
                             "Incorrect status code while closing channel with invalid channel id");
-        connection.close();
     }
 
     @Parameters({"admin-username", "admin-password", "test-username", "test-password", "broker-hostname",
@@ -384,7 +381,7 @@ public class ConnectionsRestApiTest {
                                                      String testUsername, String testPassword, String hostName,
                                                      String port) throws Exception {
 
-        Connection connection = createConnection(2, adminUserName, adminPassword, hostName, port);
+        connections.add(createConnection(2, adminUserName, adminPassword, hostName, port));
         ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(adminUserName, adminPassword);
 
         //Send delete request with invalid connection identifier
@@ -394,7 +391,6 @@ public class ConnectionsRestApiTest {
         CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
         Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_FORBIDDEN,
                             "Incorrect status code while closing channels with unauthorized user");
-        connection.close();
     }
 
     /**
@@ -441,9 +437,13 @@ public class ConnectionsRestApiTest {
      * @param connectionList list of connections to be closed.
      * @throws JMSException if an error occurs while closing connection
      */
-    private void closeConnections(List<Connection> connectionList) throws JMSException {
+    private void closeConnections(List<Connection> connectionList) {
         for (Connection connection : connectionList) {
-            connection.close();
+            try {
+                connection.close();
+            } catch (JMSException e) {
+                LOGGER.warn("Could not close connection " + connection);
+            }
         }
     }
 
