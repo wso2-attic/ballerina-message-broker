@@ -19,18 +19,34 @@
 
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
+import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+
 /**
  * AMQP Heartbeat frame.
  */
-public abstract class HeartbeatFrame extends GeneralFrame {
+public class HeartbeatFrame extends GeneralFrame {
 
     public HeartbeatFrame() {
-        super((byte) 4, 0);
+
+        super((byte) 8, 0);
     }
 
     // Payload size - type, channel ,payload size ,end character
     public long getPayloadSize() {
+
         return 0L;
+    }
+
+    @Override
+    public void writePayload(ByteBuf buf) {
+
+    }
+
+    @Override
+    public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
+
     }
 
 }

@@ -48,13 +48,17 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
     public static final String SASL_SERVER_ATTRIBUTE = "broker.sasl.server";
 
     private String hostName;
+    private int heartbeatTimeout;
 
     SaslAuthenticationStrategy(AuthManager authManager,
                                BrokerFactory brokerFactory,
                                AmqpServerConfiguration configuration) {
+
         this.authManager = authManager;
         this.brokerFactory = brokerFactory;
         this.hostName = configuration.getHostName();
+        // heartbeatTimeout = 2 * heartbeat interval
+        this.heartbeatTimeout = configuration.getHeartbeatInterval() * 2;
     }
 
     @Override
@@ -62,6 +66,7 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
                                         ChannelHandlerContext ctx,
                                         AmqpConnectionHandler connectionHandler,
                                         LongString response) throws BrokerException {
+
         Attribute<SaslServer> saslServerAttribute = ctx.channel().attr(AttributeKey.valueOf(SASL_SERVER_ATTRIBUTE));
         SaslServer saslServer;
         if (saslServerAttribute != null && (saslServer = saslServerAttribute.get()) != null) {
@@ -69,7 +74,7 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
             if (saslServer.isComplete()) {
                 Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());
                 connectionHandler.attachBroker(brokerFactory.getBroker(subject));
-                ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
+                ctx.writeAndFlush(new ConnectionTune(256, 65535, heartbeatTimeout));
                 ctx.channel().attr(AttributeKey.valueOf(SASL_SERVER_ATTRIBUTE)).set(null);
             } else {
                 ctx.writeAndFlush(new ConnectionSecure(channel, LongString.parse(challenge)));
@@ -80,6 +85,7 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
     }
 
     private byte[] evaluateResponse(LongString response, SaslServer saslServer) throws BrokerException {
+
         try {
             return saslServer.evaluateResponse(response.getBytes());
         } catch (SaslException e) {
@@ -90,6 +96,7 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
     @Override
     public void handle(int channel, ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler,
                        ShortString mechanism, LongString response) throws BrokerException {
+
         try {
             SaslServer saslServer = authManager
                     .createSaslServer(hostName, mechanism.toString());
@@ -97,7 +104,7 @@ public class SaslAuthenticationStrategy implements AuthenticationStrategy {
             if (saslServer.isComplete()) {
                 Subject subject = UsernamePrincipal.createSubject(saslServer.getAuthorizationID());
                 connectionHandler.attachBroker(brokerFactory.getBroker(subject));
-                ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
+                ctx.writeAndFlush(new ConnectionTune(256, 65535, heartbeatTimeout));
             } else {
                 ctx.channel().attr(AttributeKey.valueOf(SASL_SERVER_ATTRIBUTE)).set(saslServer);
                 ctx.writeAndFlush(new ConnectionSecure(channel, LongString.parse(challenge)));

@@ -18,6 +18,7 @@
  */
 package io.ballerina.messaging.broker.amqp.codec.auth;
 
+import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionTune;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.common.data.types.LongString;
@@ -31,18 +32,24 @@ import io.netty.channel.ChannelHandlerContext;
  * connections.
  */
 public class NoAuthenticationStrategy implements AuthenticationStrategy {
-    private BrokerFactory brokerFactory;
 
-    public NoAuthenticationStrategy(BrokerFactory brokerFactory) {
+    private BrokerFactory brokerFactory;
+    private AmqpServerConfiguration amqpServerConfiguration;
+
+    public NoAuthenticationStrategy(BrokerFactory brokerFactory, AmqpServerConfiguration amqpServerConfiguration) {
 
         this.brokerFactory = brokerFactory;
+        this.amqpServerConfiguration = amqpServerConfiguration;
     }
 
     @Override
     public void handle(int channel, ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler,
                        ShortString mechanism, LongString response) throws BrokerException {
+
         connectionHandler.attachBroker(brokerFactory.getBroker(null));
-        ctx.writeAndFlush(new ConnectionTune(256, 65535, 0));
+        // heartbeatTimeout = timeoutFactor * heartbeat interval
+        int heartbeatTimeout = amqpServerConfiguration.getHeartbeatInterval() * 2;
+        ctx.writeAndFlush(new ConnectionTune(256, 65535, heartbeatTimeout));
     }
 
     @Override
@@ -50,6 +57,7 @@ public class NoAuthenticationStrategy implements AuthenticationStrategy {
                                         ChannelHandlerContext ctx,
                                         AmqpConnectionHandler connectionHandler,
                                         LongString response) throws BrokerException {
+
         throw new BrokerException("Authentication disabled in broker");
     }
 }

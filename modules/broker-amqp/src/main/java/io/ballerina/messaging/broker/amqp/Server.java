@@ -61,6 +61,7 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.metrics.core.MetricService;
+
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -107,6 +108,7 @@ public class Server {
     private AmqpChannelFactory amqpChannelFactory;
 
     public Server(StartupContext startupContext) throws Exception {
+
         MetricService metrics = startupContext.getService(MetricService.class);
         if (Objects.nonNull(metrics)) {
             metricManager = new DefaultAmqpMetricManager(metrics);
@@ -134,7 +136,7 @@ public class Server {
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
         ThreadFactory blockingTaskThreadFactory = new ThreadFactoryBuilder().setNameFormat("NettyBlockingTaskThread-%d")
-                                                                            .build();
+                .build();
         ioExecutors = new DefaultEventExecutorGroup(BLOCKING_TASK_EXECUTOR_THREADS, blockingTaskThreadFactory);
         haStrategy = startupContext.getService(HaStrategy.class);
         if (haStrategy == null) {
@@ -146,27 +148,29 @@ public class Server {
 
         AuthenticationStrategy authenticationStrategy
                 = AuthenticationStrategyFactory.getStrategy(startupContext.getService(AuthManager.class),
-                                                            brokerFactory,
-                                                            configuration);
+                brokerFactory,
+                configuration);
         amqMethodRegistryFactory = new AmqMethodRegistryFactory(authenticationStrategy);
         amqpChannelFactory = new AmqpChannelFactory(configuration, metricManager);
         initConnectionsRestApi(startupContext);
     }
 
     private void shutdownExecutors() {
+
         LOGGER.info("Shutting down Netty Executors for AMQP transport");
         workerGroup.shutdownGracefully();
         bossGroup.shutdownGracefully();
         ioExecutors.shutdownGracefully();
     }
 
-
     public void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
-                               NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+            NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+
         serverHelper.start();
     }
 
     public void awaitServerClose() throws InterruptedException {
+
         if (plainServerChannel != null) {
             plainServerChannel.closeFuture().sync();
         }
@@ -177,6 +181,7 @@ public class Server {
     }
 
     public void stop() {
+
         try {
             closeChannels();
         } finally {
@@ -185,6 +190,7 @@ public class Server {
     }
 
     public void shutdown() {
+
         serverHelper.shutdown();
     }
 
@@ -192,6 +198,7 @@ public class Server {
      * Method to close the channels.
      */
     private void closeChannels() {
+
         if (plainServerChannel != null) {
             plainServerChannel.close();
         }
@@ -205,16 +212,18 @@ public class Server {
         private final EventExecutorGroup ioExecutors;
 
         SocketChannelInitializer(EventExecutorGroup ioExecutors) {
+
             this.ioExecutors = ioExecutors;
         }
 
         protected void initChannel(SocketChannel socketChannel) {
+
             socketChannel.pipeline()
-                         .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
-                         .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory, connectionManager))
-                         .addLast(ioExecutors, new AmqpMessageWriter())
-                         .addLast(ioExecutors, new BlockingTaskHandler());
+                    .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
+                    .addLast(new AmqpEncoder())
+                    .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory, connectionManager))
+                    .addLast(ioExecutors, new AmqpMessageWriter())
+                    .addLast(ioExecutors, new BlockingTaskHandler());
         }
     }
 
@@ -224,34 +233,39 @@ public class Server {
         private final SslHandlerFactory sslHandlerFactory;
 
         SslSocketChannelInitializer(EventExecutorGroup ioExecutors, SslHandlerFactory sslHandlerFactory) {
+
             this.ioExecutors = ioExecutors;
             this.sslHandlerFactory = sslHandlerFactory;
         }
 
         protected void initChannel(SocketChannel socketChannel) {
+
             socketChannel.pipeline()
-                         .addLast(sslHandlerFactory.create())
-                         .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
-                         .addLast(new AmqpEncoder())
-                         .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory, connectionManager))
-                         .addLast(ioExecutors, new AmqpMessageWriter())
-                         .addLast(ioExecutors, new BlockingTaskHandler());
+                    .addLast(sslHandlerFactory.create())
+                    .addLast(new AmqpDecoder(amqMethodRegistryFactory.newInstance()))
+                    .addLast(new AmqpEncoder())
+                    .addLast(new AmqpConnectionHandler(metricManager, amqpChannelFactory, connectionManager))
+                    .addLast(ioExecutors, new AmqpMessageWriter())
+                    .addLast(ioExecutors, new BlockingTaskHandler());
         }
     }
 
     private class ServerHelper {
+
         /**
          * Socket receive and send buffer size in bytes.
          */
         private final int socketBufferSize;
 
         private ServerHelper(AmqpServerConfiguration configurations) {
+
             this.socketBufferSize = configurations.getSocketBufferSize();
         }
 
         public void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
                 NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
                 IOException {
+
             ChannelFuture channelFuture = bindToPlainSocket();
             plainServerChannel = channelFuture.channel();
 
@@ -262,17 +276,18 @@ public class Server {
         }
 
         private ChannelFuture bindToPlainSocket() throws InterruptedException {
+
             String hostname = configuration.getHostName();
             int port = Integer.parseInt(configuration.getPlain().getPort());
 
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-             .channel(NioServerSocketChannel.class)
-             .childHandler(new SocketChannelInitializer(ioExecutors))
-             .option(ChannelOption.SO_BACKLOG, 128)
-             .childOption(ChannelOption.SO_RCVBUF, socketBufferSize)
-             .childOption(ChannelOption.SO_SNDBUF, socketBufferSize)
-             .childOption(ChannelOption.SO_KEEPALIVE, true);
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new SocketChannelInitializer(ioExecutors))
+                    .option(ChannelOption.SO_BACKLOG, 128)
+                    .childOption(ChannelOption.SO_RCVBUF, socketBufferSize)
+                    .childOption(ChannelOption.SO_SNDBUF, socketBufferSize)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
             ChannelFuture future = b.bind(hostname, port).sync();
@@ -282,18 +297,19 @@ public class Server {
 
         private ChannelFuture bindToSslSocket()
                 throws InterruptedException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException,
-                       KeyStoreException, KeyManagementException, IOException {
+                KeyStoreException, KeyManagementException, IOException {
+
             String hostname = configuration.getHostName();
             int port = Integer.parseInt(configuration.getSsl().getPort());
 
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-             .channel(NioServerSocketChannel.class)
-             .childHandler(new SslSocketChannelInitializer(ioExecutors, new SslHandlerFactory(configuration)))
-             .option(ChannelOption.SO_BACKLOG, 128)
-             .childOption(ChannelOption.SO_RCVBUF, socketBufferSize)
-             .childOption(ChannelOption.SO_SNDBUF, socketBufferSize)
-             .childOption(ChannelOption.SO_KEEPALIVE, true);
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new SslSocketChannelInitializer(ioExecutors, new SslHandlerFactory(configuration)))
+                    .option(ChannelOption.SO_BACKLOG, 128)
+                    .childOption(ChannelOption.SO_RCVBUF, socketBufferSize)
+                    .childOption(ChannelOption.SO_SNDBUF, socketBufferSize)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             // Bind and start to accept incoming connections.
             ChannelFuture future = b.bind(hostname, port).sync();
@@ -301,8 +317,8 @@ public class Server {
             return future;
         }
 
-
         public void shutdown() {
+
             stop();
         }
 
@@ -313,6 +329,7 @@ public class Server {
         private BasicHaListener basicHaListener;
 
         HaEnabledServerHelper(AmqpServerConfiguration configurations) {
+
             super(configurations);
             basicHaListener = new BasicHaListener(this);
             haStrategy.registerListener(basicHaListener, 2);
@@ -320,8 +337,9 @@ public class Server {
 
         @Override
         public synchronized void start() throws InterruptedException, CertificateException, UnrecoverableKeyException,
-                                   NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
-                                   IOException {
+                NoSuchAlgorithmException, KeyStoreException, KeyManagementException,
+                IOException {
+
             basicHaListener.setStartCalled(); //to allow starting when the node becomes active when HA is enabled
             if (!basicHaListener.isActive()) {
                 return;
@@ -331,6 +349,7 @@ public class Server {
 
         @Override
         public void shutdown() {
+
             haStrategy.unregisterListener(basicHaListener);
             super.shutdown();
         }
@@ -339,6 +358,7 @@ public class Server {
          * {@inheritDoc}
          */
         public void activate() {
+
             startOnBecomingActive();
             LOGGER.info("AMQP Transport mode changed from PASSIVE to ACTIVE");
         }
@@ -347,6 +367,7 @@ public class Server {
          * {@inheritDoc}
          */
         public void deactivate() {
+
             LOGGER.info("AMQP Transport mode changed from ACTIVE to PASSIVE");
             closeChannels();
         }
@@ -355,6 +376,7 @@ public class Server {
          * Method to start the transport, only if has been called, prior to becoming the active node.
          */
         private synchronized void startOnBecomingActive() {
+
             if (basicHaListener.isStartCalled()) {
                 try {
                     start();
@@ -373,6 +395,7 @@ public class Server {
      * @param startupContext {@link StartupContext} holding the services exposed at the broker runtime
      */
     private void initConnectionsRestApi(StartupContext startupContext) {
+
         BrokerServiceRunner serviceRunner = startupContext.getService(BrokerServiceRunner.class);
         connectionManager = new AmqpConnectionManager();
         if (Objects.nonNull(serviceRunner)) {

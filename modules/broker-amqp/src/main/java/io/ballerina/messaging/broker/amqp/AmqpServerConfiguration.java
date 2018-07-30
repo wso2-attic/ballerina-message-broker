@@ -35,13 +35,13 @@ public class AmqpServerConfiguration {
 
     private int socketBufferSize = 1048576;
 
+    private short heartbeatInterval = 0;
+
     private FlowDetails channelFlow = new FlowDetails();
 
     private NonSecureServerDetails plain = new NonSecureServerDetails();
 
     private SslServerDetails ssl = new SslServerDetails();
-
-    private HeartbeatDetails heartbeatDetails = new HeartbeatDetails();
 
     /**
      * Getter for maxRedeliveryCount.
@@ -54,6 +54,19 @@ public class AmqpServerConfiguration {
     public void setHostName(String hostName) {
 
         this.hostName = hostName;
+    }
+
+    /**
+     * Getter for heartbeatInterval.
+     */
+    public short getHeartbeatInterval() {
+
+        return heartbeatInterval;
+    }
+
+    public void setHeartbeatInterval(short heartbeatInterval) {
+
+        this.heartbeatInterval = heartbeatInterval;
     }
 
     /**
@@ -96,20 +109,6 @@ public class AmqpServerConfiguration {
     }
 
     /**
-     * Getter for heartbeatDetails.
-     */
-    public HeartbeatDetails getHeartbeatDetails() {
-
-        return heartbeatDetails;
-    }
-
-    public void setHeartbeatDetails(HeartbeatDetails heartbeatDetails) {
-
-        this.heartbeatDetails = heartbeatDetails;
-    }
-
-
-    /**
      * Getter for tcp.
      */
     public NonSecureServerDetails getPlain() {
@@ -145,7 +144,7 @@ public class AmqpServerConfiguration {
         private int highLimit = 1000;
 
         /**
-         * Getter for delay.
+         * Getter for heartbeatInterval.
          */
         public int getLowLimit() {
 
@@ -168,39 +167,6 @@ public class AmqpServerConfiguration {
         public void setHighLimit(int highLimit) {
 
             this.highLimit = highLimit;
-        }
-    }
-
-    public static class HeartbeatDetails {
-
-        private float delay = 0F;
-
-        private float timeoutFactor = 2.0F;
-
-        /**
-         * Getter for delay.
-         */
-        public float getDelay() {
-
-            return delay;
-        }
-
-        public void setDelay(int delay) {
-
-            this.delay = delay;
-        }
-
-        /**
-         * Getter for timeoutFactor.
-         */
-        public float getTimeoutFactor() {
-
-            return timeoutFactor;
-        }
-
-        public void setTimeoutFactor(int timeoutFactor) {
-
-            this.timeoutFactor = timeoutFactor;
         }
     }
 
