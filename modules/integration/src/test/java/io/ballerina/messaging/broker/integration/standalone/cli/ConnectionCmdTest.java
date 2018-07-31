@@ -29,6 +29,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
+
+import java.util.ArrayList;
 import java.util.List;
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -67,18 +69,38 @@ public class ConnectionCmdTest extends CliTestParent {
 
         int channelCount = 3;
         //Create 3 connections each having 0, 1 and 2 channels respectively
-        Connection connections;
-        connections = createConnection(channelCount, username, password, hostName, port);
+        List<Connection> connections = new ArrayList<>();
+        connections.add(createConnection(channelCount, username, password, hostName, port));
 
 
         String[] cmd = {CLI_ROOT_COMMAND, Constants.CMD_CLOSE, Constants.CMD_CHANNEL, "--connection", "1",
                 "--channel", "1"};
-        String expectedLog = "Forceful disconnection of channel 1 of connection %d accepted.";
+        String[] expectedLog = new String[]{"Forceful disconnection", "channel", "accepted"};
 
         Main.main(cmd);
 
         evalStreamContent(PrintStreamHandler.readOutStream(), expectedLog, cmd);
-        connections.close();
+        closeConnections(connections);
+    }
+
+    @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
+    @Test(groups = "StreamReading",
+            description = "test command 'close connection [connection-id]'")
+    public void testCloseConnection(String username, String password, String hostName, String port) throws Exception {
+
+        int channelCount = 3;
+        //Create 3 connections each having 0, 1 and 2 channels respectively
+        List<Connection> connections = new ArrayList<>();
+        connections.add(createConnection(channelCount, username, password, hostName, port));
+
+
+        String[] cmd = {CLI_ROOT_COMMAND, Constants.CMD_CLOSE, Constants.CMD_CONNECTION, "1"};
+        String[] expectedLog = new String[]{"Forceful disconnection of connection", "accepted"};
+
+        Main.main(cmd);
+
+        evalStreamContent(PrintStreamHandler.readOutStream(), expectedLog, cmd);
+        closeConnections(connections);
     }
 
     /**
@@ -135,18 +157,19 @@ public class ConnectionCmdTest extends CliTestParent {
      * Common method to be used in evaluating the stream content for test cases.
      *
      * @param streamContent Content of the stream.
-     * @param expected expected message to be included in the stream.
-     * @param command executed command.
+     * @param expectedStrings      expected message to be included in the stream.
+     * @param command       executed command.
      */
-    void evalStreamContent(String streamContent, String[] expected, String[] command) {
+    void evalStreamContent(String streamContent, String[] expectedStrings, String[] command) {
 
         // build onFailure message
         StringBuilder sb = new StringBuilder();
         sb.append("error when executing command: " + String.join(" ", command) + "\n");
-        sb.append("expected: \n" + expected + "\n");
+        sb.append("expected: \n" + expectedStrings + "\n");
         sb.append("stream content: \n" + streamContent);
 
-        for (String expectedStrein)
-        Assert.assertTrue(streamContent.contains(expected), sb.toString());
+        for (String expected : expectedStrings) {
+            Assert.assertTrue(streamContent.contains(expected), sb.toString());
+        }
     }
 }

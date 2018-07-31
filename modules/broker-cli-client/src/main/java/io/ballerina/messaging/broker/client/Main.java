@@ -128,6 +128,7 @@ public class Main {
 
         // add close sub-commands
         addChildCommand(jCommanderClose, Constants.CMD_CHANNEL, commandFactory.createCloseChannelCommand());
+        addChildCommand(jCommanderClose, Constants.CMD_CONNECTION, commandFactory.createCloseConnectionCommand());
 
         // add grant sub-commands
         addChildCommand(jCommanderGrant, Constants.CMD_QUEUE, commandFactory.createGrantQueueCommand());

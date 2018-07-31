@@ -55,6 +55,7 @@ public class Constants {
     public static final String CMD_BINDING = "binding";
     public static final String CMD_CONSUMER = "consumer";
     public static final String CMD_CHANNEL = "channel";
+    public static final String CMD_CONNECTION = "connection";
 
     public static final String BROKER_ERROR_MSG = "Error while invoking Brokers admin services";
 
@@ -63,4 +64,7 @@ public class Constants {
     public static final String HTTP_POST = "POST";
     public static final String HTTP_PUT = "PUT";
     public static final String HTTP_DELETE = "DELETE";
+
+    //http query parameters
+    public static final String FORCE_QUERY_PARAM = "?force=";
 }
