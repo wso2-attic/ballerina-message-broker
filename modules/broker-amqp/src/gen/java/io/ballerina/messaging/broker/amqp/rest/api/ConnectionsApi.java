@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.amqp.rest.api;
 import io.ballerina.messaging.broker.amqp.AmqpConnectionManager;
 import io.ballerina.messaging.broker.amqp.rest.ConnectionsApiDelegate;
 import io.ballerina.messaging.broker.amqp.rest.model.ChannelMetadata;
+import io.ballerina.messaging.broker.amqp.rest.model.CloseConnectionResponse;
 import io.ballerina.messaging.broker.amqp.rest.model.ConnectionMetadata;
 import io.ballerina.messaging.broker.amqp.rest.model.RequestAcceptedResponse;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
@@ -37,10 +38,12 @@ import io.swagger.annotations.Authorization;
 import org.wso2.msf4j.Request;
 import javax.security.auth.Subject;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
@@ -59,19 +62,21 @@ public class ConnectionsApi {
     @DELETE
     @Path("/{id}")
     @Produces({ "application/json" })
-    @ApiOperation(value = "Force disconnect the specified connection.", notes = "Disconnects the specified amqp connection if the connection exists in the broker", response = RequestAcceptedResponse.class, authorizations = {
+    @ApiOperation(value = "Close the specified connection.", notes = "Disconnects the specified amqp connection if the connection exists in the broker", response = CloseConnectionResponse.class, authorizations = {
             @Authorization(value = "basicAuth")
     }, tags={  })
     @ApiResponses(value = {
-            @ApiResponse(code = 202, message = "Connection removal request submitted.", response = RequestAcceptedResponse.class),
+            @ApiResponse(code = 202, message = "Connection removal request submitted.", response = CloseConnectionResponse.class),
             @ApiResponse(code = 400, message = "Bad request. Invalid request or validation error.", response = Error.class),
             @ApiResponse(code = 401, message = "Authentication information is missing or invalid", response = Error.class),
             @ApiResponse(code = 403, message = "User is not autherized to perform operation", response = Error.class),
             @ApiResponse(code = 404, message = "The specified resource was not found", response = Error.class)
     })
-    public Response closeConnection(@Context Request request,
-                                    @PathParam("id") @ApiParam("Identifier of the connection") Integer id) {
-        return connectionsApiDelegate.closeConnection(id, (Subject) request.getSession().getAttribute
+    public Response closeConnection(@Context Request request, @PathParam("id") @ApiParam("Identifier of the "
+                                                                                        + "connection") Integer id,
+                                    @DefaultValue("false") @QueryParam("force")  @ApiParam("If set to true the broker"
+                                                                                           + " will close the underlying connection without trying to communicate with the connected AMQP client. If set to false, the broker will send a connection close frame to the client which will respond back with a connection close ok. Once this, frame is received, the connection will be closed.")  Boolean force) {
+        return connectionsApiDelegate.closeConnection(id, force, (Subject) request.getSession().getAttribute
                 (BrokerAuthConstants.AUTHENTICATION_ID));
     }
 

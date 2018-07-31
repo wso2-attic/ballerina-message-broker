@@ -46,9 +46,18 @@ paths:
           type: integer
           required: true
           description: Identifier of the connection
+        - in: query
+          name: force
+          type: boolean
+          required: false
+          default: false
+          description: >-
+            If set to true the broker will close the underlying connection without trying to communicate with the
+            connected AMQP client. If set to false, the broker will send a connection close frame to the client and the
+            connection will be closed when the client responds back with a connection close ok.
       delete:
         operationId: closeConnection
-        summary: Force disconnect the specified connection.
+        summary: Close the specified connection.
         description: >-
           Disconnects the specified amqp connection if the connection exists in the broker
         produces:
@@ -57,7 +66,7 @@ paths:
           '202':
             description: Connection removal request submitted.
             schema:
-              $ref: '#/definitions/RequestAcceptedResponse'
+              $ref: '#/definitions/CloseConnectionResponse'
           '400':
             $ref: "#/responses/BadRequest"
           '401':
@@ -235,3 +244,12 @@ definitions:
         message:
           type: string
           description: Error message.
+  CloseConnectionResponse:
+      title: Force Close Connection Response
+      type: object
+      required:
+        - numberOfChannelsRegistered
+      properties:
+        numberOfChannelsRegistered:
+          type: integer
+          description: Response message with number of channels closed.

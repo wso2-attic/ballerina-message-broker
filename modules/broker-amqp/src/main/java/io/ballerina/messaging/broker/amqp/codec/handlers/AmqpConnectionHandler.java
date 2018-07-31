@@ -37,6 +37,7 @@ import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.Broker;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -286,12 +287,37 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * Sends a connection close frame to the client.
-     * @param reason reason to disconnect connection
+     *
+     * @param reason reason to close connection
+     * @return int representing the number of channels registered on the connection
      */
-    public void forceDisconnect(String reason) {
+    public int closeConnection(String reason) {
+        LOGGER.info("Closing connection {}. Reason: {}", getId(), reason);
+        int numberOfChannels = channels.size();
         ctx.writeAndFlush(new ConnectionClose(AmqConstant.CONNECTION_FORCED,
                                               ShortString.parseString("Broker forced close connection. " + reason),
                                               0, 0));
+        return numberOfChannels;
+    }
+
+    /**
+     * Closes the underlying connection with the client.
+     *
+     * @param reason reason to force close connection
+     * @return int representing the number of channels registered on the connection
+     */
+    public int forceCloseConnection(String reason) {
+        LOGGER.info("Force closing connection {}. Reason: {}", getId(), reason);
+        int numberOfChannels = channels.size();
+        ChannelFuture close = ctx.close();
+        close.addListener(future -> {
+            if (future.isSuccess()) {
+                LOGGER.info("Connection {} forcefully closed successfully.", getId());
+            } else {
+                LOGGER.error("Error occurred while closing connection {}", getId(), future.cause());
+            }
+        });
+        return numberOfChannels;
     }
 
     /**
@@ -301,6 +327,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @param reason reason to disconnection channel
      */
     public void forceDisconnectChannel(int channelId, String reason) {
+        LOGGER.info("Force closing channel {} of connection {}. Reason: {}", channelId, getId(), reason);
         ctx.writeAndFlush(new ChannelClose(channelId, AmqConstant.CHANNEL_CLOSED,
                                            ShortString.parseString("Broker forced close channel. " + reason),
                                            0, 0));
