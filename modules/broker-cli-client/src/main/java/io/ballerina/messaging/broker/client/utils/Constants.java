@@ -67,4 +67,7 @@ public class Constants {
 
     //http query parameters
     public static final String FORCE_QUERY_PARAM = "?force=";
+
+    //flags
+    public static final String HELP_FLAG = "--help";
 }
