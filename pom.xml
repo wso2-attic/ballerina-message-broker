@@ -30,7 +30,7 @@
     <groupId>io.ballerina.messaging</groupId>
     <artifactId>broker-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.970.4-SNAPSHOT</version>
+    <version>0.970.4</version>
     <name>Ballerina Message Broker</name>
     <description>A high performing, lightweight broker component</description>
 
@@ -38,7 +38,7 @@
         <connection>scm:https://github.com/ballerina-platform/ballerina-message-broker.git</connection>
         <developerConnection>scm:git:https://github.com/ballerina-platform/ballerina-message-broker.git</developerConnection>
         <url>https://github.com/ballerina-platform/ballerina-message-broker.git</url>
-        <tag>HEAD</tag>
+        <tag>v0.970.4</tag>
     </scm>
 
     <repositories>
