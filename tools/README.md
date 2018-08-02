@@ -19,58 +19,53 @@ The tool allows developers to publish/consume messages to/from queues and topics
 
 ### Publish messages to queues/topics
 
-1. Include the following details in broker_performance_test_publisher.properties file which is located at resources/.
-```properties
-host_url=<host_url>
-broker_port=<port_where_broker_starts>
-amqp_listener_port=<port_where_amqp_listener_starts>
-jmeter_home = <jmeter_home>
-thread_count = <number_of_threads>
-message_size = <size_of_the_message>
-number_of_messages = <number_of_messages_need_to_be_published>
-throughput= <throughput_need_to_be_maintained>
-```
-2.Run ```./broker_test_publisher.sh -p <location_of_properties_file> -d queue/topic```
+1. Include the following details in broker_test_plan.properties file which is located at resources/.
+    ```properties
+    
+    JmeterHome = <jmeter_home>
+    ThreadCount = <number_of_threads>
+    MessageSize = <size_of_the_message>
+    NumberOfMessages = <number_of_messages_need_to_be_published>
+    Throughput= <throughput_need_to_be_maintained>
+    
+    ```
+2. Include the following details in broker_test_infrastructure.properties file which is located at resources/.
+    ```properties
+    HostURL=<host_url>
+    BrokerPort=<broker_port>
+    AMQPListenerPort=<amqp_listener_port>
+    ```
 
-- -p is an optional paramter.If not provided ```resources/broker_test_publisher.properties``` is set as the properties file location 
+3. Run ```./run_broker_publisher.sh -i <location_of_infrastructure_properties_file> -t <location_of_testplan_properties_file> -d queue/topic```
+
+- -i and -t are optional parameters.If not provided ```resources/broker_test_infrastructure.properties``` and ```resources/broker_test_plan.properties``` are set as default file locations
 
 Upon completion of the test, you will be directed to a web interface which contains the summary of the results obtained by the test.
 
 ### Consume messages from queues/topics
 
-1. Include the following details in broker_performance_test_consumer.properties file which is located at resources/.
+1. Include the following details in broker_test_plan.properties file which is located at resources/.
 ```properties
-host_url=<host_url>
-broker_port=<port_where_broker_starts>
-amqp_listener_port=<port_where_amqp_listener_starts>
-jmeter_home = <jmeter_home>
-thread_count = <number_of_threads>
-number_of_messages = <number_of_messages_need_to_be_consumed>
+JmeterHome = <jmeter_home>
+ThreadCount = <number_of_threads>
+NumberOfMessages = <number_of_messages_need_to_be_published>
 ```
-2.Run ```./broker_test_consumer.sh -p <location_of_properties_file> -d queue/topic```
 
-- -p is an optional paramter.If not provided ```resources/broker_test_consumer.properties``` is set as the properties file location 
+2. Include the following details in broker_test_infrastructure.properties file which is located at resources/.
+    ```properties
+    HostURL=<host_url>
+    BrokerPort=<broker_port>
+    AMQPListenerPort=<amqp_listener_port>
+    ```
+Run ```./run_broker_consumer.sh -i <location_of_infrastructure_properties_file> -t <location_of_testplan_properties_file> -d queue/topic```
+
+- -i and -t are optional parameters.If not provided ```resources/broker_test_infrastructure.properties``` and ```resources/broker_test_plan.properties``` are set as default file locations
 
 Upon completion of the test, you will be directed to a web interface which contains the summary of the results obtained by the test.
 
 ### Test scenario - Publish messages to queues/topics and consume them
 
-1.Include the following details in broker_performance_test_publisher.properties file which is located at resources/.
-```properties
-jmeter_home = <jmeter_home>
-thread_count = <number_of_threads>
-message_size = <size_of_the_message>
-number_of_messages = <number_of_messages_need_to_be_published>
-throughput= <throughput_need_to_be_maintained>
-```
-
-2.Include the following details in broker_performance_test_consumer.properties file which is located at resources/.
-```properties
-jmeter_home = <jmeter_home>
-thread_count = <number_of_threads>
-number_of_messages = <number_of_messages_need_to_be_published>
-```
-3.Run ```./broker_test_consumer.sh -p <location_of_properties_file> -d queue/topic```
+1.Run ```./run_broker_test_consumer.sh -d queue/topic```
 
 ## Special Notes
 
@@ -81,9 +76,11 @@ number_of_messages = <number_of_messages_need_to_be_published>
     - 1MB = 1MB message 
   
 - Following values are used as default values for some of the above mentioned parameters.
-    - broker_port = 9000
-    - amqp_listener_port = 5672
-    - thread_count = 1
-    - message_size = 10KB
-    - number_of_messages = 1000000
-    - throughput = 5000 (5000 messages/seconds)
+    - HostURL = https://localhost
+    - BrokerPort = 9000
+    - AMQPListenerPort = 5672
+    - ThreadCount = 1
+    - MessageSize = 10KB
+    - NumberOfMessages = 1000000
+    - Throughput = 5000 (5000 messages/seconds)
+    

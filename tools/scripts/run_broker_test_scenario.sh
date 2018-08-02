@@ -19,7 +19,7 @@
 destination=""
 is_given_destination=false
 
-# get inputs from the user -p <location of the properties file> -d topic/queue
+# get inputs from the user -d topic/queue
 while getopts "hp:d:t:h:v" OPTION
 do
      case $OPTION in
@@ -42,12 +42,12 @@ do
             break
             ;;
          h)
-            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./broker_test_scenario.sh [command].\n\nCommands\n\t-h  ask for help\n\t-d  set jms destination type queue/topic\n"
+            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./run_broker_test_scenario.sh [command].\n\nCommands\n\t-h  ask for help\n\t-d  set jms destination type queue/topic\n"
             printf "$help_text"
             exit
             ;;
          ?)
-            printf "Invalid command.Run ./broker_test_scenario.sh -h for usage.\n"
+            printf "Invalid command.Run ./run_broker_test_scenario.sh -h for usage.\n"
             exit
             ;;
      esac
@@ -56,7 +56,7 @@ done
 
 if [ $is_given_destination == false ];
     then
-        printf 'A JMS destination should be provided.\nRun ./broker_test_scenario.sh -h for usage.\n'
+        printf 'A JMS destination should be provided.\nRun ./run_broker_test_scenario.sh -h for usage.\n'
         exit
     fi
 
@@ -72,8 +72,8 @@ if [ ! -e logs ];
 
 # execute publisher and consumer at the same time
 echo "Starting message consumer."
-printf $(./broker_test_consumer.sh -s "test_scenario/$time" -d "$destination" &) >> logs/"$broker_consumer_log"
+printf $(run_broker_consumer.sh -s "test_scenario/$time" -d "$destination" &) >> logs/"$broker_consumer_log"
 sleep 4
 echo "Starting message pubisher"
-printf $(./broker_test_publisher.sh -s "test_scenario/$time" -d "$destination" & >> logs/"$broker_publisher_log")
+printf $(run_broker_publisher.sh -s "test_scenario/$time" -d "$destination" & >> logs/"$broker_publisher_log")
 wait
