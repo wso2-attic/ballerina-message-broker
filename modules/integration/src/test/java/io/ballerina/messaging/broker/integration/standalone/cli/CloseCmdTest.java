@@ -123,7 +123,7 @@ public class CloseCmdTest extends CliTestParent {
         ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
 
         String[] cmd = {CLI_ROOT_COMMAND, Constants.CMD_CLOSE, Constants.CMD_CHANNEL, "1", "--connection",
-                connectionMetadataBeforeClosing[0].getId().toString()};
+                connectionMetadataBeforeClosing[0].getId().toString(), Constants.IF_USED_FLAG};
         String expectedLog = "Request accepted for forceful disconnection of channel 1 of connection "
                              + connectionMetadataBeforeClosing[0].getId().toString();
 
@@ -180,13 +180,12 @@ public class CloseCmdTest extends CliTestParent {
 
         int channelCount = 3;
         //Create 3 connections each having 0, 1 and 2 channels respectively
-        List<Connection> connections = new ArrayList<>();
         connections.add(createConnection(channelCount, username, password, hostName, port));
 
         ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
 
         String[] cmd = {CLI_ROOT_COMMAND, Constants.CMD_CLOSE, Constants.CMD_CONNECTION,
-                connectionMetadataBeforeClosing[0].getId().toString()};
+                connectionMetadataBeforeClosing[0].getId().toString(), Constants.IF_USED_FLAG};
         String expectedLog = "Connection close request submitted successfully";
 
         Main.main(cmd);
@@ -198,9 +197,6 @@ public class CloseCmdTest extends CliTestParent {
                                                                                       username, password);
         Assert.assertEquals(connectionMetadataAfterClosing.length, expectedConnectionCount,
                             "Incorrect connection count after closing connection.");
-
-
-        closeConnections(connections);
     }
 
     @Test(groups = "StreamReading", description = "test command 'close connection [connection-id]' with a "
