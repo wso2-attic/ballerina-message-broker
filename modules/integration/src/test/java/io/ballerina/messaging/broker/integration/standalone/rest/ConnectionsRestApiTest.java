@@ -71,7 +71,8 @@ public class ConnectionsRestApiTest {
 
     private static final String CONNECTIONS_API_PATH = "/transports/amqp/connections";
 
-    private static final String FORCE_TRUE_QUERY_PARAM = "?force=true";
+    private static final String FORCE_TRUE_QUERY_PARAM = "force=true";
+    private static final String USED_TRUE_QUERY_PARAM = "used=true";
 
     private List<Connection> connections;
 
@@ -165,7 +166,8 @@ public class ConnectionsRestApiTest {
 
         //Send delete request
         HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
-                                               + connectionMetadataBeforeClosing[1].getId());
+                                               + connectionMetadataBeforeClosing[1].getId() + "?"
+                                               + USED_TRUE_QUERY_PARAM);
         ClientHelper.setAuthHeader(httpDelete, username, password);
         CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
         Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_ACCEPTED,
@@ -185,6 +187,30 @@ public class ConnectionsRestApiTest {
                             "Connection " + connectionMetadataBeforeClosing[0].getId() + " does not exist.");
         Assert.assertEquals(connectionMetadataAfterClosing[1].getId(), connectionMetadataBeforeClosing[2].getId(),
                             "Connection " + connectionMetadataBeforeClosing[2].getId() + " does not exist.");
+    }
+
+    @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
+    @Test
+    public void testCloseConnectionsIfUsedFalse(String username, String password, String hostName, String port) throws
+            Exception {
+
+        int connectionCount = 3;
+        //Create 3 connections each having 0, 1 and 2 channels respectively
+        for (int i = 0; i < connectionCount; i++) {
+            connections.add(createConnection(i, username, password, hostName, port));
+        }
+
+        ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
+        Assert.assertEquals(connectionMetadataBeforeClosing.length, connectionCount,
+                            "Incorrect connection count before closing connection.");
+
+        //Send delete request
+        HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
+                                               + connectionMetadataBeforeClosing[1].getId());
+        ClientHelper.setAuthHeader(httpDelete, username, password);
+        CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
+        Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_BAD_REQUEST,
+                            "Incorrect status code while closing connections");
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
@@ -243,7 +269,8 @@ public class ConnectionsRestApiTest {
 
         //Send delete request
         HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
-                                               + connectionMetadataBeforeClosing[1].getId() + FORCE_TRUE_QUERY_PARAM);
+                                               + connectionMetadataBeforeClosing[1].getId() + "?"
+                                               + FORCE_TRUE_QUERY_PARAM + "&" + USED_TRUE_QUERY_PARAM);
         ClientHelper.setAuthHeader(httpDelete, username, password);
         CloseableHttpResponse connectionCloseResponse = client.execute(httpDelete);
         Assert.assertEquals(connectionCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_ACCEPTED,
@@ -329,7 +356,8 @@ public class ConnectionsRestApiTest {
 
         //Send delete request
         HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
-                                               + connectionMetadataBeforeClosing[0].getId() + "/" + "channels" + "/2");
+                                               + connectionMetadataBeforeClosing[0].getId() + "/" + "channels" + "/2"
+                                               + "?" + USED_TRUE_QUERY_PARAM);
         ClientHelper.setAuthHeader(httpDelete, username, password);
         CloseableHttpResponse channelCloseResponse = client.execute(httpDelete);
         Assert.assertEquals(channelCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_ACCEPTED,
@@ -342,6 +370,29 @@ public class ConnectionsRestApiTest {
         Assert.assertEquals(connectionMetadataAfterClosing[0].getChannelCount().intValue(), expectedChannelCount,
                             "Incorrect connection count after closing connection.");
 
+    }
+
+    @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
+    @Test
+    public void testCloseChannelsIfUsedFalse(String username, String password, String hostName, String port) throws
+            Exception {
+
+        int channelCount = 3;
+        connections.add(createConnection(channelCount, username, password, hostName, port));
+
+        ConnectionMetadata[] connectionMetadataBeforeClosing = getConnections(username, password);
+        Assert.assertEquals(connectionMetadataBeforeClosing.length, 1,
+                            "Incorrect connection count before closing channel.");
+        Assert.assertEquals(connectionMetadataBeforeClosing[0].getChannelCount().intValue(), channelCount,
+                            "Incorrect channel count before closing channel.");
+
+        //Send delete request
+        HttpDelete httpDelete = new HttpDelete(apiBasePath + CONNECTIONS_API_PATH + "/"
+                                               + connectionMetadataBeforeClosing[0].getId() + "/" + "channels" + "/2");
+        ClientHelper.setAuthHeader(httpDelete, username, password);
+        CloseableHttpResponse channelCloseResponse = client.execute(httpDelete);
+        Assert.assertEquals(channelCloseResponse.getStatusLine().getStatusCode(), HttpStatus.SC_BAD_REQUEST,
+                            "Incorrect status code while closing connections");
     }
 
     @Parameters({"admin-username", "admin-password", "broker-hostname", "broker-port"})
