@@ -36,6 +36,11 @@ public class CloseChannelCmd extends CloseCmd {
     @Parameter(description = "Identifier of the channel to be closed", required = true)
     private String channelId = "";
 
+    @Parameter(names = {Constants.IF_USED_FLAG},
+            description = "If set to true, the connection will be closed from the broker without "
+                          + "communicating with the amqp client")
+    private boolean ifUsed = false;
+
     public CloseChannelCmd(String rootCommand) {
         super(rootCommand);
     }
@@ -43,7 +48,7 @@ public class CloseChannelCmd extends CloseCmd {
     @Override
     public void execute() {
         executeClose(Constants.CONNECTIONS_URL_PARAM + connectionId + "/" + Constants.CHANNELS_URL_PARAM
-                     + channelId,
+                     + channelId + Constants.QUERY_PARAM_BEGINNING + Constants.USED_QUERY_PARAM + ifUsed,
                      "Channel close request submitted successfully");
     }
 
