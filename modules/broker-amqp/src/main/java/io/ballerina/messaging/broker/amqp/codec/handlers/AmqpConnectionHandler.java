@@ -34,6 +34,7 @@ import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionStart;
 import io.ballerina.messaging.broker.amqp.codec.frames.GeneralFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.ProtocolInitFrame;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.Broker;
 import io.netty.channel.Channel;
@@ -286,29 +287,47 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
+     * Closes the AMQP connection with a client according to the parameters set.
+     *
+     * @param reason reason to close connection
+     * @param force  if set to true the connection will be closed by the broker without negotiating with the AMQP client
+     * @param used   if set to true, the connection will be closed regardless of the number of active channels
+     *               registered
+     * @return int representing the number of channels registered on the connection
+     */
+    public int closeConnection(String reason, boolean force, boolean used) throws ValidationException {
+        int numberOfChannels = channels.size();
+        if (!used && numberOfChannels > 0) {
+            throw new ValidationException("Cannot close connection. " + numberOfChannels + " active channels exist "
+                                          + "and used parameter is not set.");
+        }
+        if (force) {
+            forceCloseConnection(reason);
+        } else {
+            closeConnection(reason);
+        }
+        return numberOfChannels;
+    }
+
+    /**
      * Sends a connection close frame to the client.
      *
      * @param reason reason to close connection
-     * @return int representing the number of channels registered on the connection
      */
-    public int closeConnection(String reason) {
+    private void closeConnection(String reason) {
         LOGGER.info("Closing connection {}. Reason: {}", getId(), reason);
-        int numberOfChannels = channels.size();
         ctx.writeAndFlush(new ConnectionClose(AmqConstant.CONNECTION_FORCED,
                                               ShortString.parseString("Broker forced close connection. " + reason),
                                               0, 0));
-        return numberOfChannels;
     }
 
     /**
      * Closes the underlying connection with the client.
      *
      * @param reason reason to force close connection
-     * @return int representing the number of channels registered on the connection
      */
-    public int forceCloseConnection(String reason) {
+    private void forceCloseConnection(String reason) {
         LOGGER.info("Force closing connection {}. Reason: {}", getId(), reason);
-        int numberOfChannels = channels.size();
         ChannelFuture close = ctx.close();
         close.addListener(future -> {
             if (future.isSuccess()) {
@@ -317,17 +336,23 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
                 LOGGER.error("Error occurred while closing connection {}", getId(), future.cause());
             }
         });
-        return numberOfChannels;
     }
 
     /**
      * Sends a channel close frame to the client.
      *
      * @param channelId the identifier of the channel
-     * @param reason reason to disconnection channel
+     * @param used      if set to true, the channel will be closed regardless of the number of active consumers
+     *                  registered
+     * @param reason    reason to disconnection channel
      */
-    public void forceDisconnectChannel(int channelId, String reason) {
-        LOGGER.info("Force closing channel {} of connection {}. Reason: {}", channelId, getId(), reason);
+    public void closeChannel(int channelId, boolean used, String reason) throws ValidationException {
+        int numberOfConsumers = channelViews.get(channelId).getConsumerCount();
+        if (!used && numberOfConsumers > 0) {
+            throw new ValidationException("Cannot close channel. " + numberOfConsumers + " active consumers exist "
+                                          + "and used parameter is not set.");
+        }
+        LOGGER.info("Closing channel {} of connection {}. Reason: {}", channelId, getId(), reason);
         ctx.writeAndFlush(new ChannelClose(channelId, AmqConstant.CHANNEL_CLOSED,
                                            ShortString.parseString("Broker forced close channel. " + reason),
                                            0, 0));

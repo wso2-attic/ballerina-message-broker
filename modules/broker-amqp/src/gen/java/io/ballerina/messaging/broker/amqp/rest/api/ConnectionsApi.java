@@ -72,11 +72,13 @@ public class ConnectionsApi {
             @ApiResponse(code = 403, message = "User is not autherized to perform operation", response = Error.class),
             @ApiResponse(code = 404, message = "The specified resource was not found", response = Error.class)
     })
-    public Response closeConnection(@Context Request request, @PathParam("id") @ApiParam("Identifier of the "
-                                                                                        + "connection") Integer id,
-                                    @DefaultValue("false") @QueryParam("force")  @ApiParam("If set to true the broker"
-                                                                                           + " will close the underlying connection without trying to communicate with the connected AMQP client. If set to false, the broker will send a connection close frame to the client which will respond back with a connection close ok. Once this, frame is received, the connection will be closed.")  Boolean force) {
-        return connectionsApiDelegate.closeConnection(id, force, (Subject) request.getSession().getAttribute
+    public Response closeConnection(@Context Request request, @PathParam("id") @ApiParam("Identifier of the connection") Integer id,
+                                    @DefaultValue("false") @QueryParam("force") @ApiParam("If set to true the broker will close the underlying connection without trying to communicate with the connected AMQP client."
+                                                                                          + " If set to false, the broker will send a connection close frame to the client and the connection will be closed when the "
+                                                                                          + "client responds back with a connection close ok.")  Boolean force,
+                                    @DefaultValue("false") @QueryParam("used")  @ApiParam("If set to false, the broker will close the connection only if there are no AMQP channels registered on it. If set to true,"
+                                                                                            + " the connection will be closed regardless of the registered number of channels.")  Boolean used) {
+        return connectionsApiDelegate.closeConnection(id, force, used, (Subject) request.getSession().getAttribute
                 (BrokerAuthConstants.AUTHENTICATION_ID));
     }
 
@@ -110,8 +112,11 @@ public class ConnectionsApi {
     })
     public Response closeChannel(@Context Request request,
                                  @PathParam("connectionId") @ApiParam("Identifier of the connection") Integer connectionId,
-                                 @PathParam("channelId") @ApiParam("Identifier of the channel") Integer channelId) {
+                                 @PathParam("channelId") @ApiParam("Identifier of the channel") Integer channelId,
+                                 @DefaultValue("false")  @QueryParam("used")  @ApiParam("If set to false, the broker will close the channel only if there are no AMQP consumers for it. If set to true, "
+                                                                                          + "the channel will be closed regardless of the number of active consumers.")  Boolean used) {
         return connectionsApiDelegate.closeChannel(connectionId, channelId,
+                                                   used,
                                                    (Subject) request.getSession().getAttribute(BrokerAuthConstants.AUTHENTICATION_ID));
     }
 

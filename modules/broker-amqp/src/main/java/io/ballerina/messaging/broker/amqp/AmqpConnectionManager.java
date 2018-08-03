@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.amqp;
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannelView;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
+import io.ballerina.messaging.broker.common.ValidationException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,29 +73,20 @@ public class AmqpConnectionManager {
     }
 
     /**
-     * Closes an AMQP connection specified by the identifier.
+     * Closes an AMQP connection specified by the identifier according to the parameters set.
      *
      * @param id     the connection identifier
-     * @param reason reason to close connection
-     * @return integer representing the number of channels registered
+     * @param force  if set to true the connection will be closed by the broker without negotiating with the AMQP client
+     * @param used   if set to true, the connection will be closed regardless of the number of active channels
+     *               registered
+     * @param reason reason to close connection  @return integer representing the number of channels registered
      * @throws ResourceNotFoundException if the the specified connection id does not exist
+     * @throws ValidationException       if active channels exist for the connection, and if used is set to false
      */
-    public int closeConnection(int id, String reason) throws ResourceNotFoundException {
+    public int closeConnection(int id, boolean force, boolean used, String reason)
+            throws ResourceNotFoundException, ValidationException {
         AmqpConnectionHandler connectionHandler = getConnection(id);
-        return connectionHandler.closeConnection(reason);
-    }
-
-    /**
-     * Forces disconnection of an AMQP connection specified by the identifier from the broker side.
-     *
-     * @param id     the connection identifier
-     * @param reason reason to close connection
-     * @return integer representing the number of channels registered
-     * @throws ResourceNotFoundException if the the specified connection id does not exist
-     */
-    public int forceCloseConnection(int id, String reason) throws ResourceNotFoundException {
-        AmqpConnectionHandler connectionHandler = getConnection(id);
-        return connectionHandler.forceCloseConnection(reason);
+        return connectionHandler.closeConnection(reason, force, used);
     }
 
     /**
@@ -102,13 +94,15 @@ public class AmqpConnectionManager {
      *
      * @param connectionId unique integer representing the connection
      * @param channelId    integer representing the channel id within the connection id
+     * @param used         if set to true, the channel will be closed regardless of the number of active consumers
+     *                     registered
      * @param reason       reason to close channel
      */
-    public void forceDisconnectChannel(int connectionId, int channelId, String reason) throws
-            ResourceNotFoundException {
+    public void closeChannel(int connectionId, int channelId, boolean used, String reason)
+            throws ResourceNotFoundException, ValidationException {
         AmqpConnectionHandler connectionHandler = getConnection(connectionId);
         if (Objects.nonNull(connectionHandler.getChannel(channelId))) {
-            connectionHandler.forceDisconnectChannel(channelId, reason);
+            connectionHandler.closeChannel(channelId, used, reason);
         } else {
             throw new ResourceNotFoundException(
                     "Channel id " + channelId + " does not exist for connection " + connectionId);
