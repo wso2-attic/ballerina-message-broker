@@ -46,20 +46,29 @@ paths:
           type: integer
           required: true
           description: Identifier of the connection
-        - in: query
-          name: force
-          type: boolean
-          required: false
-          default: false
-          description: >-
-            If set to true the broker will close the underlying connection without trying to communicate with the
-            connected AMQP client. If set to false, the broker will send a connection close frame to the client and the
-            connection will be closed when the client responds back with a connection close ok.
       delete:
         operationId: closeConnection
         summary: Close the specified connection.
         description: >-
           Disconnects the specified amqp connection if the connection exists in the broker
+        parameters:
+          - in: query
+            name: force
+            type: boolean
+            required: false
+            default: false
+            description: >-
+              If set to true the broker will close the underlying connection without trying to communicate with the
+              connected AMQP client. If set to false, the broker will send a connection close frame to the client and the
+              connection will be closed when the client responds back with a connection close ok.
+          - in: query
+            name: used
+            type: boolean
+            required: false
+            default: false
+            description: >-
+              If set to false, the broker will close the connection only if there are no AMQP channels registered on
+              it. If set to true, the connection will be closed regardless of the registered number of channels.
         produces:
           - application/json
         responses:
@@ -82,16 +91,25 @@ paths:
         type: integer
         required: true
         description: Identifier of the connection
-      - in: path
-        name: channelId
-        type: integer
-        required: true
-        description: Identifier of the channel
     delete:
         operationId: closeChannel
         summary: Force disconnect the specified channel.
         description: >-
           Disconnects the specified amqp channel if an active channel exists in the broker
+        parameters:
+          - in: path
+            name: channelId
+            type: integer
+            required: true
+            description: Identifier of the channel
+          - in: query
+            name: used
+            type: boolean
+            required: false
+            default: false
+            description: >-
+              If set to false, the broker will close the channel only if there are no AMQP consumers for it. If set to
+              true, the channel will be closed regardless of the number of active consumers.
         produces:
           - application/json
         responses:

@@ -30,9 +30,11 @@ import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.authorization.AuthorizationHandler;
 import io.ballerina.messaging.broker.auth.authorization.enums.ResourceAuthScope;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
+import io.ballerina.messaging.broker.common.ValidationException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.security.auth.Subject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -78,22 +80,21 @@ public class ConnectionsApiDelegate {
      *
      * @param id      connection identifier
      * @param force   indicates if the connection should be closed forcefully or not
+     * @param used    if set to true, the connection will be closed regardless of the number of active channels
+     *                registered
      * @param subject authentication subject containing user information of the user that has invoked the API
      * @return HTTP/1.1 202 accepted with {@link RequestAcceptedResponse}
      */
-    public Response closeConnection(int id, boolean force, Subject subject) {
+    public Response closeConnection(int id, boolean force, boolean used, Subject subject) {
         try {
             authHandler.handle(ResourceAuthScope.CONNECTIONS_CLOSE, subject);
-            int registeredChannelCount;
-            if (force) {
-                registeredChannelCount = connectionManager.forceCloseConnection(id,
-                                                                                "Forced connection close request "
-                                                                                + "received from REST API.");
-            } else {
-                registeredChannelCount = connectionManager.closeConnection(id,
+            int registeredChannelCount = connectionManager.closeConnection(id,
+                                                                           force,
+                                                                           used,
                                                                            "Connection close request received from "
-                                                                           + "REST API.");
-            }
+                                                                           + "REST API with parameters "
+                                                                           + "force=" + force + ", "
+                                                                           + "used=" + used + "");
             return Response.accepted()
                            .entity(new CloseConnectionResponse().numberOfChannelsRegistered(registeredChannelCount))
                            .build();
@@ -101,6 +102,8 @@ public class ConnectionsApiDelegate {
             throw new NotFoundException(e.getMessage(), e);
         } catch (AuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (ValidationException e) {
+            throw new BadRequestException(e.getMessage(), e);
         }
     }
 
@@ -109,14 +112,16 @@ public class ConnectionsApiDelegate {
      *
      * @param connectionId connection identifier
      * @param channelId    channel id
+     * @param used         if set to true, the channel will be closed regardless of the number of active consumers
+     *                     registered
      * @param subject      authentication subject containing user information of the user that has invoked the API
      * @return HTTP/1.1 202 accepted with {@link RequestAcceptedResponse}
      */
-    public Response closeChannel(Integer connectionId, Integer channelId, Subject subject) {
+    public Response closeChannel(Integer connectionId, Integer channelId, boolean used, Subject subject) {
         try {
             authHandler.handle(ResourceAuthScope.CHANNEL_CLOSE, subject);
-            connectionManager.forceDisconnectChannel(connectionId, channelId, "Channel close request received from "
-                                                                              + "REST API.");
+            connectionManager.closeChannel(connectionId, channelId, used, "Channel close request received from "
+                                                                            + "REST API.");
             return Response.accepted()
                            .entity(new RequestAcceptedResponse().message(
                                    "Request accepted for forceful disconnection of channel " + channelId + " of "
@@ -126,6 +131,8 @@ public class ConnectionsApiDelegate {
             throw new NotFoundException(e.getMessage(), e);
         } catch (AuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
+        } catch (ValidationException e) {
+            throw new BadRequestException(e.getMessage(), e);
         }
     }
 
