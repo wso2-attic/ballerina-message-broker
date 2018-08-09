@@ -82,7 +82,7 @@ do
      esac
 done
 
-if [ $is_given_destination == false ];
+if [ $is_given_destination == false ]
     then
         printf 'A JMS destination should be provided.\nRun ./run_broker_publisher.sh -h for usage.\n'
         exit
@@ -200,6 +200,9 @@ case ${testplan_user_inputs["MessageSize"]} in
 	10KB)
 		text_message_file_location="sample_messages/10kB.json"
 		;;
+    40KB)
+		text_message_file_location="sample_messages/40kB.json"
+		;;
 	100KB)
         text_message_file_location="sample_messages/100kB.json"
 		;;
@@ -207,7 +210,7 @@ case ${testplan_user_inputs["MessageSize"]} in
 		text_message_file_location="sample_messages/1MB.json"
 		;;
 	?)
-	    echo message_size parameter should be one of 1KB,10KB,100KB and 1MB
+	    echo message_size parameter should be one of 1KB, 10KB, 40KB, 100KB and 1MB
 	    exit
 	;;
 esac
