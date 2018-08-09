@@ -40,6 +40,10 @@ import org.wso2.carbon.config.ConfigProviderFactory;
 import org.wso2.carbon.config.ConfigurationException;
 import org.wso2.carbon.config.provider.ConfigProvider;
 
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.sql.DataSource;
@@ -53,10 +57,12 @@ public class Main {
 
     private static final Object LOCK = new Object();
     private static volatile boolean shutdownHookTriggered = false;
+    private static final String BROKER_HOME = "message.broker.home";
 
     public static void main(String[] args) throws Exception {
 
         try {
+            writePidToFile(System.getProperty(BROKER_HOME));
             StartupContext startupContext = new StartupContext();
 
             initConfigProvider(startupContext);
@@ -100,6 +106,24 @@ public class Main {
         } catch (Throwable e) {
             LOGGER.error("Error while starting broker", e);
             throw e;
+        }
+    }
+
+    private static void writePidToFile(String path) {
+        // Adopted from: https://stackoverflow.com/a/7690178
+        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        int indexOfAt = jvmName.indexOf('@');
+        if (indexOfAt < 1) {
+            LOGGER.warn("Cannot extract current process ID from JVM name '" + jvmName + "'.");
+            return;
+        }
+        String pid = jvmName.substring(0, indexOfAt);
+
+        Path runtimePidFile = Paths.get(path, "broker.pid");
+        try {
+            Files.write(runtimePidFile, pid.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            LOGGER.warn("Cannot write process ID '" + pid + "' to '" + runtimePidFile.toString() + "' file.", e);
         }
     }
 

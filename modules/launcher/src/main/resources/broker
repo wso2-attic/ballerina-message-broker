@@ -60,6 +60,7 @@ if [ -z "$JAVA_HOME" ]; then
   exit 1
 fi
 
+# ----- Process the input command ----------------------------------------------
 args=""
 for c in $*
 do
@@ -70,22 +71,64 @@ do
           if [ -z "$PORT" ]; then
                 PORT=$c
           fi
+    elif [ "$c" = "--start" ] || [ "$c" = "-start" ] || [ "$c" = "start" ]; then
+          CMD="start"
+    elif [ "$c" = "--stop" ] || [ "$c" = "-stop" ] || [ "$c" = "stop" ]; then
+          CMD="stop"
+    elif [ "$c" = "--restart" ] || [ "$c" = "-restart" ] || [ "$c" = "restart" ]; then
+          CMD="restart"
     else
         args="$args $c"
     fi
 done
 
+PID=`cat "$MESSAGE_BROKER_HOME"/broker.pid`
+
 if [ "$CMD" = "--debug" ]; then
-  if [ "$PORT" = "" ]; then
-    echo " Please specify the debug port after the --debug option"
-    exit 1
-  fi
-  if [ -n "$JAVA_OPTS" ]; then
-    echo "Warning !!!. User specified JAVA_OPTS will be ignored, once you give the --debug option."
-  fi
-  CMD="RUN"
-  JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$PORT"
-  echo "Please start the remote debugging client to continue..."
+    if [ "$PORT" = "" ]; then
+        echo " Please specify the debug port after the --debug option"
+        exit 1
+    fi
+    if [ -n "$JAVA_OPTS" ]; then
+        echo "Warning !!!. User specified JAVA_OPTS will be ignored, once you give the --debug option."
+    fi
+    CMD="RUN"
+    JAVA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$PORT"
+    echo "Please start the remote debugging client to continue..."
+elif [ "$CMD" = "start" ] || [ "$CMD" = "" ]; then
+    if [ -e "$MESSAGE_BROKER_HOME/broker.pid" ]; then
+        if  ps -p $PID > /dev/null ; then
+            echo "Process is already running"
+            exit 0
+        fi
+    fi
+    if [ "$CMD" = "start" ]; then
+        export MESSAGE_BROKER_HOME=$MESSAGE_BROKER_HOME
+        # using nohup sh to avoid erros in solaris OS.TODO
+        nohup sh $MESSAGE_BROKER_HOME/bin/broker $args > /dev/null 2>&1 &
+        exit 0
+    fi
+elif [ "$CMD" = "stop" ]; then
+    if  ps -p $PID > /dev/null ; then
+        kill -term `cat $MESSAGE_BROKER_HOME/broker.pid`
+    else
+        echo "No process is running"
+    fi
+    exit 0
+elif [ "$CMD" = "restart" ]; then
+    kill -term `cat $MESSAGE_BROKER_HOME/broker.pid`
+    process_status=0
+#    pid=`cat $MESSAGE_BROKER_HOME/broker.pid`
+    while [ "$process_status" -eq "0" ]
+    do
+        sleep 1;
+        ps -p $pid 2>&1 > /dev/null
+        process_status=$?
+    done
+    export MESSAGE_BROKER_HOME=$MESSAGE_BROKER_HOME
+    # using nohup sh to avoid erros in solaris OS.TODO
+    nohup sh $MESSAGE_BROKER_HOME/bin/broker $args > /dev/null 2>&1 &
+    exit 0
 fi
 
 MESSAGE_BROKER_CLASSPATH="$MESSAGE_BROKER_HOME/lib/*"
