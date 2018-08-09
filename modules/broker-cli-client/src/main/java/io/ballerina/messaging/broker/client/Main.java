@@ -125,6 +125,7 @@ public class Main {
         // add delete sub-commands
         addChildCommand(jCommanderDelete, Constants.CMD_EXCHANGE, commandFactory.createDeleteExchangeCommand());
         addChildCommand(jCommanderDelete, Constants.CMD_QUEUE, commandFactory.createDeleteQueueCommand());
+        addChildCommand(jCommanderDelete, Constants.CMD_MESSAGES, commandFactory.createDeleteMessagesCommand());
 
         // add close sub-commands
         addChildCommand(jCommanderClose, Constants.CMD_CHANNEL, commandFactory.createCloseChannelCommand());

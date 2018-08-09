@@ -326,26 +326,4 @@ public class CloseCmdTest extends CliTestParent {
                   });
         return connectionMetadataAfterClosing[0];
     }
-
-    /**
-     * Common method to be used in evaluating the stream content for test cases.
-     *
-     * @param streamContent   Content of the stream.
-     * @param expectedStrings expected message to be included in the stream.
-     * @param command         executed command.
-     */
-    private void evalStreamContent(String streamContent, String[] expectedStrings, String[] command) {
-
-        // build onFailure message
-        StringBuilder sb = new StringBuilder();
-        sb.append("error when executing command: ")
-          .append(String.join(" ", command))
-          .append("\n")
-          .append("stream content: \n")
-          .append(streamContent);
-
-        for (String expected : expectedStrings) {
-            Assert.assertTrue(streamContent.contains(expected), sb.toString() + "expected '" + expected + "' ");
-        }
-    }
 }
