@@ -114,6 +114,9 @@ ballerina.broker.transport.amqp:
   # The high limit used to disable channel flow when it is enabled. Value corresponds to the number of messages.
   highLimit: 1000
 
+ # interval between two heartbeat frames in seconds.
+ heartbeatInterval: 0
+
  # Nonsecured transport configurations.
  plain:
   # Port used for the nonsecured transport.

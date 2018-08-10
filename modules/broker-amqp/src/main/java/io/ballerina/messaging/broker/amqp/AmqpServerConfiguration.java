@@ -23,6 +23,7 @@ package io.ballerina.messaging.broker.amqp;
  * Java bean class for AMQP server related configurations.
  */
 public class AmqpServerConfiguration {
+
     /**
      * Namespace used in config file.
      */
@@ -34,6 +35,8 @@ public class AmqpServerConfiguration {
 
     private int socketBufferSize = 1048576;
 
+    private short heartbeatInterval = 0;
+
     private FlowDetails channelFlow = new FlowDetails();
 
     private NonSecureServerDetails plain = new NonSecureServerDetails();
@@ -44,21 +47,38 @@ public class AmqpServerConfiguration {
      * Getter for maxRedeliveryCount.
      */
     public String getHostName() {
+
         return hostName;
     }
 
     public void setHostName(String hostName) {
+
         this.hostName = hostName;
+    }
+
+    /**
+     * Getter for heartbeatInterval.
+     */
+    public short getHeartbeatInterval() {
+
+        return heartbeatInterval;
+    }
+
+    public void setHeartbeatInterval(short heartbeatInterval) {
+
+        this.heartbeatInterval = heartbeatInterval;
     }
 
     /**
      * Getter for maxRedeliveryCount.
      */
     public int getMaxRedeliveryCount() {
+
         return maxRedeliveryCount;
     }
 
     public void setMaxRedeliveryCount(int maxRedeliveryCount) {
+
         this.maxRedeliveryCount = maxRedeliveryCount;
     }
 
@@ -66,10 +86,12 @@ public class AmqpServerConfiguration {
      * Getter for socketBufferSize.
      */
     public int getSocketBufferSize() {
+
         return socketBufferSize;
     }
 
     public void setSocketBufferSize(int socketBufferSize) {
+
         this.socketBufferSize = socketBufferSize;
     }
 
@@ -77,10 +99,12 @@ public class AmqpServerConfiguration {
      * Getter for channelFlow.
      */
     public FlowDetails getChannelFlow() {
+
         return channelFlow;
     }
 
     public void setChannelFlow(FlowDetails channelFlow) {
+
         this.channelFlow = channelFlow;
     }
 
@@ -88,10 +112,12 @@ public class AmqpServerConfiguration {
      * Getter for tcp.
      */
     public NonSecureServerDetails getPlain() {
+
         return plain;
     }
 
     public void setPlain(NonSecureServerDetails tcp) {
+
         this.plain = tcp;
     }
 
@@ -99,10 +125,12 @@ public class AmqpServerConfiguration {
      * Getter for ssl.
      */
     public SslServerDetails getSsl() {
+
         return ssl;
     }
 
     public void setSsl(SslServerDetails ssl) {
+
         this.ssl = ssl;
     }
 
@@ -110,29 +138,34 @@ public class AmqpServerConfiguration {
      * Contains information related to AMQP channelFlow controlling limits.
      */
     public static class FlowDetails {
+
         private int lowLimit = 100;
 
         private int highLimit = 1000;
 
         /**
-         * Getter for lowLimit.
+         * Getter for heartbeatInterval.
          */
         public int getLowLimit() {
+
             return lowLimit;
         }
 
         public void setLowLimit(int lowLimit) {
+
             this.lowLimit = lowLimit;
         }
 
         /**
-         * Getter for highLimit.
+         * Getter for timeoutFactor.
          */
         public int getHighLimit() {
+
             return highLimit;
         }
 
         public void setHighLimit(int highLimit) {
+
             this.highLimit = highLimit;
         }
     }
@@ -141,13 +174,16 @@ public class AmqpServerConfiguration {
      * Contains information required to setup the non secure server socket.
      */
     public static class NonSecureServerDetails {
+
         private String port = "5672";
 
         public String getPort() {
+
             return port;
         }
 
         public void setPort(String port) {
+
             this.port = port;
         }
 
@@ -157,6 +193,7 @@ public class AmqpServerConfiguration {
      * Contains information required to setup the secured server socket.
      */
     public static class SslServerDetails {
+
         private boolean enabled = false;
 
         private String protocol = "TLS";
@@ -168,10 +205,12 @@ public class AmqpServerConfiguration {
         private TrustStoreDetails trustStore = new TrustStoreDetails();
 
         public String getPort() {
+
             return port;
         }
 
         public void setPort(String port) {
+
             this.port = port;
         }
 
@@ -179,10 +218,12 @@ public class AmqpServerConfiguration {
          * Getter for keyStore.
          */
         public KeyStoreDetails getKeyStore() {
+
             return keyStore;
         }
 
         public void setKeyStore(KeyStoreDetails keyStore) {
+
             this.keyStore = keyStore;
         }
 
@@ -190,10 +231,12 @@ public class AmqpServerConfiguration {
          * Getter for protocol.
          */
         public String getProtocol() {
+
             return protocol;
         }
 
         public void setProtocol(String protocol) {
+
             this.protocol = protocol;
         }
 
@@ -201,10 +244,12 @@ public class AmqpServerConfiguration {
          * Getter for trustStore.
          */
         public TrustStoreDetails getTrustStore() {
+
             return trustStore;
         }
 
         public void setTrustStore(TrustStoreDetails trustStore) {
+
             this.trustStore = trustStore;
         }
 
@@ -212,10 +257,12 @@ public class AmqpServerConfiguration {
          * Getter for enabled.
          */
         public boolean isEnabled() {
+
             return enabled;
         }
 
         public void setEnabled(boolean enabled) {
+
             this.enabled = enabled;
         }
     }
@@ -224,6 +271,7 @@ public class AmqpServerConfiguration {
      * Contains keystore relate configurations.
      */
     public static class KeyStoreDetails {
+
         private String type = "JKS";
 
         private String location = "resources/security/keystore.jks";
@@ -236,10 +284,12 @@ public class AmqpServerConfiguration {
          * Getter for type.
          */
         public String getType() {
+
             return type;
         }
 
         public void setType(String type) {
+
             this.type = type;
         }
 
@@ -247,10 +297,12 @@ public class AmqpServerConfiguration {
          * Getter for location.
          */
         public String getLocation() {
+
             return location;
         }
 
         public void setLocation(String location) {
+
             this.location = location;
         }
 
@@ -258,10 +310,12 @@ public class AmqpServerConfiguration {
          * Getter for password.
          */
         public String getPassword() {
+
             return password;
         }
 
         public void setPassword(String password) {
+
             this.password = password;
         }
 
@@ -269,10 +323,12 @@ public class AmqpServerConfiguration {
          * Getter for certType.
          */
         public String getCertType() {
+
             return certType;
         }
 
         public void setCertType(String certType) {
+
             this.certType = certType;
         }
     }
@@ -281,6 +337,7 @@ public class AmqpServerConfiguration {
      * Contains keystore relate configurations.
      */
     public static class TrustStoreDetails {
+
         private String type = "JKS";
 
         private String location = "resources/security/client-truststore.jks";
@@ -293,10 +350,12 @@ public class AmqpServerConfiguration {
          * Getter for type.
          */
         public String getType() {
+
             return type;
         }
 
         public void setType(String type) {
+
             this.type = type;
         }
 
@@ -304,10 +363,12 @@ public class AmqpServerConfiguration {
          * Getter for location.
          */
         public String getLocation() {
+
             return location;
         }
 
         public void setLocation(String location) {
+
             this.location = location;
         }
 
@@ -315,10 +376,12 @@ public class AmqpServerConfiguration {
          * Getter for password.
          */
         public String getPassword() {
+
             return password;
         }
 
         public void setPassword(String password) {
+
             this.password = password;
         }
 
@@ -326,10 +389,12 @@ public class AmqpServerConfiguration {
          * Getter for certType.
          */
         public String getCertType() {
+
             return certType;
         }
 
         public void setCertType(String certType) {
+
             this.certType = certType;
         }
     }

@@ -29,15 +29,18 @@ import java.util.Objects;
  */
 public class AuthenticationStrategyFactory {
 
-    private AuthenticationStrategyFactory() {}
+    private AuthenticationStrategyFactory() {
+
+    }
 
     public static AuthenticationStrategy getStrategy(AuthManager authManager,
                                                      BrokerFactory brokerFactory,
                                                      AmqpServerConfiguration configuration) {
+
         if (Objects.nonNull(authManager) && authManager.isAuthenticationEnabled()) {
             return new SaslAuthenticationStrategy(authManager, brokerFactory, configuration);
         } else {
-            return new NoAuthenticationStrategy(brokerFactory);
+            return new NoAuthenticationStrategy(brokerFactory, configuration);
         }
 
     }
