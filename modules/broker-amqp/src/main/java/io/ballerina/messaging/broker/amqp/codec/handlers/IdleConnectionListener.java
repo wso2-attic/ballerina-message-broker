@@ -25,20 +25,19 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * This class handles idle connections.
  */
 public class IdleConnectionListener extends ChannelDuplexHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IdleConnectionListener.class);
-    private AtomicInteger heartbeatCount = new AtomicInteger();
+    private int heartbeatCount;
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
 
-        if (heartbeatCount.getAndIncrement() == 2) {
+        heartbeatCount++;
+        if (heartbeatCount == 3) {
             LOGGER.info("Two heartbeats sent and timed out.Closing channel.");
             ctx.channel().close();
         }
@@ -64,17 +63,17 @@ public class IdleConnectionListener extends ChannelDuplexHandler {
      */
     public void setHeartbeatCount(int value) {
 
-        this.heartbeatCount.set(value);
+        this.heartbeatCount = value;
     }
 
     /**
      * Get value of the variable heartbeatCount.
      *
-     * @return Integer value of the heartbeatCount variable
+     * @return The value of the heartbeatCount variable
      */
     public int getHeartbeatCount() {
 
-        return this.heartbeatCount.get();
+        return this.heartbeatCount;
     }
 
 }
