@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class IdleConnectionListener extends ChannelDuplexHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IdleConnectionListener.class);
-    public AtomicInteger heartbeatCount = new AtomicInteger();
+    private AtomicInteger heartbeatCount = new AtomicInteger();
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
@@ -48,4 +48,15 @@ public class IdleConnectionListener extends ChannelDuplexHandler {
             ctx.writeAndFlush(new HeartbeatFrame());
         }
     }
+
+    /**
+     * Set heartbeatCount variable.
+     *
+     * @param value new value to set for heartbeatCount variable
+     */
+    public void setHeartbeatCount(int value) {
+
+        this.heartbeatCount.set(value);
+    }
+
 }

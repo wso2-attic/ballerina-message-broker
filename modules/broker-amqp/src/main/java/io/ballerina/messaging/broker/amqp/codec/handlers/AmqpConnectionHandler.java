@@ -132,7 +132,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
         ChannelHandlerContext channelHandlerContext = ctx.pipeline().context("idleConnectionListener");
         if (channelHandlerContext != null) {
             IdleConnectionListener idleConnectionListener = (IdleConnectionListener) (channelHandlerContext.handler());
-            idleConnectionListener.heartbeatCount.set(0);
+            idleConnectionListener.setHeartbeatCount(0);
         }
         if (msg instanceof ProtocolInitFrame) {
             handleProtocolInit(ctx, (ProtocolInitFrame) msg);
