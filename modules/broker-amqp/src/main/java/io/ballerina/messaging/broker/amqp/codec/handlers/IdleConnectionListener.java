@@ -49,6 +49,14 @@ public class IdleConnectionListener extends ChannelDuplexHandler {
         }
     }
 
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+
+        IdleConnectionListener idleConnectionListener = (IdleConnectionListener) (ctx.pipeline().context
+                ("idleConnectionListener").handler());
+        idleConnectionListener.setHeartbeatCount(0);
+    }
+
     /**
      * Set heartbeatCount variable.
      *
@@ -57,6 +65,16 @@ public class IdleConnectionListener extends ChannelDuplexHandler {
     public void setHeartbeatCount(int value) {
 
         this.heartbeatCount.set(value);
+    }
+
+    /**
+     * Get value of the variable heartbeatCount.
+     *
+     * @return Integer value of the heartbeatCount variable
+     */
+    public int getHeartbeatCount() {
+
+        return this.heartbeatCount.get();
     }
 
 }

@@ -127,13 +127,7 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        // IdleConnectionListener is set to pipeline after a ConnectionTuneOK received. If channelRead is invoked before
-        // a ConnectionTuneOK channelHandlerContext can be null.
-        ChannelHandlerContext channelHandlerContext = ctx.pipeline().context("idleConnectionListener");
-        if (channelHandlerContext != null) {
-            IdleConnectionListener idleConnectionListener = (IdleConnectionListener) (channelHandlerContext.handler());
-            idleConnectionListener.setHeartbeatCount(0);
-        }
+
         if (msg instanceof ProtocolInitFrame) {
             handleProtocolInit(ctx, (ProtocolInitFrame) msg);
         } else if (msg instanceof GeneralFrame) {

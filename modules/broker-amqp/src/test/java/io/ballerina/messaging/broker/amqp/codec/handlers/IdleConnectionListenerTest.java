@@ -19,11 +19,17 @@
 
 package io.ballerina.messaging.broker.amqp.codec.handlers;
 
+import io.ballerina.messaging.broker.amqp.codec.frames.HeartbeatFrame;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 
 public class IdleConnectionListenerTest {
@@ -33,13 +39,34 @@ public class IdleConnectionListenerTest {
 
         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
         Channel channel = Mockito.mock(Channel.class);
+        ArgumentCaptor<HeartbeatFrame> heartbeatFrame = ArgumentCaptor.forClass(HeartbeatFrame.class);
         IdleConnectionListener idleConnectionListener = new IdleConnectionListener();
         Mockito.when(context.channel()).thenReturn(channel);
-        Mockito.when(context.channel().isWritable()).thenReturn(false);
+        Mockito.when(context.channel().isWritable()).thenReturn(true);
+        Mockito.when(context.writeAndFlush(heartbeatFrame.capture())).thenReturn(null);
         Mockito.when(context.channel().close()).thenReturn(null);
         for (int i = 0; i < 3; i++) {
             idleConnectionListener.userEventTriggered(context, null);
         }
         Mockito.verify(context.channel(), times(1)).close();
+        Mockito.verify(context, atLeast(2)).writeAndFlush(heartbeatFrame.capture());
+    }
+
+    @Test
+    public void testIdleConnectionListenerChannelRead() throws Exception {
+
+        ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
+        IdleConnectionListener idleConnectionListener = new IdleConnectionListener();
+        idleConnectionListener.setHeartbeatCount(2);
+        ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(context.pipeline()).thenReturn(pipeline);
+        Mockito.when(context.pipeline().context("idleConnectionListener")).thenReturn(Mockito
+                .mock(ChannelHandlerContext.class));
+        Mockito.when(context.pipeline().context("idleConnectionListener").handler()).thenReturn(Mockito
+                .mock(ChannelHandler.class));
+        Mockito.when((context.pipeline().context("idleConnectionListener").handler()))
+                .thenReturn(idleConnectionListener);
+        idleConnectionListener.channelRead(context, null);
+        Assert.assertEquals(idleConnectionListener.getHeartbeatCount(), 0, "Heartbeat count is not reset properly.");
     }
 }
