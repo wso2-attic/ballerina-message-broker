@@ -68,9 +68,13 @@ public class Constants {
     public static final String HTTP_DELETE = "DELETE";
 
     //http query parameters
-    public static final String FORCE_QUERY_PARAM = "?force=";
+    public static final String QUERY_PARAM_BEGINNING = "?";
+    public static final String QUERY_PARAM_APPENDING = "&";
+    public static final String FORCE_QUERY_PARAM = "force=";
+    public static final String USED_QUERY_PARAM = "used=";
 
     //flags
     public static final String HELP_FLAG = "--help";
+    public static final String IF_USED_FLAG = "--if-used";
     public static final String QUEUE_FLAG = "--queue";
 }

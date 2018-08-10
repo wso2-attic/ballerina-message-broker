@@ -37,13 +37,20 @@ public class CloseConnectionCmd extends CloseCmd {
                           + "communicating with the amqp client")
     private boolean force = false;
 
+    @Parameter(names = {Constants.IF_USED_FLAG},
+            description = "If set to true, the connection will be closed from the broker without "
+                          + "communicating with the amqp client")
+    private boolean ifUsed = false;
+
     public CloseConnectionCmd(String rootCommand) {
         super(rootCommand);
     }
 
     @Override
     public void execute() {
-        executeClose(Constants.CONNECTIONS_URL_PARAM + connectionId + Constants.FORCE_QUERY_PARAM + force,
+        executeClose(Constants.CONNECTIONS_URL_PARAM + connectionId + Constants.QUERY_PARAM_BEGINNING +
+                     Constants.FORCE_QUERY_PARAM + force + Constants.QUERY_PARAM_APPENDING + Constants
+                             .USED_QUERY_PARAM + ifUsed,
                      "Connection close request submitted successfully");
     }
 

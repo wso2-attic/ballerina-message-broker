@@ -34,6 +34,7 @@ import io.ballerina.messaging.broker.amqp.codec.frames.ConnectionStart;
 import io.ballerina.messaging.broker.amqp.codec.frames.GeneralFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.ProtocolInitFrame;
 import io.ballerina.messaging.broker.amqp.metrics.AmqpMetricManager;
+import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.Broker;
 import io.netty.channel.Channel;
@@ -42,7 +43,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.HashMap;
@@ -107,7 +107,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     public AmqpConnectionHandler(AmqpMetricManager metricManager, AmqpChannelFactory amqpChannelFactory,
                                  AmqpConnectionManager amqpConnectionManager) {
-
         this.metricManager = metricManager;
         this.amqpChannelFactory = amqpChannelFactory;
         this.connectionManager = amqpConnectionManager;
@@ -117,7 +116,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-
         nettyChannel = ctx.channel();
         this.ctx = ctx;
         nettyChannel.closeFuture().addListener(future -> ctx.fireChannelRead((BlockingTask) this::onConnectionClose));
@@ -127,7 +125,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
         if (msg instanceof ProtocolInitFrame) {
             handleProtocolInit(ctx, (ProtocolInitFrame) msg);
         } else if (msg instanceof GeneralFrame) {
@@ -141,7 +138,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
-
         if (!ctx.channel().isWritable()) {
             ctx.channel().config().setAutoRead(false);
             if (LOGGER.isDebugEnabled()) {
@@ -152,7 +148,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) {
-
         if (ctx.channel().isWritable()) {
             ctx.channel().config().setAutoRead(true);
             if (LOGGER.isDebugEnabled()) {
@@ -162,26 +157,22 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     private SocketAddress getRemoteAddress(ChannelHandlerContext ctx) {
-
         return ctx.channel().remoteAddress();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-
         LOGGER.warn("Exception while handling request", cause);
         ctx.close();
     }
 
     private void onConnectionClose() {
-
         closeAllChannels();
         metricManager.decrementConnectionCount();
         connectionManager.removeConnectionHandler(this);
     }
 
     private void handleProtocolInit(ChannelHandlerContext ctx, ProtocolInitFrame msg) {
-
         if (ProtocolInitFrame.V_091.equals(msg)) {
             ctx.writeAndFlush(ConnectionStart.DEFAULT_FRAME);
         } else {
@@ -190,7 +181,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void createChannel(int channelId) throws ConnectionException {
-
         AmqpChannel channel = channels.get(channelId);
         if (channel != null) {
             throw new ConnectionException(ConnectionException.CHANNEL_ERROR,
@@ -209,12 +199,10 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @return AmqpChannel
      */
     public AmqpChannel getChannel(int channelId) {
-
         return channels.get(channelId);
     }
 
     public void closeChannel(int channelId) {
-
         AmqpChannel channel = channels.remove(channelId);
         if (Objects.nonNull(channel)) {
             closeChannel(channel);
@@ -222,14 +210,12 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void closeChannel(AmqpChannel channel) {
-
         metricManager.decrementChannelCount();
         channel.close();
     }
 
     public void closeAllChannels() {
-
-        for (AmqpChannel channel : channels.values()) {
+        for (AmqpChannel channel: channels.values()) {
             closeChannel(channel);
         }
 
@@ -242,7 +228,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @return Broker
      */
     public Broker getBroker() {
-
         return broker;
     }
 
@@ -252,7 +237,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @param broker a broker instance
      */
     public void attachBroker(Broker broker) {
-
         this.broker = broker;
     }
 
@@ -263,7 +247,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @return true if the connection is writable, false otherwise
      */
     public boolean isWritable() {
-
         return nettyChannel.isWritable();
     }
 
@@ -273,7 +256,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @return the remote address in the format of /ip:port
      */
     public String getRemoteAddress() {
-
         return remoteAddress;
     }
 
@@ -283,7 +265,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @return the number of AMQP channels registered
      */
     public int getChannelCount() {
-
         return channels.size();
     }
 
@@ -293,7 +274,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @return the timestamp at which the connection was created in the form of milliseconds
      */
     public long getConnectedTime() {
-
         return connectedTime;
     }
 
@@ -303,36 +283,51 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @return an integer defining the connection handler
      */
     public int getId() {
-
         return id;
+    }
+
+    /**
+     * Closes the AMQP connection with a client according to the parameters set.
+     *
+     * @param reason reason to close connection
+     * @param force  if set to true the connection will be closed by the broker without negotiating with the AMQP client
+     * @param used   if set to true, the connection will be closed regardless of the number of active channels
+     *               registered
+     * @return int representing the number of channels registered on the connection
+     */
+    public int closeConnection(String reason, boolean force, boolean used) throws ValidationException {
+        int numberOfChannels = channels.size();
+        if (!used && numberOfChannels > 0) {
+            throw new ValidationException("Cannot close connection. " + numberOfChannels + " active channels exist "
+                                          + "and used parameter is not set.");
+        }
+        if (force) {
+            forceCloseConnection(reason);
+        } else {
+            closeConnection(reason);
+        }
+        return numberOfChannels;
     }
 
     /**
      * Sends a connection close frame to the client.
      *
      * @param reason reason to close connection
-     * @return int representing the number of channels registered on the connection
      */
-    public int closeConnection(String reason) {
-
+    private void closeConnection(String reason) {
         LOGGER.info("Closing connection {}. Reason: {}", getId(), reason);
-        int numberOfChannels = channels.size();
         ctx.writeAndFlush(new ConnectionClose(AmqConstant.CONNECTION_FORCED,
-                ShortString.parseString("Broker forced close connection. " + reason),
-                0, 0));
-        return numberOfChannels;
+                                              ShortString.parseString("Broker forced close connection. " + reason),
+                                              0, 0));
     }
 
     /**
      * Closes the underlying connection with the client.
      *
      * @param reason reason to force close connection
-     * @return int representing the number of channels registered on the connection
      */
-    public int forceCloseConnection(String reason) {
-
+    private void forceCloseConnection(String reason) {
         LOGGER.info("Force closing connection {}. Reason: {}", getId(), reason);
-        int numberOfChannels = channels.size();
         ChannelFuture close = ctx.close();
         close.addListener(future -> {
             if (future.isSuccess()) {
@@ -341,21 +336,26 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
                 LOGGER.error("Error occurred while closing connection {}", getId(), future.cause());
             }
         });
-        return numberOfChannels;
     }
 
     /**
      * Sends a channel close frame to the client.
      *
      * @param channelId the identifier of the channel
+     * @param used      if set to true, the channel will be closed regardless of the number of active consumers
+     *                  registered
      * @param reason    reason to disconnection channel
      */
-    public void forceDisconnectChannel(int channelId, String reason) {
-
-        LOGGER.info("Force closing channel {} of connection {}. Reason: {}", channelId, getId(), reason);
+    public void closeChannel(int channelId, boolean used, String reason) throws ValidationException {
+        int numberOfConsumers = channelViews.get(channelId).getConsumerCount();
+        if (!used && numberOfConsumers > 0) {
+            throw new ValidationException("Cannot close channel. " + numberOfConsumers + " active consumers exist "
+                                          + "and used parameter is not set.");
+        }
+        LOGGER.info("Closing channel {} of connection {}. Reason: {}", channelId, getId(), reason);
         ctx.writeAndFlush(new ChannelClose(channelId, AmqConstant.CHANNEL_CLOSED,
-                ShortString.parseString("Broker forced close channel. " + reason),
-                0, 0));
+                                           ShortString.parseString("Broker forced close channel. " + reason),
+                                           0, 0));
     }
 
     /**
@@ -364,7 +364,6 @@ public class AmqpConnectionHandler extends ChannelInboundHandlerAdapter {
      * @return {@link AmqpChannelView} representing the view of actual AMQP channels
      */
     public Collection<AmqpChannelView> getChannelViews() {
-
         return channelViews.values();
     }
 }
