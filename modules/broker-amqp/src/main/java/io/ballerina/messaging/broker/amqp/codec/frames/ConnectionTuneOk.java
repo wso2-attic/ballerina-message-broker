@@ -20,23 +20,27 @@
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.amqp.codec.handlers.IdleConnectionListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * AMQP frame for connection.tune-ok.
- *
+ * <p>
  * Parameter Summary:
- *     1. channel­max (short) - proposed maximum channels
- *     2. frame­max (long) - proposed maximum frame size
- *     3. heartbeat (short) - desired heartbeat delay
+ * 1. channel­max (short) - proposed maximum channels
+ * 2. frame­max (long) - proposed maximum frame size
+ * 3. heartbeat (short) - desired heartbeat delay
  */
 public class ConnectionTuneOk extends MethodFrame {
+
     private final int channelMax;
     private final long frameMax;
     private final int heartbeat;
 
     public ConnectionTuneOk(int channelMax, long frameMax, int heartbeat) {
+
         super(0, (short) 10, (short) 30);
         this.channelMax = channelMax;
         this.frameMax = frameMax;
@@ -45,11 +49,13 @@ public class ConnectionTuneOk extends MethodFrame {
 
     @Override
     protected long getMethodBodySize() {
+
         return 2L + 4L + 2L;
     }
 
     @Override
     protected void writeMethod(ByteBuf buf) {
+
         buf.writeShort(channelMax);
         buf.writeInt((int) frameMax);
         buf.writeShort(heartbeat);
@@ -57,10 +63,17 @@ public class ConnectionTuneOk extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // TODO add tuning logic
+
+        if (heartbeat != 0) {
+            // Add an idle state handler to pipeline
+            ctx.pipeline().addFirst("idleStateHandler", new IdleStateHandler
+                    (0, 0, heartbeat)).addAfter("idleStateHandler", "idleConnectionListener", new
+                    IdleConnectionListener());
+        }
     }
 
     public static AmqMethodBodyFactory getFactory() {
+
         return (buf, channel, size) -> {
             int channelMax = buf.readUnsignedShort();
             long frameMax = buf.readUnsignedInt();
