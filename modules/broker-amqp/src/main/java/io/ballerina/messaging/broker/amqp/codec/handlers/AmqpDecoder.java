@@ -40,7 +40,6 @@ import java.util.List;
  * Netty based AMQP frame decoder.
  */
 public class AmqpDecoder extends ByteToMessageDecoder {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpDecoder.class);
 
     /**
@@ -57,7 +56,6 @@ public class AmqpDecoder extends ByteToMessageDecoder {
     private static final int MIN_HEADER_FRAME_SIZE = 14;
 
     public AmqpDecoder(AmqMethodRegistry methodRegistry) {
-
         this.methodRegistry = methodRegistry;
     }
 
@@ -75,7 +73,6 @@ public class AmqpDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out)
             throws Exception {
-
         switch (currentState) {
             case PROTOCOL_INITIALIZATION:
                 processProtocolInitFrame(buffer, out);
@@ -97,7 +94,6 @@ public class AmqpDecoder extends ByteToMessageDecoder {
     }
 
     private void processProtocolInitFrame(ByteBuf buffer, List<Object> out) {
-
         if (buffer.readableBytes() >= 8) {
             CharSequence protocolName = buffer.readCharSequence(4, CharsetUtil.US_ASCII);
             buffer.skipBytes(1);
@@ -107,7 +103,7 @@ public class AmqpDecoder extends ByteToMessageDecoder {
 
             if (!AMQP_PROTOCOL_IDENTIFIER.equals(protocolName)) {
                 out.add(new AmqpBadMessage(new IllegalArgumentException("Unknown protocol name " +
-                        protocolName.toString())));
+                protocolName.toString())));
                 currentState = State.BAD_MESSAGE;
             }
 
@@ -117,14 +113,12 @@ public class AmqpDecoder extends ByteToMessageDecoder {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-
         LOGGER.warn("Exception while handling request", cause);
         currentState = State.BAD_MESSAGE;
         ctx.close();
     }
 
     private void parseFrame(ByteBuf buffer, List<Object> out) throws Exception {
-
         buffer.markReaderIndex();
         if (buffer.readableBytes() > FRAME_SIZE_WITHOUT_PAYLOAD) {
             byte type = buffer.readByte();
@@ -157,7 +151,6 @@ public class AmqpDecoder extends ByteToMessageDecoder {
                     break;
                 default:
                     throw new Exception("Method Not implemented");
-
             }
 
             byte frameEnd = buffer.readByte();

@@ -26,24 +26,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class handles idle connections.
+ * This class handles idle connections.The class is added to channelHandlerContext when ConnectionTuneOK received.The
+ * method userEventTriggered invokes when the channel is idle for negotiated heartbeat interval.
  */
 public class IdleConnectionListener extends ChannelDuplexHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IdleConnectionListener.class);
+    /*
+     * If a peer detects no incoming traffic (i.e. received octets) for two heartbeat intervals or longer, it should
+     * close the connection without following the connection.
+     */
+    private static final int MAXIMUM_HEARTBEAT_COUNT = 2;
     private int heartbeatCount;
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
 
-        heartbeatCount++;
-        if (heartbeatCount == 3) {
-            LOGGER.info("Two heartbeats sent and timed out.Closing channel.");
+        if (heartbeatCount == MAXIMUM_HEARTBEAT_COUNT) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Two heartbeats sent and timed out. Closing channel.");
+            }
             ctx.channel().close();
-        }
-
-        if (ctx.channel().isWritable()) {
-            // Send a heartbeat frame to the client
+        } else {
+            heartbeatCount++;
             ctx.writeAndFlush(new HeartbeatFrame());
         }
     }
@@ -51,19 +56,16 @@ public class IdleConnectionListener extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-        IdleConnectionListener idleConnectionListener = (IdleConnectionListener) (ctx.pipeline().context
-                ("idleConnectionListener").handler());
-        idleConnectionListener.setHeartbeatCount(0);
+        resetHeartbeatCount();
+        super.channelRead(ctx, msg);
     }
 
     /**
-     * Set heartbeatCount variable.
-     *
-     * @param value new value to set for heartbeatCount variable
+     * Reset heartbeatCount variable to zero.
      */
-    public void setHeartbeatCount(int value) {
+    public void resetHeartbeatCount() {
 
-        this.heartbeatCount = value;
+        this.heartbeatCount = 0;
     }
 
     /**

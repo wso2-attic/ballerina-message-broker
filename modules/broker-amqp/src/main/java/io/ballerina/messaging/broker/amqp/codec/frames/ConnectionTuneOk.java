@@ -40,7 +40,6 @@ public class ConnectionTuneOk extends MethodFrame {
     private final int heartbeat;
 
     public ConnectionTuneOk(int channelMax, long frameMax, int heartbeat) {
-
         super(0, (short) 10, (short) 30);
         this.channelMax = channelMax;
         this.frameMax = frameMax;
@@ -49,13 +48,11 @@ public class ConnectionTuneOk extends MethodFrame {
 
     @Override
     protected long getMethodBodySize() {
-
         return 2L + 4L + 2L;
     }
 
     @Override
     protected void writeMethod(ByteBuf buf) {
-
         buf.writeShort(channelMax);
         buf.writeInt((int) frameMax);
         buf.writeShort(heartbeat);
@@ -63,17 +60,15 @@ public class ConnectionTuneOk extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-
         if (heartbeat != 0) {
-            // Add an idle state handler to pipeline
-            ctx.pipeline().addFirst("idleStateHandler", new IdleStateHandler
-                    (0, 0, heartbeat)).addAfter("idleStateHandler", "idleConnectionListener", new
-                    IdleConnectionListener());
+            // Add idle state handler to pipeline
+            ctx.pipeline()
+               .addFirst("idleStateHandler", new IdleStateHandler(0, 0, heartbeat))
+               .addAfter("idleStateHandler", "idleConnectionListener", new IdleConnectionListener());
         }
     }
 
     public static AmqMethodBodyFactory getFactory() {
-
         return (buf, channel, size) -> {
             int channelMax = buf.readUnsignedShort();
             long frameMax = buf.readUnsignedInt();

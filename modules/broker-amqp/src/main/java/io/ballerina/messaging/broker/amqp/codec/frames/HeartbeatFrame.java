@@ -33,7 +33,10 @@ public class HeartbeatFrame extends GeneralFrame {
         super((byte) 8, 0);
     }
 
-    // Payload size - type, channel ,payload size ,end character
+    /**
+     * This method gives the size of the payload.Since heartbeat frames contain an empty body,payload size is 0 for
+     * heartbeat frames.
+     */
     public long getPayloadSize() {
 
         return 0L;
@@ -41,12 +44,12 @@ public class HeartbeatFrame extends GeneralFrame {
 
     @Override
     public void writePayload(ByteBuf buf) {
-
+        // Heartbeat frame contains an empty payload
     }
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-
+        // Server does not handle this
     }
 
 }
