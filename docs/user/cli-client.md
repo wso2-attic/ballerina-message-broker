@@ -50,7 +50,7 @@ You can override the password given with the init command if you give it with th
 - hostname (--hostname, -H) (default: localhost)
 - port (--port, -P) (default: 9000)
 - username (--username, -u) (default: admin)
-- password (--password, -p)
+- password (--password, -p) (default: admin)
 
 ## 2. Exchanges related administrative operations
 
