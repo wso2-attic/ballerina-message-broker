@@ -20,18 +20,21 @@
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.amqp.codec.handlers.IdleConnectionListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * AMQP frame for connection.tune-ok.
- *
+ * <p>
  * Parameter Summary:
- *     1. channel­max (short) - proposed maximum channels
- *     2. frame­max (long) - proposed maximum frame size
- *     3. heartbeat (short) - desired heartbeat delay
+ * 1. channel­max (short) - proposed maximum channels
+ * 2. frame­max (long) - proposed maximum frame size
+ * 3. heartbeat (short) - desired heartbeat delay
  */
 public class ConnectionTuneOk extends MethodFrame {
+
     private final int channelMax;
     private final long frameMax;
     private final int heartbeat;
@@ -57,7 +60,12 @@ public class ConnectionTuneOk extends MethodFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        // TODO add tuning logic
+        if (heartbeat != 0) {
+            // Add idle state handler to pipeline
+            ctx.pipeline()
+               .addFirst("idleStateHandler", new IdleStateHandler(0, 0, heartbeat))
+               .addAfter("idleStateHandler", "idleConnectionListener", new IdleConnectionListener());
+        }
     }
 
     public static AmqMethodBodyFactory getFactory() {

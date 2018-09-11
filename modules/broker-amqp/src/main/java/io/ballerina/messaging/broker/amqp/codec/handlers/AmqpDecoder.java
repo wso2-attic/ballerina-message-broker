@@ -25,6 +25,7 @@ import io.ballerina.messaging.broker.amqp.codec.frames.AmqpBadMessage;
 import io.ballerina.messaging.broker.amqp.codec.frames.ContentFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.GeneralFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.HeaderFrame;
+import io.ballerina.messaging.broker.amqp.codec.frames.HeartbeatFrame;
 import io.ballerina.messaging.broker.amqp.codec.frames.ProtocolInitFrame;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -102,7 +103,7 @@ public class AmqpDecoder extends ByteToMessageDecoder {
 
             if (!AMQP_PROTOCOL_IDENTIFIER.equals(protocolName)) {
                 out.add(new AmqpBadMessage(new IllegalArgumentException("Unknown protocol name " +
-                                                                               protocolName.toString())));
+                protocolName.toString())));
                 currentState = State.BAD_MESSAGE;
             }
 
@@ -145,7 +146,10 @@ public class AmqpDecoder extends ByteToMessageDecoder {
                 case 3: // Body
                     frame = ContentFrame.parse(buffer, channel, payloadSize);
                     break;
-                case 4: // Heartbeat
+                case 8: // Heartbeat
+                    frame = new HeartbeatFrame();
+                    break;
+                default:
                     throw new Exception("Method Not implemented");
             }
 
