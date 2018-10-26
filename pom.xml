@@ -90,6 +90,7 @@
         <module>modules/integration</module>
         <module>modules/coverage-report</module>
         <module>modules/features</module>
+        <module>modules/broker-event-publisher</module>
     </modules>
 
     <dependencyManagement>
