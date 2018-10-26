@@ -99,6 +99,14 @@ ballerina.broker.auth:
    # Maximum Cache size to hold user id
    size: 5000
 
+# Broker event related configurations.
+ballerina.broker.events:
+  # Enable Events
+  enabled: true
+  # Enable publisher
+  publisher: brokerpublisher
+
+
 # AMQP transport related configurations.
 ballerina.broker.transport.amqp:
  # Hostname configuration used in creating the server socket
