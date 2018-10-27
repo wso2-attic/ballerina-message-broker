@@ -32,6 +32,7 @@ import io.ballerina.messaging.broker.coordination.HaStrategyFactory;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerImpl;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
+import io.ballerina.messaging.broker.eventing.EventService;
 import io.ballerina.messaging.broker.metrics.BrokerMetricService;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
 import org.slf4j.Logger;
@@ -74,18 +75,20 @@ public class Main {
                 throw new CoordinationException("Error initializing HA Strategy: ", e);
             }
 
+            EventService eventService = new EventService(startupContext);
             AuthManager authManager = new AuthManager(startupContext);
             BrokerMetricService metricService = new BrokerMetricService(startupContext);
             BrokerRestServer restServer = new BrokerRestServer(startupContext);
             Broker broker = new BrokerImpl(startupContext);
             Server amqpServer = new Server(startupContext);
-            registerShutdownHook(broker, amqpServer, restServer, haStrategy, authManager, metricService);
+            registerShutdownHook(broker, amqpServer, restServer, haStrategy, authManager, metricService, eventService);
 
             if (haStrategy != null) {
                 //Start the HA strategy after all listeners have been registered, and before the listeners are started
                 haStrategy.start();
             }
 
+            eventService.start();
             metricService.start();
             authManager.start();
             broker.startMessageDelivery();
@@ -145,7 +148,8 @@ public class Main {
                                              BrokerRestServer brokerRestServer,
                                              HaStrategy haStrategy,
                                              AuthManager authManager,
-                                             BrokerMetricService metricService) {
+                                             BrokerMetricService metricService,
+                                             EventService eventService) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             synchronized (LOCK) {
                 shutdownHookTriggered = true;
@@ -159,6 +163,7 @@ public class Main {
                     Thread.currentThread().interrupt();
                 }
                 broker.shutdown();
+                eventService.stop();
                 metricService.stop();
                 if (haStrategy != null) {
                     haStrategy.stop();
