@@ -43,6 +43,8 @@ public final class ExchangeRegistry {
 
     public static final String DEFAULT_DEAD_LETTER_EXCHANGE = "amq.dlx";
 
+    public static final String EVENT = "event";
+
     private static final BindingDao NO_OP_BINDING_DAO = new NoOpBindingDao();
 
     private final Map<String, Exchange> exchangeMap;
@@ -59,6 +61,7 @@ public final class ExchangeRegistry {
         exchangeMap.put(TOPIC, new TopicExchange(TOPIC, bindingDao));
         exchangeMap.put(DEFAULT, new DirectExchange(DEFAULT, bindingDao));
         exchangeMap.put(DEFAULT_DEAD_LETTER_EXCHANGE, new DirectExchange(DEFAULT_DEAD_LETTER_EXCHANGE, bindingDao));
+        exchangeMap.put(EVENT, new TopicExchange(EVENT, bindingDao));
         this.exchangeDao = exchangeDao;
         this.bindingDao = bindingDao;
         this.unmodifiableExchangesView = Collections.unmodifiableCollection(exchangeMap.values());
@@ -90,7 +93,7 @@ public final class ExchangeRegistry {
 
     private boolean isBuiltInExchange(Exchange exchange) {
         String name = exchange.getName();
-        return DEFAULT.equals(name) || DIRECT.equals(name) || TOPIC.equals(name);
+        return DEFAULT.equals(name) || DIRECT.equals(name) || TOPIC.equals(name) ||  EVENT.equals(name);
     }
 
     /**
