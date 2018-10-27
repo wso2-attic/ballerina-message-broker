@@ -33,6 +33,10 @@ import io.ballerina.messaging.broker.coordination.BasicHaListener;
 import io.ballerina.messaging.broker.coordination.HaListener;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
+import io.ballerina.messaging.broker.core.eventpublisher.EventPublisher;
+import io.ballerina.messaging.broker.core.events.BrokerEventManager;
+import io.ballerina.messaging.broker.core.events.DefaultBrokerEventManager;
+import io.ballerina.messaging.broker.core.events.NullBrokerEventManager;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.DefaultBrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
@@ -47,6 +51,7 @@ import io.ballerina.messaging.broker.core.task.TaskExecutorService;
 import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
 import io.ballerina.messaging.broker.core.transaction.BrokerTransactionFactory;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
+import io.ballerina.messaging.broker.eventing.EventSync;
 import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +93,12 @@ public final class BrokerImpl implements Broker {
     private final BrokerMetricManager metricManager;
 
     /**
+     * Used to manage events related to broker.
+     */
+    private final BrokerEventManager eventManager;
+
+
+    /**
      * The {@link HaStrategy} for which the HA listener is registered.
      */
     private HaStrategy haStrategy;
@@ -111,6 +122,9 @@ public final class BrokerImpl implements Broker {
     public BrokerImpl(StartupContext startupContext) throws Exception {
         MetricService metrics = startupContext.getService(MetricService.class);
         metricManager = getMetricManager(metrics);
+
+        EventSync eventPublisher = startupContext.getService(EventSync.class);
+        eventManager = getEventManager(eventPublisher, this);
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerCoreConfiguration configuration = configProvider.getConfigurationObject(BrokerCoreConfiguration.NAMESPACE,
@@ -198,6 +212,17 @@ public final class BrokerImpl implements Broker {
             return new DefaultBrokerMetricManager(metrics);
         } else {
             return new NullBrokerMetricManager();
+        }
+    }
+
+    private BrokerEventManager getEventManager(EventSync eventPublisher, Broker broker) {
+        if (Objects.nonNull(eventPublisher)) {
+            if (eventPublisher instanceof EventPublisher) {
+                ((EventPublisher) eventPublisher).setBroker(broker);
+            }
+            return new DefaultBrokerEventManager(eventPublisher);
+        } else {
+            return new NullBrokerEventManager();
         }
     }
 
@@ -425,6 +450,7 @@ public final class BrokerImpl implements Broker {
                 QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
                 // We need to bind every queue to the default exchange
                 exchangeRegistry.getDefaultExchange().bind(queueHandler, queueName, FieldTable.EMPTY_TABLE);
+                eventManager.queueCreated(queueHandler);
             }
             return queueAdded;
         } finally {
