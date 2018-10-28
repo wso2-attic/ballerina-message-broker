@@ -1,7 +1,25 @@
+/*
+ * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+
 package io.ballerina.messaging.broker.core.events;
 
 import io.ballerina.messaging.broker.common.EventConstants;
-import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.QueueHandler;
 import io.ballerina.messaging.broker.eventing.EventSync;
 import org.slf4j.Logger;
@@ -16,17 +34,11 @@ import java.util.Map;
 public class DefaultBrokerEventManager implements BrokerEventManager {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultBrokerEventManager.class);
-
     private EventSync eventSync;
 
     public DefaultBrokerEventManager(EventSync eventSync) {
-
         this.eventSync = eventSync;
         logger.info("Default Event Manager Declared");
-    }
-
-    public void messagePublished(Message message) {
-        //No need
     }
 
     public  void queueCreated(QueueHandler queueHandler) {
@@ -37,7 +49,7 @@ public class DefaultBrokerEventManager implements BrokerEventManager {
         properties.put("Queue_Name", queueName);
         properties.put("isAutoDelete", isAutoDelete);
         properties.put("isDurable", isDurable);
-        eventSync.publish(EventConstants.QUEUECREATED, properties);
+        eventSync.publish(EventConstants.QUEUE_CREATED, properties);
     }
 
 }

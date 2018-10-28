@@ -25,9 +25,27 @@ import java.util.Map;
  */
 public interface EventSync {
 
-    String getName();
-    void publish(int id, Map<String, String> properties); //string
+    /**
+     * Used to get the type of the publisher.
+     */
+    String getType();
+
+    /**
+     * Used to publish the triggered event data to the necessary medium.
+     *
+     * @param id ID to identify the Event Type
+     * @param properties include properties of the Event
+     */
+    void publish(int id, Map<String, String> properties);
+
+    /**
+     * Used to activate the publisher.
+     */
     void activate();
+
+    /**
+     * Used to deactivate the publisher.
+     */
     void deactivate();
 
 }

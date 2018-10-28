@@ -16,6 +16,7 @@
  * under the License.
  *
  */
+
 package io.ballerina.messaging.broker.common;
 
 /**
@@ -23,8 +24,8 @@ package io.ballerina.messaging.broker.common;
  */
 public final class EventConstants {
 
-    public static final int CONSUMERADDEDEVENT = 1;
-    public  static final int MESSAGEPUBLISHEDEVENT = 2;
-    public  static final int QUEUECREATED = 3;
-    public static final int BINDINGCREATED = 4;
+    public static final int CONSUMER_ADDED_EVENT = 1;
+    public static final int MESSAGE_PUBLISHED_EVENT = 2;
+    public static final int QUEUE_CREATED = 3;
+    public static final int BINDING_CREATED = 4;
 }
