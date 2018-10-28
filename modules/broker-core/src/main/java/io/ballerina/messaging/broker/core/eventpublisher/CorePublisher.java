@@ -16,6 +16,7 @@
  * under the License.
  *
  */
+
 package io.ballerina.messaging.broker.core.eventpublisher;
 
 import java.util.Map;
@@ -25,7 +26,19 @@ import java.util.Map;
  */
 public interface CorePublisher {
 
+    /**
+     * Used to publish event notifications to an Exchange in the Message Broker.
+     *
+     * @param id ID to identify Event Type
+     * @param  properties properties of the Event
+     */
     void publishNotification(int id, Map<String, String> properties);
 
+    /**
+     * Used to generate the necessary routing key for the event notification message.
+     *
+     * @param id ID to identify Event Type
+     * @param  properties properties of the Event
+     */
     String getRoutingKey(int id, Map<String, String> properties);
 }
