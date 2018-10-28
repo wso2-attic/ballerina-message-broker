@@ -25,38 +25,35 @@ import org.wso2.carbon.config.annotation.Element;
 /**
  * Represents event configuration for broker.
  */
-
 @Configuration(
         namespace = "ballerina.broker.events",
         description = "Events Configuration Parameters"
 )
 public class EventConfiguration {
 
-
     @Element(
             description = "Enable Events"
     )
     private boolean enabled = true;
-
 
     @Element(
             description = "Enable publisher"
     )
     private String publisher = "brokerpublisher";
 
-
     public String getPublisher() {
         return publisher;
     }
 
     public boolean isEnabled() {
-
         return this.enabled;
     }
 
-
     public void setEnabled(boolean enabled) {
-
         this.enabled = enabled;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
     }
 }

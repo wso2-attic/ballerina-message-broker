@@ -28,7 +28,6 @@ import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +49,7 @@ public class DefaultCorePublisher implements CorePublisher {
     @Override
     public void publishNotification(int id, Map<String, String> properties) {
 
-        if (id == EventConstants.MESSAGEPUBLISHEDEVENT) {
+        if (id == EventConstants.MESSAGE_PUBLISHED_EVENT) {
             String publishedExchangeName = properties.get("ExchangeName");
 
             if (publishedExchangeName.equals(exchangeName)) {
@@ -62,12 +61,10 @@ public class DefaultCorePublisher implements CorePublisher {
         Map<ShortString, FieldValue> notificationProperties = new HashMap<>();
 
         for (Map.Entry<String, String> entry : properties.entrySet()) {
-
             ShortString key = ShortString.parseString(entry.getKey());
             String obj = entry.getValue();
             FieldValue fieldValue = FieldValue.parseShortString(obj);
             notificationProperties.put(key, fieldValue);
-
         }
 
         Metadata metadata = new Metadata(getRoutingKey(id, properties), exchangeName, 0);
@@ -90,26 +87,20 @@ public class DefaultCorePublisher implements CorePublisher {
 
     public String getRoutingKey(int id, Map<String, String> properties) {
 
-        String routingKey;
-
-        if (id == EventConstants.CONSUMERADDEDEVENT) {
-            routingKey = "consumer.added";
-        } else if (id == EventConstants.MESSAGEPUBLISHEDEVENT) {
-            routingKey = "message.published";
-        } else if (id == EventConstants.QUEUECREATED) {
-            routingKey = "queue.created";
-
-        } else if (id == EventConstants.BINDINGCREATED) {
-            routingKey = "binding.created" + properties.get("BindingName");
+        if (id == EventConstants.CONSUMER_ADDED_EVENT) {
+            return "consumer.added";
+        } else if (id == EventConstants.MESSAGE_PUBLISHED_EVENT) {
+            return "message.published";
+        } else if (id == EventConstants.QUEUE_CREATED) {
+            return "queue.created";
+        } else if (id == EventConstants.BINDING_CREATED) {
+            return "binding.created" + properties.get("BindingName");
         } else {
-            routingKey = null;
+            return null;
         }
-        return routingKey;
-
     }
 
     void setExchangeName(String exchangeName) {
-
         this.exchangeName = exchangeName;
     }
 

@@ -49,7 +49,6 @@ class Events {
             if (isEnabled) {
                 publisherName = eventsConfig.getPublisher();
             }
-
         } catch (ConfigurationException var8) {
             logger.error("Error loading Events Configuration", var8);
         }
@@ -68,7 +67,7 @@ class Events {
                 while (iterator.hasNext()) {
 
                     EventSync implementation = iterator.next();
-                    id = implementation.getName();
+                    id = implementation.getType();
 
                     if (id.equals(publisherName)) {
                         eventSync = implementation;
@@ -84,7 +83,6 @@ class Events {
             eventSync = null;
         }
     }
-
 
     EventSync getEventSync() {
 

@@ -32,7 +32,6 @@ public class EventService {
     private final Events events;
 
     public EventService(StartupContext context) {
-
         BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
         events = new Events(new CarbonConfigAdapter(configProvider));
 

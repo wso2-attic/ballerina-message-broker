@@ -16,6 +16,7 @@
  * under the License.
  *
  */
+
 package io.ballerina.messaging.broker.core.eventpublisher;
 
 import java.util.Map;
@@ -32,7 +33,6 @@ public class NullCorePublisher implements CorePublisher {
 
     @Override
     public String getRoutingKey(int id, Map<String, String> properties) {
-
         //No need
         return null;
     }
