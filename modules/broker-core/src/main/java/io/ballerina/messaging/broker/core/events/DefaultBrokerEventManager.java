@@ -37,7 +37,6 @@ public class DefaultBrokerEventManager implements BrokerEventManager {
         properties.put("Queue_Name", queueName);
         properties.put("isAutoDelete", isAutoDelete);
         properties.put("isDurable", isDurable);
-        logger.info("Consumer Subscription Published");
         eventSync.publish(EventConstants.QUEUECREATED, properties);
     }
 
