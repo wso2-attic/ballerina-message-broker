@@ -51,6 +51,11 @@ package io.ballerina.messaging.broker.core.selector.generated;
 import java.io.StringReader;
 import io.ballerina.messaging.broker.core.selector.BooleanExpression;
 import io.ballerina.messaging.broker.core.selector.EqualityExpression;
+import io.ballerina.messaging.broker.core.selector.GreaterThan;
+import io.ballerina.messaging.broker.core.selector.GreaterOrEqual;
+import io.ballerina.messaging.broker.core.selector.NOTEQUAL;
+import io.ballerina.messaging.broker.core.selector.LessThan;
+import io.ballerina.messaging.broker.core.selector.LessOrEqual;
 import io.ballerina.messaging.broker.core.selector.ConstantExpression;
 import io.ballerina.messaging.broker.core.selector.Expression;
 import io.ballerina.messaging.broker.core.selector.JmsPropertyExpression;
@@ -102,6 +107,15 @@ TOKEN :
 {
     <IDENTIFIER : ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_","$"])*>
 }
+TOKEN :
+    {
+     < EQUAL: "=" >
+    | < GTREATER: ">" >
+    | < LESS: "<" >
+    | < GTEATERorEQAL: ">=" >
+    | < LESSorEQUAL: "=<" >
+    | < NOTEQUAL: "<>" >
+    }
 
 BooleanExpression parseSelector() :
 { BooleanExpression value; }
@@ -119,10 +133,13 @@ BooleanExpression ComparisonExpression() :
 {
     left = identifier()
     (
-        "=" right = value()
-        {
-            value = new EqualityExpression(left, right);
-        }
+                 <EQUAL> right = value(){ value = new EqualityExpression(left , right);}
+               | <GTREATER> right=value()  { value= new GreaterThan(left , right); }
+               | <GTEATERorEQAL> right=value()  { value= new GreaterOrEqual(left , right); }
+               |  <LESS> right=value()  { value= new LessThan(left , right); }
+               |  <LESSorEQUAL> right=value()  { value= new LessOrEqual(left , right); }
+               | <NOTEQUAL> right =value() { value = new NOTEQUAL(left , right);}
+
     )
 
     { return value; }
