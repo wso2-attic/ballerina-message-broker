@@ -24,10 +24,14 @@ import io.ballerina.messaging.broker.common.data.types.FieldValue;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.ContentChunk;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,24 +42,24 @@ public class DefaultCorePublisher implements CorePublisher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCorePublisher.class);
     private Broker broker;
+
+    /**
+     * Name of the Exchange where notifications are published.
+     */
     private String exchangeName = "event";
     private int count;
 
     DefaultCorePublisher(Broker broker) {
-
         this.broker = broker;
     }
 
     @Override
     public void publishNotification(int id, Map<String, String> properties) {
-
         if (id == EventConstants.MESSAGE_PUBLISHED_EVENT) {
             String publishedExchangeName = properties.get("ExchangeName");
-
             if (publishedExchangeName.equals(exchangeName)) {
                 return;
             }
-
         }
 
         Map<ShortString, FieldValue> notificationProperties = new HashMap<>();
@@ -63,19 +67,30 @@ public class DefaultCorePublisher implements CorePublisher {
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             ShortString key = ShortString.parseString(entry.getKey());
             String obj = entry.getValue();
-            FieldValue fieldValue = FieldValue.parseShortString(obj);
+            FieldValue fieldValue = FieldValue.parseLongString(obj);
             notificationProperties.put(key, fieldValue);
         }
 
-        Metadata metadata = new Metadata(getRoutingKey(id, properties), exchangeName, 0);
-        metadata.setHeaders(new FieldTable(notificationProperties));
 
+        Metadata metadata = new Metadata(getRoutingKey(id, properties), exchangeName, 13);
+        metadata.setHeaders(new FieldTable(notificationProperties));
         FieldTable messageProperties = new FieldTable();
-        byte property = 0x00;
-        messageProperties.add(ShortString.parseString("propertyFlags"), FieldValue.parseShortShortInt(property));
+        messageProperties.add(ShortString.parseString("propertyFlags"), FieldValue.parseLongInt(8192));
         metadata.setProperties(messageProperties);
 
         Message notificationMessage = new Message(count++, metadata);
+
+        String data = "Event Message";
+        int numberOfChunks = 1;
+        byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
+        int chunkSize = dataBytes.length / numberOfChunks;
+        for (int i = 0; i < numberOfChunks; i++) {
+            int offset = i * chunkSize;
+            ByteBuf buffer = Unpooled.wrappedBuffer(dataBytes,
+                    offset,
+                    Math.min(chunkSize, dataBytes.length - offset));
+            notificationMessage.addChunk(new ContentChunk(0, buffer));
+        }
 
         try {
             broker.publish(notificationMessage);
@@ -86,7 +101,6 @@ public class DefaultCorePublisher implements CorePublisher {
     }
 
     public String getRoutingKey(int id, Map<String, String> properties) {
-
         if (id == EventConstants.CONSUMER_ADDED_EVENT) {
             return "consumer.added";
         } else if (id == EventConstants.MESSAGE_PUBLISHED_EVENT) {
