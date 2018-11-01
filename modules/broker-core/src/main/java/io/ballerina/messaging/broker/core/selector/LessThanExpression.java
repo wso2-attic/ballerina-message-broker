@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -16,38 +17,37 @@
  * under the License.
  *
  */
-
 package io.ballerina.messaging.broker.core.selector;
-
 
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
  * Implementation of a boolean expression. Here we compare two expressions and evaluate to a boolean value.
  */
-public class NOTEQUAL implements BooleanExpression {
+
+public class LessThanExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
 
     private final Expression<Metadata> right;
 
-    public NOTEQUAL(Expression<Metadata> left , Expression<Metadata> right) {
+    public LessThanExpression (Expression<Metadata> left , Expression<Metadata> right) {
         this.left = left;
         this.right = right;
     }
 
     @Override
-    public boolean evaluate(Metadata metadata) {
+    public boolean evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue == null || rightValue == null) {
             return false;
         }
-
-        if (rightValue != leftValue) {
+        ConvertAndCompare con = new ConvertAndCompare();
+        double x = con.cnovert(leftValue , rightValue);
+        if (x == -1) {
             return true;
         }
-
         return false;
     }
 }

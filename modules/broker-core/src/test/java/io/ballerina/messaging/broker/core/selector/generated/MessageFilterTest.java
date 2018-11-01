@@ -61,6 +61,8 @@ public class MessageFilterTest {
                 "MyProperty = '$aBCdef2'",
                 "MyProperty = '2aBCdef2'",
                 "MyProperty = 'aB$C1d_ef2'",
+
+
                 // valid identifiers
                 "abCDEF = 'abcdef'",
                 "ab9cdef = 'abcdef'",

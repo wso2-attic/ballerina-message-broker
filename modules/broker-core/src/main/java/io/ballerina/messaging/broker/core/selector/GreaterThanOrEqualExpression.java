@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -25,31 +24,29 @@ import io.ballerina.messaging.broker.core.Metadata;
  * Implementation of a boolean expression. Here we compare two expressions and evaluate to a boolean value.
  */
 
-public class LessThan implements BooleanExpression {
+public class GreaterThanOrEqualExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
 
     private final Expression<Metadata> right;
 
-    public LessThan (Expression<Metadata> left , Expression<Metadata> right) {
+    public GreaterThanOrEqualExpression (Expression<Metadata> left , Expression<Metadata> right) {
         this.left = left;
         this.right = right;
     }
 
     @Override
-    public boolean evaluate(Metadata metadata) {
+    public boolean evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue == null || rightValue == null) {
             return false;
         }
-        String s = String.valueOf(leftValue);
-        String s1 = String.valueOf(rightValue);
-        double x = s.compareTo(s1);
-        if (x == -1) {
+        ConvertAndCompare con = new ConvertAndCompare();
+        double x = con.cnovert(leftValue , rightValue);
+        if (x == 0 || x == 1) {
             return true;
         }
-
         return false;
     }
 }
