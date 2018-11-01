@@ -101,17 +101,19 @@ public class DefaultCorePublisher implements CorePublisher {
     }
 
     public String getRoutingKey(int id, Map<String, String> properties) {
-        if (id == EventConstants.CONSUMER_ADDED_EVENT) {
-            return "consumer.added";
-        } else if (id == EventConstants.MESSAGE_PUBLISHED_EVENT) {
-            return "message.published";
-        } else if (id == EventConstants.QUEUE_CREATED) {
-            return "queue.created";
-        } else if (id == EventConstants.BINDING_CREATED) {
-            return "binding.created" + properties.get("BindingName");
-        } else {
-            return null;
+        String routingKey;
+        switch (id) {
+            case EventConstants.CONSUMER_ADDED_EVENT: routingKey = "consumer.added";
+            break;
+            case EventConstants.MESSAGE_PUBLISHED_EVENT: routingKey = "message.published";
+            break;
+            case EventConstants.QUEUE_CREATED: routingKey = "queue.created";
+            break;
+            case EventConstants.BINDING_CREATED: routingKey = "binding.created";
+            break;
+            default: routingKey = null;
         }
+        return routingKey;
     }
 
     void setExchangeName(String exchangeName) {
