@@ -37,12 +37,12 @@ public class EventConfiguration {
     private boolean enabled = true;
 
     @Element(
-            description = "Enable publisher"
+            description = "Publisher Implementation"
     )
-    private String publisher = "brokerpublisher";
+    private String publisherClass = "io.ballerina.messaging.broker.core.eventpublisher.EventPublisher";
 
-    public String getPublisher() {
-        return publisher;
+    public String getPublisherClassName() {
+        return publisherClass;
     }
 
     public boolean isEnabled() {
@@ -53,7 +53,7 @@ public class EventConfiguration {
         this.enabled = enabled;
     }
 
-    public void setPublisher(String publisher) {
-        this.publisher = publisher;
+    public void setPublisherClass(String publisherClass) {
+        this.publisherClass = publisherClass;
     }
 }

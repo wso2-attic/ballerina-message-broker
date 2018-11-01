@@ -32,11 +32,6 @@ public class EventPublisher implements EventSync {
     private CorePublisher exchangePublisher = new NullCorePublisher();
     private Broker broker = null;
 
-    @Override
-    public String getType() {
-        return "brokerpublisher";
-    }
-
     public void publish(int id, Map<String, String> properties) {
         exchangePublisher.publishNotification(id, properties);
     }

@@ -29,22 +29,22 @@ import java.util.Objects;
  */
 public class EventService {
 
-    private final Events events;
+    private final PublisherGenerator publisherGenerator;
 
     public EventService(StartupContext context) {
         BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
-        events = new Events(new CarbonConfigAdapter(configProvider));
+        publisherGenerator = new PublisherGenerator(new CarbonConfigAdapter(configProvider));
 
-        if (Objects.nonNull(events.getEventSync())) {
-            context.registerService(EventSync.class, events.getEventSync());
+        if (Objects.nonNull(publisherGenerator.getEventSync())) {
+            context.registerService(EventSync.class, publisherGenerator.getEventSync());
         }
     }
 
     public void start() {
-        events.activate();
+        publisherGenerator.activate();
     }
 
     public void stop() {
-        events.deactivate();
+        publisherGenerator.deactivate();
     }
 }
