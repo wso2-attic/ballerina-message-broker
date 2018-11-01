@@ -216,7 +216,7 @@ public class TopicMessagesOrderTest {
         Thread subscriberOneThread = new Thread(() -> {
             try {
                 for (int i = 0; i < numberOfMessages; i++) {
-                    TextMessage message = (TextMessage) subscriberOne.receive(1000);
+                    TextMessage message = (TextMessage) subscriberOne.receive(5000);
                     Assert.assertNotNull(message, "Message #" + i + " was not received");
                     subscriberOneMessages.add(message.getText());
                 }
@@ -230,7 +230,7 @@ public class TopicMessagesOrderTest {
         Thread subscriberTwoThread = new Thread(() -> {
             try {
                 for (int i = 0; i < numberOfMessages; i++) {
-                    TextMessage message = (TextMessage) subscriberTwo.receive(1000);
+                    TextMessage message = (TextMessage) subscriberTwo.receive(5000);
                     Assert.assertNotNull(message, "Message #" + i + " was not received");
                     subscriberTwoMessages.add(message.getText());
                 }
