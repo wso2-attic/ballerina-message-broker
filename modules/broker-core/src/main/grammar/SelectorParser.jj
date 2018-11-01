@@ -51,11 +51,11 @@ package io.ballerina.messaging.broker.core.selector.generated;
 import java.io.StringReader;
 import io.ballerina.messaging.broker.core.selector.BooleanExpression;
 import io.ballerina.messaging.broker.core.selector.EqualityExpression;
-import io.ballerina.messaging.broker.core.selector.GreaterThan;
-import io.ballerina.messaging.broker.core.selector.GreaterOrEqual;
-import io.ballerina.messaging.broker.core.selector.NOTEQUAL;
-import io.ballerina.messaging.broker.core.selector.LessThan;
-import io.ballerina.messaging.broker.core.selector.LessOrEqual;
+import io.ballerina.messaging.broker.core.selector.GreaterThanExpression;
+import io.ballerina.messaging.broker.core.selector.GreaterThanOrEqualExpression ;
+import io.ballerina.messaging.broker.core.selector.NotEqualExpression;
+import io.ballerina.messaging.broker.core.selector.LessThanExpression;
+import io.ballerina.messaging.broker.core.selector.LessThanOrEqualExpression;
 import io.ballerina.messaging.broker.core.selector.ConstantExpression;
 import io.ballerina.messaging.broker.core.selector.Expression;
 import io.ballerina.messaging.broker.core.selector.JmsPropertyExpression;
@@ -115,12 +115,13 @@ TOKEN :
     | < GTEATERorEQAL: ">=" >
     | < LESSorEQUAL: "=<" >
     | < NOTEQUAL: "<>" >
+
     }
 
 BooleanExpression parseSelector() :
 { BooleanExpression value; }
 {
-     value=ComparisonExpression() <EOF>
+     value=ComparisonExpression()<EOF>
      { return value; }
 }
 
@@ -134,17 +135,16 @@ BooleanExpression ComparisonExpression() :
     left = identifier()
     (
                  <EQUAL> right = value(){ value = new EqualityExpression(left , right);}
-               | <GTREATER> right=value()  { value= new GreaterThan(left , right); }
-               | <GTEATERorEQAL> right=value()  { value= new GreaterOrEqual(left , right); }
-               |  <LESS> right=value()  { value= new LessThan(left , right); }
-               |  <LESSorEQUAL> right=value()  { value= new LessOrEqual(left , right); }
-               | <NOTEQUAL> right =value() { value = new NOTEQUAL(left , right);}
+               | <GTREATER> right=value()  { value= new GreaterThanExpression(left , right); }
+               | <GTEATERorEQAL> right=value()  { value= new GreaterThanOrEqualExpression (left , right); }
+               |  <LESS> right=value()  { value= new LessThanExpression(left , right); }
+               |  <LESSorEQUAL> right=value()  { value= new LessThanOrEqualExpression(left , right); }
+               | <NOTEQUAL> right =value() { value = new NotEqualExpression(left , right);}
 
     )
 
     { return value; }
 }
-
 Expression identifier() :
 {
     Token t;
@@ -161,7 +161,6 @@ Expression identifier() :
         return expr;
     }
 }
-
 Expression value() :
 {
     Expression expr;
