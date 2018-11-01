@@ -26,11 +26,6 @@ import java.util.Map;
 public interface EventSync {
 
     /**
-     * Used to get the type of the publisher.
-     */
-    String getType();
-
-    /**
      * Used to publish the triggered event data to the necessary medium.
      *
      * @param id ID to identify the Event Type

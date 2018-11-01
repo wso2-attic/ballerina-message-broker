@@ -103,9 +103,8 @@ ballerina.broker.auth:
 ballerina.broker.events:
   # Enable Events
   enabled: true
-  # Enable publisher
-  publisher: brokerpublisher
-
+  # Publisher Implementation
+  publisherClass: io.ballerina.messaging.broker.core.eventpublisher.EventPublisher
 
 # AMQP transport related configurations.
 ballerina.broker.transport.amqp:
