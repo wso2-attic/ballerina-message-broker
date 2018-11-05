@@ -63,5 +63,5 @@ public interface UserStore {
      * @param username username to verify
      * @return true or false based on the verification
      */
-    boolean isUserExists(String username);
+    boolean isUserExists(String username) throws AuthException;
 }

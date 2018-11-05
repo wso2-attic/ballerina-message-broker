@@ -31,7 +31,10 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Objects;
+import java.util.Set;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -49,6 +52,7 @@ public class LdapAuthHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LdapAuthHandler.class);
     private BrokerAuthConfiguration.LdapConfiguration ldapConfiguration;
+    private static final String PLACE_HOLDER = "?";
 
     public LdapAuthHandler(BrokerAuthConfiguration.LdapConfiguration ldapConfiguration) throws AuthException {
 
@@ -123,7 +127,7 @@ public class LdapAuthHandler {
      */
     public String searchDN(DirContext dirContext, String username) throws NamingException {
 
-        String lookup = ldapConfiguration.getUsernameSearchFilter().replace("?", username);
+        String lookup = ldapConfiguration.getUsernameSearchFilter().replace(PLACE_HOLDER, username);
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
@@ -141,6 +145,39 @@ public class LdapAuthHandler {
         }
         answer.close();
         return dn;
+    }
+
+    /**
+     * Fetch the set of groups which the user belongs to.
+     *
+     * @param dirContext ldap connection object
+     * @param userDN distinguished name (dn) of the user
+     * @return a set of groups which the given user belongs to
+     * @throws NamingException in case of an erroneous search query
+     */
+    public Set<String> getUserGroups(DirContext dirContext, String userDN) throws NamingException {
+
+        Set<String> groups = new HashSet<>();
+        String filter = ldapConfiguration.getGroupMembershipFilter().replace(PLACE_HOLDER, userDN);
+        SearchControls ctrl = new SearchControls();
+        ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+        String groupAttribute = ldapConfiguration.getGroupNameAttribute();
+        ctrl.setReturningAttributes(new String[]{groupAttribute});
+
+        NamingEnumeration<SearchResult> answer = dirContext.search(ldapConfiguration.getGroupBaseDN(), filter, ctrl);
+
+        String groupName;
+        while (answer.hasMore()) {
+            SearchResult result = answer.next();
+            groupName = String.valueOf(result.getAttributes().get(groupAttribute).get());
+            if (Objects.nonNull(groupName)) {
+                groups.add(groupName);
+            }
+        }
+        answer.close();
+        LOGGER.debug("Fetched groups: {}", groups);
+        return groups;
     }
 
     /**
