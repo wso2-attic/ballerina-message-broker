@@ -153,6 +153,8 @@ public class BrokerAuthConfiguration {
 
         private String className = DefaultAuthenticator.class.getCanonicalName();
 
+        private LdapConfiguration ldap = new LdapConfiguration();
+
         private Map<String, Object> properties = new HashMap<>();
 
         public String getClassName() {
@@ -161,6 +163,14 @@ public class BrokerAuthConfiguration {
 
         public void setClassName(String className) {
             this.className = className;
+        }
+
+        public LdapConfiguration getLdap() {
+            return ldap;
+        }
+
+        public void setLdap(LdapConfiguration ldap) {
+            this.ldap = ldap;
         }
 
         public Map<String, Object> getProperties() {
@@ -290,6 +300,170 @@ public class BrokerAuthConfiguration {
 
         public void setSize(int size) {
             this.size = size;
+        }
+    }
+
+    /**
+     * Represents Ldap configuration.
+     */
+    public static class LdapConfiguration {
+
+        private String hostName = "localhost";
+
+        private String baseDN = "dc=example,dc=com";
+
+        private String usernameSearchFilter = "(uid=?)";
+
+        private LdapPlainConfiguration plain = new LdapPlainConfiguration();
+
+        private LdapSslConfiguration ssl = new LdapSslConfiguration();
+
+        public String getHostName() {
+            return hostName;
+        }
+
+        public void setHostName(String hostName) {
+            this.hostName = hostName;
+        }
+
+        public String getBaseDN() {
+            return baseDN;
+        }
+
+        public void setBaseDN(String baseDN) {
+            this.baseDN = baseDN;
+        }
+
+        public String getUsernameSearchFilter() {
+            return usernameSearchFilter;
+        }
+
+        public void setUsernameSearchFilter(String usernameSearchFilter) {
+            this.usernameSearchFilter = usernameSearchFilter;
+        }
+
+        public LdapPlainConfiguration getPlain() {
+            return plain;
+        }
+
+        public void setPlain(LdapPlainConfiguration plain) {
+            this.plain = plain;
+        }
+
+        public LdapSslConfiguration getSsl() {
+            return ssl;
+        }
+
+        public void setSsl(LdapSslConfiguration ssl) {
+            this.ssl = ssl;
+        }
+    }
+
+    /**
+     * Represents Ldap configuration for plain connections (ssl disabled).
+     */
+    public static class LdapPlainConfiguration {
+
+        private int port = 10389;
+
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+    }
+
+    /**
+     * Represents Ldap ssl configuration.
+     */
+    public static class LdapSslConfiguration {
+
+        private boolean enabled = false;
+
+        private int port = 10636;
+
+        private String protocol = "TLS";
+
+        private LdapSslTrustStoreConfiguration trustStore = new LdapSslTrustStoreConfiguration();
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
+
+        public LdapSslTrustStoreConfiguration getTrustStore() {
+            return trustStore;
+        }
+
+        public void setTrustStore(LdapSslTrustStoreConfiguration trustStore) {
+            this.trustStore = trustStore;
+        }
+    }
+
+    /**
+     * Represents ssl trust store configuration for Ldap.
+     */
+    public static class LdapSslTrustStoreConfiguration {
+
+        private String type = "JKS";
+
+        private String location = "resources/security/ldap-truststore.jks";
+
+        private String password = "ballerina";
+
+        private String certType = "SunX509";
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        public void setLocation(String location) {
+            this.location = location;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getCertType() {
+            return certType;
+        }
+
+        public void setCertType(String certType) {
+            this.certType = certType;
         }
     }
 }
