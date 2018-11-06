@@ -25,21 +25,17 @@ import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.ldap.LdapAuthHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 
 /**
  * This class implements @{@link UserStore} to provide a ldap based user store.
  */
 public class LdapUserStore implements UserStore {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LdapUserStore.class);
     private LdapAuthHandler ldapAuthHandler;
 
     @Override
@@ -63,27 +59,12 @@ public class LdapUserStore implements UserStore {
     public boolean isUserExists(String username) throws AuthException {
 
         boolean exists = false;
-        DirContext dirContext = null;
         try {
-            dirContext = ldapAuthHandler.connectAnonymously();
-        } catch (NamingException e) {
-            throw new AuthException("Ldap connection failed", e);
-        }
-
-        try {
-            if (Objects.nonNull(ldapAuthHandler.searchDN(dirContext, username))) {
+            if (Objects.nonNull(ldapAuthHandler.searchDN(username))) {
                 exists = true;
             }
         } catch (NamingException e) {
             throw new AuthException("Error while searching Username: " + username, e);
-        } finally {
-            if (dirContext != null) {
-                try {
-                    dirContext.close();
-                } catch (NamingException e) {
-                    LOGGER.debug("Error closing dir context", e);
-                }
-            }
         }
 
         return exists;
@@ -92,31 +73,16 @@ public class LdapUserStore implements UserStore {
     @Override
     public Set<String> getUserGroupsList(String username) throws AuthException {
 
-        DirContext dirContext = null;
+        String dn;
         try {
-            dirContext = ldapAuthHandler.connectAnonymously();
-        } catch (NamingException e) {
-            throw new AuthException("Ldap connection failed", e);
-        }
-
-        String dn = null;
-        try {
-            dn = ldapAuthHandler.searchDN(dirContext, username);
+            dn = ldapAuthHandler.searchDN(username);
         } catch (NamingException e) {
             throw new AuthException("Error while searching Username: " + username, e);
         }
         try {
-            return ldapAuthHandler.getUserGroups(dirContext, dn);
+            return ldapAuthHandler.getUserGroups(dn);
         } catch (NamingException e) {
             throw new AuthException("Error while fetching groups for Username: " + username, e);
-        } finally {
-            if (dirContext != null) {
-                try {
-                    dirContext.close();
-                } catch (NamingException e) {
-                    LOGGER.debug("Error closing dir context", e);
-                }
-            }
         }
     }
 }

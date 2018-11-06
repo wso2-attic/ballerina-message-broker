@@ -26,19 +26,15 @@ import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.ldap.LdapAuthHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 
 /**
  * Ldap authentication representation for @{@link Authenticator}.
  */
 public class LdapAuthenticator implements Authenticator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LdapAuthenticator.class);
     private LdapAuthHandler ldapAuthHandler;
 
     @Override
@@ -58,28 +54,12 @@ public class LdapAuthenticator implements Authenticator {
     @Override
     public AuthResult authenticate(String username, char[] password) throws AuthException {
 
-        boolean isAuthenticated = false;
-
-        DirContext dirContext = null;
+        boolean isAuthenticated;
+        String dn;
         try {
-            dirContext = ldapAuthHandler.connectAnonymously();
-        } catch (NamingException e) {
-            throw new AuthException("Ldap connection failed", e);
-        }
-
-        String dn = null;
-        try {
-            dn = ldapAuthHandler.searchDN(dirContext, username);
+            dn = ldapAuthHandler.searchDN(username);
         } catch (NamingException e) {
             throw new AuthException("Error while searching Username: " + username, e);
-        } finally {
-            if (dirContext != null) {
-                try {
-                    dirContext.close();
-                } catch (NamingException e) {
-                    LOGGER.debug("Error closing dir context", e);
-                }
-            }
         }
         try {
             isAuthenticated = ldapAuthHandler.authenticate(dn, String.valueOf(password));

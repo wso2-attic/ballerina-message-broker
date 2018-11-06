@@ -81,7 +81,13 @@ public class LdapAuthHandler {
         }
     }
 
-    public DirContext connectAnonymously() throws NamingException {
+    /**
+     * Connect to ldap server anonymously.
+     *
+     * @return InitialDirContext if the connection is successful
+     * @throws NamingException if the connection failed
+     */
+    private DirContext connectAnonymously() throws NamingException {
 
         return connect(new Hashtable<>());
     }
@@ -95,7 +101,7 @@ public class LdapAuthHandler {
      */
     private DirContext connect(Hashtable<String, String> env) throws NamingException {
 
-        DirContext dirContext = null;
+        DirContext dirContext;
         env.put(Context.INITIAL_CONTEXT_FACTORY, LdapConstants.JNDI_LDAP_CTX_FACTORY);
         env.put(Context.SECURITY_AUTHENTICATION, LdapConstants.LDAP_AUTHENTICATION_SIMPLE);
 
@@ -118,66 +124,108 @@ public class LdapAuthHandler {
     }
 
     /**
+     * Try and close the dir context.
+     *
+     * @param dirContext dir context object
+     */
+    private void closeQuietly(DirContext dirContext) {
+
+        if (Objects.nonNull(dirContext)) {
+            try {
+                dirContext.close();
+            } catch (NamingException e) {
+                LOGGER.debug("Error closing dir context", e);
+            }
+        }
+    }
+
+    /**
+     * Try and close the search result.
+     *
+     * @param searchResult search result naming enumeration
+     */
+    private void closeQuietly(NamingEnumeration<SearchResult> searchResult) {
+
+        if (Objects.nonNull(searchResult)) {
+            try {
+                searchResult.close();
+            } catch (NamingException e) {
+                LOGGER.debug("Error closing search result", e);
+            }
+        }
+    }
+
+    /**
      * Fetch distinguished name (dn) of the given user.
      *
-     * @param dirContext ldap connection object
-     * @param username of the user
+     * @param username username of the user
      * @return distinguished name (dn) of the given user. Null if not found.
-     * @throws NamingException in case of an erroneous search query
+     * @throws NamingException in case of failing to connect to ldap server or erroneous search query
      */
-    public String searchDN(DirContext dirContext, String username) throws NamingException {
+    public String searchDN(String username) throws NamingException {
 
-        String lookup = ldapConfiguration.getUsernameSearchFilter().replace(PLACE_HOLDER, username);
-        SearchControls searchControls = new SearchControls();
-        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        DirContext dirContext = null;
+        NamingEnumeration<SearchResult> answer = null;
+        try {
+            dirContext = connectAnonymously();
+            String lookup = ldapConfiguration.getUsernameSearchFilter().replace(PLACE_HOLDER, username);
+            SearchControls searchControls = new SearchControls();
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-        NamingEnumeration<SearchResult> answer
-                = dirContext.search(ldapConfiguration.getBaseDN(), lookup, searchControls);
+            answer = dirContext.search(ldapConfiguration.getBaseDN(), lookup, searchControls);
 
-        String dn;
-        if (answer.hasMore()) {
-            javax.naming.directory.SearchResult result = answer.next();
-            dn = result.getNameInNamespace();
-            LOGGER.debug("DN: {} obtained for Username: {}", dn, username);
-        } else {
-            dn = null;
-            LOGGER.debug("DN search failed for Username: {}", username);
+            String dn = null;
+            if (answer.hasMore()) {
+                SearchResult result = answer.next();
+                dn = result.getNameInNamespace();
+                LOGGER.debug("DN: {} obtained for Username: {}", dn, username);
+            } else {
+                LOGGER.debug("DN is not found for Username: {}", username);
+            }
+            return dn;
+        } finally {
+            closeQuietly(answer);
+            closeQuietly(dirContext);
         }
-        answer.close();
-        return dn;
     }
 
     /**
      * Fetch the set of groups which the user belongs to.
      *
-     * @param dirContext ldap connection object
      * @param userDN distinguished name (dn) of the user
      * @return a set of groups which the given user belongs to
-     * @throws NamingException in case of an erroneous search query
+     * @throws NamingException in case of failing to connect to ldap server or erroneous search query
      */
-    public Set<String> getUserGroups(DirContext dirContext, String userDN) throws NamingException {
+    public Set<String> getUserGroups(String userDN) throws NamingException {
 
-        Set<String> groups = new HashSet<>();
-        String filter = ldapConfiguration.getGroupMembershipFilter().replace(PLACE_HOLDER, userDN);
-        SearchControls ctrl = new SearchControls();
-        ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        DirContext dirContext = null;
+        NamingEnumeration<SearchResult> answer = null;
+        try {
+            dirContext = connectAnonymously();
+            Set<String> groups = new HashSet<>();
+            String filter = ldapConfiguration.getGroupMembershipFilter().replace(PLACE_HOLDER, userDN);
+            SearchControls searchControls = new SearchControls();
+            searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+            String groupAttribute = ldapConfiguration.getGroupNameAttribute();
+            searchControls.setReturningAttributes(new String[]{groupAttribute});
 
-        String groupAttribute = ldapConfiguration.getGroupNameAttribute();
-        ctrl.setReturningAttributes(new String[]{groupAttribute});
+            answer = dirContext.search(ldapConfiguration.getGroupBaseDN(), filter, searchControls);
 
-        NamingEnumeration<SearchResult> answer = dirContext.search(ldapConfiguration.getGroupBaseDN(), filter, ctrl);
-
-        String groupName;
-        while (answer.hasMore()) {
-            SearchResult result = answer.next();
-            groupName = String.valueOf(result.getAttributes().get(groupAttribute).get());
-            if (Objects.nonNull(groupName)) {
-                groups.add(groupName);
+            String groupName;
+            while (answer.hasMore()) {
+                SearchResult result = answer.next();
+                groupName = String.valueOf(result.getAttributes().get(groupAttribute).get());
+                if (Objects.nonNull(groupName)) {
+                    groups.add(groupName);
+                }
             }
+
+            LOGGER.debug("Fetched groups: {}", groups);
+            return groups;
+        } finally {
+            closeQuietly(answer);
+            closeQuietly(dirContext);
         }
-        answer.close();
-        LOGGER.debug("Fetched groups: {}", groups);
-        return groups;
     }
 
     /**
@@ -197,21 +245,15 @@ public class LdapAuthHandler {
             Hashtable<String, String> env = new Hashtable<>();
             env.put(Context.SECURITY_PRINCIPAL, dn);
             env.put(Context.SECURITY_CREDENTIALS, String.valueOf(password));
-            DirContext authDirContext = null;
+            DirContext dirContext = null;
             try {
-                authDirContext = connect(env);
+                dirContext = connect(env);
                 isAuthenticated = true;
                 LOGGER.debug("DN: {} authenticated successfully", dn);
             } catch (javax.naming.AuthenticationException e) {
                 LOGGER.debug("DN: {} authentication failed", dn, e);
             } finally {
-                if (authDirContext != null) {
-                    try {
-                        authDirContext.close();
-                    } catch (NamingException e) {
-                        LOGGER.debug("Error closing dir context", e);
-                    }
-                }
+                closeQuietly(dirContext);
             }
         } else {
             LOGGER.debug("Invalid DN");
