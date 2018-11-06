@@ -41,15 +41,14 @@ public class DefaultBrokerEventManager implements BrokerEventManager {
         logger.info("Default Event Manager Declared");
     }
 
-    public  void queueCreated(QueueHandler queueHandler) {
+    public void queueCreated(QueueHandler queueHandler) {
         Map<String, String> properties = new HashMap<>();
         String queueName = queueHandler.getUnmodifiableQueue().getName();
         String isAutoDelete = String.valueOf(queueHandler.getUnmodifiableQueue().isAutoDelete());
         String isDurable = String.valueOf(queueHandler.getUnmodifiableQueue().isDurable());
-        properties.put("Queue_Name", queueName);
-        properties.put("isAutoDelete", isAutoDelete);
-        properties.put("isDurable", isDurable);
+        properties.put("queueName", queueName);
+        properties.put("autoDelete", isAutoDelete);
+        properties.put("durable", isDurable);
         eventSync.publish(EventConstants.QUEUE_CREATED, properties);
     }
-
 }

@@ -24,8 +24,20 @@ package io.ballerina.messaging.broker.common;
  */
 public final class EventConstants {
 
+    /**
+     * ID to identify Consumer Added Event.
+     */
     public static final int CONSUMER_ADDED_EVENT = 1;
+    /**
+     * ID to identify Message Published Event.
+     */
     public static final int MESSAGE_PUBLISHED_EVENT = 2;
+    /**
+     * ID to identify Queue Created Event.
+     */
     public static final int QUEUE_CREATED = 3;
+    /**
+     * ID to identify Binding Created Event.
+     */
     public static final int BINDING_CREATED = 4;
 }

@@ -27,7 +27,7 @@ import java.util.Objects;
 /**
  * Implementation of BrokerPublisher for {@link EventSync}.
  */
-public class EventPublisher implements EventSync {
+public class BrokerCoreEventPublisher implements EventSync {
 
     private CorePublisher exchangePublisher = new NullCorePublisher();
     private Broker broker = null;

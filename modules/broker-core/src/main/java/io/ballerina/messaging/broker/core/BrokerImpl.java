@@ -33,7 +33,7 @@ import io.ballerina.messaging.broker.coordination.BasicHaListener;
 import io.ballerina.messaging.broker.coordination.HaListener;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
-import io.ballerina.messaging.broker.core.eventpublisher.EventPublisher;
+import io.ballerina.messaging.broker.core.eventpublisher.BrokerCoreEventPublisher;
 import io.ballerina.messaging.broker.core.events.BrokerEventManager;
 import io.ballerina.messaging.broker.core.events.DefaultBrokerEventManager;
 import io.ballerina.messaging.broker.core.events.NullBrokerEventManager;
@@ -217,8 +217,8 @@ public final class BrokerImpl implements Broker {
 
     private BrokerEventManager getEventManager(EventSync eventPublisher, Broker broker) {
         if (Objects.nonNull(eventPublisher)) {
-            if (eventPublisher instanceof EventPublisher) {
-                ((EventPublisher) eventPublisher).setBroker(broker);
+            if (eventPublisher instanceof BrokerCoreEventPublisher) {
+                ((BrokerCoreEventPublisher) eventPublisher).setBroker(broker);
             }
             return new DefaultBrokerEventManager(eventPublisher);
         } else {
