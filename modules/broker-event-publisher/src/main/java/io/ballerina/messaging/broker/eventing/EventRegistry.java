@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Used to load registered EventPublishers.
  */
-public class EventRegistry {
+class EventRegistry {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventRegistry.class);
 
     /**

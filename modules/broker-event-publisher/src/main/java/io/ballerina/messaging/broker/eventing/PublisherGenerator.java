@@ -30,12 +30,10 @@ import java.util.Objects;
 class PublisherGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(PublisherGenerator.class);
-
     private boolean isEnabled;
     private EventSync eventSync = null;
 
     PublisherGenerator(ConfigProvider configProvider) {
-
         EventConfiguration eventsConfig;
 
         try {
@@ -46,6 +44,7 @@ class PublisherGenerator {
             }
         } catch (Exception e) {
             logger.error("Error loading Events Configuration", e);
+            isEnabled = false;
         }
     }
 
@@ -54,7 +53,7 @@ class PublisherGenerator {
     }
 
     void activate() {
-        if (isEnabled && Objects.nonNull(eventSync)) {
+        if (isEnabled) {
             eventSync.activate();
         }
     }
