@@ -189,6 +189,8 @@ public class BrokerAuthConfiguration {
 
         private String className = FileBasedUserStore.class.getCanonicalName();
 
+        private LdapConfiguration ldap = new LdapConfiguration();
+
         private Map<String, String> properties = new HashMap<>();
 
         public String getClassName() {
@@ -197,6 +199,14 @@ public class BrokerAuthConfiguration {
 
         public void setClassName(String className) {
             this.className = className;
+        }
+
+        public LdapConfiguration getLdap() {
+            return ldap;
+        }
+
+        public void setLdap(LdapConfiguration ldap) {
+            this.ldap = ldap;
         }
 
         public Map<String, String> getProperties() {
@@ -314,6 +324,12 @@ public class BrokerAuthConfiguration {
 
         private String usernameSearchFilter = "(uid=?)";
 
+        private String groupBaseDN = "dc=example,dc=com";
+
+        private String groupMembershipFilter = "(&(objectClass=groupOfNames)(member=?))";
+
+        private String groupNameAttribute = "cn";
+
         private LdapPlainConfiguration plain = new LdapPlainConfiguration();
 
         private LdapSslConfiguration ssl = new LdapSslConfiguration();
@@ -340,6 +356,30 @@ public class BrokerAuthConfiguration {
 
         public void setUsernameSearchFilter(String usernameSearchFilter) {
             this.usernameSearchFilter = usernameSearchFilter;
+        }
+
+        public String getGroupBaseDN() {
+            return groupBaseDN;
+        }
+
+        public void setGroupBaseDN(String groupBaseDN) {
+            this.groupBaseDN = groupBaseDN;
+        }
+
+        public String getGroupMembershipFilter() {
+            return groupMembershipFilter;
+        }
+
+        public void setGroupMembershipFilter(String groupMembershipFilter) {
+            this.groupMembershipFilter = groupMembershipFilter;
+        }
+
+        public String getGroupNameAttribute() {
+            return groupNameAttribute;
+        }
+
+        public void setGroupNameAttribute(String groupNameAttribute) {
+            this.groupNameAttribute = groupNameAttribute;
         }
 
         public LdapPlainConfiguration getPlain() {

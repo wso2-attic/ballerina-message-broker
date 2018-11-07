@@ -16,45 +16,63 @@
  * under the License.
  *
  */
-package io.ballerina.messaging.broker.auth.authentication.authenticator;
+package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
-import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.ldap.LdapAuthHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import javax.naming.NamingException;
 
 /**
- * Ldap authentication representation for @{@link Authenticator}.
+ * This class implements @{@link UserStore} to provide a ldap based user store.
  */
-public class LdapAuthenticator implements Authenticator {
+public class LdapUserStore implements UserStore {
 
     private LdapAuthHandler ldapAuthHandler;
 
     @Override
-    public void initialize(StartupContext startupContext,
-                           UserStore userStore,
-                           Map<String, Object> properties) throws Exception {
+    public void initialize(StartupContext startupContext, Map<String, String> properties) throws Exception {
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerAuthConfiguration brokerAuthConfiguration = configProvider.getConfigurationObject(
                 BrokerAuthConfiguration.NAMESPACE, BrokerAuthConfiguration.class);
-        BrokerAuthConfiguration.LdapConfiguration ldapConfiguration = brokerAuthConfiguration.getAuthentication()
-                .getAuthenticator().getLdap();
+        BrokerAuthConfiguration.LdapConfiguration ldapConfiguration = brokerAuthConfiguration.getAuthorization()
+                .getUserStore().getLdap();
 
         ldapAuthHandler = new LdapAuthHandler(ldapConfiguration);
     }
 
     @Override
-    public AuthResult authenticate(String username, char[] password) throws AuthException {
+    public AuthResult authenticate(String username, char... credentials) throws AuthException {
+        throw new AuthException("Not implemented"); //this functionality will be removed from the user store interface
+    }
 
-        boolean isAuthenticated;
+    @Override
+    public boolean isUserExists(String username) throws AuthException {
+
+        boolean exists = false;
+        try {
+            if (Objects.nonNull(ldapAuthHandler.searchDN(username))) {
+                exists = true;
+            }
+        } catch (NamingException e) {
+            throw new AuthException("Error while searching Username: " + username, e);
+        }
+
+        return exists;
+    }
+
+    @Override
+    public Set<String> getUserGroupsList(String username) throws AuthException {
+
         String dn;
         try {
             dn = ldapAuthHandler.searchDN(username);
@@ -62,11 +80,9 @@ public class LdapAuthenticator implements Authenticator {
             throw new AuthException("Error while searching Username: " + username, e);
         }
         try {
-            isAuthenticated = ldapAuthHandler.authenticate(dn, String.valueOf(password));
+            return ldapAuthHandler.getUserGroups(dn);
         } catch (NamingException e) {
-            throw new AuthException("Error while authenticating Username: " + username, e);
+            throw new AuthException("Error while fetching groups for Username: " + username, e);
         }
-
-        return new AuthResult(isAuthenticated, username);
     }
 }
