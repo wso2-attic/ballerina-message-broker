@@ -81,8 +81,7 @@ public class AuthManager {
             UserStore userStore = AuthorizerFactory.createUserStore(startupContext, brokerAuthConfiguration);
 
             authenticator = new AuthenticatorFactory().getAuthenticator(startupContext,
-                                                                        brokerAuthConfiguration.getAuthentication(),
-                                                                        userStore);
+                                                                        brokerAuthConfiguration.getAuthentication());
 
             BrokerCommonConfiguration commonConfigs
                     = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,

@@ -22,7 +22,6 @@ import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
-import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.ldap.LdapAuthHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
@@ -39,7 +38,6 @@ public class LdapAuthenticator implements Authenticator {
 
     @Override
     public void initialize(StartupContext startupContext,
-                           UserStore userStore,
                            Map<String, Object> properties) throws Exception {
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);

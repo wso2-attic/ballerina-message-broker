@@ -22,7 +22,6 @@ import com.sun.security.auth.UserPrincipal;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
-import io.ballerina.messaging.broker.auth.authorization.UserStore;
 
 import java.io.IOException;
 import java.util.Map;
@@ -51,14 +50,14 @@ public class UserStoreLoginModule implements LoginModule {
     private UserPrincipal userPrincipal;
     private Subject subject;
     private CallbackHandler callbackHandler;
-    private UserStore userStore;
+    private FileBasedUserRegistry fileBasedUserRegistry;
 
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState,
                            Map<String, ?> options) {
         this.subject = subject;
         this.callbackHandler = callbackHandler;
-        this.userStore = (UserStore) options.get(BrokerAuthConstants.PROPERTY_USER_STORE_CONNECTOR);
+        this.fileBasedUserRegistry = (FileBasedUserRegistry) options.get(BrokerAuthConstants.PROPERTY_USER_REGISTRY);
     }
 
     @Override
@@ -75,7 +74,7 @@ public class UserStoreLoginModule implements LoginModule {
         }
         userName = userNameCallback.getName();
         password = passwordCallback.getPassword();
-        AuthResult authResult = userStore.authenticate(userName, password);
+        AuthResult authResult = fileBasedUserRegistry.authenticate(userName, password);
         success = authResult.isAuthenticated();
         if (success) {
             authenticationId = authResult.getUserId();

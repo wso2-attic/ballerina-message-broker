@@ -20,7 +20,6 @@ package io.ballerina.messaging.broker.auth.authorization.provider;
 
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.auth.ldap.LdapAuthHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -48,11 +47,6 @@ public class LdapUserStore implements UserStore {
                 .getUserStore().getLdap();
 
         ldapAuthHandler = new LdapAuthHandler(ldapConfiguration);
-    }
-
-    @Override
-    public AuthResult authenticate(String username, char... credentials) throws AuthException {
-        throw new AuthException("Not implemented"); //this functionality will be removed from the user store interface
     }
 
     @Override
