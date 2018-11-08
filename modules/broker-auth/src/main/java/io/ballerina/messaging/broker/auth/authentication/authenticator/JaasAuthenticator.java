@@ -22,9 +22,9 @@ import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.AuthResult;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
+import io.ballerina.messaging.broker.auth.authentication.jaas.FileBasedJaasLoginModule;
 import io.ballerina.messaging.broker.auth.authentication.jaas.FileBasedUserRegistry;
 import io.ballerina.messaging.broker.auth.authentication.jaas.PlainSaslCallbackHandler;
-import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
 import io.ballerina.messaging.broker.common.StartupContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class JaasAuthenticator implements Authenticator {
             Object jaasLoginModule = properties.get(BrokerAuthConstants.CONFIG_PROPERTY_JAAS_LOGIN_MODULE);
             if (Objects.nonNull(jaasLoginModule)) {
                 // Add user registry for default login module
-                if (jaasLoginModule.toString().equals(UserStoreLoginModule.class.getCanonicalName())) {
+                if (jaasLoginModule.toString().equals(FileBasedJaasLoginModule.class.getCanonicalName())) {
                     properties.put(BrokerAuthConstants.PROPERTY_USER_REGISTRY, new FileBasedUserRegistry());
                 }
                 Configuration jaasConfig = createJaasConfig(jaasLoginModule.toString(), properties);

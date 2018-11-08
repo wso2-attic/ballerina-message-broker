@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * User registry for the UserStoreLoginModule.
+ * User registry for the FileBasedJaasLoginModule.
  */
 public class FileBasedUserRegistry {
 

@@ -38,10 +38,10 @@ import javax.security.auth.spi.LoginModule;
  * Default JaaS login module {@link LoginModule} for Message broker.
  * This will be configured in jaas.conf file.
  * AuthConfig {
- * {@link UserStoreLoginModule} required;
+ * {@link FileBasedJaasLoginModule} required;
  * };
  */
-public class UserStoreLoginModule implements LoginModule {
+public class FileBasedJaasLoginModule implements LoginModule {
 
     private String userName;
     private String authenticationId;

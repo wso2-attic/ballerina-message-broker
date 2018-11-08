@@ -68,7 +68,7 @@ import io.ballerina.messaging.broker.EmbeddedBrokerConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.Authenticator;
 import io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator;
-import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
+import io.ballerina.messaging.broker.auth.authentication.jaas.FileBasedJaasLoginModule;
 
 import java.util.HashMap;
 
