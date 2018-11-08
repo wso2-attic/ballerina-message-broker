@@ -368,6 +368,11 @@
                 <version>3.1.1</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.connector.java.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
@@ -459,5 +464,6 @@
         <carbon.metrics.version.range>[2.0,3)</carbon.metrics.version.range>
         <carbon.config.package.import.version.range>[2.0.0, 3.0.0)</carbon.config.package.import.version.range>
         <maven.checkstyle.plugin.version>3.0.0</maven.checkstyle.plugin.version>
+        <mysql.connector.java.version>5.1.6</mysql.connector.java.version>
     </properties>
 </project>

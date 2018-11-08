@@ -111,6 +111,10 @@
             <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -127,6 +131,7 @@
                         <suiteXmlFile>src/test/resources/broker-in-memory-suite.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/failover-broker-suite.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/memory-leak-detector-suite.xml</suiteXmlFile>
+                        <suiteXmlFile>src/test/resources/cluster-suite.xml</suiteXmlFile>
                     </suiteXmlFiles>
                     <systemPropertyVariables>
                         <maven.test.haltafterfailure>false</maven.test.haltafterfailure>
