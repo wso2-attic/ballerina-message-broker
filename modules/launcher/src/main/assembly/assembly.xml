@@ -67,6 +67,14 @@
         </fileSet>
         <fileSet>
             <directory>src/main/resources/</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>yajsw/*</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources/</directory>
             <outputDirectory>resources</outputDirectory>
             <includes>
                 <include>security/*</include>

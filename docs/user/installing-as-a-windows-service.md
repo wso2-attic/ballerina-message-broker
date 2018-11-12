@@ -1,0 +1,218 @@
+# Installing as a Windows Service
+
+Ballerina Message Broker can be run as a Windows service as described in the following sections:
+
+## Contents
+
+1. [Prerequisites](#1-Prerequisites)
+2. [Setting up the YAJSW wrapper configuration file](#2-Setting-up-the-YAJSW-wrapper-configuration-file)
+3. [Setting up MESSAGE_BROKER_HOME](#3-Setting-up-MESSAGE_BROKER_HOME)
+4. [Running the product in console mode](#4-Running-the-product-in-console-mode)
+5. [Working with the MessageBroker service](#5-Working-with-the-MessageBroker-service)
+
+## 1. Prerequisites
+
+- Install JDK and set up the JAVA_HOME environment variable.
+- Download and install a service wrapper library to use for running ballerina message broker as a Windows service. Yet Another Java Service Wrapper (YAJSW) version 11.11 is recommended. Ballerina message broker provides a default wrapper.conf file in its <MESSAGE_BROKER_HOME>/bin/yajsw/ directory. The instructions below describe how to set up this file.
+
+## 2. Setting up the YAJSW wrapper configuration file
+
+The configuration file used for wrapping Java Applications by YAJSW is wrapper.conf, which is located in the <YAJSW_HOME>/conf/ directory and in the <MESSAGE_BROKER_HOME>/bin/yajsw/ directory. Following is the minimal wrapper.conf configuration for running a message broker as a Windows service. Open your wrapper.conf file, set its properties as follows, and save it in <YAJSW_HOME>/conf/ directory.
+
+``` 
+#********************************************************************
+# working directory
+#********************************************************************
+wrapper.working.dir=${message_broker_home}\\
+# Java Main class.
+# YAJSW: default is "org.rzo.yajsw.app.WrapperJVMMain"
+# DO NOT SET THIS PROPERTY UNLESS YOU HAVE YOUR OWN IMPLEMENTATION
+# wrapper.java.mainclass=
+#********************************************************************
+# tmp folder
+# yajsw creates temporary files named in_.. out_.. err_.. jna..
+# per default these are placed in jna.tmpdir.
+# jna.tmpdir is set in setenv batch file to <yajsw>/tmp
+#********************************************************************
+wrapper.tmp.path = ${jna_tmpdir}
+#********************************************************************
+# Application main class or native executable
+# One of the following properties MUST be defined
+#********************************************************************
+# Java Application main class
+wrapper.java.app.mainclass=io.ballerina.messaging.broker.Main
+# Log Level for console output.  (See docs for log levels)
+wrapper.console.loglevel=INFO
+# Log file to use for wrapper output logging.
+wrapper.logfile=${wrapper_home}\/log\/wrapper.log
+# Format of output for the log file.  (See docs for formats)
+#wrapper.logfile.format=LPTM
+# Log Level for log file output.  (See docs for log levels)
+#wrapper.logfile.loglevel=INFO
+# Maximum size that the log file will be allowed to grow to before
+#  the log is rolled. Size is specified in bytes.  The default value
+#  of 0, disables log rolling by size.  May abbreviate with the 'k' (kB) or
+#  'm' (mB) suffix.  For example: 10m = 10 megabytes.
+# If wrapper.logfile does not contain the string ROLLNUM it will be automatically added as suffix of the file name
+wrapper.logfile.maxsize=10m
+# Maximum number of rolled log files which will be allowed before old
+#  files are deleted.  The default value of 0 implies no limit.
+wrapper.logfile.maxfiles=10
+# Title to use when running as a console
+wrapper.console.title="MessageBroker"
+#********************************************************************
+# Wrapper Windows Service and Posix Daemon Properties
+#********************************************************************
+# Name of the service
+wrapper.ntservice.name="MessageBroker"
+# Display name of the service
+wrapper.ntservice.displayname="Ballerina Message Broker"
+# Description of the service
+wrapper.ntservice.description="MB"
+#********************************************************************
+# Wrapper System Tray Properties
+#********************************************************************
+# enable system tray
+wrapper.tray = false
+# TCP/IP port. If none is defined multicast discovery is used to find the port
+# Set the port in case multicast is not possible.
+#wrapper.tray.port = 15002
+#********************************************************************
+# Exit Code Properties
+# Restart on non zero exit code
+#********************************************************************
+wrapper.on_exit.0=SHUTDOWN
+wrapper.on_exit.default=RESTART
+#********************************************************************
+# Trigger actions on console output
+#********************************************************************
+# On Exception show message in system tray
+wrapper.filter.trigger.0=Exception
+#wrapper.filter.script.0=scripts\/trayMessage.gv
+wrapper.filter.script.0.args=Exception
+#********************************************************************
+# genConfig: further Properties generated by genConfig
+#********************************************************************
+placeHolderSoGenPropsComeHere=
+wrapper.java.command = ${java_home}\\bin\\java
+wrapper.java.classpath = ${message_broker_home}\\lib\\*.jar
+wrapper.app.parameter = io.ballerina.messaging.broker.Main
+wrapper.java.additional.1 = -Xbootclasspath\/a:${message_broker_home}\\lib\\*.jar
+wrapper.java.additional.2 = -Xms256m 
+wrapper.java.additional.3 = -Xmx1024m 
+wrapper.java.additional.4 = -XX:+HeapDumpOnOutOfMemoryError
+wrapper.java.additional.5 = -XX:HeapDumpPath=${message_broker_home}\\heap-dump.hprof 
+wrapper.java.additional.6 = -Dmessage.broker.home=${message_broker_home} 
+wrapper.java.additional.7 = -Djava.command=${java_home}\\bin\\java
+wrapper.java.additional.8 = -Dlog4j.configuration=file:${message_broker_home}\\conf\\log4j.properties
+wrapper.java.additional.9 = -Dbroker.config=${message_broker_home}\\conf\\broker.yaml 
+wrapper.java.additional.10 = -Dbroker.users.config=${message_broker_home}\\conf\\security\\users.yaml
+wrapper.java.additional.11 = -Dtransports.netty.conf=${message_broker_home}\\conf\\admin-service-transports.yaml 
+wrapper.java.additional.12 = -Dbroker.classpath=${message_broker_home}\\lib\\* 
+wrapper.java.additional.13 = -Dfile.encoding=UTF8
+wrapper.java.additional.14 = -Dorg.apache.jasper.compiler.Parser.STRICT_QUOTE_ESCAPING=false
+```
+
+
+## 3. Setting up MESSAGE_BROKER_HOME
+
+Extract the  message broker, and then set the Windows environment variable MESSAGE_BROKER_HOME to the extracted directory location.
+
+## 4. Running the product in console mode
+
+You will now verify that YAJSW is configured correctly for running the message broker as a Windows service.
+
+1. Open a Windows command prompt and go to the <YAJSW_HOME>/bat/ directory. For example:
+    
+    `cd C:\Documents and Settings\yajsw_home\bat`
+
+2. Start the wrapper in console mode using the following command:
+    
+    `runConsole.bat`
+
+If the configurations are set properly for YAJSW, you will see console output similar to the following 
+
+```
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:31|[2018-10-30 12:00:31,388] INFO {io.ballerina.messaging.broker.auth.authentication.AuthenticatorFactory} -  Initializing authenticator: io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:32|[2018-10-30 12:00:32,091] INFO {org.wso2.carbon.metrics.core.config.model.JmxReporterConfig} -  Creating JMX reporter for Metrics with domain 'io.ballerina.messaging.broker'
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:33|[2018-10-30 12:00:33,232] INFO {org.wso2.carbon.metrics.core.reporter.impl.AbstractReporter} -  Started JMX reporter for Metrics
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:33|[2018-10-30 12:00:33,482] INFO {io.ballerina.messaging.broker.core.BrokerImpl$BrokerHelper} -  Starting message delivery threads.
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:33|[2018-10-30 12:00:33,482] INFO {io.ballerina.messaging.broker.core.task.TaskExecutorService} -  Starting task manager. Task count 0
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:33|[2018-10-30 12:00:33,685] INFO {io.ballerina.messaging.broker.amqp.Server$ServerHelper} -  Listening AMQP on 0.0.0.0:5672
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:33|[2018-10-30 12:00:33,763] INFO {io.ballerina.messaging.broker.amqp.Server$ServerHelper} -  Listening AMQP/TLS on 0.0.0.0:8672
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:33|[2018-10-30 12:00:33,841] INFO {org.wso2.msf4j.MicroservicesRunner} -  Microservices server started in 1703ms
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:33|[2018-10-30 12:00:33,841] INFO {io.ballerina.messaging.broker.rest.BrokerRestServer$BrokerRestRunnerHelper} -  Broker admin service started
+INFO|4332/0|"MessageBroker"|18-10-30 12:00:33|[2018-10-30 12:00:33,841] INFO {org.wso2.transport.http.netty.listener.ServerConnectorBootstrap$HTTPServerConnector} -  HTTP(S) Interface starting on host 0.0.0.0 and port 9000
+
+```
+
+## 5. Working with the MessageBroker service
+
+To install the ballerina message broker as a Windows service, execute the following command in the <YAJSW_HOME>/bat/ directory:
+
+`installService.bat`
+
+The console will display a message confirming that the MessageBroker service was installed.
+
+```
+YAJSW: yajsw-stable-11.11
+OS   : Windows 10/10.0/amd64
+JVM  : Oracle Corporation/1.8.0_191/C:\Program Files\Java\jre1.8.0_191/64
+Oct 30, 2018 10:00:46 AM org.apache.commons.vfs2.VfsLog info
+INFO: Using "C:\Users\wso2\AppData\Local\Temp\vfs_cache" as temporary files store.
+************* INSTALLING "MessageBroker" ***********************
+
+service cmd: C:\Program Files\Java\jdk1.8.0_191\bin\java.exe -classpath C:\Users\wso2\Downloads\yajsw-stable-11.11\wrapper.jar -Xrs -Dwrapper.service=true -Dwrapper.working.dir=C:\Users\wso2\Downloads\message-broker -Djna_tmpdir=C:\Users\wso2\Downloads\yajsw-stable-11.11\bat\/../tmp -Djava_home="C:\Program Files\Java\jdk1.8.0_191" -Dwrapper_home=C:\Users\wso2\Downloads\yajsw-stable-11.11\bat\/.. -Dmessage_broker_home=C:\Users\wso2\Downloads\message-broker -Dwrapper.java.command="C:\Program Files\Java\jdk1.8.0_191\bin\java" -Dwrapper.config=C:\Users\wso2\Downloads\yajsw-stable-11.11\conf\wrapper.conf -Dwrapper.additional.1x=-Xrs -Djna_tmpdir=C:\Users\wso2\Downloads\yajsw-stable-11.11\bat\..\tmp org.rzo.yajsw.boot.WrapperServiceBooter
+Service "MessageBroker" installed
+```
+
+To start the service, execute the following command in the same console window:
+
+`startService.bat`
+
+The console will display a message confirming that the MessageBroker service was started.
+
+```
+YAJSW: yajsw-stable-11.11
+OS   : Windows 10/10.0/amd64
+JVM  : Oracle Corporation/1.8.0_191/C:\Program Files\Java\jre1.8.0_191/64
+Oct 30, 2018 12:06:15 PM org.apache.commons.vfs2.VfsLog info
+INFO: Using "C:\Users\wso2\AppData\Local\Temp\vfs_cache" as temporary files store.
+************* STARTING "MessageBroker" ***********************
+
+Service "MessageBroker" started
+```
+
+To stop the service, execute the following command in the same console window:
+
+`stopService.bat`
+
+The console will display a message confirming that the MessageBroker service has stopped.
+
+```
+YAJSW: yajsw-stable-11.11
+OS   : Windows 10/10.0/amd64
+JVM  : Oracle Corporation/1.8.0_191/C:\Program Files\Java\jre1.8.0_191/64
+Oct 30, 2018 12:07:00 PM org.apache.commons.vfs2.VfsLog info
+INFO: Using "C:\Users\wso2\AppData\Local\Temp\vfs_cache" as temporary files store.
+************* STOPPING "MessageBroker" ***********************
+
+Service "MessageBroker" stopped
+```
+
+To uninstall the service, execute the following command in the same console window:
+
+`uninstallService.bat`
+
+The console will display a message confirming that the MessageBroker service was removed.
+
+```
+YAJSW: yajsw-stable-11.11
+OS   : Windows 10/10.0/amd64
+JVM  : Oracle Corporation/1.8.0_191/C:\Program Files\Java\jre1.8.0_191/64
+Oct 30, 2018 12:00:20 PM org.apache.commons.vfs2.VfsLog info
+INFO: Using "C:\Users\wso2\AppData\Local\Temp\vfs_cache" as temporary files store.
+************* REMOVING "MessageBroker" ***********************
+
+Service "MessageBroker" removed
+```

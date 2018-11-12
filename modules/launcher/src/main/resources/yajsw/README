@@ -1,0 +1,9 @@
+Running Ballerina Message Broker as a Windows Service
+------------------------------------------------
+
+1. Download the latest stable version (recomended 11.11) of YAJSW from the project home page. (http://yajsw.sourceforge.net/)
+2. Unzip the YAJSW archive and place the provided wrappe.conf file (this directory) inside <YAJSW.Home.Dir>/conf.
+3. Set JAVA_HOME and MESSAGE_BROKER_HOME system properties
+4. Start the product as a windows service. (batch scripts are found under <YAJSW.Home.Dir>/bat)
+
+For more detailed info please refer to Message broker user documentation (https://github.com/ballerina-platform/ballerina-message-broker/blob/master/docs/user-doc-index.md) and YAJSW project documentation.
