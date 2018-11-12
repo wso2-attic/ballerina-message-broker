@@ -25,7 +25,7 @@ import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator;
-import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
+import io.ballerina.messaging.broker.auth.authentication.jaas.FileBasedJaasLoginModule;
 import io.ballerina.messaging.broker.auth.authorization.provider.DefaultMacHandler;
 import io.ballerina.messaging.broker.auth.authorization.provider.RdbmsDacHandler;
 import io.ballerina.messaging.broker.common.StartupContext;
@@ -129,7 +129,7 @@ public class BrokerNode {
                 new BrokerAuthConfiguration.AuthenticatorConfiguration();
         HashMap<String, Object> properties = new HashMap<>();
         properties.put(BrokerAuthConstants.CONFIG_PROPERTY_JAAS_LOGIN_MODULE,
-                       UserStoreLoginModule.class.getCanonicalName());
+                       FileBasedJaasLoginModule.class.getCanonicalName());
         authenticatorConfiguration.setClassName(JaasAuthenticator.class.getCanonicalName());
         authenticatorConfiguration.setProperties(properties);
         authenticationConfiguration.setAuthenticator(authenticatorConfiguration);

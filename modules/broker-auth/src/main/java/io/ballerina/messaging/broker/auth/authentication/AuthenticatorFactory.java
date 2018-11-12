@@ -19,7 +19,6 @@
 package io.ballerina.messaging.broker.auth.authentication;
 
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
-import io.ballerina.messaging.broker.auth.authorization.UserStore;
 import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import org.slf4j.Logger;
@@ -38,20 +37,17 @@ public class AuthenticatorFactory {
      * @param startupContext              the startup context provides registered services for authenticator
      *                                    functionality.
      * @param authenticationConfiguration the authentication configuration
-     * @param userStore                   user store
      * @return authenticator for given configuration
      * @throws Exception throws if error occurred while providing new instance of authenticator
      */
     public Authenticator getAuthenticator(StartupContext startupContext,
                                           BrokerAuthConfiguration.AuthenticationConfiguration
-                                                  authenticationConfiguration,
-                                          UserStore userStore) throws Exception {
+                                                  authenticationConfiguration) throws Exception {
         Authenticator authenticator;
         String authenticatorClass = authenticationConfiguration.getAuthenticator().getClassName();
         LOGGER.info("Initializing authenticator: {}", authenticatorClass);
         authenticator = BrokerClassLoader.loadClass(authenticatorClass, Authenticator.class);
         authenticator.initialize(startupContext,
-                                 userStore,
                                  authenticationConfiguration.getAuthenticator().getProperties());
         return authenticator;
     }

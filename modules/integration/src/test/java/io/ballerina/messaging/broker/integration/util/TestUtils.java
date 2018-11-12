@@ -23,7 +23,7 @@ import io.ballerina.messaging.broker.amqp.AmqpServerConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConfiguration;
 import io.ballerina.messaging.broker.auth.BrokerAuthConstants;
 import io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator;
-import io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule;
+import io.ballerina.messaging.broker.auth.authentication.jaas.FileBasedJaasLoginModule;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerCommonConfiguration;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
@@ -84,7 +84,7 @@ public class TestUtils {
                 new BrokerAuthConfiguration.AuthenticatorConfiguration();
         HashMap<String, Object> properties = new HashMap<>();
         properties.put(BrokerAuthConstants.CONFIG_PROPERTY_JAAS_LOGIN_MODULE,
-                       UserStoreLoginModule.class.getCanonicalName());
+                       FileBasedJaasLoginModule.class.getCanonicalName());
         authenticatorConfiguration.setClassName(JaasAuthenticator.class.getCanonicalName());
         authenticatorConfiguration.setProperties(properties);
         authenticationConfiguration.setAuthenticator(authenticatorConfiguration);

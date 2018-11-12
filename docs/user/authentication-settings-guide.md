@@ -14,7 +14,7 @@ JAAS Authenticator will use JAAS login modules.
         className: io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator
         # Optional properties
         properties:
-         loginModule: io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule
+         loginModule: io.ballerina.messaging.broker.auth.authentication.jaas.FileBasedJaasLoginModule
 
 
 ## Available authenticators
@@ -26,7 +26,7 @@ There are two authenticator implementations available out of the box.
 
 2) io.ballerina.messaging.broker.auth.authentication.authenticator.JaasAuthenticator
     - Provide authentication using JaaS login module. 
-    - The io.ballerina.messaging.broker.auth.authentication.jaas.UserStoreLoginModule implements 
+    - The io.ballerina.messaging.broker.auth.authentication.jaas.FileBasedJaasLoginModule implements
     the javax.security.auth.spi.LoginModule and set as a property.
 
 

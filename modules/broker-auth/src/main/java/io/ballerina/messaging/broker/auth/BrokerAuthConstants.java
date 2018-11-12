@@ -52,8 +52,14 @@ public final class BrokerAuthConstants {
     public static final String SYSTEM_PARAM_USERS_CONFIG = "broker.users.config";
     // users configuration namespace in users config file.
     public static final String USERS_CONFIG_NAMESPACE = "wso2.broker.users";
-    // user manager property name
-    public static final String PROPERTY_USER_STORE_CONNECTOR = "broker.user.store.connector";
     // user manager authorization id
     public static final String AUTHENTICATION_ID = "AuthenticationId";
+
+    /*
+    JaasAuthenitcator related constants.
+     */
+    /**
+     * user registry property name.
+     */
+    public static final String PROPERTY_USER_REGISTRY = "broker.user.registry";
 }
