@@ -30,6 +30,7 @@ public class Constants {
     public static final String DEFAULT_PASSWORD = "admin";
     public static final String BROKER_CONNECTION_URL_SUFFIX = "/broker/v1.0/";
     public static final String QUEUES_URL_PARAM = "queues/";
+    public static final String LOGGERS_URL_PARAM = "loggers/";
     public static final String MESSAGES_URL_PARAM = "/messages";
     public static final String BINDINGS_URL_PARAM = "/bindings/";
     public static final String CONSUMERS_URL_PARAM = "/consumers/";
@@ -50,6 +51,8 @@ public class Constants {
     public static final String CMD_GRANT = "grant";
     public static final String CMD_REVOKE = "revoke";
     public static final String CMD_TRANSFER = "transfer";
+    public static final String CMD_SHOW = "show";
+    public static final String CMD_UPDATE = "update";
 
     public static final String CMD_EXCHANGE = "exchange";
     public static final String CMD_QUEUE = "queue";
@@ -58,6 +61,7 @@ public class Constants {
     public static final String CMD_CHANNEL = "channel";
     public static final String CMD_CONNECTION = "connection";
     public static final String CMD_MESSAGES = "messages";
+    public static final String CMD_LOGGER = "logger";
 
     public static final String BROKER_ERROR_MSG = "Error while invoking Brokers admin services";
 

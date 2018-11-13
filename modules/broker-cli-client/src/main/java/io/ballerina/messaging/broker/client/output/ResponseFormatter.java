@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.client.output;
 import io.ballerina.messaging.broker.client.resources.Binding;
 import io.ballerina.messaging.broker.client.resources.Consumer;
 import io.ballerina.messaging.broker.client.resources.Exchange;
+import io.ballerina.messaging.broker.client.resources.Logger;
 import io.ballerina.messaging.broker.client.resources.Message;
 import io.ballerina.messaging.broker.client.resources.Queue;
 import io.ballerina.messaging.broker.client.utils.BrokerClientException;
@@ -74,6 +75,13 @@ public interface ResponseFormatter {
      * @param queues array of exchanges
      */
     void printQueues(Queue[] queues);
+
+    /**
+     * Print an array of loggers into a desired output format.
+     *
+     * @param loggers array of show
+     */
+    void printLoggers(Logger[] loggers);
 
     /**
      * Print a queue into a desired output format.
