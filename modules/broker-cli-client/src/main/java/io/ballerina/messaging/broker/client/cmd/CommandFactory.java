@@ -42,9 +42,13 @@ import io.ballerina.messaging.broker.client.cmd.impl.list.ListQueueCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.revoke.RevokeQueueCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.show.ShowCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.show.ShowLoggerCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferExchangeCmd;
 import io.ballerina.messaging.broker.client.cmd.impl.transfer.TransferQueueCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.update.UpdateCmd;
+import io.ballerina.messaging.broker.client.cmd.impl.update.UpdateLoggerCmd;
 
 /**
  * Factory class to generate different command instances.
@@ -90,6 +94,14 @@ public class CommandFactory {
 
     public TransferCmd createTransferCommand() {
         return new TransferCmd(rootCommand);
+    }
+
+    public UpdateCmd createUpdateCommand() {
+        return new UpdateCmd(rootCommand);
+    }
+
+    public ShowCmd createShowCommand() {
+        return new ShowCmd(rootCommand);
     }
 
     public ListCmd createListCommand() {
@@ -166,5 +178,13 @@ public class CommandFactory {
 
     public TransferExchangeCmd createTransferExchangeCommand() {
         return new TransferExchangeCmd(rootCommand);
+    }
+
+    public ShowLoggerCmd createShowLoggerCommand() {
+        return new ShowLoggerCmd(rootCommand);
+    }
+
+    public UpdateLoggerCmd createUpdateLoggerCommand() {
+        return new UpdateLoggerCmd(rootCommand);
     }
 }

@@ -37,7 +37,9 @@ public enum ResourceAuthScope {
     CONNECTIONS_GET("connections:get"),
     CONNECTIONS_CLOSE("connections:close"),
     CHANNEL_CLOSE("channels:close"),
-    CHANNELS_GET("channels:get");
+    CHANNELS_GET("channels:get"),
+    LOGGERS_UPDATE("loggers:update"),
+    LOGGERS_GET("loggers:get");
 
     private String name;
 

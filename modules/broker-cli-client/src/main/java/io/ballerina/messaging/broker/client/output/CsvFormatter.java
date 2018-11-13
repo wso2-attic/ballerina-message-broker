@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.client.output;
 import io.ballerina.messaging.broker.client.resources.Binding;
 import io.ballerina.messaging.broker.client.resources.Consumer;
 import io.ballerina.messaging.broker.client.resources.Exchange;
+import io.ballerina.messaging.broker.client.resources.Logger;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
 /**
@@ -65,6 +66,19 @@ public class CsvFormatter implements ResponseFormatter {
                     String.valueOf(queue.getConsumerCount()), String.valueOf(queue.getCapacity()),
                     String.valueOf(queue.getSize()), String.valueOf(queue.isDurable()),
                     String.valueOf(queue.isAutoDelete()), queue.getOwner());
+        }
+    }
+
+    @Override
+    public void printLoggers(Logger[] loggers) {
+        if (loggers.length == 0) {
+            return;
+        }
+        String printTemplate = "%s,%s%n";
+        OUT_STREAM.printf(printTemplate, Logger.NAME_TAG, Logger.LEVEL_TAG);
+        for (Logger logger : loggers) {
+            OUT_STREAM.printf(printTemplate.replaceFirst("%s", WRAPPED_STRING_FORMATTER), logger.getName(),
+                              logger.getLevel());
         }
     }
 

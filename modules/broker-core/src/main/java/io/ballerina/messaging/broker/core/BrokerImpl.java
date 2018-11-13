@@ -37,6 +37,7 @@ import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.DefaultBrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
 import io.ballerina.messaging.broker.core.rest.api.ExchangesApi;
+import io.ballerina.messaging.broker.core.rest.api.LoggersApi;
 import io.ballerina.messaging.broker.core.rest.api.QueuesApi;
 import io.ballerina.messaging.broker.core.store.DbBackedStoreFactory;
 import io.ballerina.messaging.broker.core.store.MemBackedStoreFactory;
@@ -168,7 +169,9 @@ public final class BrokerImpl implements Broker {
                 brokerFactory = new DefaultBrokerFactory(startupContext);
                 dacHandler = new NoOpAuthorizer();
             }
-            serviceRunner.deploy(new QueuesApi(brokerFactory, dacHandler), new ExchangesApi(brokerFactory, dacHandler));
+            serviceRunner.deploy(new QueuesApi(brokerFactory, dacHandler)
+                    , new ExchangesApi(brokerFactory, dacHandler)
+                    , new LoggersApi(dacHandler));
         }
     }
 

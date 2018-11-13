@@ -109,6 +109,10 @@ public class Main {
                                                       commandFactory.createRevokeCommand());
         JCommander jCommanderTransfer = addChildCommand(jCommanderRoot, Constants.CMD_TRANSFER,
                                                         commandFactory.createTransferCommand());
+        JCommander jCommanderShow = addChildCommand(jCommanderRoot, Constants.CMD_SHOW,
+                                                    commandFactory.createShowCommand());
+        JCommander jCommanderUpdate = addChildCommand(jCommanderRoot, Constants.CMD_UPDATE,
+                                                      commandFactory.createUpdateCommand());
 
         // secondary level commands
         // add list sub-commands
@@ -142,6 +146,12 @@ public class Main {
         // add transfer sub-commands
         addChildCommand(jCommanderTransfer, Constants.CMD_QUEUE, commandFactory.createTransferQueueCommand());
         addChildCommand(jCommanderTransfer, Constants.CMD_EXCHANGE, commandFactory.createTransferExchangeCommand());
+
+        //add show sub-commands
+        addChildCommand(jCommanderShow, Constants.CMD_LOGGER, commandFactory.createShowLoggerCommand());
+
+        //add update sub-commands
+        addChildCommand(jCommanderUpdate, Constants.CMD_LOGGER, commandFactory.createUpdateLoggerCommand());
 
         return jCommanderRoot;
     }

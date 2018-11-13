@@ -20,9 +20,12 @@ Following is the list of possible operations supported by the Broker CLI.
     4.2. [Binding information retrieval](#42-binding-information-retrieval)<br/>
 5. [Consumer related administrative operations](#5-consumer-related-administrative-operations)<br/>
     4.1. [Consumer information retrieval](#51-consumer-information-retrieval)
-6. [Output result formatting](#6-output-result-formatting)
-7. [Global flags](#7-global-flags)
-8. [Change CLI alias](#8-change-cli-alias)
+6. [Logger related administrative operations](#6-logger-related-administrative-operations)<br/>
+    6.1. [Logger information retrieval](#61-logger-information-retrieval)<br/>
+    6.2. [Logger log level change](#62-logger-log-level-change) 
+7. [Output result formatting](#7-output-result-formatting)
+8. [Global flags](#8-global-flags)
+9. [Change CLI alias](#9-change-cli-alias)
 
 [Appendix A: Specification](#appendix-a-specification)
 
@@ -225,7 +228,46 @@ List down message consumers of a queue. If consumer Id is not given, CLI will di
 List all consumers of queue in the Broker<br/>
 `./broker-admin.sh list consumer -q my_queue`
 
-## 6. Output result formatting
+## 6. Logger related administrative operations
+
+Ballerina Message Broker uses log4j framework for logging. Broker's CLI can be used to retrieve information and change log level of log4j loggers in the run time. 
+
+### 6.1. Logger information retrieval
+
+#### Description:
+Show details of loggers in the broker at run time.
+
+#### Command format:
+`./broker-admin.sh show logger <logger-name>? ([--output|-o] <output_format>)? (global_flags)*`
+
+#### Options:
+- Logger name ( Regular expression to  filter loggers by name)<br/>
+- Result output format (--output, -o) (default: table) (allowed values: table, csv)
+
+#### Sample commands:
+Show all the loggers in the Broker<br/>
+`./broker-admin.sh show logger`
+
+Filter loggers in the Broker<br/>
+`./broker-admin.sh show logger *org.wso2.carbon.metrics.*`
+
+### 6.2. Logger log level change
+
+#### Description:
+Update log level of a given logger.
+
+#### Command format:
+`./broker-admin.sh update logger [--name|-n] <logger_name> [--level|-l] <log_level>)`
+
+#### Options:
+- Name of the logger (--name, -n) (mandatory)<br/>
+- Log level of the logger (--level, -l) (mandatory)
+
+#### Sample commands:
+Change log level of a logger to WARN<br/>
+`./broker-admin.sh update logger -n my_logger -l WARN`
+
+## 7. Output result formatting
 
 Output results of the 'list' commands can be formatted and view as table or csv using the flag (--output, -o)
 
@@ -233,14 +275,14 @@ Output results of the 'list' commands can be formatted and view as table or csv 
 List all exchanges in the broker in csv format<br/>
 `./broker-admin.sh list exchange -o csv`
  
-## 7. Global flags
+## 8. Global flags
 
 Following are the global flags supported by the CLI commands,
 
 - Ask for help (--help, -h)<br/>
 - Set or override the password (--password, -p)
 
-## 8. Change CLI alias
+## 9. Change CLI alias
 
 You can add a alias you prefer instead of using the ./broker-admin.sh file directly.
 
@@ -259,6 +301,8 @@ You can add a alias you prefer instead of using the ./broker-admin.sh file direc
 - grant
 - revoke
 - transfer
+- show
+- update
  
 ### CLI resource types
 
@@ -266,3 +310,4 @@ You can add a alias you prefer instead of using the ./broker-admin.sh file direc
 - queue
 - binding
 - consumer
+- logger
