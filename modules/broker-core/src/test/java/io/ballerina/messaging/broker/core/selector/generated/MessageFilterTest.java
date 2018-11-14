@@ -84,13 +84,12 @@ public class MessageFilterTest {
                 "",
                 // invalid string literals
                 "MyProperty = 'abcde'f'",
-                "MyProperty = abcdef",
+
                 // invalid identifiers
                 "$yProperty = 'abcdef'",
                 "_yProperty = 'abcdef'",
                 "1yProperty = 'abcdef'",
-                "'property' = 'abcdef'",
-                "10 = Age",
+
                 // invalid numeric literals
                 "myProperty = 123LL",
                 "myProperty = 123ll",
