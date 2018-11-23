@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -16,30 +17,33 @@
  * under the License.
  *
  */
-
 package io.ballerina.messaging.broker.core.selector;
+
+import io.ballerina.messaging.broker.core.Metadata;
+
 /**
- * Implementation of a convert objects and comparing. Here we compare two objects and evaluate to a double value.
+ * Implementation of a boolean expression. Here we compare two expressions and evaluate to a boolean value.
  */
-public class ConvertAndCompare {
 
-    public double cnovert (Object x , Object y) {
-        String s = String.valueOf(x);
-        String s1 = String.valueOf(y);
-        double value = s.compareTo(s1);
-        return value;
+public class NotNull implements BooleanExpression {
+
+    private final Expression<Metadata> left;
+
+
+
+    public NotNull (Expression<Metadata> left) {
+        this.left = left;
+
     }
 
-    public double convertToDouble(Object leftValue) {
-        String s = String.valueOf(leftValue);
-        double x = Double.parseDouble(s);
-        return  x;
-    }
+    @Override
+    public boolean evaluate(Metadata metadata) {
+        Object leftValue = left.evaluate(metadata);
 
-    public boolean convertToBoolean(Object value) {
-        String s = String.valueOf(value);
-        Boolean b = Boolean.parseBoolean(s);
-        return  b;
+        if (leftValue == null) {
+            return false;
+        }
+
+        return true;
     }
 }
-

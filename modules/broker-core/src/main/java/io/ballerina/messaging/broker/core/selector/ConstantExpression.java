@@ -28,32 +28,62 @@ public class ConstantExpression implements Expression<Object> {
 
     private final Object value;
 
-    public ConstantExpression(Object value) {
+    public ConstantExpression (Object value) {
         this.value = value;
     }
 
     @Override
-    public Object evaluate(Object object) {
+    public Object evaluate (Object object) {
         return value;
     }
 
-    public static ConstantExpression createFromNumericInteger(String text) {
-
+    public static ConstantExpression createFromNumericDecimal (String text) {
         if (text.endsWith("l") || text.endsWith("L")) {
-            text = text.substring(0, text.length() - 1);
+            text = text.substring(0 , text.length() - 1);
         }
 
-        Number value;
+        Object value;
         try {
             value = Long.valueOf(text);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException var4) {
             value = new BigDecimal(text);
         }
 
-        if (value.intValue() < Integer.MAX_VALUE && value.intValue() > Integer.MIN_VALUE) {
-            value = value.intValue();
+        long l = ((Number) value).longValue();
+        if (-2147483648L <= l && l <= 2147483647L) {
+            int i = ((Number) value).intValue();
+            value = Integer.valueOf(i);;
         }
 
+        return new ConstantExpression(value);
+    }
+
+    public static ConstantExpression createFromNumericHex (String text) {
+        long l1 = Long.parseLong(text.substring(2) , 16);
+        Number value = Long.valueOf(l1);
+        long l = ((Number) value).longValue();
+        if (-2147483648L <= l && l <= 2147483647L) {
+            int i = ((Number) value).intValue();
+            value = Integer.valueOf(i);
+        }
+
+        return new ConstantExpression(value);
+    }
+
+    public static ConstantExpression createFromNumericOctal (String text) {
+        long l2 = Long.parseLong(text , 8);
+        Number value = Long.valueOf(l2);
+        long l = ((Number) value).longValue();
+        if (-2147483648L <= l && l <= 2147483647L) {
+            int i = ((Number) value).intValue();
+            value = Integer.valueOf(i);
+        }
+
+        return new ConstantExpression(value);
+    }
+
+    public static ConstantExpression createFromNumericFloat (String text) {
+        Number value = Double.valueOf(text);
         return new ConstantExpression(value);
     }
 }
