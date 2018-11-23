@@ -32,7 +32,7 @@ public class BrokerCoreEventPublisher implements EventSync {
     private CorePublisher exchangePublisher = new NullCorePublisher();
     private Broker broker = null;
 
-    public void publish(int id, Map<String, String> properties) {
+    public void publish(String id, Map<String, String> properties) {
         exchangePublisher.publishNotification(id, properties);
     }
 

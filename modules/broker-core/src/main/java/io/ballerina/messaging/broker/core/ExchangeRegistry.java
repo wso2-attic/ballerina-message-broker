@@ -23,9 +23,11 @@ import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.store.dao.BindingDao;
 import io.ballerina.messaging.broker.core.store.dao.ExchangeDao;
 import io.ballerina.messaging.broker.core.store.dao.impl.NoOpBindingDao;
+import io.ballerina.messaging.broker.eventing.EventSync;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +45,7 @@ public final class ExchangeRegistry {
 
     public static final String DEFAULT_DEAD_LETTER_EXCHANGE = "amq.dlx";
 
-    public static final String EVENT = "event";
+    private static final String EVENT = "event";
 
     private static final BindingDao NO_OP_BINDING_DAO = new NoOpBindingDao();
 
@@ -55,7 +57,13 @@ public final class ExchangeRegistry {
 
     private final Collection<Exchange> unmodifiableExchangesView;
 
-    public ExchangeRegistry(ExchangeDao exchangeDao, BindingDao bindingDao) {
+    private final ExchangeRegistryEventPublisher exchangeRegistryEventPublisher;
+
+
+    public ExchangeRegistry(ExchangeDao exchangeDao,
+                            BindingDao bindingDao,
+                            ExchangeRegistryEventPublisher exchangeRegistryEventPublisher) {
+
         exchangeMap = new ConcurrentHashMap<>(3);
         exchangeMap.put(DIRECT, new DirectExchange(DIRECT, bindingDao));
         exchangeMap.put(TOPIC, new TopicExchange(TOPIC, bindingDao));
@@ -65,13 +73,16 @@ public final class ExchangeRegistry {
         this.exchangeDao = exchangeDao;
         this.bindingDao = bindingDao;
         this.unmodifiableExchangesView = Collections.unmodifiableCollection(exchangeMap.values());
+        this.exchangeRegistryEventPublisher = exchangeRegistryEventPublisher;
     }
 
     Exchange getExchange(String exchangeName) {
+
         return exchangeMap.get(exchangeName);
     }
 
     boolean deleteExchange(String exchangeName, boolean ifUnused) throws BrokerException, ValidationException {
+
         Exchange exchange = exchangeMap.get(exchangeName);
         if (Objects.isNull(exchange)) {
             return false;
@@ -82,6 +93,7 @@ public final class ExchangeRegistry {
                     exchangeDao.delete(exchange);
                 }
                 exchangeMap.remove(exchangeName);
+                exchangeRegistryEventPublisher.publishExchangeEvent("exchange.deleted", exchange);
                 return true;
             } else {
                 throw new ValidationException("Cannot delete exchange. Exchange " + exchangeName + " has bindings.");
@@ -92,8 +104,9 @@ public final class ExchangeRegistry {
     }
 
     private boolean isBuiltInExchange(Exchange exchange) {
+
         String name = exchange.getName();
-        return DEFAULT.equals(name) || DIRECT.equals(name) || TOPIC.equals(name) ||  EVENT.equals(name);
+        return DEFAULT.equals(name) || DIRECT.equals(name) || TOPIC.equals(name) || EVENT.equals(name);
     }
 
     /**
@@ -108,6 +121,7 @@ public final class ExchangeRegistry {
      */
     void declareExchange(String exchangeName, String type,
                          boolean passive, boolean durable) throws ValidationException, BrokerException {
+
         if (exchangeName.isEmpty()) {
             throw new ValidationException("Exchange name cannot be empty.");
         }
@@ -116,7 +130,7 @@ public final class ExchangeRegistry {
         if (passive) {
             if (Objects.isNull(exchange)) {
                 throw new ValidationException("Exchange [ " + exchangeName + " ] doesn't exists. Passive parameter "
-                                                      + "is set, hence not creating the exchange.");
+                        + "is set, hence not creating the exchange.");
             }
         } else {
             createExchange(exchangeName, Exchange.Type.from(type), durable);
@@ -127,13 +141,14 @@ public final class ExchangeRegistry {
      * Creates a exchange with given parameters.
      *
      * @param exchangeName name of the exchange
-     * @param type {@link io.ballerina.messaging.broker.core.Exchange.Type} of the exchange
-     * @param durable durability of the exchange
-     * @throws BrokerException if there is an internal error when creating the exchange.
+     * @param type         {@link io.ballerina.messaging.broker.core.Exchange.Type} of the exchange
+     * @param durable      durability of the exchange
+     * @throws BrokerException     if there is an internal error when creating the exchange.
      * @throws ValidationException if exchange already exist
      */
     public void createExchange(String exchangeName, Exchange.Type type, boolean durable) throws BrokerException,
-                                                                                                ValidationException {
+            ValidationException {
+
         Exchange exchange = exchangeMap.get(exchangeName);
         if (Objects.isNull(exchange)) {
             BindingDao dao = durable ? bindingDao : NO_OP_BINDING_DAO;
@@ -142,25 +157,29 @@ public final class ExchangeRegistry {
             if (durable) {
                 exchangeDao.persist(exchange);
             }
+            exchangeRegistryEventPublisher.publishExchangeEvent("exchange.created", exchange);
         } else {
             throw new ValidationException("Exchange [ " + exchangeName + " ] already exists.");
         }
     }
 
     private void retrieveAllExchangesFromDao() throws BrokerException {
+
         exchangeDao.retrieveAll(
                 (name, typeString) -> {
                     Exchange exchange = ExchangeFactory.newInstance(name,
-                                                                    Exchange.Type.from(typeString), bindingDao);
+                            Exchange.Type.from(typeString), bindingDao);
                     exchangeMap.putIfAbsent(name, exchange);
                 });
     }
 
     public Exchange getDefaultExchange() {
+
         return exchangeMap.get(DEFAULT);
     }
 
     public void retrieveFromStore(QueueRegistry queueRegistry) throws BrokerException {
+
         retrieveAllExchangesFromDao();
         for (Exchange exchange : exchangeMap.values()) {
             exchange.retrieveBindingsFromDb(queueRegistry);
@@ -168,6 +187,7 @@ public final class ExchangeRegistry {
     }
 
     public Collection<Exchange> getAllExchanges() {
+
         return unmodifiableExchangesView;
     }
 
@@ -178,6 +198,7 @@ public final class ExchangeRegistry {
      * @throws BrokerException if an error occurs retrieving exchanges/bindings from the database
      */
     void reloadExchangesOnBecomingActive(QueueRegistry queueRegistry) throws BrokerException {
+
         exchangeMap.clear();
         retrieveFromStore(queueRegistry);
     }
@@ -188,10 +209,12 @@ public final class ExchangeRegistry {
     public static class ExchangeFactory {
 
         private ExchangeFactory() {
+
         }
 
         public static Exchange newInstance(String exchangeName, Exchange.Type type,
                                            BindingDao bindingDao) throws BrokerException {
+
             Exchange exchange;
             switch (type) {
                 case DIRECT:
@@ -204,6 +227,39 @@ public final class ExchangeRegistry {
                     throw new BrokerException("Unknown exchange type [ " + type + " ].");
             }
             return exchange;
+        }
+    }
+
+     interface ExchangeRegistryEventPublisher {
+
+        void publishExchangeEvent(String eventType, Exchange exchange);
+    }
+
+     static class DefaultExchangeRegistryEventPublisher implements ExchangeRegistryEventPublisher {
+
+        EventSync eventSync;
+
+        DefaultExchangeRegistryEventPublisher(EventSync eventSync) {
+
+            this.eventSync = eventSync;
+        }
+
+        @Override
+        public void publishExchangeEvent(String id, Exchange exchange) {
+
+            Map<String, String> properties = new HashMap<>();
+            properties.put("exchangeName", exchange.getName());
+            properties.put("type", exchange.getType().toString());
+            properties.put("durable", String.valueOf(exchange.isDurable()));
+            eventSync.publish(id, properties);
+        }
+    }
+
+     static class NullExchangeRegistryEventPublisher implements ExchangeRegistryEventPublisher {
+
+        @Override
+        public void publishExchangeEvent(String eventType, Exchange exchange) {
+            //No implementation
         }
     }
 }
