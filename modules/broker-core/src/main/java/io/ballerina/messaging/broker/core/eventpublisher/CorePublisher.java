@@ -32,13 +32,6 @@ public interface CorePublisher {
      * @param id ID to identify Event Type
      * @param  properties properties of the Event
      */
-    void publishNotification(int id, Map<String, String> properties);
+    void publishNotification(String id, Map<String, String> properties);
 
-    /**
-     * Used to generate the necessary routing key for the event notification message.
-     *
-     * @param id ID to identify Event Type
-     * @param  properties properties of the Event
-     */
-    String getRoutingKey(int id, Map<String, String> properties);
 }

@@ -34,9 +34,6 @@ import io.ballerina.messaging.broker.coordination.HaListener;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.eventpublisher.BrokerCoreEventPublisher;
-import io.ballerina.messaging.broker.core.events.BrokerEventManager;
-import io.ballerina.messaging.broker.core.events.DefaultBrokerEventManager;
-import io.ballerina.messaging.broker.core.events.NullBrokerEventManager;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.DefaultBrokerMetricManager;
 import io.ballerina.messaging.broker.core.metrics.NullBrokerMetricManager;
@@ -93,9 +90,9 @@ public final class BrokerImpl implements Broker {
     private final BrokerMetricManager metricManager;
 
     /**
-     * Used to manage events related to broker.
+     * Used to publish events related to broker.
      */
-    private final BrokerEventManager eventManager;
+    private final EventSync eventSync;
 
 
     /**
@@ -123,13 +120,12 @@ public final class BrokerImpl implements Broker {
         MetricService metrics = startupContext.getService(MetricService.class);
         metricManager = getMetricManager(metrics);
 
-        EventSync eventPublisher = startupContext.getService(EventSync.class);
-        eventManager = getEventManager(eventPublisher, this);
+        eventSync = startupContext.getService(EventSync.class);
 
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerCoreConfiguration configuration = configProvider.getConfigurationObject(BrokerCoreConfiguration.NAMESPACE,
                                                                                       BrokerCoreConfiguration.class);
-        StoreFactory storeFactory = getStoreFactory(startupContext, configProvider, configuration);
+        StoreFactory storeFactory = getStoreFactory(startupContext, configProvider, configuration, this);
 
         exchangeRegistry = storeFactory.getExchangeRegistry();
         messageStore = storeFactory.getMessageStore();
@@ -151,7 +147,7 @@ public final class BrokerImpl implements Broker {
 
     private StoreFactory getStoreFactory(StartupContext startupContext,
                                          BrokerConfigProvider configProvider,
-                                         BrokerCoreConfiguration configuration) throws Exception {
+                                         BrokerCoreConfiguration configuration, Broker broker) throws Exception {
         BrokerCommonConfiguration commonConfigs
                 = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
                 BrokerCommonConfiguration.class);
@@ -162,11 +158,14 @@ public final class BrokerImpl implements Broker {
         }
         DataSource dataSource = startupContext.getService(DataSource.class);
 
-        if (commonConfigs.getEnableInMemoryMode()) {
-            return new MemBackedStoreFactory(metricManager, configuration);
-        } else {
-            return new DbBackedStoreFactory(dataSource, metricManager, configuration);
-        }
+            if (this.eventSync instanceof BrokerCoreEventPublisher) {
+                ((BrokerCoreEventPublisher) eventSync).setBroker(broker);
+            }
+            if (commonConfigs.getEnableInMemoryMode()) {
+                return new MemBackedStoreFactory(metricManager, configuration, eventSync);
+            } else {
+                return new DbBackedStoreFactory(dataSource, metricManager, configuration, eventSync);
+            }
     }
 
     private void initRestApi(StartupContext startupContext) {
@@ -215,16 +214,6 @@ public final class BrokerImpl implements Broker {
         }
     }
 
-    private BrokerEventManager getEventManager(EventSync eventPublisher, Broker broker) {
-        if (Objects.nonNull(eventPublisher)) {
-            if (eventPublisher instanceof BrokerCoreEventPublisher) {
-                ((BrokerCoreEventPublisher) eventPublisher).setBroker(broker);
-            }
-            return new DefaultBrokerEventManager(eventPublisher);
-        } else {
-            return new NullBrokerEventManager();
-        }
-    }
 
     private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerCoreConfiguration configuration) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageDeliveryTaskThreadPool-%d")
@@ -450,7 +439,6 @@ public final class BrokerImpl implements Broker {
                 QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
                 // We need to bind every queue to the default exchange
                 exchangeRegistry.getDefaultExchange().bind(queueHandler, queueName, FieldTable.EMPTY_TABLE);
-                eventManager.queueCreated(queueHandler);
             }
             return queueAdded;
         } finally {

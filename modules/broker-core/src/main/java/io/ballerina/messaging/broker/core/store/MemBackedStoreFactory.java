@@ -21,6 +21,7 @@ package io.ballerina.messaging.broker.core.store;
 
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.ExchangeRegistry;
+import io.ballerina.messaging.broker.core.ExchangeRegistryFactory;
 import io.ballerina.messaging.broker.core.MemBackedQueueHandlerFactory;
 import io.ballerina.messaging.broker.core.QueueRegistry;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
@@ -28,6 +29,7 @@ import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.dao.impl.NullBindingDao;
 import io.ballerina.messaging.broker.core.store.dao.impl.NullExchangeDao;
 import io.ballerina.messaging.broker.core.store.dao.impl.NullQueueDao;
+import io.ballerina.messaging.broker.eventing.EventSync;
 
 /**
  * Memory backed store used when broker is operating in in-memory mode.
@@ -35,6 +37,7 @@ import io.ballerina.messaging.broker.core.store.dao.impl.NullQueueDao;
 public class MemBackedStoreFactory implements StoreFactory {
     private final BrokerMetricManager metricManager;
     private final BrokerCoreConfiguration configuration;
+    private final EventSync eventSync;
 
     /**
      * Null object used to represent the database access layer in in-memory mode.
@@ -42,14 +45,18 @@ public class MemBackedStoreFactory implements StoreFactory {
     private NullMessageStore messageStore = new NullMessageStore();
 
     public MemBackedStoreFactory(BrokerMetricManager metricManager,
-                                 BrokerCoreConfiguration configuration) {
+                                 BrokerCoreConfiguration configuration,
+                                 EventSync eventSync) {
         this.metricManager = metricManager;
         this.configuration = configuration;
+        this.eventSync = eventSync;
     }
 
     @Override
     public ExchangeRegistry getExchangeRegistry() {
-        return new ExchangeRegistry(new NullExchangeDao(), new NullBindingDao());
+
+       return new ExchangeRegistryFactory(new NullExchangeDao(),
+                new NullBindingDao(), eventSync).getExchangeRegistry();
     }
 
     @Override
