@@ -18,7 +18,6 @@
  */
 package io.ballerina.messaging.broker.core.eventpublisher;
 
-import io.ballerina.messaging.broker.common.EventConstants;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.FieldValue;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
@@ -54,9 +53,9 @@ public class DefaultCorePublisher implements CorePublisher {
     }
 
     @Override
-    public void publishNotification(int id, Map<String, String> properties) {
-        if (id == EventConstants.MESSAGE_PUBLISHED_EVENT) {
-            String publishedExchangeName = properties.get("ExchangeName");
+    public void publishNotification(String id, Map<String, String> properties) {
+        if (id.equals("message.published")) {
+            String publishedExchangeName = properties.get("exchangeName");
             if (publishedExchangeName.equals(exchangeName)) {
                 return;
             }
@@ -71,13 +70,11 @@ public class DefaultCorePublisher implements CorePublisher {
             notificationProperties.put(key, fieldValue);
         }
 
-
-        Metadata metadata = new Metadata(getRoutingKey(id, properties), exchangeName, 13);
+        Metadata metadata = new Metadata(id, exchangeName, 13);
         metadata.setHeaders(new FieldTable(notificationProperties));
         FieldTable messageProperties = new FieldTable();
         messageProperties.add(ShortString.parseString("propertyFlags"), FieldValue.parseLongInt(8192));
         metadata.setProperties(messageProperties);
-
         Message notificationMessage = new Message(count++, metadata);
 
         String data = "Event Message";
@@ -91,29 +88,11 @@ public class DefaultCorePublisher implements CorePublisher {
                     Math.min(chunkSize, dataBytes.length - offset));
             notificationMessage.addChunk(new ContentChunk(0, buffer));
         }
-
         try {
             broker.publish(notificationMessage);
         } catch (BrokerException e) {
             LOGGER.info(e.toString());
         }
-
-    }
-
-    public String getRoutingKey(int id, Map<String, String> properties) {
-        String routingKey;
-        switch (id) {
-            case EventConstants.CONSUMER_ADDED_EVENT: routingKey = "consumer.added";
-            break;
-            case EventConstants.MESSAGE_PUBLISHED_EVENT: routingKey = "message.published";
-            break;
-            case EventConstants.QUEUE_CREATED: routingKey = "queue.created";
-            break;
-            case EventConstants.BINDING_CREATED: routingKey = "binding.created";
-            break;
-            default: routingKey = null;
-        }
-        return routingKey;
     }
 
     void setExchangeName(String exchangeName) {

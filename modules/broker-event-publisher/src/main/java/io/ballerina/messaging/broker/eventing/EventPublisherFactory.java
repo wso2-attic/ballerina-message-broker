@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
  * Used to load registered EventPublishers.
  */
 class EventRegistry {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(EventRegistry.class);
 
     /**
@@ -16,7 +17,8 @@ class EventRegistry {
      * @param eventConfiguration the event configuration
      * @return publisher for given configuration
      */
-    EventSync getPublisher(EventConfiguration eventConfiguration) throws Exception {
+    EventSync getPublisher(EventConfiguration eventConfiguration) throws IllegalAccessException,
+            InstantiationException, ClassNotFoundException {
         EventSync publisher;
         String publisherClass = eventConfiguration.getPublisherClassName();
         LOGGER.info("Initializing Event Publisher: {}", publisherClass);
