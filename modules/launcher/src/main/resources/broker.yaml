@@ -62,6 +62,14 @@ ballerina.broker.core:
   # message delivery batch size.
   deliveryBatchSize: 1000
 
+ # Message limits for to trigger notifications in queues
+ eventConfig:
+   queueEvents:
+      commonLimits: [10, 6]
+      specificLimits:
+        testQueue: [1, 2, 3]
+        testQueue1: [21, 3]
+
 # Broker auth related configurations.
 ballerina.broker.auth:
  # Broker authentication related configurations.

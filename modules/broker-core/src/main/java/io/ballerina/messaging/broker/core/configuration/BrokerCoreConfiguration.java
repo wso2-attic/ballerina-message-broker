@@ -19,6 +19,11 @@
 
 package io.ballerina.messaging.broker.core.configuration;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Represents configuration for broker.
  */
@@ -49,6 +54,8 @@ public class BrokerCoreConfiguration {
     private int maxDbWriteBatchSize = 1024;
 
     private DeliveryTask deliveryTask = new DeliveryTask();
+
+    private EventConfig eventConfig = new EventConfig();
 
     /**
      * Getter for nonDurableQueueMaxDepth.
@@ -117,6 +124,13 @@ public class BrokerCoreConfiguration {
     }
 
     /**
+     * Getter for eventConfig.
+     */
+    public EventConfig getEventConfig() {
+        return eventConfig;
+    }
+
+    /**
      * Represent delivery task related configurations.
      */
     public static class DeliveryTask {
@@ -156,4 +170,54 @@ public class BrokerCoreConfiguration {
             this.deliveryBatchSize = deliveryBatchSize;
         }
     }
+
+    /**
+     * Represent event related configurations.
+     */
+    public static class EventConfig {
+        QueueEvents queueEvents = new QueueEvents();
+
+        /**
+         * Getter for queueEvents.
+         */
+        public QueueEvents getQueueEvents() {
+            return queueEvents;
+        }
+
+        public void setQueueEvents(QueueEvents queueEvents) {
+            this.queueEvents = queueEvents;
+        }
+    }
+
+    /**
+     * Represent queue event related configurations.
+     */
+    public static class QueueEvents {
+        /**
+         * Defines common message limits to trigger event notifications.
+         */
+        private List<Integer> commonLimits = new ArrayList<>();
+        /**
+         * Defines queue specefic message limits to trigger event notifications.
+         */
+        private Map<String, List<Integer>> specificLimits = new HashMap<>();
+
+        public Map<String, List<Integer>> getSpecificLimits() {
+            return specificLimits;
+        }
+
+        public void setEventLimits(Map<String, List<Integer>> specificLimits) {
+            this.specificLimits = specificLimits;
+        }
+
+        public List<Integer> getCommonLimits() {
+            return commonLimits;
+        }
+
+        public void setCommonLimits(List<Integer> commonLimits) {
+            this.commonLimits = commonLimits;
+        }
+    }
+
+
 }

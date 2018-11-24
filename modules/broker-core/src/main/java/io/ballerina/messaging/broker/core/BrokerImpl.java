@@ -199,7 +199,7 @@ public final class BrokerImpl implements Broker {
     }
 
     private void initDefaultDeadLetterQueue() throws BrokerException, ValidationException {
-        createQueue(DEFAULT_DEAD_LETTER_QUEUE, false, true, false);
+        createQueue(DEFAULT_DEAD_LETTER_QUEUE, false, true, false, null);
         bind(DEFAULT_DEAD_LETTER_QUEUE,
                 ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE,
                 DEFAULT_DEAD_LETTER_QUEUE,
@@ -431,10 +431,11 @@ public final class BrokerImpl implements Broker {
 
     @Override
     public boolean createQueue(String queueName, boolean passive,
-                               boolean durable, boolean autoDelete) throws BrokerException, ValidationException {
+                               boolean durable, boolean autoDelete, FieldTable arguments)
+                                throws BrokerException, ValidationException {
         lock.writeLock().lock();
         try {
-            boolean queueAdded = queueRegistry.addQueue(queueName, passive, durable, autoDelete);
+            boolean queueAdded = queueRegistry.addQueue(queueName, passive, durable, autoDelete, arguments);
             if (queueAdded) {
                 QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
                 // We need to bind every queue to the default exchange

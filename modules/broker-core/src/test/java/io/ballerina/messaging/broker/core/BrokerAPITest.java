@@ -67,7 +67,7 @@ public class BrokerAPITest {
 
     @BeforeMethod
     public void setup() throws BrokerException, ValidationException {
-        broker.createQueue(DEFAULT_QUEUE_NAME, false, false, false);
+        broker.createQueue(DEFAULT_QUEUE_NAME, false, false, false, null);
         broker.bind(DEFAULT_QUEUE_NAME, DEFAULT_EXCHANGE_NAME, DEFAULT_ROUTING_KEY, FieldTable.EMPTY_TABLE);
     }
 

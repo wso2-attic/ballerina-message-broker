@@ -19,36 +19,42 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.queue.MemQueueImpl;
-
+import io.ballerina.messaging.broker.eventing.EventSync;
 
 /**
  * Memory backed factory for creating queue handler objects.
  */
-public class MemBackedQueueHandlerFactory implements QueueHandlerFactory {
+public class MemBackedQueueHandlerFactory extends QueueHandlerFactory {
     private final BrokerMetricManager metricManager;
     private final int nonDurableQueueMaxDepth;
-
+    private final EventSync eventSync;
+    private final BrokerCoreConfiguration.QueueEvents queueEventConfiguration;
     public MemBackedQueueHandlerFactory(BrokerMetricManager metricManager,
-                                        BrokerCoreConfiguration configuration) {
+                                        BrokerCoreConfiguration configuration, EventSync eventSync) {
         this.metricManager = metricManager;
         this.nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
+        this.eventSync = eventSync;
+        this.queueEventConfiguration = configuration.getEventConfig().getQueueEvents();
     }
 
     @Override
-    public QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete) {
-        return getQueueHandler(queueName, true, autoDelete);
+    public QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete, FieldTable arguments) {
+        return getQueueHandler(queueName, true, autoDelete, arguments);
     }
 
     @Override
-    public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete) {
-        return getQueueHandler(queueName, false, autoDelete);
+    public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete, FieldTable arguments) {
+        return getQueueHandler(queueName, false, autoDelete, arguments);
     }
 
-    private QueueHandler getQueueHandler(String queueName, boolean durable, boolean autoDelete) {
+    private QueueHandler getQueueHandler(String queueName, boolean durable, boolean autoDelete, FieldTable arguments) {
         Queue queue = new MemQueueImpl(queueName, durable, nonDurableQueueMaxDepth, autoDelete);
-        return new QueueHandler(queue, metricManager);
+        return createQueueHandler(queue, this.eventSync, this.metricManager, arguments, queueEventConfiguration);
+
     }
+
 }

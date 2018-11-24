@@ -137,12 +137,13 @@ public interface Broker {
      * @param passive    do not create queue
      * @param durable    request a durable queue
      * @param autoDelete auto-delete queue when unused
+     * @param arguments arguments to modify the queue
      * @return successfully created or not
      * @throws BrokerException     if existing queue does not match parameters or
      *                             could not found when passive set to true
      * @throws ValidationException if queue binding already exist
      */
-    boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
+    boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete, FieldTable arguments)
             throws BrokerException, ValidationException;
 
     /**

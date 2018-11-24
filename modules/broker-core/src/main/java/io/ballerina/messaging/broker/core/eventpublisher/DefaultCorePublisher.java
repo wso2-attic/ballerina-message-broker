@@ -45,7 +45,7 @@ public class DefaultCorePublisher implements CorePublisher {
     /**
      * Name of the Exchange where notifications are published.
      */
-    private String exchangeName = "event";
+    private String exchangeName = "amq.event";
     private int count;
 
     DefaultCorePublisher(Broker broker) {

@@ -56,7 +56,7 @@ public class TransactionTimeoutTest {
         Registry transactionRegistry = new Registry(branchFactory);
         transaction = new DistributedTransaction(branchFactory, transactionRegistry);
         StoreFactory storeFactory = new MemBackedStoreFactory(new NullBrokerMetricManager(),
-                                                              new BrokerCoreConfiguration());
+                                                              new BrokerCoreConfiguration(), null);
         branch = new Branch(xid, storeFactory.getMessageStore(), null);
         transactionRegistry.register(branch);
     }
