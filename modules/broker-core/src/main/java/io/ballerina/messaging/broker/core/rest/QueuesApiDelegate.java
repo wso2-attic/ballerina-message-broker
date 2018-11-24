@@ -75,7 +75,7 @@ public class QueuesApiDelegate {
     public Response createQueue(QueueCreateRequest requestBody, Subject subject) {
         try {
             if (brokerFactory.getBroker(subject).createQueue(requestBody.getName(), false,
-                                   requestBody.isDurable(), requestBody.isAutoDelete())) {
+                                   requestBody.isDurable(), requestBody.isAutoDelete(), null)) {
                 QueueCreateResponse message = new QueueCreateResponse().message("Queue created.");
                 return Response.created(new URI(BrokerAdminService.API_BASE_PATH + QUEUES_API_PATH
                                                         + "/" + requestBody.getName()))

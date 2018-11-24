@@ -21,7 +21,9 @@ package io.ballerina.messaging.broker.core;
 
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
+import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.store.dao.QueueDao;
+import io.ballerina.messaging.broker.eventing.EventSync;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,18 +41,25 @@ public final class QueueRegistry {
 
     private final QueueHandlerFactory queueHandlerFactory;
 
-    public QueueRegistry(QueueDao queueDao, QueueHandlerFactory queueHandlerFactory) throws BrokerException {
+    private final QueueRegistryEventPublisher queueRegistryEventPublisher;
+
+    public QueueRegistry(QueueDao queueDao,
+                         QueueHandlerFactory queueHandlerFactory,
+                         QueueRegistryEventPublisher queueRegistryEventPublisher) throws BrokerException {
         this.queueHandlerMap = new HashMap<>();
         this.queueDao = queueDao;
         this.queueHandlerFactory = queueHandlerFactory;
+        this.queueRegistryEventPublisher = queueRegistryEventPublisher;
         retrieveQueuesFromDao();
     }
+
 
     QueueHandler getQueueHandler(String queueName) {
         return queueHandlerMap.get(queueName);
     }
 
-    boolean addQueue(String queueName, boolean passive, boolean durable, boolean autoDelete) throws BrokerException {
+    boolean addQueue(String queueName, boolean passive, boolean durable, boolean autoDelete, FieldTable arguments)
+            throws BrokerException {
         QueueHandler queueHandler = queueHandlerMap.get(queueName);
 
         if (passive) {
@@ -63,12 +72,13 @@ public final class QueueRegistry {
         } else {
             if (Objects.isNull(queueHandler)) {
                 if (durable) {
-                    queueHandler = queueHandlerFactory.createDurableQueueHandler(queueName, autoDelete);
+                    queueHandler = queueHandlerFactory.createDurableQueueHandler(queueName, autoDelete, arguments);
                     queueDao.persist(queueHandler.getUnmodifiableQueue());
                 } else {
-                    queueHandler = queueHandlerFactory.createNonDurableQueueHandler(queueName, autoDelete);
+                    queueHandler = queueHandlerFactory.createNonDurableQueueHandler(queueName, autoDelete, arguments);
                 }
                 queueHandlerMap.put(queueName, queueHandler);
+                queueRegistryEventPublisher.publishQueueEvent("queue.created", queueHandler);
                 return true;
             } else if (queueHandler.getUnmodifiableQueue().isDurable() != durable
                        || queueHandler.getUnmodifiableQueue().isAutoDelete() != autoDelete) {
@@ -97,13 +107,15 @@ public final class QueueRegistry {
         } else {
             queueHandlerMap.remove(queueName);
             queueDao.delete(queueHandler.getUnmodifiableQueue());
+            queueRegistryEventPublisher.publishQueueEvent("queue.deleted", queueHandler);
             return queueHandler.releaseResources();
         }
     }
 
     private void retrieveQueuesFromDao() throws BrokerException {
             queueDao.retrieveAll((name) -> {
-                QueueHandler handler = queueHandlerFactory.createDurableQueueHandler(name, false);
+                QueueHandler handler = queueHandlerFactory.createDurableQueueHandler(name, false,
+                        null);
                 queueHandlerMap.putIfAbsent(name, handler);
             });
     }
@@ -120,5 +132,46 @@ public final class QueueRegistry {
     void reloadQueuesOnBecomingActive() throws BrokerException {
         queueHandlerMap.clear();
         retrieveQueuesFromDao();
+    }
+
+    /**
+     * Represents the event publisher handler in resource QueueRegistry.
+     */
+     interface QueueRegistryEventPublisher {
+        void publishQueueEvent(String eventType, QueueHandler queueHandler);
+    }
+
+    /**
+     * Default implementation of {@link QueueRegistryEventPublisher}.
+     */
+     static class DefaultQueueRegistryEventPublisher implements QueueRegistryEventPublisher {
+
+        private EventSync eventSync;
+         DefaultQueueRegistryEventPublisher(EventSync eventSync) {
+            this.eventSync = eventSync;
+        }
+
+        public void publishQueueEvent(String eventType, QueueHandler queueHandler) {
+            Map<String, String> properties = new HashMap<>();
+            String queueName = queueHandler.getUnmodifiableQueue().getName();
+            String isAutoDelete = String.valueOf(queueHandler.getUnmodifiableQueue().isAutoDelete());
+            String isDurable = String.valueOf(queueHandler.getUnmodifiableQueue().isDurable());
+            properties.put("queueName", queueName);
+            properties.put("autoDelete", isAutoDelete);
+            properties.put("durable", isDurable);
+            properties.put("messageCount", String.valueOf(queueHandler.size()));
+            eventSync.publish(eventType, properties);
+        }
+    }
+
+    /**
+     * Default implementation of {@link QueueRegistryEventPublisher}.
+     */
+     static class NullQueueRegistryEventPublisher implements QueueRegistryEventPublisher {
+
+        @Override
+        public void publishQueueEvent(String eventType, QueueHandler queueHandler) {
+            //No implementation
+        }
     }
 }

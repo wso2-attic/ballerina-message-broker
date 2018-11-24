@@ -26,12 +26,16 @@ import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.queue.MemQueueImpl;
 import io.ballerina.messaging.broker.core.queue.UnmodifiableQueueWrapper;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
+import io.ballerina.messaging.broker.eventing.EventSync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +66,12 @@ public final class QueueHandler {
 
     private final Map<Binding, ThrowingConsumer<Binding, BrokerException>> bindingChangeListenersMap;
 
-    QueueHandler(Queue queue, BrokerMetricManager metricManager) {
+    private final QueueHandlerEventPublisher queueHandlerEventPublisher;
+
+    QueueHandler(Queue queue,
+                 BrokerMetricManager metricManager,
+                 QueueHandlerEventPublisher queueHandlerEventPublisher) {
+
         this.queue = queue;
         queue.setQueueHandler(this);
         unmodifiableQueueView = new UnmodifiableQueueWrapper(queue);
@@ -74,9 +83,11 @@ public final class QueueHandler {
         this.consumers = ConcurrentHashMap.newKeySet();
         consumerIterator = new CyclicConsumerIterator();
         bindingChangeListenersMap = new ConcurrentHashMap<>();
+        this.queueHandlerEventPublisher = queueHandlerEventPublisher;
     }
 
     public Queue getUnmodifiableQueue() {
+
         return unmodifiableQueueView;
     }
 
@@ -86,6 +97,7 @@ public final class QueueHandler {
      * @return Set of unmodifiable subscription objects
      */
     public Collection<Consumer> getConsumers() {
+
         return Collections.unmodifiableCollection(consumers);
     }
 
@@ -93,11 +105,15 @@ public final class QueueHandler {
      * Add a new consumer to the queue.
      *
      * @param consumer {@link Consumer} implementation.
-     *
      * @return true if {@link Consumer} was successfully added.
      */
     boolean addConsumer(Consumer consumer) {
-        return consumers.add(consumer);
+
+        boolean consumerAdded = consumers.add(consumer);
+        if (consumerAdded) {
+            queueHandlerEventPublisher.publishConsumerEvent("consumer.added", consumer);
+        }
+        return consumerAdded;
     }
 
     /**
@@ -105,11 +121,16 @@ public final class QueueHandler {
      * avoid concurrent issues
      *
      * @param consumer {@link Consumer} to be removed.
-     *
      * @return True if the {@link Consumer} is removed.
      */
     boolean removeConsumer(Consumer consumer) {
-        return consumers.remove(consumer);
+
+        //consumer.close();
+        boolean consumerRemoved = consumers.remove(consumer);
+        if (consumerRemoved) {
+            queueHandlerEventPublisher.publishConsumerEvent("consumer.removed", consumer);
+        }
+        return consumerRemoved;
     }
 
     /**
@@ -118,12 +139,14 @@ public final class QueueHandler {
      * @param message {@link Message}
      */
     void enqueue(Message message) throws BrokerException {
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Enqueuing message {} to queue {}", message, queue.getName());
         }
         boolean success = queue.enqueue(message);
         if (success) {
             metricManager.addInMemoryMessage();
+            queueHandlerEventPublisher.publishQueueLimitReachedEvent(this);
             MessageTracer.trace(message, this, MessageTracer.PUBLISH_SUCCESSFUL);
         } else {
             message.release();
@@ -133,21 +156,25 @@ public final class QueueHandler {
     }
 
     void prepareForEnqueue(Xid xid, Message message) throws BrokerException {
+
         MessageTracer.trace(message, xid, this, MessageTracer.PREPARE_ENQUEUE);
         queue.prepareEnqueue(xid, message);
     }
 
     void prepareForDetach(Xid xid, DetachableMessage detachableMessage) throws BrokerException {
+
         MessageTracer.trace(detachableMessage, xid, this, MessageTracer.PREPARE_DEQUEUE);
         queue.prepareDetach(xid, detachableMessage);
     }
 
     public void commit(Xid xid) {
+
         queue.commit(xid);
         MessageTracer.trace(xid, this, MessageTracer.QUEUE_COMMIT);
     }
 
     public void rollback(Xid xid) {
+
         queue.rollback(xid);
         MessageTracer.trace(xid, this, MessageTracer.QUEUE_ROLLBACK);
     }
@@ -158,6 +185,7 @@ public final class QueueHandler {
      * @return Message
      */
     Message takeForDelivery() {
+
         Message message = redeliveryQueue.dequeue();
         if (message == null) {
             message = queue.dequeue();
@@ -173,21 +201,23 @@ public final class QueueHandler {
      * Removes the message from the queue.
      *
      * @param detachableMessage message to be removed.
-     *
      * @throws BrokerException throws on failure to dequeue the message.
      */
     void dequeue(DetachableMessage detachableMessage) throws BrokerException {
+
         queue.detach(detachableMessage);
+        queueHandlerEventPublisher.publishQueueLimitReachedEvent(this);
         metricManager.removeInMemoryMessage();
         MessageTracer.trace(detachableMessage, this, MessageTracer.ACKNOWLEDGE);
     }
 
     public void requeue(Message message) throws BrokerException {
+
         boolean success = redeliveryQueue.enqueue(message);
         if (!success) {
             LOGGER.warn("Enqueuing message since redelivery queue for {} is full. message:{}",
-                        queue.getName(),
-                        message);
+                    queue.getName(),
+                    message);
             enqueue(message);
         }
         MessageTracer.trace(message, this, MessageTracer.REQUEUE);
@@ -200,6 +230,7 @@ public final class QueueHandler {
      * @return CyclicConsumerIterator
      */
     CyclicConsumerIterator getCyclicConsumerIterator() {
+
         consumerIterator.setIterator(Iterables.cycle(consumers).iterator());
         return consumerIterator;
     }
@@ -210,6 +241,7 @@ public final class QueueHandler {
      * @return True if the queue doesn't contain any {@link Message} objects
      */
     boolean isEmpty() {
+
         return size() == 0;
     }
 
@@ -219,6 +251,7 @@ public final class QueueHandler {
      * @return Number of {@link Message} objects in the queue.
      */
     public int size() {
+
         return queue.size() + redeliveryQueue.size();
     }
 
@@ -228,10 +261,12 @@ public final class QueueHandler {
      * @return True if there are no {@link Consumer} for the queue.
      */
     boolean isUnused() {
+
         return consumers.isEmpty();
     }
 
     private void closeAllConsumers() {
+
         Iterator<Consumer> iterator = consumers.iterator();
         while (iterator.hasNext()) {
 
@@ -240,22 +275,27 @@ public final class QueueHandler {
                 consumer.close();
             } catch (BrokerException e) {
                 LOGGER.error("Error occurred while closing the consumer [ " + consumer + " ] " +
-                                     "for queue [ " + queue.toString() + " ]", e);
+                        "for queue [ " + queue.toString() + " ]", e);
             } finally {
+                queueHandlerEventPublisher.publishConsumerEvent("consumer.removed", consumer);
                 iterator.remove();
             }
         }
     }
 
     public int consumerCount() {
+
         return consumers.size();
     }
 
     public void addBinding(Binding binding, ThrowingConsumer<Binding, BrokerException> bindingChangeListener) {
+
         bindingChangeListenersMap.put(binding, bindingChangeListener);
+        queueHandlerEventPublisher.publishBindingEvent("binding.added", binding);
     }
 
     public int releaseResources() throws BrokerException {
+
         closeAllConsumers();
         for (Map.Entry<Binding, ThrowingConsumer<Binding, BrokerException>> entry
                 : bindingChangeListenersMap.entrySet()) {
@@ -265,10 +305,13 @@ public final class QueueHandler {
     }
 
     public void removeBinding(Binding binding) {
+
         bindingChangeListenersMap.remove(binding);
+        queueHandlerEventPublisher.publishBindingEvent("binding.removed", binding);
     }
 
     public int purgeQueue() throws ValidationException {
+
         if (consumerCount() == 0) {
             int queueMessages = queue.clear();
             int totalMessages = queueMessages + redeliveryQueue.size();
@@ -277,7 +320,91 @@ public final class QueueHandler {
             return totalMessages;
         } else {
             throw new ValidationException("Cannot purge queue " + queue.getName() + " since there " + consumerCount()
-                                                  + " active consumer(s)");
+                    + " active consumer(s)");
+        }
+    }
+    /**
+     * Represents the event publisher handler in resource QueueHandler.
+     */
+    interface QueueHandlerEventPublisher {
+
+        void publishConsumerEvent(String id, Consumer consumer);
+
+        void publishBindingEvent(String id, Binding binding);
+
+        void publishQueueLimitReachedEvent(QueueHandler queueHandler);
+    }
+
+    /**
+     * Default implementation of {@link QueueHandlerEventPublisher}.
+     */
+    static class DefaultQueueHandlerEventPublisher implements QueueHandlerEventPublisher {
+
+        EventSync eventSync;
+        HashSet<Integer> messageLimits;
+
+        DefaultQueueHandlerEventPublisher(EventSync eventSync, List<Integer> messageLimits) {
+
+            this.eventSync = eventSync;
+            this.messageLimits = new HashSet<Integer>(messageLimits);
+        }
+
+        @Override
+        public void publishConsumerEvent(String id, Consumer consumer) {
+
+            Map<String, String> properties = new HashMap<>();
+            properties.put("consumerID", String.valueOf(consumer.getId()));
+            properties.put("queueName", consumer.getQueueName());
+            properties.put("ready", String.valueOf(consumer.isReady()));
+            properties.put("exclusive", String.valueOf(consumer.isExclusive()));
+            eventSync.publish(id, properties);
+        }
+
+        @Override
+        public void publishBindingEvent(String id, Binding binding) {
+
+            Map<String, String> properties = new HashMap<>();
+            properties.put("bindingQueue", binding.getQueue().getName());
+            properties.put("bindingPattern", binding.getBindingPattern());
+            eventSync.publish(id, properties);
+        }
+
+        @Override
+        public void publishQueueLimitReachedEvent(QueueHandler queueHandler) {
+            int queueSize = queueHandler.size();
+            if (messageLimits.contains(queueSize)) {
+                Map<String, String> properties = new HashMap<>();
+                String queueName = queueHandler.getUnmodifiableQueue().getName();
+                String isAutoDelete = String.valueOf(queueHandler.getUnmodifiableQueue().isAutoDelete());
+                String isDurable = String.valueOf(queueHandler.getUnmodifiableQueue().isDurable());
+                properties.put("queueName", queueName);
+                properties.put("autoDelete", isAutoDelete);
+                properties.put("durable", isDurable);
+                properties.put("messageCount", String.valueOf(queueHandler.size()));
+                String id = "queue.limitReached." + queueName + "." + queueSize;
+                eventSync.publish(id, properties);
+            }
+        }
+    }
+
+    /**
+     * Null implementation of {@link QueueHandlerEventPublisher}.
+     */
+    static class NullQueueHandlerEventPublisher implements QueueHandlerEventPublisher {
+
+        @Override
+        public void publishConsumerEvent(String id, Consumer consumer) {
+            //Null implementation
+        }
+
+        @Override
+        public void publishBindingEvent(String id, Binding binding) {
+            //Null implementation
+        }
+
+        @Override
+        public void publishQueueLimitReachedEvent(QueueHandler queueHandler) {
+            //Null implementation
         }
     }
 }

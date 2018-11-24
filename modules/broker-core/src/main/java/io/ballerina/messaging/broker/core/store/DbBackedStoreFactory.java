@@ -24,6 +24,7 @@ import io.ballerina.messaging.broker.core.DbBackedQueueHandlerFactory;
 import io.ballerina.messaging.broker.core.ExchangeRegistry;
 import io.ballerina.messaging.broker.core.ExchangeRegistryFactory;
 import io.ballerina.messaging.broker.core.QueueRegistry;
+import io.ballerina.messaging.broker.core.QueueRegistryFactory;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.dao.impl.DaoFactory;
@@ -69,7 +70,8 @@ public class DbBackedStoreFactory implements StoreFactory {
 
     @Override
     public QueueRegistry getQueueRegistry() throws BrokerException {
-        return new QueueRegistry(daoFactory.createQueueDao(),
-                                 new DbBackedQueueHandlerFactory(dbMessageStore, metricManager, configuration));
+        return new QueueRegistryFactory(daoFactory.createQueueDao(),
+                new DbBackedQueueHandlerFactory(dbMessageStore, metricManager, configuration, eventSync),
+                eventSync).getQueueRegistry();
     }
 }
