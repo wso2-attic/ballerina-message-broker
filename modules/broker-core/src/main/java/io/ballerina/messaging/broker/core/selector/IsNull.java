@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.core.selector;
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression. Here we compare two expressions and evaluate to a boolean value.
+ * Implementation of a boolean expression. Here we find expressions is null or not and evaluate to a boolean value.
  */
 
 public class IsNull implements BooleanExpression {

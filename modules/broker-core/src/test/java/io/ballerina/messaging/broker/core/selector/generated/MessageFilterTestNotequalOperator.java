@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 /**
  * {@link MessageFilter} parsing and expression evaluation tests
  */
-public class MessageFilterTest {
+public class MessageFilterTestNotequalOperator {
 
     @Test (dataProvider = "positive-filter-strings", description = "Test parsing correct filter strings")
     private void testPositiveFilterStringParsing(String filterString) throws Exception {
@@ -47,34 +47,34 @@ public class MessageFilterTest {
     public Object[] positiveFilterStrings() {
         return new String[] {
                 // valid string literal
-                "MyProperty = 'abcdef'",
-                "MyProperty = 'abcde''f'",
-                "MyProperty = 'ABCDEF'",
-                "MyProperty = 'aBCDEF'",
-                "MyProperty = 'aB$CDEF'",
-                "MyProperty = 'aB_CDEF'",
-                "MyProperty = 'aB1CDEF'",
-                "MyProperty = 'aBCdef$'",
-                "MyProperty = 'aBCdef_'",
-                "MyProperty = 'aBCdef2'",
-                "MyProperty = '_aBCdef2'",
-                "MyProperty = '$aBCdef2'",
-                "MyProperty = '2aBCdef2'",
-                "MyProperty = 'aB$C1d_ef2'",
+                "MyProperty <> 'abcdef'",
+                "MyProperty <> 'abcde''f'",
+                "MyProperty <> 'ABCDEF'",
+                "MyProperty <> 'aBCDEF'",
+                "MyProperty <> 'aB$CDEF'",
+                "MyProperty <> 'aB_CDEF'",
+                "MyProperty <> 'aB1CDEF'",
+                "MyProperty <> 'aBCdef$'",
+                "MyProperty <> 'aBCdef_'",
+                "MyProperty <> 'aBCdef2'",
+                "MyProperty <> '_aBCdef2'",
+                "MyProperty <> '$aBCdef2'",
+                "MyProperty <> '2aBCdef2'",
+                "MyProperty <> 'aB$C1d_ef2'",
 
 
                 // valid identifiers
-                "abCDEF = 'abcdef'",
-                "ab9cdef = 'abcdef'",
-                "ab$cdef = 'abcdef'",
-                "ab_cdef = 'abcdef'",
-                "abcdef2 = 'abcdef'",
-                "abcdef$ = 'abcdef'",
-                "abcdef_ = 'abcdef'",
+                "abCDEF <> 'abcdef'",
+                "ab9cdef <> 'abcdef'",
+                "ab$cdef <> 'abcdef'",
+                "ab_cdef <> 'abcdef'",
+                "abcdef2 <> 'abcdef'",
+                "abcdef$ <> 'abcdef'",
+                "abcdef_ <> 'abcdef'",
                 // numeric literals
-                "Age = 10",
-                "Age = 40l",
-                "Age = 45L"
+                "Age <> 10",
+                "Age <> 40l",
+                "Age <> 45L"
         };
     }
 
@@ -83,17 +83,17 @@ public class MessageFilterTest {
         return new String[] {
                 "",
                 // invalid string literals
-                "MyProperty = 'abcde'f'",
-
+                "MyProperty <> 'abcde'f'",
+                "MyProperty <> abcdef",
                 // invalid identifiers
-                "$yProperty = 'abcdef'",
-                "_yProperty = 'abcdef'",
-                "1yProperty = 'abcdef'",
-
+                "$yProperty <> 'abcdef'",
+                "_yProperty <> 'abcdef'",
+                "1yProperty <> 'abcdef'",
+                "10 <> Age",
                 // invalid numeric literals
-                "myProperty = 123LL",
-                "myProperty = 123ll",
-                "myProperty = 123lLl",
+                "myProperty <> 123LL",
+                "myProperty <> 123ll",
+                "myProperty <> 123lLl",
         };
     }
 }
