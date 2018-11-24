@@ -24,6 +24,10 @@ public class ExchangeRegistryFactory {
         this.eventSync = eventSync;
     }
 
+    /**
+     * Create a observable or a non observable exchange registry with the give arguments.
+     * @return ExchangeRegistry object
+     */
     public ExchangeRegistry getExchangeRegistry() {
 
         if (Objects.nonNull(this.eventSync)) {

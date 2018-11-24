@@ -31,7 +31,7 @@ public interface EventSync {
      * @param id ID to identify the Event Type
      * @param properties include properties of the Event
      */
-    void publish(int id, Map<String, String> properties);
+    void publish(String id, Map<String, String> properties);
 
     /**
      * Used to activate the publisher.

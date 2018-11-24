@@ -21,6 +21,9 @@ package io.ballerina.messaging.broker.eventing;
 
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wso2.carbon.config.ConfigurationException;
 
 import java.util.Objects;
 
@@ -29,22 +32,51 @@ import java.util.Objects;
  */
 public class EventService {
 
-    private final PublisherGenerator publisherGenerator;
+    private static final Logger logger = LoggerFactory.getLogger(EventService.class);
+
+    private boolean isEnabled;
+    private EventSync eventSync = null;
+
 
     public EventService(StartupContext context) {
         BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
-        publisherGenerator = new PublisherGenerator(new CarbonConfigAdapter(configProvider));
 
-        if (Objects.nonNull(publisherGenerator.getEventSync())) {
-            context.registerService(EventSync.class, publisherGenerator.getEventSync());
+        getEventPublisher(new CarbonConfigAdapter(configProvider));
+
+        if (Objects.nonNull(eventSync)) {
+            context.registerService(EventSync.class, eventSync);
+        }
+    }
+
+
+    /**
+     * Used to get the registered event publisher in EventConfiguration.
+     *
+     * @param configProvider configuration provider to get Event Configuration
+     */
+    void getEventPublisher(CarbonConfigAdapter configProvider) {
+
+        try {
+            EventConfiguration eventConfiguration = configProvider.getConfigurationObject(EventConfiguration.class);
+            this.isEnabled = eventConfiguration.isEnabled();
+            if (isEnabled) {
+                eventSync = new EventPublisherFactory().getPublisher(eventConfiguration);
+            }
+        } catch (IllegalAccessException | InstantiationException | ConfigurationException | ClassNotFoundException e) {
+            logger.error(e.toString());
+            isEnabled = false;
         }
     }
 
     public void start() {
-        publisherGenerator.activate();
+        if (isEnabled) {
+            eventSync.activate();
+        }
     }
 
     public void stop() {
-        publisherGenerator.deactivate();
+        if (Objects.nonNull(eventSync)) {
+            eventSync.deactivate();
+        }
     }
 }

@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Used to load registered EventPublishers.
  */
-class EventRegistry {
+class EventPublisherFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventRegistry.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventPublisherFactory.class);
 
     /**
      * Provides an instance of @{@link EventSync}.

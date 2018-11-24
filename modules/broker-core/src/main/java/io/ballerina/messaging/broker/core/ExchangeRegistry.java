@@ -45,7 +45,7 @@ public final class ExchangeRegistry {
 
     public static final String DEFAULT_DEAD_LETTER_EXCHANGE = "amq.dlx";
 
-    private static final String EVENT = "event";
+    private static final String EVENT = "amq.event";
 
     private static final BindingDao NO_OP_BINDING_DAO = new NoOpBindingDao();
 
@@ -121,7 +121,6 @@ public final class ExchangeRegistry {
      */
     void declareExchange(String exchangeName, String type,
                          boolean passive, boolean durable) throws ValidationException, BrokerException {
-
         if (exchangeName.isEmpty()) {
             throw new ValidationException("Exchange name cannot be empty.");
         }
@@ -147,8 +146,7 @@ public final class ExchangeRegistry {
      * @throws ValidationException if exchange already exist
      */
     public void createExchange(String exchangeName, Exchange.Type type, boolean durable) throws BrokerException,
-            ValidationException {
-
+                                                                                            ValidationException {
         Exchange exchange = exchangeMap.get(exchangeName);
         if (Objects.isNull(exchange)) {
             BindingDao dao = durable ? bindingDao : NO_OP_BINDING_DAO;
@@ -164,22 +162,19 @@ public final class ExchangeRegistry {
     }
 
     private void retrieveAllExchangesFromDao() throws BrokerException {
-
         exchangeDao.retrieveAll(
                 (name, typeString) -> {
                     Exchange exchange = ExchangeFactory.newInstance(name,
-                            Exchange.Type.from(typeString), bindingDao);
+                                                                    Exchange.Type.from(typeString), bindingDao);
                     exchangeMap.putIfAbsent(name, exchange);
                 });
     }
 
     public Exchange getDefaultExchange() {
-
         return exchangeMap.get(DEFAULT);
     }
 
     public void retrieveFromStore(QueueRegistry queueRegistry) throws BrokerException {
-
         retrieveAllExchangesFromDao();
         for (Exchange exchange : exchangeMap.values()) {
             exchange.retrieveBindingsFromDb(queueRegistry);
@@ -230,13 +225,17 @@ public final class ExchangeRegistry {
         }
     }
 
+    /**
+     * Represents the event publisher handler in resource ExchangeRegistry.
+     */
      interface ExchangeRegistryEventPublisher {
-
         void publishExchangeEvent(String eventType, Exchange exchange);
     }
 
+    /**
+     * Default implementation of {@link ExchangeRegistryEventPublisher}.
+     */
      static class DefaultExchangeRegistryEventPublisher implements ExchangeRegistryEventPublisher {
-
         EventSync eventSync;
 
         DefaultExchangeRegistryEventPublisher(EventSync eventSync) {
@@ -255,8 +254,10 @@ public final class ExchangeRegistry {
         }
     }
 
+    /**
+     * Null implementation of {@link ExchangeRegistryEventPublisher}.
+     */
      static class NullExchangeRegistryEventPublisher implements ExchangeRegistryEventPublisher {
-
         @Override
         public void publishExchangeEvent(String eventType, Exchange exchange) {
             //No implementation

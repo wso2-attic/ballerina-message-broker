@@ -21,6 +21,10 @@ public class QueueRegistryFactory {
         this.queueDao = queueDao;
     }
 
+    /**
+     * Create a observable or a non observable queue registry with the give arguments.
+     * @return QueueRegistry object
+     */
     public QueueRegistry getQueueRegistry() throws BrokerException {
 
         if (Objects.nonNull(eventSync)) {

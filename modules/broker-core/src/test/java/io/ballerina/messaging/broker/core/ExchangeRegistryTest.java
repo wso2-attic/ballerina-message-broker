@@ -40,7 +40,8 @@ public class ExchangeRegistryTest {
 
     @BeforeMethod
     public void beforeTestSetup() {
-        exchangeRegistry = new ExchangeRegistry(new NoOpExchangeDaoTestUtil(), new NoOpBindingDao());
+        exchangeRegistry = new ExchangeRegistry(new NoOpExchangeDaoTestUtil(), new NoOpBindingDao(),
+                new ExchangeRegistry.NullExchangeRegistryEventPublisher());
     }
 
     @Test(dataProvider = "exchangeNames", description = "test frequently used exchanges types are defined")
