@@ -32,8 +32,6 @@ import io.ballerina.messaging.broker.client.utils.Constants;
 import io.ballerina.messaging.broker.client.utils.Utils;
 
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 import static io.ballerina.messaging.broker.client.utils.Constants.BROKER_ERROR_MSG;
 import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_GET;
@@ -61,20 +59,19 @@ public class ShowLoggerCmd extends ShowCmd {
             HttpClient httpClient = new HttpClient(configuration);
 
             // getting logger information
-            HttpRequest httpRequest = new HttpRequest(Constants.LOGGERS_URL_PARAM);
+            HttpRequest httpRequest;
+            if (loggerName.isEmpty()) {
+                httpRequest = new HttpRequest(Constants.LOGGERS_URL_PARAM);
+            } else {
+                httpRequest = new HttpRequest(Constants.LOGGERS_URL_PARAM + loggerName);
+            }
             HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
 
             // handle response
             if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
                 Gson gson = new Gson();
                 Logger[] loggers = gson.fromJson(response.getPayload(), Logger[].class);
-
-                if (loggerName.isEmpty()) {
-                    responseFormatter.printLoggers(loggers);
-                } else {
-                    ArrayList<Logger> filteredLoggers = filterLoggers(loggers);
-                    responseFormatter.printLoggers(filteredLoggers.toArray(new Logger[filteredLoggers.size()]));
-                }
+                responseFormatter.printLoggers(loggers);
             } else {
                 ResponseFormatter.handleErrorResponse(buildResponseMessage(response, BROKER_ERROR_MSG));
             }
@@ -82,27 +79,11 @@ public class ShowLoggerCmd extends ShowCmd {
 
     }
 
-    /**
-     * Filter loggers by name according to the given regular expression.
-     *
-     * @param loggers the set of loggers
-     * @return array of filtered loggers
-     */
-    private ArrayList<Logger> filterLoggers(Logger[] loggers) {
-        ArrayList<Logger> filteredLoggers = new ArrayList<>();
-        Pattern namePatten = Pattern.compile(loggerName.replaceAll("\\*", ".*"));
-        for (Logger logger : loggers) {
-            if (namePatten.matcher(logger.getName()).matches()) {
-                filteredLoggers.add(logger);
-            }
-        }
-        return filteredLoggers;
-    }
 
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + rootCommand + " show logger [logger-name]\n");
+        out.append("  ").append(rootCommand).append(" show logger [logger-name]\n");
     }
 
 }

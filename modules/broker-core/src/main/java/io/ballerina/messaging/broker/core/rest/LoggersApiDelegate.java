@@ -31,8 +31,10 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.security.auth.Subject;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 /**
@@ -53,7 +55,7 @@ public class LoggersApiDelegate {
             Logger logger = LogManager.exists(requestLogger.getName());
             String responseMessage;
             if (logger == null) {
-                responseMessage = "Logger not found";
+                throw new NotFoundException("Logger not found");
             } else if (!isLogLevelValid(requestLogger.getLevel())) {
                 responseMessage = "'" + requestLogger.getLevel() + "' is not a valid log level.\n Valid log levels : " +
                                   Level.OFF.toString() + " , " + Level.TRACE.toString() + " , " +
@@ -64,8 +66,7 @@ public class LoggersApiDelegate {
                 String oldLevel = logger.getEffectiveLevel().toString();
                 logger.setLevel(Level.toLevel(requestLogger.getLevel()));
                 responseMessage = "Logger : " + requestLogger.getName() + "\nChanged log level : " + oldLevel + " -> " +
-                                  logger
-                                          .getEffectiveLevel().toString();
+                                  logger.getEffectiveLevel().toString();
             }
             return Response.ok().entity(new ResponseMessage().message(responseMessage)).build();
         } catch (AuthException e) {
@@ -88,6 +89,24 @@ public class LoggersApiDelegate {
         }
     }
 
+    public Response getFilteredLoggers(Subject subject, String name) {
+        try {
+            authHandler.handle(ResourceAuthScope.LOGGERS_GET, subject);
+            List<LoggerMetadata> loggerArray = new ArrayList<>();
+            Pattern namePatten = Pattern.compile(name.replaceAll("\\*", ".*"));
+            Enumeration loggers = LogManager.getCurrentLoggers();
+            while (loggers.hasMoreElements()) {
+                Logger logger = (Logger) loggers.nextElement();
+                if (namePatten.matcher(logger.getName()).matches()) {
+                    loggerArray.add(toLoggerMetadata(logger));
+                }
+            }
+            return Response.ok().entity(loggerArray).build();
+        } catch (AuthException e) {
+            throw new NotAuthorizedException(e.getMessage(), e);
+        }
+    }
+
     /**
      * This methods checks whether the given string represents a valid log level.
      *
@@ -96,11 +115,8 @@ public class LoggersApiDelegate {
      */
     private boolean isLogLevelValid(String logLevel) {
         // when the given log level is not a valid one, it is set to the default log level (DEBUG)
-        if (!Level.DEBUG.toString().equals(logLevel) &&
-            Level.toLevel(logLevel).toString().equals(Level.DEBUG.toString())) {
-            return false;
-        }
-        return true;
+        return Level.DEBUG.toString().equals(logLevel) ||
+               !Level.toLevel(logLevel).toString().equals(Level.DEBUG.toString());
     }
 
     /**

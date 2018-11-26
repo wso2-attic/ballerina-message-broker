@@ -124,7 +124,7 @@ public class TableFormatter implements ResponseFormatter {
         String printTemplate = "%-2s%-" + (maxLoggerNameColumnSize + TABLE_PADDING) + "s%-2s%-15s%-2s\n";
 
 
-        StringBuffer loggerNameDivider = new StringBuffer();
+        StringBuilder loggerNameDivider = new StringBuilder();
         for (int i = 0; i < maxLoggerNameColumnSize + TABLE_PADDING; i++) {
             loggerNameDivider.append(Logger.BLOCK_SEPERATOR);
         }

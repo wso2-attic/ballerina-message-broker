@@ -948,6 +948,10 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/Error'
+        '403':
+          description: Requested action unauthorized.
+          schema:
+            $ref: '#/definitions/Error'
     put:
       operationId: updateLogger
       summary: Update logger
@@ -970,6 +974,10 @@ paths:
           description: Bad Request. Invalid request or validation error.
           schema:
             $ref: '#/definitions/Error'
+        '403':
+          description: Requested action unauthorized.
+          schema:
+            $ref: '#/definitions/Error'
         '404':
           description: Logger not found
           schema:
@@ -978,6 +986,37 @@ paths:
           description: >-
             Unsupported media type. The entity of the request was in a not
             supported format.
+          schema:
+            $ref: '#/definitions/Error'
+  /loggers/{name}:
+    get:
+      operationId: getFilteredLoggers
+      summary: Get loggers
+      description: Gets metadata of the loggers that matches given name.
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: Name of the logger
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: List of loggers
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LoggerMetadata'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Requested action unauthorized.
           schema:
             $ref: '#/definitions/Error'
 definitions:

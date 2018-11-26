@@ -45,6 +45,6 @@ public class UpdateCmd extends AbstractCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + rootCommand + " update [command]\n");
+        out.append("  ").append(rootCommand).append(" update [command]\n");
     }
 }
