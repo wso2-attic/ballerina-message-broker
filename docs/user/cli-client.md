@@ -254,7 +254,7 @@ Filter loggers in the Broker<br/>
 ### 6.2. Logger log level change
 
 #### Description:
-Update log level of a given logger.
+Update log level of a given logger. Note that even though log level of the logger is changed, some logs will not be shown if the threshold of the appender(s) is higher.
 
 #### Command format:
 `./broker-admin.sh update logger [--name|-n] <logger_name> [--level|-l] <log_level>)`

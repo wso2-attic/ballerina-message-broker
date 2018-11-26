@@ -47,7 +47,9 @@ public class UpdateLoggerCmd extends AbstractCmd {
     private String loggerName;
 
     @Parameter(names = {"--level", "-l"},
-            description = "new level (OFF , TRACE , DEBUG , INFO , WARN , ERROR , FATAL)")
+            description = "new log level (OFF , TRACE , DEBUG , INFO , WARN , ERROR , FATAL).\n Note that even though"
+                          + " log level of the logger is changed, some logs will not be shown if the threshold of the"
+                          + " appender(s) is higher")
     private String logLevel;
 
     public UpdateLoggerCmd(String rootCommand) {
