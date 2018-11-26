@@ -31,7 +31,6 @@ import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -45,7 +44,7 @@ public class DefaultCorePublisher implements CorePublisher {
     /**
      * Name of the Exchange where notifications are published.
      */
-    private String exchangeName = "amq.event";
+    private String exchangeName = "x-event";
     private int count;
 
     DefaultCorePublisher(Broker broker) {
@@ -54,44 +53,29 @@ public class DefaultCorePublisher implements CorePublisher {
 
     @Override
     public void publishNotification(String id, Map<String, String> properties) {
-        if (id.equals("message.published")) {
-            String publishedExchangeName = properties.get("exchangeName");
-            if (publishedExchangeName.equals(exchangeName)) {
-                return;
-            }
-        }
+        String data = "Event Message";
 
-        Map<ShortString, FieldValue> notificationProperties = new HashMap<>();
-
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
-            ShortString key = ShortString.parseString(entry.getKey());
-            String obj = entry.getValue();
-            FieldValue fieldValue = FieldValue.parseLongString(obj);
-            notificationProperties.put(key, fieldValue);
-        }
-
-        Metadata metadata = new Metadata(id, exchangeName, 13);
-        metadata.setHeaders(new FieldTable(notificationProperties));
+        Metadata metadata = new Metadata(id, exchangeName, data.length());
+        metadata.setHeaders(properties);
         FieldTable messageProperties = new FieldTable();
         messageProperties.add(ShortString.parseString("propertyFlags"), FieldValue.parseLongInt(8192));
         metadata.setProperties(messageProperties);
         Message notificationMessage = new Message(count++, metadata);
 
-        String data = "Event Message";
-        int numberOfChunks = 1;
+
+        //Creating the body of the message
         byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-        int chunkSize = dataBytes.length / numberOfChunks;
-        for (int i = 0; i < numberOfChunks; i++) {
-            int offset = i * chunkSize;
-            ByteBuf buffer = Unpooled.wrappedBuffer(dataBytes,
-                    offset,
-                    Math.min(chunkSize, dataBytes.length - offset));
-            notificationMessage.addChunk(new ContentChunk(0, buffer));
-        }
+        int chunkSize = dataBytes.length;
+        int offset = 0;
+        ByteBuf buffer = Unpooled.wrappedBuffer(dataBytes,
+                                                offset,
+                                                Math.min(chunkSize, dataBytes.length - offset));
+        notificationMessage.addChunk(new ContentChunk(0, buffer));
+
         try {
             broker.publish(notificationMessage);
         } catch (BrokerException e) {
-            LOGGER.info(e.toString());
+            LOGGER.warn("Exception while publishing event notification message {}", notificationMessage, e);
         }
     }
 

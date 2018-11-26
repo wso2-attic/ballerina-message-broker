@@ -26,6 +26,8 @@ import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
+import java.util.Map;
+
 /**
  * Object representation of a message metadata.
  */
@@ -167,5 +169,13 @@ public class Metadata {
         ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
         properties = FieldTable.parse(buffer);
         headers = FieldTable.parse(buffer);
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            String key = entry.getKey();
+            String obj = entry.getValue();
+            addHeader(key, obj);
+        }
     }
 }

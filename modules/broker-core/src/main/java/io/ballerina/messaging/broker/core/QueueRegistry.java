@@ -171,7 +171,7 @@ public final class QueueRegistry {
 
         @Override
         public void publishQueueEvent(String eventType, QueueHandler queueHandler) {
-            //No implementation
+            //Ignore
         }
     }
 }

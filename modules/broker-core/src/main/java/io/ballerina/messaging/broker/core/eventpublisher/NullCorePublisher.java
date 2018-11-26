@@ -27,6 +27,6 @@ import java.util.Map;
 public class NullCorePublisher implements CorePublisher {
     @Override
     public void publishNotification(String id, Map<String, String> properties) {
-        //No need
+        //Ignore
     }
 }

@@ -31,6 +31,8 @@ import org.wso2.carbon.config.annotation.Element;
 )
 public class EventConfiguration {
 
+    public static final String NAMESPACE = "ballerina.broker.events";
+
     @Element(
             description = "Enable Events"
     )

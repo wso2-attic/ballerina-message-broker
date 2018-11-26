@@ -45,7 +45,7 @@ public final class ExchangeRegistry {
 
     public static final String DEFAULT_DEAD_LETTER_EXCHANGE = "amq.dlx";
 
-    private static final String EVENT = "amq.event";
+    private static final String EVENT = "x-event";
 
     private static final BindingDao NO_OP_BINDING_DAO = new NoOpBindingDao();
 
@@ -260,7 +260,7 @@ public final class ExchangeRegistry {
      static class NullExchangeRegistryEventPublisher implements ExchangeRegistryEventPublisher {
         @Override
         public void publishExchangeEvent(String eventType, Exchange exchange) {
-            //No implementation
+            //Ignore
         }
     }
 }
