@@ -94,12 +94,10 @@ public class LoggerMetadata {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class LoggerMetadata {\n");
-        sb.append("    name: ").append(toIndentedString(name)).append("\n");
-        sb.append("    level: ").append(toIndentedString(level)).append("\n");
-        sb.append("}");
-        return sb.toString();
+        return "class LoggerMetadata {\n"
+               + "    name: " + toIndentedString(name) + "\n"
+               + "    level: " + toIndentedString(level) + "\n"
+               + "}";
     }
 
     /**

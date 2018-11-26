@@ -43,8 +43,7 @@ import static io.ballerina.messaging.broker.client.utils.Constants.HTTP_PUT;
 @Parameters(commandDescription = "Update the log level of a logger")
 public class UpdateLoggerCmd extends AbstractCmd {
 
-    @Parameter(names = {"--name", "-n"},
-            description = "name of the logger")
+    @Parameter(description = "name of the logger")
     private String loggerName;
 
     @Parameter(names = {"--level", "-l"},
@@ -58,7 +57,7 @@ public class UpdateLoggerCmd extends AbstractCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + rootCommand + " update logger --name [logger-name] --level [log-level] \n");
+        out.append("  ").append(rootCommand).append(" update logger [logger-name] --level [log-level] \n");
     }
 
     @Override

@@ -169,9 +169,9 @@ public final class BrokerImpl implements Broker {
                 brokerFactory = new DefaultBrokerFactory(startupContext);
                 dacHandler = new NoOpAuthorizer();
             }
-            serviceRunner.deploy(new QueuesApi(brokerFactory, dacHandler)
-                    , new ExchangesApi(brokerFactory, dacHandler)
-                    , new LoggersApi(dacHandler));
+            serviceRunner.deploy(new QueuesApi(brokerFactory, dacHandler),
+                                 new ExchangesApi(brokerFactory, dacHandler),
+                                 new LoggersApi(dacHandler));
         }
     }
 

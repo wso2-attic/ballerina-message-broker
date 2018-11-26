@@ -37,7 +37,7 @@ public class ShowCmd extends AbstractCmd {
     @Parameter(names = {"--output", "-o"},
             description = "format of the output results set. possible inputs: csv, table",
             converter = OutputFormatConverter.class)
-    protected ResponseFormatter responseFormatter = new TableFormatter();
+    ResponseFormatter responseFormatter = new TableFormatter();
 
     public ShowCmd(String rootCommand) {
         super(rootCommand);
@@ -54,6 +54,6 @@ public class ShowCmd extends AbstractCmd {
     @Override
     public void appendUsage(StringBuilder out) {
         out.append("Usage:\n");
-        out.append("  " + rootCommand + " show [command]\n");
+        out.append("  ").append(rootCommand).append(" show [command]\n");
     }
 }
