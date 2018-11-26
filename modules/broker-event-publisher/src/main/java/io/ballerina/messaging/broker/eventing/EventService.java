@@ -23,8 +23,6 @@ import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.config.ConfigurationException;
-
 import java.util.Objects;
 
 /**
@@ -38,10 +36,12 @@ public class EventService {
     private EventSync eventSync = null;
 
 
-    public EventService(StartupContext context) {
+    public EventService(StartupContext context) throws Exception {
         BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
+        EventConfiguration eventConfiguration = configProvider.getConfigurationObject(EventConfiguration.NAMESPACE,
+                                                                                        EventConfiguration.class);
 
-        getEventPublisher(new CarbonConfigAdapter(configProvider));
+        getEventPublisher(eventConfiguration);
 
         if (Objects.nonNull(eventSync)) {
             context.registerService(EventSync.class, eventSync);
@@ -52,17 +52,16 @@ public class EventService {
     /**
      * Used to get the registered event publisher in EventConfiguration.
      *
-     * @param configProvider configuration provider to get Event Configuration
+     * @param eventConfiguration Event Configuration
      */
-    void getEventPublisher(CarbonConfigAdapter configProvider) {
+    private void getEventPublisher(EventConfiguration eventConfiguration) {
 
         try {
-            EventConfiguration eventConfiguration = configProvider.getConfigurationObject(EventConfiguration.class);
             this.isEnabled = eventConfiguration.isEnabled();
             if (isEnabled) {
                 eventSync = new EventPublisherFactory().getPublisher(eventConfiguration);
             }
-        } catch (IllegalAccessException | InstantiationException | ConfigurationException | ClassNotFoundException e) {
+        } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
             logger.error(e.toString());
             isEnabled = false;
         }

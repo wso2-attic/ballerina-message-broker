@@ -125,7 +125,6 @@ public final class QueueHandler {
      */
     boolean removeConsumer(Consumer consumer) {
 
-        //consumer.close();
         boolean consumerRemoved = consumers.remove(consumer);
         if (consumerRemoved) {
             queueHandlerEventPublisher.publishConsumerEvent("consumer.removed", consumer);
@@ -346,7 +345,7 @@ public final class QueueHandler {
         DefaultQueueHandlerEventPublisher(EventSync eventSync, List<Integer> messageLimits) {
 
             this.eventSync = eventSync;
-            this.messageLimits = new HashSet<Integer>(messageLimits);
+            this.messageLimits = new HashSet<>(messageLimits);
         }
 
         @Override
@@ -394,17 +393,17 @@ public final class QueueHandler {
 
         @Override
         public void publishConsumerEvent(String id, Consumer consumer) {
-            //Null implementation
+            //Ignore
         }
 
         @Override
         public void publishBindingEvent(String id, Binding binding) {
-            //Null implementation
+            //Ignore
         }
 
         @Override
         public void publishQueueLimitReachedEvent(QueueHandler queueHandler) {
-            //Null implementation
+            //Ignore
         }
     }
 }
