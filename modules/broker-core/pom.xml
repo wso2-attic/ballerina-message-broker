@@ -204,7 +204,8 @@
                             io.ballerina.messaging.broker.rest.*;version="${broker.package.import.range.version}",
                             io.ballerina.messaging.broker.auth.*;version="${broker.package.import.range.version}",
                             org.wso2.msf4j.*;version="${msf4j.package.import.version.range}",
-                            org.wso2.carbon.metrics.core.*;version="${carbon.metrics.version.range}"
+                            org.wso2.carbon.metrics.core.*;version="${carbon.metrics.version.range}",
+                            io.ballerina.messaging.broker.eventing.*;version="${broker.package.import.range.version}"
                         </Import-Package>
                         <Export-Package>
                             io.ballerina.messaging.broker.core.*;version=${project.version},
