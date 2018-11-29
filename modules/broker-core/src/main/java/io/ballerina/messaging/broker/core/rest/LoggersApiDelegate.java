@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.security.auth.Subject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -42,6 +43,7 @@ import javax.ws.rs.core.Response;
  */
 public class LoggersApiDelegate {
 
+    public static final String LOGGERS_API_PATH = "/loggers";
     private AuthorizationHandler authHandler;
 
     public LoggersApiDelegate(Authorizer authorizer) {
@@ -53,22 +55,25 @@ public class LoggersApiDelegate {
         try {
             authHandler.handle(ResourceAuthScope.LOGGERS_UPDATE, subject);
             Logger logger = LogManager.exists(requestLogger.getName());
-            String responseMessage;
             if (logger == null) {
                 throw new NotFoundException("Logger not found");
             } else if (!isLogLevelValid(requestLogger.getLevel())) {
-                responseMessage = "'" + requestLogger.getLevel() + "' is not a valid log level.\n Valid log levels : " +
-                                  Level.OFF.toString() + " , " + Level.TRACE.toString() + " , " +
-                                  Level.DEBUG.toString() + " , " + Level.INFO.toString() + " , " +
-                                  Level.WARN.toString() + " , " + Level.ERROR.toString() + " , " +
-                                  Level.FATAL.toString();
+                String errorMessage = "'" + requestLogger.getLevel() + "' is not a valid log level.\n Valid log "
+                                      + "levels : " +
+                                      Level.OFF.toString() + " , " + Level.TRACE.toString() + " , " +
+                                      Level.DEBUG.toString() + " , " + Level.INFO.toString() + " , " +
+                                      Level.WARN.toString() + " , " + Level.ERROR.toString() + " , " +
+                                      Level.FATAL.toString();
+                throw new BadRequestException(errorMessage);
             } else {
                 String oldLevel = logger.getEffectiveLevel().toString();
                 logger.setLevel(Level.toLevel(requestLogger.getLevel()));
-                responseMessage = "Logger : " + requestLogger.getName() + "\nChanged log level : " + oldLevel + " -> " +
-                                  logger.getEffectiveLevel().toString();
+                String responseMessage = "Logger : " + requestLogger.getName() + "\nChanged log level : " + oldLevel
+                                         + " ->"
+                                         + " " +
+                                         logger.getEffectiveLevel().toString();
+                return Response.ok().entity(new ResponseMessage().message(responseMessage)).build();
             }
-            return Response.ok().entity(new ResponseMessage().message(responseMessage)).build();
         } catch (AuthException e) {
             throw new NotAuthorizedException(e.getMessage(), e);
         }
