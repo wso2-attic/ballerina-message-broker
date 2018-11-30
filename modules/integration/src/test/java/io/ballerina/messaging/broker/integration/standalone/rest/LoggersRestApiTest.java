@@ -201,7 +201,8 @@ public class LoggersRestApiTest {
 
         CloseableHttpResponse putResponse = client.execute(httpPut);
 
-        Assert.assertEquals(putResponse.getStatusLine().getStatusCode(), HttpStatus.SC_BAD_REQUEST, "Incorrect status code");
+        Assert.assertEquals(putResponse.getStatusLine().getStatusCode(), HttpStatus.SC_BAD_REQUEST, "Incorrect status"
+                                                                                                    + " code");
 
     }
 
