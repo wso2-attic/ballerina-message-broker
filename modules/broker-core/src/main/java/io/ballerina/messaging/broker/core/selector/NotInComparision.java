@@ -25,52 +25,38 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * Implementation of a boolean expression.Here we compare a expression value with another expression values
- * and evaluate to a boolean value.
+ *Implementation of a boolean expression.This class is doing a comparison operation between the left and list of element
+ *values provided.if left expression contain or not contain the element list values and it evaluate as boolean value.
  */
-public class NotINcomparision implements BooleanExpression {
+public class NotInComparision implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private  final List elements;
 
-
-    public NotINcomparision (Expression<Metadata> left , List elements) {
+    public NotInComparision (Expression<Metadata> left , List elements) {
         this.left = left;
         this.elements = elements;
     }
-
     @Override
     public boolean evaluate (Metadata metadata) {
         Collection t = null;
         Object rvalue = left.evaluate(metadata);
         if (elements.size() == 0) {
-            t = null;
+           return false;
         }
-
         if (elements.size() < 5) {
             t = elements;
         }
-
         if (elements.size() > 5) {
-            t = new HashSet(elements);
+            t = new HashSet<Object>(elements);
         }
-
         final Collection inList = t;
-
-
         if (rvalue == null) {
             return false;
         }
-
         if (rvalue.getClass() != String.class) {
             return false;
         }
-
-        if (((inList != null) && inList.contains(rvalue))) {
-            return false;
-        }
-
-
-        return true;
+        return ((inList == null) || !inList.contains(rvalue));
     }
 }

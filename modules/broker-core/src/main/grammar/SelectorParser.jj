@@ -19,33 +19,15 @@
 
 options {
   STATIC = false;
-  UNICODE_INPUT = false;
+  UNICODE_INPUT = true;
 
   // some performance optimizations
+  OPTIMIZE_TOKEN_MANAGER = true;
   ERROR_REPORTING = false;
-
 }
 
 PARSER_BEGIN(MessageFilter)
 
-/*
- * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- *
- */
 
 package io.ballerina.messaging.broker.core.selector.generated;
 
@@ -62,46 +44,38 @@ import io.ballerina.messaging.broker.core.selector.Addition;
 import io.ballerina.messaging.broker.core.selector.Subtraction;
 import io.ballerina.messaging.broker.core.selector.Multiplication;
 import io.ballerina.messaging.broker.core.selector.Division;
-import io.ballerina.messaging.broker.core.selector.ConstantExpression;
-import io.ballerina.messaging.broker.core.selector.NOTOperation;
-import io.ballerina.messaging.broker.core.selector.ANDOperation;
-import io.ballerina.messaging.broker.core.selector.OROperation;
-import io.ballerina.messaging.broker.core.selector.NotNull;
+import io.ballerina.messaging.broker.core.selector.NotOperation;
+import io.ballerina.messaging.broker.core.selector.AndOperation;
+import io.ballerina.messaging.broker.core.selector.OrOperation;
+import io.ballerina.messaging.broker.core.selector.IsNotNull;
 import io.ballerina.messaging.broker.core.selector.IsNull;
 import io.ballerina.messaging.broker.core.selector.LikeComparision;
 import io.ballerina.messaging.broker.core.selector.NotLikeComparision;
 import io.ballerina.messaging.broker.core.selector.BetweenComparision;
 import io.ballerina.messaging.broker.core.selector.NotBetweenComparision;
-import io.ballerina.messaging.broker.core.selector.INcomparision;
-import io.ballerina.messaging.broker.core.selector.NotINcomparision;
+import io.ballerina.messaging.broker.core.selector.InComparision;
+import io.ballerina.messaging.broker.core.selector.NotInComparision;
+import io.ballerina.messaging.broker.core.selector.ConstantExpression;
 import io.ballerina.messaging.broker.core.selector.UnaryNegative;
 import io.ballerina.messaging.broker.core.selector.Expression;
 import io.ballerina.messaging.broker.core.selector.JmsPropertyExpression;
 
 public class MessageFilter {
-
     public MessageFilter() {
         this(new StringReader(""));
     }
-
     public MessageFilter(String selectorString) {
         this(new StringReader(selectorString));
     }
-
     public BooleanExpression parse() throws Exception {
         return parseSelector();
     }
-
 }
-
 PARSER_END(MessageFilter)
 SKIP :
 {
   " "|"\t"|"\n"|"\r"
 }
-
-
-
 
 TOKEN [IGNORE_CASE] :
 {
@@ -110,41 +84,36 @@ TOKEN [IGNORE_CASE] :
   | <  OR      : "OR">
   | <  BETWEEN : "BETWEEN">
   | <  LIKE    : "LIKE">
-  | <  ESCAPE  : " ESCAPE">
+  | <  ESCAPE  : "ESCAPE">
   | <  IN      : "IN">
   | <  IS      : "IS">
-  | <  TRUE    : "TRUE" >
-  | <  FALSE   : "FALSE" >
   | <  NULL    : "NULL" >
 }
 
 TOKEN [IGNORE_CASE] :
 {
-
     < DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* (["l","L"])? >
-  | < HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
-  | < OCTAL_LITERAL: "0" (["0"-"7"])* >
-   | <STRING_LITERAL: "'" (("''") | ~["'"] )* "'">
-    | < FLOATING_POINT_LITERAL:
-                 (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)?            // matches: 12.1 or 3. or 6.9E10 or 5.E10
-                  | "." (["0"-"9"])+ (<EXPONENT>)?                      // matches: .8 or .8E10
-                   | (["0"-"9"])+ <EXPONENT>                            // matches: 9E10
-          >
-        | < #EXPONENT: "E" (["+","-"])? (["0"-"9"])+ >
+     | < HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+   | < OCTAL_LITERAL: "0" (["0"-"7"])* >
+   | < STRING_LITERAL: "'" ( ("''") | ~["'"] )*  "'" >
+   | < FLOATING_POINT_LITERAL:
+             (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? // matches: 5.5 or 5. or 5.5E10 or 5.E10
+           | "." (["0"-"9"])+ (<EXPONENT>)?              // matches: .5 or .5E10
+           | (["0"-"9"])+ <EXPONENT>                     // matches: 5E10
+       >
+     | < #EXPONENT: "E" (["+","-"])? (["0"-"9"])+ >
 }
-
 TOKEN :
 {
     <IDENTIFIER : ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_","$"])*>
 }
-
 TOKEN :
     {
      < EQUAL: "=" >
-    | < GRATER_THAN: ">" >
-    | < LESS_THAN: "<" >
-    | < GRATER_EQAL: ">=" >
-    | < LESS_EQUAL: "=<" >
+    | < GTREATER: ">" >
+    | < LESS: "<" >
+    | < GTEATERorEQAL: ">=" >
+    | < LESSorEQUAL: "<=" >
     | < NOTEQUAL: "<>" >
     }
 
@@ -163,11 +132,9 @@ BooleanExpression OrExpression():
 }
 {
    value=AndExpression()
-
    (
-       <OR>value1=AndExpression(){ value = new OROperation(value,value1);}
+       <OR>value1=AndExpression(){ value = new OrOperation(value,value1);}
    )*
-
    {return value;}
 }
 
@@ -179,9 +146,8 @@ BooleanExpression AndExpression():
 {
    value=NotExpression()
    (
-       <AND>value1=NotExpression(){ value = new ANDOperation(value,value1);}
+       <AND>value1=NotExpression(){ value = new AndOperation(value,value1);}
    )*
-
    {return value;}
 }
 
@@ -190,141 +156,127 @@ BooleanExpression NotExpression() :
     BooleanExpression value;
 
  }
-   {
+  {
    (
-     <NOT> value = NotExpression(){ value = new NOTOperation(value);}
-     | "(" value = ComparisonExpression() ")"
+     <NOT> value = NotExpression(){ value = new NotOperation(value);}
      | value = ComparisonExpression()
-
    )
      { return value;}
-   }
+ }
 
 BooleanExpression ComparisonExpression() :
 {
     BooleanExpression value;
-    Expression left;
-    Expression right;
-    ArrayList list;
-    Expression t;
-    Expression u ;
-    String a;
-    String b;
-
+        Expression left;
+        Expression right;
+        ArrayList list;
+        Expression t;
+        Expression u ;
+        String a;
+        String b;
 }
 {
-
     left = sum()
-
     (
         <EQUAL> right = unary(){ value = new EqualityExpression(left , right);}
-       |<GRATER_THAN> right = unary()  { value= new GreaterThanExpression(left , right); }
-       |<GRATER_EQAL> right = unary()  { value= new GreaterThanOrEqualExpression(left , right); }
-       |<LESS_THAN> right = unary()  { value= new LessThanExpression(left , right); }
-       |<LESS_EQUAL> right = unary()  { value= new LessThanOrEqualExpression(left , right); }
-       |<NOTEQUAL> right = unary() { value = new NotEqualExpression(left , right);}
-       LOOKAHEAD(2)
-                     <IS> <NULL>
-                     {
-                         value = new IsNull(left);
-                     }
-                     |
-                     <IS> <NOT> <NULL>
-                     {
-                         value = new NotNull(left);
-                     }
-
-
+       | <GTREATER> right= unary()  { value= new GreaterThanExpression(left , right); }
+       | <GTEATERorEQAL> right= unary()  { value= new GreaterThanOrEqualExpression(left , right); }
+       |  <LESS> right= unary()  { value= new LessThanExpression(left , right); }
+       |  <LESSorEQUAL> right= unary()  { value= new LessThanOrEqualExpression(left , right); }
+       | <NOTEQUAL> right = unary() { value = new NotEqualExpression(left , right);}
        |
-                     {
-        					b=null;
-        				}
-        		        <LIKE> a = stringLitteral()
-        		        	[ <ESCAPE> b = stringLitteral() ]//[] brackets are choose point if we want we can go inside or we can ignore
-        		        {
-                            value = new LikeComparision(left, a, b);
-        		        }
-       |
-        	        	LOOKAHEAD(2)
-        				{
-        					b=null;
-        				}
-        		        <NOT> <LIKE> a = stringLitteral() [ <ESCAPE> b = stringLitteral() ]
-        		        {
-                            value = new NotLikeComparision(left, a, b);
-        		        }
+                            LOOKAHEAD(2)// if next two tokens are <IS> and <NULL> go to choice 1
+                            <IS> <NULL>
+                            {
+                                value = new IsNull(left); // choice 1
+                            }
+                            |
+                            <IS> <NOT> <NULL>
+                            {
+                                value = new IsNotNull(left);
+                            }
+                    |
+                                  {
+                     					b=null;
+                     				}
+                     		        <LIKE> a = stringLitteral()
+                     		        	[ <ESCAPE> b = stringLitteral() ] //[] brackets are choose point if we want we can go inside or we can ignore
+                     		        {
+                                         value = new LikeComparision(left, a, b);
+                     		        }
+                    |
+                     	        	LOOKAHEAD(2)
+                     				{
+                     					b=null;
+                     				}
+                     		        <NOT> <LIKE> a = stringLitteral() [ <ESCAPE> b = stringLitteral() ]
+                     		        {
+                                         value = new NotLikeComparision(left, a, b);
+                     		        }
+                    |<BETWEEN> t= sum() <AND> u = sum()
 
-       |<BETWEEN> t= unary() <AND> u = unary()
+                                 { value = new BetweenComparision(left,t,u);}
+                    |
+                    LOOKAHEAD(2)
+                    <NOT><BETWEEN> t= sum() <AND> u = sum()
+                          { value = new NotBetweenComparision(left,t,u);}
+                    | <IN>
+                      		        "("
+                      		            a = stringLitteral()
+                      		            {
+                      			            list = new ArrayList();
+                      			            list.add( a );
+                      		            }
+                      			        (
+                      			        	","
+                      			            a = stringLitteral()
+                      			            {
+                      				            list.add( a );
+                      			            }
+                      			        )*
+                      		        ")"
+                      		        {
+                      		           value = new  InComparision(left, list);
+             }
+              |
+                     LOOKAHEAD(2)
+                     <NOT> <IN>
+                       "("
+                          a = stringLitteral()
+                       {
+                      	list = new ArrayList();
+                      		list.add( a );
+                        }
+                      	 (
+                      	   ","
+                      		a = stringLitteral()
+                      		 {
+                      			list.add( a );
+                      		  }
+                      	 )*
+                           ")"
+                      		  {
+                      		      value =  new NotInComparision(left, list);
+                      		  }
+                 )
 
-                    { value = new BetweenComparision(left,t,u);}
-
-
-
-       |
-       LOOKAHEAD(2)
-       <NOT><BETWEEN> t= unary() <AND> u = unary()
-             { value = new NotBetweenComparision(left,t,u);}
-       | <IN>
-         		        "("
-         		            a = stringLitteral()
-         		            {
-         			            list = new ArrayList();
-         			            list.add( a );
-         		            }
-         			        (
-         			        	","
-         			            a = stringLitteral()
-         			            {
-         				            list.add( a );
-         			            }
-
-         			        )*
-         		        ")"
-         		        {
-         		           value = new  INcomparision(left, list);
-         		        }
-       |
-        LOOKAHEAD(2)
-        <NOT> <IN>
-          "("
-             a = stringLitteral()
-          {
-         	list = new ArrayList();
-         		list.add( a );
-         		  }
-         			 (
-         			  ","
-         			  a = stringLitteral()
-         			   {
-         				  list.add( a );
-         			      }
-
-         			        )*
-         		        ")"
-         		        {
-         		           value =  new NotINcomparision(left, list);
-         		        }
-
-
-    )
     { return value; }
 }
 Expression sum() :
 {
  Expression first;
  Expression second;
-
 }
 {
    first = factor()
    (
-   (
+     (
     "+"second= factor(){ first = new Addition(first , second);}
-    | "-"second = factor(){ first = new Subtraction(first , second);}
-     )
-     )*
-     {return first;}
+     |"-"second = factor(){ first = new Subtraction(first , second);}
 
+     )
+   )*
+     {return first;}
 }
 
 Expression factor() :
@@ -342,17 +294,13 @@ Expression factor() :
        )
    )*
         {return first;}
-
-
 }
-
 Expression unary() :
 {
   Expression first;
 }
 {
     (
-
        "+" first = element()
        | "-" first = element(){ first = new UnaryNegative(first);}
        | first = element()
@@ -370,13 +318,10 @@ Expression element() :
    (
      first =identifier()
      | first = value()
-     |"(" first = sum() ")"
+     |"("first = sum()")"
    )
    {return first;}
-
 }
-
-
 Expression identifier() :
 {
     Token t;
@@ -401,48 +346,41 @@ Expression value() :
 }
 {
     (
-
         (
              s = stringLitteral()
                {
                    expr = new ConstantExpression(s);
                  }
-                )
-
+        )
         | expr = decimalLiteral()
         | expr = floatingPointLiteral()
         | expr = hexLiteral()
         | expr = octalLiteral()
-
-
-        )
-
+     )
     {
         return expr;
     }
 }
 
-
 String stringLitteral() :
 {
     Token t;
     StringBuffer rc = new StringBuffer();
-    boolean first=true;
+
 }
 {
-    t = <STRING_LITERAL>
-    {
-    	// Decode the sting value.
-    	String image = t.image;
-    	for( int i=1; i < image.length()-1; i++ ) {
-    		char c = image.charAt(i);
-    		if( c == '\'' )
-    			i++;
-   			rc.append(c);
-    	}
-
-	    return rc.toString();
-    }
+     t = <STRING_LITERAL>
+        {
+        	// Decode the sting value.
+        	String image = t.image;
+        	for( int i=1; i < image.length()-1; i++ ) {
+        		char c = image.charAt(i);
+        		if( c == '\'' )
+        			i++;
+       			rc.append(c);
+        	}
+    	    return rc.toString();
+        }
 }
 
 Expression decimalLiteral() :
@@ -456,9 +394,7 @@ Expression decimalLiteral() :
         String text = t.image;
         expr = ConstantExpression.createFromNumericDecimal(text);
     }
-    {
-        return expr;
-    }
+    {return expr;}
 }
 
 Expression floatingPointLiteral():
@@ -472,9 +408,7 @@ Expression floatingPointLiteral():
        String text = t.image;
        expr = ConstantExpression.createFromNumericFloat(text);
     }
-    {
-     return expr;
-    }
+   {return expr;}
 }
 Expression hexLiteral() :
 {
@@ -487,9 +421,7 @@ Expression hexLiteral() :
         String text = t.image;
         expr = ConstantExpression.createFromNumericHex(text);
     }
-    {
-        return expr;
-    }
+    {return expr;}
 }
 Expression octalLiteral() :
 {
@@ -502,7 +434,5 @@ Expression octalLiteral() :
         String text = t.image;
         expr = ConstantExpression.createFromNumericOctal(text);
     }
-    {
-        return expr;
-    }
+    {return expr;}
 }

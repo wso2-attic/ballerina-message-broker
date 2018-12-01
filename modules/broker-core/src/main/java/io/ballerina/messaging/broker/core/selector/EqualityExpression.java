@@ -23,7 +23,8 @@ package io.ballerina.messaging.broker.core.selector;
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression. Here we compare two expressions and evaluate to a boolean value.
+ * Implementation of a boolean expression.This class is doing a equality comparison between left and right values
+ * provided and evaluate to a boolean value.
  */
 public class EqualityExpression implements BooleanExpression {
 
@@ -31,23 +32,18 @@ public class EqualityExpression implements BooleanExpression {
 
     private final Expression<Metadata> right;
 
-    public EqualityExpression(Expression<Metadata> left, Expression<Metadata> right) {
+    public EqualityExpression (Expression<Metadata> left, Expression<Metadata> right) {
         this.left = left;
         this.right = right;
     }
 
     @Override
-    public boolean evaluate(Metadata metadata) {
+    public boolean evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue == null || rightValue == null) {
             return false;
         }
-
-        if (rightValue == leftValue || leftValue.equals(rightValue)) {
-            return true;
-        }
-
-        return false;
+        return rightValue == leftValue || leftValue.equals(rightValue);
     }
 }

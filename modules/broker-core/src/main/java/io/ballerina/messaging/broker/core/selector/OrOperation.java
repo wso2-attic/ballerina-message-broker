@@ -21,28 +21,25 @@ package io.ballerina.messaging.broker.core.selector;
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression. Here we get the boolean value and convert it to a opposite boolean value .
+ * Implementation of a boolean expression.This class is doing a boolean OR operation between the left and right
+ * values provided
  */
 
-public class NOTOperation implements BooleanExpression {
+public class OrOperation implements BooleanExpression {
 
-    private  final BooleanExpression value;
+    private final BooleanExpression left;
+    private final BooleanExpression right;
 
-    public NOTOperation (BooleanExpression value) {
-        this.value = value;
+    public OrOperation (BooleanExpression left , BooleanExpression right) {
+        this.left = left;
+        this.right = right;
     }
-
     @Override
     public boolean evaluate (Metadata metadata) {
+        boolean leftValue = left.evaluate(metadata);
+        boolean rightValue = right.evaluate(metadata);
 
-        Object x = value.evaluate(metadata);
 
-        ConvertAndCompare con = new ConvertAndCompare();
-        boolean b = con.convertToBoolean(x);
-
-        if (b == true) {
-            return false;
-        }
-        return true;
+        return (leftValue || rightValue);
     }
 }

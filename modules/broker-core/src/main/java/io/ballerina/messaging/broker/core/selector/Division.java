@@ -32,26 +32,20 @@ public class Division implements Expression<Metadata> {
 
     private final Expression<Metadata> right;
 
-    public Division (Expression<Metadata> left , Expression<Metadata> right) {
+    public Division (Expression<Metadata> left, Expression<Metadata> right) {
         this.left = left;
         this.right = right;
     }
 
     @Override
-    public Object evaluate(Metadata metadata) {
+    public Object evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue == null || rightValue == null) {
             return null;
         }
-        ConvertAndCompare con = new ConvertAndCompare();
-
-        double z = con.convertToDouble(leftValue) / con.convertToDouble(rightValue);
-        String div = String.valueOf(z);
-        Number value;
-        value = Double.valueOf(div);
-
-        return value;
+        long l = ((Number) leftValue).longValue();
+        long l1 = ((Number) rightValue).longValue();
+        return l / l1;
     }
-
 }

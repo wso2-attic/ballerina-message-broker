@@ -21,33 +21,22 @@ package io.ballerina.messaging.broker.core.selector;
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression. Here we compare two booleanexpressions and evaluate to a boolean value.
- * */
+ * Implementation of a boolean expression.This class is doing a boolean NOT operation for the value  provided.
+ */
 
-
-public class ANDOperation implements BooleanExpression {
+public class NotOperation implements BooleanExpression {
 
     private  final BooleanExpression value;
-    private final BooleanExpression value1;
 
-    public ANDOperation (BooleanExpression value2 , BooleanExpression value3) {
-        this.value = value2;
-        this.value1 = value3;
+    public NotOperation (BooleanExpression value) {
+        this.value = value;
     }
 
     @Override
     public boolean evaluate (Metadata metadata) {
-      Object x = value.evaluate(metadata);
-        Object y = value1.evaluate(metadata);
-        ConvertAndCompare con = new ConvertAndCompare();
-        boolean b = con.convertToBoolean(x);
-        boolean b1 = con.convertToBoolean(y);
 
+        boolean x = value.evaluate(metadata);
 
-       if (b == true && b1 == true) {
-           return true;
-       }
-
-        return false;
+        return !x;
     }
 }

@@ -24,18 +24,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-
 /**
- * Implementation of a boolean expression. Here we compare a expression value with another
- * expression values and evaluate to a boolean value.
+ *Implementation of a boolean expression.This class is doing a comparison operation between the left and list of element
+ * values provided.if left expression contain or not contain the element list values and it evaluate as boolean value.
  */
-public class INcomparision implements BooleanExpression {
+public class InComparision implements BooleanExpression {
 
     private final Expression<Metadata> left;
-     private  final List elements;
+    private final List elements;
 
-
-    public INcomparision (Expression<Metadata> left , List elements) {
+    public InComparision (Expression<Metadata> left, List elements) {
         this.left = left;
         this.elements = elements;
     }
@@ -45,33 +43,21 @@ public class INcomparision implements BooleanExpression {
         Collection t = null;
         Object rvalue = left.evaluate(metadata);
         if (elements.size() == 0) {
-            t = null;
-          }
-
-         if (elements.size() < 5) {
-            t = elements;
-           }
-
-        if (elements.size() > 5) {
-            t = new HashSet(elements);
+            return false;
         }
-
+        if (elements.size() < 5) {
+            t = elements;
+        }
+        if (elements.size() > 5) {
+            t = new HashSet<Object>(elements);
+        }
         final Collection inList = t;
-
-
         if (rvalue == null) {
             return false;
         }
-
         if (rvalue.getClass() != String.class) {
             return false;
         }
-
-        if (((inList != null) && inList.contains(rvalue))) {
-            return true;
-        }
-
-
-        return false;
+        return ((inList != null) && inList.contains(rvalue));
     }
 }

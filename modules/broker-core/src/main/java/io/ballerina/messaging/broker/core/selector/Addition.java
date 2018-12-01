@@ -28,15 +28,11 @@ import io.ballerina.messaging.broker.core.Metadata;
 public class Addition implements Expression<Metadata> {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
-    ;
 
-    public Addition (Expression<Metadata> left , Expression<Metadata> right) {
+    public Addition (Expression<Metadata> left, Expression<Metadata> right) {
         this.left = left;
         this.right = right;
-
-
     }
 
     @Override
@@ -46,18 +42,10 @@ public class Addition implements Expression<Metadata> {
         if (leftValue == null || rightValue == null) {
             return null;
         }
-       ConvertAndCompare con = new ConvertAndCompare();
-
-      double z = con.convertToDouble(leftValue) + con.convertToDouble(rightValue);
-      String sum = String.valueOf(z);
-      Number value;
-      value = Double.valueOf(sum);
-
-        return value;
+        long l = ((Number) leftValue).longValue();
+        long l1 = ((Number) rightValue).longValue();
+        return l + l1;
     }
-
-
-
 }
 
 

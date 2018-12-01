@@ -17,7 +17,6 @@
  *
  */
 
-
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
@@ -25,18 +24,15 @@ import io.ballerina.messaging.broker.core.Metadata;
 /**
  * Implementation of a expression. Here we calculate multiplication of two expressions and evaluate to a object value.
  */
-
 public class Multiplication implements Expression<Metadata> {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
 
     public Multiplication (Expression<Metadata> left , Expression<Metadata> right) {
         this.left = left;
         this.right = right;
     }
-
     @Override
     public Object evaluate(Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
@@ -44,14 +40,8 @@ public class Multiplication implements Expression<Metadata> {
         if (leftValue == null || rightValue == null) {
             return null;
         }
-        ConvertAndCompare con = new ConvertAndCompare();
-        double z = con.convertToDouble(leftValue) * con.convertToDouble(rightValue);
-        String mul = String.valueOf(z);
-        Number value;
-        value = Double.valueOf(mul);
-
-        return value;
+        long l = ((Number) leftValue).longValue();
+        long l1 = ((Number) rightValue).longValue();
+        return  (l * l1);
     }
-
-
 }

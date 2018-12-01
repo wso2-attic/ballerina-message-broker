@@ -37,32 +37,27 @@ public class UnaryNegative implements Expression<Metadata> {
 
         this.left = left;
     }
-
-
     @Override
     public Object evaluate (Metadata metadata) {
         Object leftvalue = left.evaluate(metadata);
         if (leftvalue == null) {
             return null;
         }
-
         if (leftvalue instanceof Number) {
-
             return UnaryNegative.negate((Number) leftvalue);
         }
         return null;
     }
-
     private static Number negate (Number left) {
         Class clazz = left.getClass();
         if (clazz == Integer.class) {
-            return Integer.valueOf(-left.intValue());
+            return -left.intValue();
         } else if (clazz == Long.class) {
-            return Long.valueOf(-left.longValue());
+            return -left.longValue();
         } else if (clazz == Float.class) {
-            return  Float.valueOf(-left.floatValue());
+            return -left.floatValue();
         } else if (clazz == Double.class) {
-            return Double.valueOf(-left.doubleValue());
+            return -left.doubleValue();
         } else if (clazz == BigDecimal.class) {
             // We ussually get a big deciamal when we have Long.MIN_VALUE constant in the
             // Selector.  Long.MIN_VALUE is too big to store in a Long as a positive so we store it
@@ -70,11 +65,9 @@ public class UnaryNegative implements Expression<Metadata> {
             // to a Long.
             BigDecimal bd = (BigDecimal) left;
             bd = bd.negate();
-
             if (UnaryNegative.BD_LONG_MIN_VALUE.compareTo(bd) == 0) {
-                return Long.valueOf(Long.MIN_VALUE);
+                return Long.MIN_VALUE;
             }
-
             return bd;
         } else {
             throw new RuntimeException("Don't know how to negate: " + left);

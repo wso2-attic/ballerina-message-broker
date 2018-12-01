@@ -39,46 +39,37 @@ public class ConstantExpression implements Expression<Object> {
 
     public static ConstantExpression createFromNumericDecimal (String text) {
         if (text.endsWith("l") || text.endsWith("L")) {
-            text = text.substring(0 , text.length() - 1);
+            text = text.substring(0, text.length() - 1);
         }
-
-        Object value;
+        Number value;
         try {
             value = Long.valueOf(text);
         } catch (NumberFormatException var4) {
             value = new BigDecimal(text);
         }
 
-        long l = ((Number) value).longValue();
-        if (-2147483648L <= l && l <= 2147483647L) {
-            int i = ((Number) value).intValue();
-            value = Integer.valueOf(i);;
+        long l = value.longValue();
+        if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE) {
+            value = value.intValue();
         }
-
         return new ConstantExpression(value);
     }
 
     public static ConstantExpression createFromNumericHex (String text) {
-        long l1 = Long.parseLong(text.substring(2) , 16);
-        Number value = Long.valueOf(l1);
-        long l = ((Number) value).longValue();
-        if (-2147483648L <= l && l <= 2147483647L) {
-            int i = ((Number) value).intValue();
-            value = Integer.valueOf(i);
+        Number value = Long.parseLong(text.substring(2), 16);
+        long l = value.longValue();
+        if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE) {
+            value = value.intValue();
         }
-
         return new ConstantExpression(value);
     }
 
     public static ConstantExpression createFromNumericOctal (String text) {
-        long l2 = Long.parseLong(text , 8);
-        Number value = Long.valueOf(l2);
-        long l = ((Number) value).longValue();
-        if (-2147483648L <= l && l <= 2147483647L) {
-            int i = ((Number) value).intValue();
-            value = Integer.valueOf(i);
+        Number value = Long.parseLong(text, 8);
+        long l = value.longValue();
+        if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE) {
+            value = value.intValue();
         }
-
         return new ConstantExpression(value);
     }
 

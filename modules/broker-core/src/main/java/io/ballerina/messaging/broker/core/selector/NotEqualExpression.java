@@ -19,16 +19,15 @@
 
 package io.ballerina.messaging.broker.core.selector;
 
-
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression. Here we compare two expressions and evaluate to a boolean value.
+ * Implementation of a boolean expression.This class is doing a not equal comparison between left and right values
+ * provided and evaluate to a boolean value.
  */
 public class NotEqualExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
 
     public NotEqualExpression(Expression<Metadata> left , Expression<Metadata> right) {
@@ -42,9 +41,6 @@ public class NotEqualExpression implements BooleanExpression {
         if (leftValue == null || rightValue == null) {
             return false;
         }
-        if (rightValue != leftValue) {
-            return true;
-        }
-        return false;
+        return rightValue != leftValue;
     }
 }

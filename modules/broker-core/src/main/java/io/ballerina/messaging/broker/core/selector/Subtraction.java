@@ -29,7 +29,6 @@ import io.ballerina.messaging.broker.core.Metadata;
 public class Subtraction implements Expression<Metadata> {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
 
     public Subtraction (Expression<Metadata> left , Expression<Metadata> right) {
@@ -44,13 +43,10 @@ public class Subtraction implements Expression<Metadata> {
         if (leftValue == null || rightValue == null) {
             return null;
         }
-        ConvertAndCompare con = new ConvertAndCompare();
-        double z = con.convertToDouble(leftValue) - con.convertToDouble(rightValue);
-        String sub = String.valueOf(z);
-        Number value;
-        value = Double.valueOf(sub);
+        long l = ((Number) leftValue).longValue();
+        long l1 = ((Number) rightValue).longValue();
 
-        return value;
+        return l - l1;
     }
 
 }

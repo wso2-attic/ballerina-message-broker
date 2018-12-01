@@ -26,76 +26,66 @@ import java.util.regex.Pattern;
 /**
  * Implementation of a boolean expression. Here we compare a expression value with pattern value
  * and evaluate to a boolean value.
+ * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
-
 public class LikeComparision implements BooleanExpression {
 
     private final Expression<Metadata> left;
 
-    private final String ltr1;
+    private final String right;
 
-    private final String ltr2;
+    private final String escape;
 
-    Pattern likePattern;
-    //    Character c1;
-    private static final HashSet REGEXP_CONTROL_CHARS = new HashSet();
+    private Pattern likePattern;
+
+    private static final HashSet<Character> REGEXP_CONTROL_CHARS = new HashSet<>();
 
     static {
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('.'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('\\'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('['));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf(']'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('^'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('$'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('?'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('*'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('+'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('{'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('}'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('|'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('('));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf(')'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf(':'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('&'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('<'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('>'));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('='));
-        LikeComparision.REGEXP_CONTROL_CHARS.add(Character.valueOf('!'));
+        LikeComparision.REGEXP_CONTROL_CHARS.add('.');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('\\');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('[');
+        LikeComparision.REGEXP_CONTROL_CHARS.add(']');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('^');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('$');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('?');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('*');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('+');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('{');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('}');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('|');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('(');
+        LikeComparision.REGEXP_CONTROL_CHARS.add(')');
+        LikeComparision.REGEXP_CONTROL_CHARS.add(':');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('&');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('<');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('>');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('=');
+        LikeComparision.REGEXP_CONTROL_CHARS.add('!');
     }
 
-
-
-    public LikeComparision (Expression<Metadata> left , String ltr1 , String ltr2) {
+    public LikeComparision (Expression<Metadata> left , String right , String escape) {
         this.left = left;
-        this.ltr2 = ltr2;
-        this.ltr1 = ltr1;
+        this.right = right;
+        this.escape = escape;
         this.likePattern = null;
-
-
     }
-
     @Override
     public boolean evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
-
-
-        if (leftValue == null || ltr1 == null) {
+        if (leftValue == null || right == null) {
             return false;
         }
-
-        String s = String.valueOf(ltr1);
-        String s1 = String.valueOf(ltr2);
-        if (!(ltr2 == null) && (s1.length() != 1)) {
+        String s = String.valueOf(right);
+        String s1 = String.valueOf(escape);
+        if (!(escape == null) && (s1.length() != 1)) {
             throw new RuntimeException(
                     " Litteral used: " + s1 + "is not a valid litteral it can use single character only");
         }
-
         int m = -1;
-        if (!(ltr2 == null)) {
+        if (!(escape == null)) {
             m = 0xFFFF & s1.charAt(0);
         }
-
-        StringBuffer regexp = new StringBuffer(s.length() * 2);
+        StringBuilder regexp = new StringBuilder(s.length() * 2);
         regexp.append("\\A"); // The beginning of the input
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
@@ -105,7 +95,6 @@ public class LikeComparision implements BooleanExpression {
                     // nothing left to escape...
                     break;
                 }
-
                 char t = s.charAt(i);
                 regexp.append("\\x");
                 regexp.append(Integer.toHexString(0xFFFF & t));
@@ -113,8 +102,7 @@ public class LikeComparision implements BooleanExpression {
                 regexp.append(".*?"); // Do a non-greedy match
             } else if (c == '_') {
                 regexp.append("."); // match one
-
-            } else if (LikeComparision.REGEXP_CONTROL_CHARS.contains(Character.valueOf(c))) {
+            } else if (LikeComparision.REGEXP_CONTROL_CHARS.contains(c)) {
                 regexp.append("\\x");
                 regexp.append(Integer.toHexString(0xFFFF & c));
             } else {
@@ -125,11 +113,6 @@ public class LikeComparision implements BooleanExpression {
 
         likePattern = Pattern.compile(regexp.toString() , Pattern.DOTALL);
 
-        if (likePattern.matcher((String) leftValue).matches()) {
-             return true;
-        }
-          return false;
+        return likePattern.matcher((String) leftValue).matches();
     }
-
-
 }

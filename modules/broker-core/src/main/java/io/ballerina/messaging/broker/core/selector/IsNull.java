@@ -22,28 +22,20 @@ package io.ballerina.messaging.broker.core.selector;
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression. Here we find expressions is null or not and evaluate to a boolean value.
+ * Implementation of a boolean expression. Here we find the left value is null or not and evaluate to a boolean value.
  */
 
 public class IsNull implements BooleanExpression {
 
     private final Expression<Metadata> left;
 
-
-
     public IsNull (Expression<Metadata> left) {
         this.left = left;
-
     }
-
     @Override
     public boolean evaluate(Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
 
-        if (leftValue == null) {
-            return true;
-        }
-
-        return false;
+        return leftValue == null;
     }
 }
