@@ -112,7 +112,7 @@ TOKEN :
      < EQUAL: "=" >
     | < GTREATER: ">" >
     | < LESS: "<" >
-    | < GTEATER_EQAL: ">=" >
+    | < GTREATER_EQAL: ">=" >
     | < LESS_EQUAL: "<=" >
     | < NOTEQUAL: "<>" >
     }
@@ -180,7 +180,7 @@ BooleanExpression ComparisonExpression() :
     (
         <EQUAL> right = unary(){ value = new EqualityExpression(left , right);}
        | <GTREATER> right=  unary() { value= new GreaterThanExpression(left , right); }
-       | <GTEATER_EQAL> right= unary()  { value= new GreaterThanOrEqualExpression(left , right); }
+       | <GTREATER_EQAL> right= unary()  { value= new GreaterThanOrEqualExpression(left , right); }
        |  <LESS> right= unary() { value= new LessThanExpression(left , right); }
        |  <LESS_EQUAL> right= unary() { value= new LessThanOrEqualExpression(left , right); }
        | <NOTEQUAL> right = unary() { value = new NotEqualExpression(left , right);}
@@ -389,8 +389,7 @@ String stringLitteral() :
         	String image = t.image;
         	for( int i=1; i < image.length()-1; i++ ) {
         		char c = image.charAt(i);
-        		if( c == '\'' )
-        			i++;
+
        			rc.append(c);
         	}
     	    return rc.toString();
