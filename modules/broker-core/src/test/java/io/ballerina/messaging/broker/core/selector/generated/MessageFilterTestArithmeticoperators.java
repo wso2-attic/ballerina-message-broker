@@ -69,10 +69,13 @@ public class MessageFilterTestArithmeticoperators {
                 "MyProperty - +345 = 45.90",
                 "-MyProperty + (45.9+ 345) = 567",
                 "Age * 3 * 9 / 5 <> 10.2",
+                "Age + 1 BETWEEN 2 AND 3",
+                "Age + 1 NOT BETWEEN Eno + 1 AND EF -1",
                 // values with Exponent
                 "Age + 344 =< 40E0",
                 "Age + 67.E10 >= 45L",
                 "Age * (4E5 + 67.E10) >= 45L",
+
 
         };
     }
@@ -89,7 +92,7 @@ public class MessageFilterTestArithmeticoperators {
                 "MyProperty = 3.EE",
                 "Property ++ = 89",
                 "--Property >= Age",
-                "Property +  =< 8",
+                "Property +  <= 8",
                "myProperty *()() = 123LL",
                 "myProperty + () 5= 123ll",
                 "myProperty+(5)(345) = 123lLl",

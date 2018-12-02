@@ -39,7 +39,6 @@ public class OrOperation implements BooleanExpression {
         boolean leftValue = left.evaluate(metadata);
         boolean rightValue = right.evaluate(metadata);
 
-
         return (leftValue || rightValue);
     }
 }

@@ -23,6 +23,7 @@ import io.ballerina.messaging.broker.core.Metadata;
 /**
  * Implementation of a boolean expression.This class is doing a comparison operation between the left with other two
  * values provided.if left value is between other two values it evaluate to a boolean value.
+ * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
 
 public class BetweenComparision implements BooleanExpression {

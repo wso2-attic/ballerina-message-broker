@@ -42,9 +42,12 @@ public class Addition implements Expression<Metadata> {
         if (leftValue == null || rightValue == null) {
             return null;
         }
-        long l = ((Number) leftValue).longValue();
-        long l1 = ((Number) rightValue).longValue();
-        return l + l1;
+        if (leftValue instanceof Number) {
+            long l = ((Number) leftValue).longValue();
+            long l1 = ((Number) rightValue).longValue();
+            return l + l1;
+        }
+        return null;
     }
 }
 

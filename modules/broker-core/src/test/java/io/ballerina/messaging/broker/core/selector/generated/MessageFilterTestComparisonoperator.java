@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 /**
  * {@link MessageFilter} parsing and expression evaluation tests
  */
-public class MessageFilterTestEqualopeartor {
+public class MessageFilterTestComparisonoperator {
 
     @Test (dataProvider = "positive-filter-strings", description = "Test parsing correct filter strings")
     private void testPositiveFilterStringParsing(String filterString) throws Exception {
@@ -61,6 +61,45 @@ public class MessageFilterTestEqualopeartor {
                 "MyProperty = '$aBCdef2'",
                 "MyProperty = '2aBCdef2'",
                 "MyProperty = 'aB$C1d_ef2'",
+                "MyProperty <> 'abcdef'",
+                "MyProperty <> 'abcde''f'",
+                "MyProperty <> 'ABCDEF'",
+                "MyProperty <> 'aBCDEF'",
+                "MyProperty <> 'aB$CDEF'",
+                "MyProperty <> 'aB_CDEF'",
+                "MyProperty <> 'aB1CDEF'",
+                "MyProperty <> 'aBCdef$'",
+                "MyProperty <> 'aBCdef_'",
+                "MyProperty <> 'aBCdef2'",
+                "MyProperty <> '_aBCdef2'",
+                "MyProperty <> '$aBCdef2'",
+                "MyProperty <> '2aBCdef2'",
+                "MyProperty <> 'aB$C1d_ef2'",
+                "MyProperty LIKE 'abcd%'",
+                "MyProperty LIKE '%wer'",
+                "MyProperty LIKE 'er_d'",
+                "MyProperty LIKE '_ghj'",
+                "MyProperty LIKE '123_'",
+                "MyProperty LIKE '\\_%' ESCAPE '\\'",
+                "MyProperty NOT LIKE  'ab%de'",
+                "MyProperty NOT LIKE '%fahs'",
+                "MyProperty NOT LIKE '_ert'",
+                "MyProperty NOT LIKE '1234_'",
+                "MyProperty NOT LIKE '34_4'",
+                "MyProperty NOT LIKE '\\_%' ESCAPE '\\'",
+                "MyProperty IS NULL ",
+                "MyProperty IS NOT NULL",
+                "MyProperty BETWEEN 10 AND 20",
+                "MyProperty BETWEEN 0.3E3 AND 0.2",
+                "MyProperty BETWEEN 07654 AND 77777 ",
+                "MyProperty NOT BETWEEN 2. AND 0.8E4",
+                "MyProperty NOT BETWEEN .345 AND 780",
+                "Age NOT BETWEEN 0x45578 AND 0X34567",
+                "MyProperty IN ('a' , 'b' , 'c')",
+                "MyProperty IN ('11' , '2.90' , '.90')",
+                "MyProperty NOT IN ('aett' , 'bawdrt' , 'cfgfhgf')",
+                "MyProperty NOT IN ('a1234' , 'fgyFr$' , '$2fh')",
+
 
 
                 // valid identifiers
@@ -72,9 +111,10 @@ public class MessageFilterTestEqualopeartor {
                 "abcdef$ = 'abcdef'",
                 "abcdef_ = 'abcdef'",
                 // numeric literals
-                "Age = 10",
-                "Age = 40l",
-                "Age = 45L"
+                "Age > 10",
+               "Age = 0x10A",
+                "Age <= 40l",
+                "Age >= 45L"
         };
     }
 
@@ -83,17 +123,31 @@ public class MessageFilterTestEqualopeartor {
         return new String[] {
                 "",
                 // invalid string literals
-                "MyProperty = 'abcde'f'",
-//                "MyProperty = abcdef",
+                "myProperty = 'abcde'f'",
+                "myProperty LIKE abcd%",
                 // invalid identifiers
                 "$yProperty = 'abcdef'",
                 "_yProperty = 'abcdef'",
                 "1yProperty = 'abcdef'",
-                "10 = Age",
                 // invalid numeric literals
                 "myProperty = 123LL",
                 "myProperty = 123ll",
                 "myProperty = 123lLl",
+                "myProperty = 24567A",
+                "myProperty = 2x345",
+                "myProperty = 0123F",
+                "myProperty = 0xX23355F",
+                "myProperty = 123lLl",
+                "myProperty >= ..799",
+                "myProperty = 56..",
+                "myProperty = 0x345.89f",
+                "myProperty <= 4557.E",
+                "myProperty = 78897543F",
+                "myProperty <> 5647Fa",
+                "myProperty = 54737F547",
+                "myProperty < 1EE",
+                "myProperty > 56Eh5",
+                "myProperty = 855E56E",
         };
     }
 }

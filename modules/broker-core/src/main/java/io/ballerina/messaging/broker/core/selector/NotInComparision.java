@@ -27,6 +27,7 @@ import java.util.List;
 /**
  *Implementation of a boolean expression.This class is doing a comparison operation between the left and list of element
  *values provided.if left expression contain or not contain the element list values and it evaluate as boolean value.
+ * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
 public class NotInComparision implements BooleanExpression {
 

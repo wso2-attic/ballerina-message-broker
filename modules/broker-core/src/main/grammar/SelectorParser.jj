@@ -112,8 +112,8 @@ TOKEN :
      < EQUAL: "=" >
     | < GTREATER: ">" >
     | < LESS: "<" >
-    | < GTEATERorEQAL: ">=" >
-    | < LESSorEQUAL: "<=" >
+    | < GTEATER_EQAL: ">=" >
+    | < LESS_EQUAL: "<=" >
     | < NOTEQUAL: "<>" >
     }
 
@@ -179,10 +179,10 @@ BooleanExpression ComparisonExpression() :
     left = sum()
     (
         <EQUAL> right = unary(){ value = new EqualityExpression(left , right);}
-       | <GTREATER> right= unary()  { value= new GreaterThanExpression(left , right); }
-       | <GTEATERorEQAL> right= unary()  { value= new GreaterThanOrEqualExpression(left , right); }
-       |  <LESS> right= unary()  { value= new LessThanExpression(left , right); }
-       |  <LESSorEQUAL> right= unary()  { value= new LessThanOrEqualExpression(left , right); }
+       | <GTREATER> right=  unary() { value= new GreaterThanExpression(left , right); }
+       | <GTEATER_EQAL> right= unary()  { value= new GreaterThanOrEqualExpression(left , right); }
+       |  <LESS> right= unary() { value= new LessThanExpression(left , right); }
+       |  <LESS_EQUAL> right= unary() { value= new LessThanOrEqualExpression(left , right); }
        | <NOTEQUAL> right = unary() { value = new NotEqualExpression(left , right);}
        |
                             LOOKAHEAD(2)// if next two tokens are <IS> and <NULL> go to choice 1
@@ -301,8 +301,8 @@ Expression unary() :
 }
 {
     (
-       "+" first = element()
-       | "-" first = element(){ first = new UnaryNegative(first);}
+       "+" first =  NumericalValues()
+       | "-" first =  NumericalValues(){ first = new UnaryNegative(first);}
        | first = element()
     )
 
@@ -352,14 +352,28 @@ Expression value() :
                    expr = new ConstantExpression(s);
                  }
         )
-        | expr = decimalLiteral()
-        | expr = floatingPointLiteral()
-        | expr = hexLiteral()
-        | expr = octalLiteral()
+        | expr =  NumericalValues()
+
      )
     {
         return expr;
     }
+}
+Expression NumericalValues():
+{
+  Expression expr;
+}
+{     (
+              expr = decimalLiteral()
+            | expr = floatingPointLiteral()
+            | expr = hexLiteral()
+            | expr = octalLiteral()
+       )
+           {
+           return expr;
+           }
+
+
 }
 
 String stringLitteral() :
