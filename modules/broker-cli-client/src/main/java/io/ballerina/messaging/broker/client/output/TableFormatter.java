@@ -23,7 +23,8 @@ import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Permission;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -32,6 +33,11 @@ import java.util.stream.Collectors;
 public class TableFormatter implements ResponseFormatter {
 
     private static final int TABLE_PADDING = 2;
+    private static final String COLUMN_SEPARATOR_BEGIN = "| ";
+    private static final String COLUMN_SEPARATOR_END = " |";
+    private static final String CORNER_SIGN_BEGIN = "+ ";
+    private static final String CORNER_SIGN_END = " +";
+    private static final String BLOCK_SEPARATOR = "-";
 
     /**
      * Name of this formatter class. This will be used when displaying help logs.
@@ -43,21 +49,17 @@ public class TableFormatter implements ResponseFormatter {
         if (exchanges.length == 0) {
             return;
         }
-        int maxExchangeNameLength = Arrays.stream(exchanges)
-                                          .mapToInt(exchange -> exchange.getName().length())
-                                          .max()
-                                          .getAsInt();
 
-        int maxColumnSize = Math.max(maxExchangeNameLength, Exchange.NAME_TAG.length());
+        ArrayList<String[]> tempExchanges = new ArrayList<>();
 
-        String printTemplate = "%-" + (maxColumnSize + TABLE_PADDING) + "s%-10s%-10s%-10s\n";
-
-        OUT_STREAM.printf(printTemplate, Exchange.NAME_TAG, Exchange.TYPE_TAG,
-                          Exchange.DURABLE_TAG, Exchange.OWNER_TAG);
         for (Exchange exchange : exchanges) {
-            OUT_STREAM.printf(printTemplate, exchange.getName(), exchange.getType(),
-                              String.valueOf(exchange.isDurable()), exchange.getOwner());
+            tempExchanges.add(new String[]{exchange.getName(), exchange.getType(),
+                                           Boolean.toString(exchange.isDurable()), exchange.getOwner()});
         }
+
+        printTable(new String[]{Exchange.NAME_TAG, Exchange.TYPE_TAG, Exchange.DURABLE_TAG, Exchange.OWNER_TAG},
+                   tempExchanges);
+
     }
 
     @Override
@@ -88,23 +90,19 @@ public class TableFormatter implements ResponseFormatter {
         if (queues.length == 0) {
             return;
         }
-        int maxQueueNameLength = Arrays.stream(queues)
-                                       .mapToInt(queue -> queue.getName().length())
-                                       .max()
-                                       .getAsInt();
+        ArrayList<String[]> tempQueues = new ArrayList<>();
 
-        int maxColumnSize = Math.max(maxQueueNameLength, Queue.NAME_TAG.length());
-
-        String printTemplate = "%-" + (maxColumnSize + TABLE_PADDING) + "s%-15s%-15s%-10s%-10s%-12s%-10s\n";
-
-        OUT_STREAM.printf(printTemplate, Queue.NAME_TAG, Queue.CONSUMER_COUNT_TAG, Queue.CAPACITY_TAG,
-                          Queue.SIZE_TAG, Queue.DURABLE_TAG, Queue.AUTO_DELETE_TAG, Queue.OWNER_TAG);
         for (Queue queue : queues) {
-            OUT_STREAM.printf(printTemplate, queue.getName(), String.valueOf(queue.getConsumerCount()),
-                              String.valueOf(queue.getCapacity()), String.valueOf(queue.getSize()),
-                              String.valueOf(queue.isDurable()), String.valueOf(queue.isAutoDelete()),
-                              queue.getOwner());
+            tempQueues.add(new String[]{queue.getName(), Integer.toString(queue.getConsumerCount()),
+                                        Integer.toString(queue.getCapacity()), Integer.toString(queue.getSize()),
+                                        Boolean.toString(queue.isDurable()), Boolean.toString(queue.isAutoDelete()),
+                                        queue.getOwner()});
         }
+
+        printTable(new String[]{Queue.NAME_TAG, Queue.CONSUMER_COUNT_TAG, Queue.CAPACITY_TAG, Queue.SIZE_TAG,
+                                Queue.DURABLE_TAG, Queue.AUTO_DELETE_TAG, Queue.OWNER_TAG},
+                   tempQueues);
+
     }
 
     @Override
@@ -138,19 +136,14 @@ public class TableFormatter implements ResponseFormatter {
         if (bindings.length == 0) {
             return;
         }
-        int maxQueueNameLength = Arrays.stream(bindings)
-                                       .mapToInt(binding -> binding.getQueueName().length())
-                                       .max()
-                                       .getAsInt();
 
-        int maxColumnSize = Math.max(maxQueueNameLength, Binding.QUEUE_NAME.length());
+        ArrayList<String[]> tempBindings = new ArrayList<>();
 
-        String printTemplate = "%-" + (maxColumnSize + TABLE_PADDING) + "s%s\n";
-
-        OUT_STREAM.printf(printTemplate, Binding.QUEUE_NAME, Binding.BINDING_PATTERN);
         for (Binding binding : bindings) {
-            OUT_STREAM.printf(printTemplate, binding.getQueueName(), binding.getBindingPattern());
+            tempBindings.add(new String[]{binding.getQueueName(), binding.getBindingPattern()});
         }
+
+        printTable(new String[]{Binding.QUEUE_NAME, Binding.BINDING_PATTERN}, tempBindings);
     }
 
     @Override
@@ -158,23 +151,99 @@ public class TableFormatter implements ResponseFormatter {
         if (consumers.length == 0) {
             return;
         }
-        int maxIdLength = Arrays.stream(consumers)
-                                .mapToInt(consumer -> String.valueOf(consumer.getId()).length())
-                                .max()
-                                .getAsInt();
 
-        int maxColumnSize = Math.max(maxIdLength, Consumer.CONSUMER_ID.length());
+        ArrayList<String[]> tempConsumers = new ArrayList<>();
 
-        String printTemplate = "%-" + (maxColumnSize + TABLE_PADDING) + "s%-12s%s\n";
-
-        OUT_STREAM.printf(printTemplate, Consumer.CONSUMER_ID, Consumer.IS_EXCLUSIVE, Consumer.FLOW_ENABLED);
         for (Consumer consumer : consumers) {
-            OUT_STREAM.printf(printTemplate, consumer.getId(), consumer.isExclusive(), consumer.isFlowEnabled());
+            tempConsumers.add(new String[]{Integer.toString(consumer.getId()),
+                                           Boolean.toString(consumer.isExclusive()),
+                                           Boolean.toString(consumer.isFlowEnabled())});
         }
+
+        printTable(new String[]{Consumer.CONSUMER_ID, Consumer.IS_EXCLUSIVE, Consumer.FLOW_ENABLED}, tempConsumers);
+
     }
 
     @Override
     public String toString() {
         return FORMATTER_NAME;
+    }
+
+
+    /**
+     * This methods print given set of values in a table format.
+     *
+     * @param titles titles of each column of the table
+     * @param rows   values in rows
+     */
+    private void printTable(String[] titles, List<String[]> rows) {
+        if (titles.length > 0 && !rows.isEmpty()) {
+            ArrayList<String> headerArguments = new ArrayList<>();
+            ArrayList<String> separatorArguments = new ArrayList<>();
+
+            StringBuilder printTemplate = getTemplate(titles, rows, headerArguments, separatorArguments);
+
+            OUT_STREAM.printf(printTemplate.toString(), (Object[]) separatorArguments.toArray());
+            OUT_STREAM.printf(printTemplate.toString(), (Object[]) headerArguments.toArray());
+            OUT_STREAM.printf(printTemplate.toString(), (Object[]) separatorArguments.toArray());
+
+            for (String[] row : rows) {
+                ArrayList<String> rowCommands = new ArrayList<>();
+                for (String column : row) {
+                    rowCommands.add(COLUMN_SEPARATOR_BEGIN);
+                    rowCommands.add(column);
+                }
+                rowCommands.add(COLUMN_SEPARATOR_END);
+                OUT_STREAM.printf(printTemplate.toString(), (Object[]) rowCommands.toArray());
+            }
+            OUT_STREAM.printf(printTemplate.toString(), (Object[]) separatorArguments.toArray());
+        }
+    }
+
+    /**
+     * This methods generate the print template.
+     *
+     * @param titles    set of column titles
+     * @param rows      values in rows
+     * @param header    arguments need to be passed with the print template
+     * @param separator arguments need to be passed with the print template
+     * @return print template
+     */
+    private StringBuilder getTemplate(String[] titles, List<String[]> rows, ArrayList<String> header, ArrayList
+            <String> separator) {
+        Integer[] columnWidths = new Integer[titles.length];
+        for (int column = 0; column < titles.length; column++) {
+            columnWidths[column] = titles[column].length();
+        }
+        for (String[] row : rows) {
+            for (int column = 0; column < row.length; column++) {
+                if (row[column] != null) {
+                    columnWidths[column] = Math.max(columnWidths[column], row[column].length());
+                }
+            }
+        }
+
+        StringBuilder printTemplate = new StringBuilder("%-" + TABLE_PADDING + "s");
+        for (int columnWidth : columnWidths) {
+            printTemplate.append("%-").append(columnWidth).append("s%-").append(TABLE_PADDING).append("s");
+        }
+        printTemplate.append("\n");
+
+        for (String column : titles) {
+            header.add(COLUMN_SEPARATOR_BEGIN);
+            header.add(column);
+        }
+        header.add(COLUMN_SEPARATOR_END);
+
+        for (int columnWidth : columnWidths) {
+            separator.add(CORNER_SIGN_BEGIN);
+            StringBuilder divider = new StringBuilder();
+            for (int i = 0; i < columnWidth; i++) {
+                divider.append(BLOCK_SEPARATOR);
+            }
+            separator.add(divider.toString());
+        }
+        separator.add(CORNER_SIGN_END);
+        return printTemplate;
     }
 }
