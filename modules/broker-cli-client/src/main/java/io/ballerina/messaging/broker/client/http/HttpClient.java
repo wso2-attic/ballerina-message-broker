@@ -145,9 +145,8 @@ public class HttpClient {
             return new HttpResponse(responseCode, response.toString());
         } catch (ConnectException e) {
             BrokerClientException exception = new BrokerClientException();
-            exception.addMessage("Error calling broker https services.");
-            exception.addMessage("Please check whether the broker is running or the connectivity to the broker is not"
-                                 + " blocked through a firewall.");
+            exception.addMessage("CLI tool cannot access " + url + ". \nPlease check whether the broker is running or"
+                                 + " the connectivity to the broker is not blocked through a firewall.");
             exception.addMessage(e.getMessage());
             throw exception;
         } catch (IOException e) {
