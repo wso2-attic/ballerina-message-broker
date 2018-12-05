@@ -20,7 +20,6 @@ package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
 
-import java.util.HashSet;
 import java.util.regex.Pattern;
 
 /**
@@ -38,31 +37,6 @@ public class LikeComparision implements BooleanExpression {
 
     private Pattern likePattern;
 
-    private static final HashSet<Character> REGEXP_CONTROL_CHARS = new HashSet<>();
-
-    static {
-        LikeComparision.REGEXP_CONTROL_CHARS.add('.');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('\\');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('[');
-        LikeComparision.REGEXP_CONTROL_CHARS.add(']');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('^');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('$');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('?');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('*');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('+');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('{');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('}');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('|');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('(');
-        LikeComparision.REGEXP_CONTROL_CHARS.add(')');
-        LikeComparision.REGEXP_CONTROL_CHARS.add(':');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('&');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('<');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('>');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('=');
-        LikeComparision.REGEXP_CONTROL_CHARS.add('!');
-    }
-
     public LikeComparision (Expression<Metadata> left , String right , String escape) {
         this.left = left;
         this.right = right;
@@ -75,41 +49,37 @@ public class LikeComparision implements BooleanExpression {
         if (leftValue == null || right == null) {
             return false;
         }
-        String s = String.valueOf(right);
-        String s1 = String.valueOf(escape);
-        if (!(escape == null) && (s1.length() != 1)) {
+
+        if (!(escape == null) && (escape.length() != 1)) {
             throw new RuntimeException(
-                    " Litteral used: " + s1 + "is not a valid litteral it can use single character only");
+                    " Litteral used: " + escape + "is not a valid litteral it can use single character only");
         }
-        int m = -1;
+        char q = 0;
         if (!(escape == null)) {
-            m = 0xFFFF & s1.charAt(0);
+            q =  escape.charAt(0);
         }
-        StringBuilder regexp = new StringBuilder(s.length() * 2);
-        regexp.append("\\A"); // The beginning of the input
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (m == (0xFFFF & c)) {
+        StringBuilder regexp = new StringBuilder(right.length() * 2);
+        regexp.append("\\A"); //Matches the beginning of the string.
+        for (int i = 0; i < right.length(); i++) {
+            char c = right.charAt(i);
+            if (q == c) {
                 i++;
-                if (i >= s.length()) {
+                if (i >= right.length()) {
                     // nothing left to escape...
                     break;
                 }
-                char t = s.charAt(i);
+                char t = right.charAt(i);
                 regexp.append("\\x");
                 regexp.append(Integer.toHexString(0xFFFF & t));
             } else if (c == '%') {
                 regexp.append(".*?"); // Do a non-greedy match
             } else if (c == '_') {
                 regexp.append("."); // match one
-            } else if (LikeComparision.REGEXP_CONTROL_CHARS.contains(c)) {
-                regexp.append("\\x");
-                regexp.append(Integer.toHexString(0xFFFF & c));
             } else {
                 regexp.append(c);
             }
         }
-        regexp.append("\\z"); // The end of the input
+        regexp.append("\\z"); //Matches the end of the string.
 
         likePattern = Pattern.compile(regexp.toString() , Pattern.DOTALL);
 
