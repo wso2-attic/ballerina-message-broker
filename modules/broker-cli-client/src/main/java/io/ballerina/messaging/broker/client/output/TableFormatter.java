@@ -24,8 +24,10 @@ import io.ballerina.messaging.broker.client.resources.Permission;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Print backend responses into tables. This is used for displaying results of 'list' commands.
@@ -177,15 +179,44 @@ public class TableFormatter implements ResponseFormatter {
      * @param rows   values in rows
      */
     private void printTable(String[] titles, List<String[]> rows) {
-        if (titles.length > 0 && !rows.isEmpty()) {
+        if (titles.length > 0 && !rows.isEmpty() && rows.stream().allMatch(row -> row.length == titles.length)) {
+
+            //calculating maximum column length
+            Integer[] columnWidths = new Integer[titles.length];
+            IntStream.range(0, titles.length).forEach(column -> columnWidths[column] = titles[column].length());
+            rows.forEach(row -> IntStream.range(0, row.length)
+                                         .filter(column -> row[column] != null)
+                                         .forEach(column -> columnWidths[column] = Math.max(columnWidths[column],
+                                                                                            row[column].length())));
+
+            //building print template
+            StringBuilder printTemplateBuilder = new StringBuilder("%-" + TABLE_PADDING + "s");
+            Arrays.stream(columnWidths)
+                  .forEach(columnWidth -> printTemplateBuilder.append("%-").append(columnWidth).append("s%-")
+                                                              .append(TABLE_PADDING).append("s"));
+            printTemplateBuilder.append("\n");
+            String printTemplate = printTemplateBuilder.toString();
+
+            //building header and separators of the table
             ArrayList<String> headerArguments = new ArrayList<>();
             ArrayList<String> separatorArguments = new ArrayList<>();
+            Arrays.stream(titles).forEach(column -> headerArguments.addAll(Arrays.asList(COLUMN_SEPARATOR_BEGIN,
+                                                                                         column)));
+            headerArguments.add(COLUMN_SEPARATOR_END);
+            for (int columnWidth : columnWidths) {
+                separatorArguments.add(CORNER_SIGN_BEGIN);
+                StringBuilder divider = new StringBuilder();
+                for (int i = 0; i < columnWidth; i++) {
+                    divider.append(BLOCK_SEPARATOR);
+                }
+                separatorArguments.add(divider.toString());
+            }
+            separatorArguments.add(CORNER_SIGN_END);
 
-            StringBuilder printTemplate = getTemplate(titles, rows, headerArguments, separatorArguments);
-
-            OUT_STREAM.printf(printTemplate.toString(), (Object[]) separatorArguments.toArray());
-            OUT_STREAM.printf(printTemplate.toString(), (Object[]) headerArguments.toArray());
-            OUT_STREAM.printf(printTemplate.toString(), (Object[]) separatorArguments.toArray());
+            //printing the table
+            OUT_STREAM.printf(printTemplate, (Object[]) separatorArguments.toArray());
+            OUT_STREAM.printf(printTemplate, (Object[]) headerArguments.toArray());
+            OUT_STREAM.printf(printTemplate, (Object[]) separatorArguments.toArray());
 
             for (String[] row : rows) {
                 ArrayList<String> rowCommands = new ArrayList<>();
@@ -194,56 +225,9 @@ public class TableFormatter implements ResponseFormatter {
                     rowCommands.add(column);
                 }
                 rowCommands.add(COLUMN_SEPARATOR_END);
-                OUT_STREAM.printf(printTemplate.toString(), (Object[]) rowCommands.toArray());
+                OUT_STREAM.printf(printTemplate, (Object[]) rowCommands.toArray());
             }
-            OUT_STREAM.printf(printTemplate.toString(), (Object[]) separatorArguments.toArray());
+            OUT_STREAM.printf(printTemplate, (Object[]) separatorArguments.toArray());
         }
-    }
-
-    /**
-     * This methods generate the print template.
-     *
-     * @param titles    set of column titles
-     * @param rows      values in rows
-     * @param header    arguments need to be passed with the print template
-     * @param separator arguments need to be passed with the print template
-     * @return print template
-     */
-    private StringBuilder getTemplate(String[] titles, List<String[]> rows, ArrayList<String> header, ArrayList
-            <String> separator) {
-        Integer[] columnWidths = new Integer[titles.length];
-        for (int column = 0; column < titles.length; column++) {
-            columnWidths[column] = titles[column].length();
-        }
-        for (String[] row : rows) {
-            for (int column = 0; column < row.length; column++) {
-                if (row[column] != null) {
-                    columnWidths[column] = Math.max(columnWidths[column], row[column].length());
-                }
-            }
-        }
-
-        StringBuilder printTemplate = new StringBuilder("%-" + TABLE_PADDING + "s");
-        for (int columnWidth : columnWidths) {
-            printTemplate.append("%-").append(columnWidth).append("s%-").append(TABLE_PADDING).append("s");
-        }
-        printTemplate.append("\n");
-
-        for (String column : titles) {
-            header.add(COLUMN_SEPARATOR_BEGIN);
-            header.add(column);
-        }
-        header.add(COLUMN_SEPARATOR_END);
-
-        for (int columnWidth : columnWidths) {
-            separator.add(CORNER_SIGN_BEGIN);
-            StringBuilder divider = new StringBuilder();
-            for (int i = 0; i < columnWidth; i++) {
-                divider.append(BLOCK_SEPARATOR);
-            }
-            separator.add(divider.toString());
-        }
-        separator.add(CORNER_SIGN_END);
-        return printTemplate;
     }
 }
