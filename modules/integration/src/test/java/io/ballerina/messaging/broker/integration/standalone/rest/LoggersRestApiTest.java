@@ -20,7 +20,6 @@
 package io.ballerina.messaging.broker.integration.standalone.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.ballerina.messaging.broker.core.rest.LoggersApiDelegate;
 import io.ballerina.messaging.broker.core.rest.model.LoggerMetadata;
 import io.ballerina.messaging.broker.integration.util.ClientHelper;
 import io.ballerina.messaging.broker.integration.util.HttpClientHelper;
@@ -60,6 +59,8 @@ public class LoggersRestApiTest {
 
     private BasicResponseHandler responseHandler;
 
+    private static final String LOGGERS_API_PATH = "/loggers";
+
     @Parameters({"broker-hostname", "broker-rest-port"})
     @BeforeClass
     public void setUp(String brokerHost, String port) throws Exception {
@@ -87,7 +88,7 @@ public class LoggersRestApiTest {
     @Parameters({"admin-username", "admin-password"})
     @Test
     public void testLoggerRetrieval(String username, String password) throws IOException {
-        HttpGet httpGet = new HttpGet(apiBasePath + LoggersApiDelegate.LOGGERS_API_PATH);
+        HttpGet httpGet = new HttpGet(apiBasePath + LOGGERS_API_PATH);
         ClientHelper.setAuthHeader(httpGet, username, password);
         CloseableHttpResponse response = client.execute(httpGet);
 
@@ -136,7 +137,7 @@ public class LoggersRestApiTest {
         String loggerLevel = "WARN";
         LoggerMetadata loggerMetadata = new LoggerMetadata().name(loggerName).level(loggerLevel);
 
-        HttpPut httpPut = new HttpPut(apiBasePath + LoggersApiDelegate.LOGGERS_API_PATH);
+        HttpPut httpPut = new HttpPut(apiBasePath + LOGGERS_API_PATH);
         ClientHelper.setAuthHeader(httpPut, username, password);
         String value = objectMapper.writeValueAsString(loggerMetadata);
         StringEntity stringEntity = new StringEntity(value, ContentType.APPLICATION_JSON);
@@ -160,7 +161,7 @@ public class LoggersRestApiTest {
         String loggerLevel = "WARN";
         LoggerMetadata loggerMetadata = new LoggerMetadata().name(loggerName).level(loggerLevel);
 
-        HttpPut httpPut = new HttpPut(apiBasePath + LoggersApiDelegate.LOGGERS_API_PATH);
+        HttpPut httpPut = new HttpPut(apiBasePath + LOGGERS_API_PATH);
         ClientHelper.setAuthHeader(httpPut, username, password);
         String value = objectMapper.writeValueAsString(loggerMetadata);
         StringEntity stringEntity = new StringEntity(value, ContentType.APPLICATION_JSON);
@@ -193,7 +194,7 @@ public class LoggersRestApiTest {
 
         LoggerMetadata loggerMetadata = new LoggerMetadata().name(loggerName).level(loggerLevel);
 
-        HttpPut httpPut = new HttpPut(apiBasePath + LoggersApiDelegate.LOGGERS_API_PATH);
+        HttpPut httpPut = new HttpPut(apiBasePath + LOGGERS_API_PATH);
         ClientHelper.setAuthHeader(httpPut, username, password);
         String value = objectMapper.writeValueAsString(loggerMetadata);
         StringEntity stringEntity = new StringEntity(value, ContentType.APPLICATION_JSON);

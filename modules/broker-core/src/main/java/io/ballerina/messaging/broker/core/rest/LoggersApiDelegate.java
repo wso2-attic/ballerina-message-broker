@@ -43,7 +43,6 @@ import javax.ws.rs.core.Response;
  */
 public class LoggersApiDelegate {
 
-    public static final String LOGGERS_API_PATH = "/loggers";
     private AuthorizationHandler authHandler;
 
     public LoggersApiDelegate(Authorizer authorizer) {

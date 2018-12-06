@@ -25,12 +25,6 @@ public class Logger {
 
     public static final String NAME_TAG = "Logger Name";
     public static final String LEVEL_TAG = "Level";
-    public static final String COLUMN_SEPERATOR_BEGIN = "| ";
-    public static final String COLUMN_SEPERATOR_END = " |";
-    public static final String CORNER_SIGN_BEGIN = "+ ";
-    public static final String CORNER_SIGN_END = " +";
-    public static final String BLOCK_SEPERATOR = "-";
-    public static final String BLOCK_SEPERATOR_FOR_LEVEL = "---------------";
 
     private String name;
     private String level;
