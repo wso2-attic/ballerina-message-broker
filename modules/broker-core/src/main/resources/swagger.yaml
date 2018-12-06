@@ -926,6 +926,99 @@ paths:
             supported format.
           schema:
             $ref: '#/definitions/Error'
+  /loggers:
+    get:
+      operationId: getLoggers
+      summary: Get loggers
+      description: |
+        Gets metadata of all the loggers in the broker.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: List of loggers
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LoggerMetadata'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Requested action unauthorized.
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      operationId: updateLogger
+      summary: Update logger
+      description: Update given logger
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          description: Payload of logger update request
+          schema:
+            $ref: '#/definitions/LoggerMetadata'
+      responses:
+        '200':
+          description: Loggers updated
+          schema:
+            $ref: '#/definitions/ResponseMessage'
+        '400':
+          description: Bad Request. Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Requested action unauthorized.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Logger not found
+          schema:
+            $ref: '#/definitions/Error'
+        '415':
+          description: >-
+            Unsupported media type. The entity of the request was in a not
+            supported format.
+          schema:
+            $ref: '#/definitions/Error'
+  /loggers/{name}:
+    get:
+      operationId: getFilteredLoggers
+      summary: Get loggers
+      description: Gets metadata of the loggers that matches given name.
+      parameters:
+        - in: path
+          name: name
+          type: string
+          required: true
+          description: Name of the logger
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: List of loggers
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LoggerMetadata'
+        '401':
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              type: string
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Requested action unauthorized.
+          schema:
+            $ref: '#/definitions/Error'
 definitions:
   ConsumerMetadata:
     title: Consumer Metadata
@@ -1253,3 +1346,16 @@ definitions:
       owner:
         type: string
         description: Username of the new owner
+  LoggerMetadata:
+    title: Logger Metadata
+    type: object
+    required:
+      - name
+      - level
+    properties:
+      name:
+        type: string
+        description: Name of the logger. This is a unique value
+      level:
+        type: string
+        description: Current log level of the logger

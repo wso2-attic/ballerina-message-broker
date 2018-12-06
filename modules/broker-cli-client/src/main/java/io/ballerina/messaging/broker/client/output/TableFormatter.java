@@ -20,6 +20,7 @@ package io.ballerina.messaging.broker.client.output;
 import io.ballerina.messaging.broker.client.resources.Binding;
 import io.ballerina.messaging.broker.client.resources.Consumer;
 import io.ballerina.messaging.broker.client.resources.Exchange;
+import io.ballerina.messaging.broker.client.resources.Logger;
 import io.ballerina.messaging.broker.client.resources.Permission;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
@@ -104,6 +105,23 @@ public class TableFormatter implements ResponseFormatter {
         printTable(new String[]{Queue.NAME_TAG, Queue.CONSUMER_COUNT_TAG, Queue.CAPACITY_TAG, Queue.SIZE_TAG,
                                 Queue.DURABLE_TAG, Queue.AUTO_DELETE_TAG, Queue.OWNER_TAG},
                    tempQueues);
+
+    }
+
+    @Override
+    public void printLoggers(Logger[] loggers) {
+        if (loggers.length == 0) {
+            OUT_STREAM.println("Not found");
+            return;
+        }
+
+        ArrayList<String[]> tempLoggers = new ArrayList<>();
+
+        for (Logger logger : loggers) {
+            tempLoggers.add(new String[]{logger.getName(), logger.getLevel()});
+        }
+
+        printTable(new String[]{Logger.NAME_TAG, Logger.LEVEL_TAG}, tempLoggers);
 
     }
 

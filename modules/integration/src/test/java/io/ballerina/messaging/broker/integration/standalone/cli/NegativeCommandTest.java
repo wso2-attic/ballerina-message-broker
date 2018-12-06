@@ -72,4 +72,27 @@ public class NegativeCommandTest extends CliTestParent {
 
         evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
     }
+
+    @Test(groups = "StreamReading",
+            description = "test command 'show abc'")
+    public void testShowInvalidResource() {
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_SHOW, "abc" };
+        String expectedLog = "unknown command 'abc'";
+
+        Main.main(cmd);
+
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
+    }
+
+    @Test(groups = "StreamReading",
+            description = "test command 'update abc'")
+    public void testUpdateInvalidResource() {
+        String[] cmd = { CLI_ROOT_COMMAND, Constants.CMD_UPDATE, "abc" };
+        String expectedLog = "unknown command 'abc'";
+
+        Main.main(cmd);
+
+        evalStreamContent(PrintStreamHandler.readErrStream(), expectedLog, cmd);
+    }
+
 }
