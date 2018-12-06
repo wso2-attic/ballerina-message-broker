@@ -25,7 +25,6 @@ import io.ballerina.messaging.broker.client.http.HttpClient;
 import io.ballerina.messaging.broker.client.http.HttpRequest;
 import io.ballerina.messaging.broker.client.http.HttpResponse;
 import io.ballerina.messaging.broker.client.output.ResponseFormatter;
-import io.ballerina.messaging.broker.client.output.TableFormatter;
 import io.ballerina.messaging.broker.client.resources.Configuration;
 import io.ballerina.messaging.broker.client.resources.Consumer;
 import io.ballerina.messaging.broker.client.utils.Constants;
@@ -50,7 +49,8 @@ public class ListConsumerCmd extends ListCmd {
                description = "id of the consumer which info needs to be retrieved")
     private String consumerId = "";
 
-    @Parameter(description = "name of the queue",
+    @Parameter(names = { "--queue", "-q" },
+               description = "name of the queue",
                required = true)
     private String queueName = "";
 
@@ -78,7 +78,6 @@ public class ListConsumerCmd extends ListCmd {
         HttpResponse response = httpClient.sendHttpRequest(httpRequest, HTTP_GET);
 
         // handle data processing
-        ResponseFormatter responseFormatter = new TableFormatter();
 
         if (response.getStatusCode() == HttpURLConnection.HTTP_OK) {
             Gson gson = new Gson();

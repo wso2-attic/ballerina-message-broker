@@ -23,6 +23,9 @@ import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Logger;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
+import java.util.Arrays;
+import java.util.Map;
+
 /**
  * Print backend responses in csv format.
  */
@@ -105,7 +108,46 @@ public class CsvFormatter implements ResponseFormatter {
         if (consumers.length == 0) {
             return;
         }
-        String printTemplate = "%s,%s,%s%n";
+
+        String printTemplate;
+
+        // check whether at least one consumer contain transport properties
+        if (Arrays.stream(consumers).anyMatch(consumer -> consumer.getTransportProperties() instanceof Map)) {
+            // print table with transport properties column
+            for (Consumer consumer : consumers) {
+                StringBuilder properties;
+                try {
+                    Map<String, Object> propertyMap = (Map<String, Object>) consumer.getTransportProperties();
+                    properties = new StringBuilder();
+                    boolean firstEntry = true;
+                    for (Map.Entry<String, Object> property : propertyMap.entrySet()) {
+                        if (firstEntry) {
+                            properties.append(property.getKey()).append(" : ").append(property.getValue());
+                            firstEntry = false;
+                        } else {
+                            properties.append(" , ")
+                                      .append(property.getKey())
+                                      .append(" : ")
+                                      .append(property.getValue());
+                        }
+                    }
+                } catch (ClassCastException e) {
+                    properties = new StringBuilder().append(" - ");
+                }
+                consumer.setTransportProperties(properties.toString());
+            }
+            printTemplate = "%s,%s,%s,%s%n";
+            OUT_STREAM.printf(printTemplate, Consumer.CONSUMER_ID, Consumer.IS_EXCLUSIVE, Consumer.FLOW_ENABLED,
+                              Consumer.TRANSPORT_PROPERTIES);
+            for (Consumer consumer : consumers) {
+                OUT_STREAM.printf(printTemplate, consumer.getId(), consumer.isExclusive(),
+                                  consumer.isFlowEnabled(), consumer.getTransportProperties());
+            }
+            return;
+        }
+
+        // print table without transport properties column
+        printTemplate = "%s,%s,%s%n";
         OUT_STREAM.printf(printTemplate, Consumer.CONSUMER_ID, Consumer.IS_EXCLUSIVE, Consumer.FLOW_ENABLED);
         for (Consumer consumer : consumers) {
             OUT_STREAM.printf(printTemplate, consumer.getId(), consumer.isExclusive(), consumer.isFlowEnabled());
