@@ -30,47 +30,40 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * Default implementation of {@link CorePublisher}.
+ * Default implementation of {@link ExchangePublisher}.
  */
-public class DefaultCorePublisher implements CorePublisher {
+public class DefaultExchangePublisher implements ExchangePublisher {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCorePublisher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExchangePublisher.class);
     private Broker broker;
 
     /**
      * Name of the Exchange where notifications are published.
      */
     private String exchangeName = "x-event";
-    private int count;
 
-    DefaultCorePublisher(Broker broker) {
+    DefaultExchangePublisher(Broker broker) {
         this.broker = broker;
     }
 
     @Override
     public void publishNotification(String id, Map<String, String> properties) {
         String data = "Event Message";
-
         Metadata metadata = new Metadata(id, exchangeName, data.length());
         metadata.setHeaders(properties);
         FieldTable messageProperties = new FieldTable();
         messageProperties.add(ShortString.parseString("propertyFlags"), FieldValue.parseLongInt(8192));
+        //Transfer to metadata
         metadata.setProperties(messageProperties);
-        Message notificationMessage = new Message(count++, metadata);
-
+        Message notificationMessage = new Message(Broker.getNextMessageId(), metadata);
 
         //Creating the body of the message
-        byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-        int chunkSize = dataBytes.length;
-        int offset = 0;
-        ByteBuf buffer = Unpooled.wrappedBuffer(dataBytes,
-                                                offset,
-                                                Math.min(chunkSize, dataBytes.length - offset));
-        notificationMessage.addChunk(new ContentChunk(0, buffer));
+        notificationMessage.addChunk(getChunk(data));
 
         try {
             broker.publish(notificationMessage);
@@ -83,4 +76,11 @@ public class DefaultCorePublisher implements CorePublisher {
         this.exchangeName = exchangeName;
     }
 
+    private ContentChunk getChunk(String data) {
+        byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
+        int chunkSize = dataBytes.length;
+        int offset = 0;
+        ByteBuf buffer = Unpooled.wrappedBuffer(dataBytes, offset, Math.min(chunkSize, dataBytes.length - offset));
+        return new ContentChunk(offset, buffer);
+    }
 }

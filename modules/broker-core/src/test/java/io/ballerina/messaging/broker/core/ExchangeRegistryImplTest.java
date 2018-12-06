@@ -32,16 +32,15 @@ import static io.ballerina.messaging.broker.core.Exchange.Type.DIRECT;
 /**
  * Tests the functionality for {@link #exchangeRegistry}.
  */
-public class ExchangeRegistryTest {
+public class ExchangeRegistryImplTest {
 
     private static final String NON_EXISTING_EXCHANGE = "non-existing-exchange";
 
-    private ExchangeRegistry exchangeRegistry;
+    private ExchangeRegistryImpl exchangeRegistry;
 
     @BeforeMethod
     public void beforeTestSetup() {
-        exchangeRegistry = new ExchangeRegistry(new NoOpExchangeDaoTestUtil(), new NoOpBindingDao(),
-                new ExchangeRegistry.NullExchangeRegistryEventPublisher());
+        exchangeRegistry = new ExchangeRegistryImpl(new NoOpExchangeDaoTestUtil(), new NoOpBindingDao());
     }
 
     @Test(dataProvider = "exchangeNames", description = "test frequently used exchanges types are defined")

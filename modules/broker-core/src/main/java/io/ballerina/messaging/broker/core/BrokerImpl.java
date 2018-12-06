@@ -53,7 +53,6 @@ import io.ballerina.messaging.broker.rest.BrokerServiceRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.metrics.core.MetricService;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -125,7 +124,7 @@ public final class BrokerImpl implements Broker {
         BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
         BrokerCoreConfiguration configuration = configProvider.getConfigurationObject(BrokerCoreConfiguration.NAMESPACE,
                                                                                       BrokerCoreConfiguration.class);
-        StoreFactory storeFactory = getStoreFactory(startupContext, configProvider, configuration, this);
+        StoreFactory storeFactory = getStoreFactory(startupContext, configProvider, configuration);
 
         exchangeRegistry = storeFactory.getExchangeRegistry();
         messageStore = storeFactory.getMessageStore();
@@ -142,12 +141,11 @@ public final class BrokerImpl implements Broker {
         startupContext.registerService(Broker.class, this);
         initRestApi(startupContext);
         initHaSupport(startupContext);
-
     }
 
     private StoreFactory getStoreFactory(StartupContext startupContext,
                                          BrokerConfigProvider configProvider,
-                                         BrokerCoreConfiguration configuration, Broker broker) throws Exception {
+                                         BrokerCoreConfiguration configuration) throws Exception {
         BrokerCommonConfiguration commonConfigs
                 = configProvider.getConfigurationObject(BrokerCommonConfiguration.NAMESPACE,
                 BrokerCommonConfiguration.class);
@@ -159,7 +157,7 @@ public final class BrokerImpl implements Broker {
         DataSource dataSource = startupContext.getService(DataSource.class);
 
             if (this.eventSync instanceof BrokerCoreEventPublisher) {
-                ((BrokerCoreEventPublisher) eventSync).setBroker(broker);
+                ((BrokerCoreEventPublisher) eventSync).setBroker(this);
             }
             if (commonConfigs.getEnableInMemoryMode()) {
                 return new MemBackedStoreFactory(metricManager, configuration, eventSync);
@@ -201,7 +199,7 @@ public final class BrokerImpl implements Broker {
     private void initDefaultDeadLetterQueue() throws BrokerException, ValidationException {
         createQueue(DEFAULT_DEAD_LETTER_QUEUE, false, true, false, null);
         bind(DEFAULT_DEAD_LETTER_QUEUE,
-                ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE,
+                ExchangeRegistryImpl.DEFAULT_DEAD_LETTER_EXCHANGE,
                 DEFAULT_DEAD_LETTER_QUEUE,
                 FieldTable.EMPTY_TABLE);
     }
@@ -213,7 +211,6 @@ public final class BrokerImpl implements Broker {
             return new NullBrokerMetricManager();
         }
     }
-
 
     private TaskExecutorService<MessageDeliveryTask> createTaskExecutorService(BrokerCoreConfiguration configuration) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("MessageDeliveryTaskThreadPool-%d")
@@ -255,7 +252,6 @@ public final class BrokerImpl implements Broker {
             // Release the original message. Shallow copies are distributed
             message.release();
         }
-
     }
 
     private Set<QueueHandler> getUniqueQueueHandlersForBinding(Metadata metadata, BindingSet bindingSet) {
@@ -272,7 +268,8 @@ public final class BrokerImpl implements Broker {
         return uniqueQueues;
     }
 
-    private void publishToQueues(Message message, Set<QueueHandler> uniqueQueueHandlers) throws BrokerException {
+    private void publishToQueues(Message message, Set<QueueHandler> uniqueQueueHandlers)
+            throws BrokerException {
         // Unique queues can be empty due to un-matching selectors.
         if (uniqueQueueHandlers.isEmpty()) {
             LOGGER.info("Dropping message since message didn't have any routes to {}",
@@ -307,7 +304,8 @@ public final class BrokerImpl implements Broker {
             Exchange exchange = exchangeRegistry.getExchange(metadata.getExchangeName());
             if (Objects.nonNull(exchange)) {
                 BindingSet bindingsForRoute = exchange.getBindingsForRoute(metadata.getRoutingKey());
-                Set<QueueHandler> uniqueQueueHandlers = getUniqueQueueHandlersForBinding(metadata, bindingsForRoute);
+                Set<QueueHandler> uniqueQueueHandlers = getUniqueQueueHandlersForBinding(metadata,
+                        bindingsForRoute);
                 if (uniqueQueueHandlers.isEmpty()) {
                     MessageTracer.trace(message, xid, MessageTracer.NO_ROUTES);
                     return uniqueQueueHandlers;
@@ -328,7 +326,8 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public QueueHandler dequeue(Xid xid, String queueName, DetachableMessage detachableMessage) throws BrokerException {
+    public QueueHandler dequeue(Xid xid, String queueName, DetachableMessage detachableMessage)
+            throws BrokerException {
         lock.readLock().lock();
         try {
             QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
@@ -593,7 +592,7 @@ public final class BrokerImpl implements Broker {
         try {
             Message dlcMessage = message.shallowCopyWith(Broker.getNextMessageId(),
                     DEFAULT_DEAD_LETTER_QUEUE,
-                    ExchangeRegistry.DEFAULT_DEAD_LETTER_EXCHANGE);
+                    ExchangeRegistryImpl.DEFAULT_DEAD_LETTER_EXCHANGE);
             dlcMessage.getMetadata().addHeader(ORIGIN_QUEUE_HEADER, queueName);
             dlcMessage.getMetadata().addHeader(ORIGIN_EXCHANGE_HEADER, message.getMetadata().getExchangeName());
             dlcMessage.getMetadata().addHeader(ORIGIN_ROUTING_KEY_HEADER, message.getMetadata().getRoutingKey());
@@ -639,7 +638,6 @@ public final class BrokerImpl implements Broker {
         } finally {
             lock.readLock().unlock();
         }
-
     }
 
     @Override
@@ -653,7 +651,8 @@ public final class BrokerImpl implements Broker {
     }
 
     @Override
-    public Set<QueueHandler> restoreDtxPreparedMessages(Xid xid, Collection<Message> messages) throws BrokerException {
+    public Set<QueueHandler> restoreDtxPreparedMessages(Xid xid, Collection<Message> messages)
+            throws BrokerException {
         Set<QueueHandler> queueHandlers = new HashSet<>();
         lock.readLock().lock();
         try {
@@ -676,7 +675,6 @@ public final class BrokerImpl implements Broker {
     }
 
     private class BrokerHelper {
-
         public void startMessageDelivery() {
             LOGGER.info("Starting message delivery threads.");
             deliveryTaskService.start();
@@ -685,7 +683,6 @@ public final class BrokerImpl implements Broker {
         public void shutdown() {
             stopMessageDelivery();
         }
-
     }
 
     private class HaEnabledBrokerHelper extends BrokerHelper implements HaListener {

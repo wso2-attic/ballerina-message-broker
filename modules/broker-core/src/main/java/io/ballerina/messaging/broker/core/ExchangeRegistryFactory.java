@@ -37,7 +37,6 @@ public class ExchangeRegistryFactory {
     private final EventSync eventSync;
 
     public ExchangeRegistryFactory(ExchangeDao exchangeDao, BindingDao bindingDao, EventSync eventSync) {
-
         this.exchangeDao = exchangeDao;
         this.bindingDao = bindingDao;
         this.eventSync = eventSync;
@@ -45,17 +44,13 @@ public class ExchangeRegistryFactory {
 
     /**
      * Create a observable or a non observable exchange registry with the give arguments.
-     * @return ExchangeRegistry object
+     * @return ExchangeRegistryImpl object
      */
     public ExchangeRegistry getExchangeRegistry() {
-
         if (Objects.nonNull(this.eventSync)) {
-            return new ExchangeRegistry(exchangeDao, bindingDao,
-                    new ExchangeRegistry.DefaultExchangeRegistryEventPublisher(eventSync));
+            return new ObservableExchangeRegistryImpl(exchangeDao, bindingDao, eventSync);
         } else {
-            return new ExchangeRegistry(exchangeDao, bindingDao,
-                    new ExchangeRegistry.NullExchangeRegistryEventPublisher());
+            return new ExchangeRegistryImpl(exchangeDao, bindingDao);
         }
     }
-
 }

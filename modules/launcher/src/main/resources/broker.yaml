@@ -66,9 +66,11 @@ ballerina.broker.core:
  eventConfig:
    queueEvents:
       commonLimits: [10, 6]
-      specificLimits:
-        testQueue: [1, 2, 3]
-        testQueue1: [21, 3]
+      queues:
+        - name: test
+          limits: [2,6]
+        - name: test2
+          limits: [2,8]
 
 # Broker auth related configurations.
 ballerina.broker.auth:

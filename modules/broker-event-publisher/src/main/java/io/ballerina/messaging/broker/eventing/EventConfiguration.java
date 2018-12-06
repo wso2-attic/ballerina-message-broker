@@ -43,7 +43,7 @@ public class EventConfiguration {
     )
     private String publisherClass = "io.ballerina.messaging.broker.core.eventpublisher.EventPublisher";
 
-    public String getPublisherClassName() {
+    String getPublisherClassName() {
         return publisherClass;
     }
 
@@ -55,7 +55,7 @@ public class EventConfiguration {
         this.enabled = enabled;
     }
 
-    public void setPublisherClass(String publisherClass) {
+    void setPublisherClass(String publisherClass) {
         this.publisherClass = publisherClass;
     }
 }

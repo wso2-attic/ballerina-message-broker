@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.eventing;
 
+import io.ballerina.messaging.broker.common.BrokerClassLoader;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;
@@ -35,13 +36,12 @@ public class EventService {
     private boolean isEnabled;
     private EventSync eventSync = null;
 
-
     public EventService(StartupContext context) throws Exception {
         BrokerConfigProvider configProvider = context.getService(BrokerConfigProvider.class);
         EventConfiguration eventConfiguration = configProvider.getConfigurationObject(EventConfiguration.NAMESPACE,
                                                                                         EventConfiguration.class);
 
-        getEventPublisher(eventConfiguration);
+        loadEventPublisher(eventConfiguration);
 
         if (Objects.nonNull(eventSync)) {
             context.registerService(EventSync.class, eventSync);
@@ -54,16 +54,15 @@ public class EventService {
      *
      * @param eventConfiguration Event Configuration
      */
-    private void getEventPublisher(EventConfiguration eventConfiguration) {
+    private void loadEventPublisher(EventConfiguration eventConfiguration) {
 
         try {
             this.isEnabled = eventConfiguration.isEnabled();
             if (isEnabled) {
-                eventSync = new EventPublisherFactory().getPublisher(eventConfiguration);
+                eventSync = getPublisher(eventConfiguration);
             }
         } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
             logger.error(e.toString());
-            isEnabled = false;
         }
     }
 
@@ -77,5 +76,20 @@ public class EventService {
         if (Objects.nonNull(eventSync)) {
             eventSync.deactivate();
         }
+    }
+
+    /**
+     * Provides an instance of @{@link EventSync}.
+     *
+     * @param eventConfiguration the event configuration
+     * @return publisher for given configuration
+     */
+    private EventSync getPublisher(EventConfiguration eventConfiguration) throws IllegalAccessException,
+            InstantiationException, ClassNotFoundException {
+        EventSync publisher;
+        String publisherClass = eventConfiguration.getPublisherClassName();
+        logger.info("Initializing Event Publisher: {}", publisherClass);
+        publisher = BrokerClassLoader.loadClass(publisherClass, EventSync.class);
+        return publisher;
     }
 }
