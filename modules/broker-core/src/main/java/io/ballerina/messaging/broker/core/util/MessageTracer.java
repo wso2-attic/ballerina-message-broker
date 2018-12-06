@@ -148,7 +148,9 @@ public final class MessageTracer {
         }
     }
 
-    public static void trace(DetachableMessage detachableMessage, QueueHandler queueHandler, String description) {
+    public static void trace(DetachableMessage detachableMessage,
+                             QueueHandler queueHandler,
+                             String description) {
         if (LOGGER.isTraceEnabled() && Objects.nonNull(queueHandler)) {
             TraceBuilder traceBuilder = getTraceBuilder(detachableMessage, queueHandler);
             LOGGER.trace(traceBuilder.buildTrace(description));
@@ -164,7 +166,8 @@ public final class MessageTracer {
         }
     }
 
-    private static TraceBuilder getTraceBuilder(DetachableMessage detachableMessage, QueueHandler queueHandler) {
+    private static TraceBuilder getTraceBuilder(DetachableMessage detachableMessage,
+                                                QueueHandler queueHandler) {
         TraceBuilder traceBuilder = new TraceBuilder();
         traceBuilder.internalId(detachableMessage.getInternalId())
                     .queueName(queueHandler.getUnmodifiableQueue().getName());

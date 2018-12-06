@@ -22,9 +22,9 @@ package io.ballerina.messaging.broker.core.eventpublisher;
 import java.util.Map;
 
 /**
- * CorePublisher handles broker publishing.
+ * ExchangePublisher handles broker publishing.
  */
-public interface CorePublisher {
+public interface ExchangePublisher {
 
     /**
      * Used to publish event notifications to an Exchange in the Message Broker.

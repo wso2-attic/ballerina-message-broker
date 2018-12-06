@@ -33,6 +33,18 @@ import java.util.Objects;
  * Factory for creating queue handler objects.
  */
 public abstract class QueueHandlerFactory {
+    private List<Integer> commonLimits;
+    private EventSync eventSync;
+    private List<Integer> totalLimits = new ArrayList<>();
+    QueueHandlerFactory(BrokerCoreConfiguration.QueueEvents queueEventConfiguration, EventSync eventSync) {
+        this.eventSync = eventSync;
+        if (Objects.nonNull(this.eventSync)) {
+            commonLimits = queueEventConfiguration.getCommonLimits();
+            if (Objects.nonNull(commonLimits)) {
+                totalLimits.addAll(commonLimits);
+            }
+        }
+    }
 
     /**
      * Create a durable queue handler with the give arguments.
@@ -40,10 +52,12 @@ public abstract class QueueHandlerFactory {
      * @param queueName  name of the queue
      * @param autoDelete true if auto deletable
      * @param arguments arguments to modify the queue
-     * @return QueueHandler object
+     * @return QueueHandlerImpl object
      * @throws BrokerException if cannot create queue handler
      */
-    public abstract QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete, FieldTable arguments)
+    public abstract QueueHandler createDurableQueueHandler(String queueName,
+                                                           boolean autoDelete,
+                                                           FieldTable arguments)
             throws BrokerException;
 
     /**
@@ -52,7 +66,7 @@ public abstract class QueueHandlerFactory {
      * @param queueName  name of the queue
      * @param autoDelete true if auto deletable
      * @param  arguments arguments to modify the queue
-     * @return QueueHandler object
+     * @return QueueHandlerImpl object
      */
     public abstract QueueHandler createNonDurableQueueHandler(String queueName,
                                                               boolean autoDelete,
@@ -61,27 +75,25 @@ public abstract class QueueHandlerFactory {
     /**
      * Create a observable or a non observable queue handler with the give arguments.
      *
-     * @param queue         queue which the queue handler handles
+     * @param queue queue which the queue handler handles
      * @param metricManager handles metrics in the queue
-     * @param arguments     arguments to modify the queue handler
-     * @param  queueEventConfiguration broker queue event configuration
      * @param arguments arguments to modify the queue
      * @param queueEventConfiguration queue event configuration to modify queue events
-     * @return QueueHandler object
+     * @return QueueHandlerImpl object
      */
     QueueHandler createQueueHandler(Queue queue,
-                                    EventSync eventSync,
                                     BrokerMetricManager metricManager, FieldTable arguments,
                                     BrokerCoreConfiguration.QueueEvents queueEventConfiguration) {
+        if (Objects.nonNull(this.eventSync)) {
 
-        List<Integer> totalLimits = new ArrayList<>();
+            List<BrokerCoreConfiguration.QueueEvents.QueueLimitEvent> queueLimits = queueEventConfiguration.getQueues();
 
-        if (Objects.nonNull(eventSync)) {
-            List<Integer> commonLimits = queueEventConfiguration.getCommonLimits();
-            List<Integer> specificLimits = queueEventConfiguration.getSpecificLimits().get(queue.getName());
-
-            if (Objects.nonNull(specificLimits)) {
-                totalLimits.addAll(specificLimits);
+            if (Objects.nonNull(queueLimits)) {
+                for (BrokerCoreConfiguration.QueueEvents.QueueLimitEvent queueConfig : queueLimits) {
+                    if (queueConfig.getName().equals(queue.getName())) {
+                        totalLimits.addAll(queueConfig.getLimits());
+                    }
+                }
             }
 
             if (Objects.nonNull(commonLimits)) {
@@ -91,12 +103,11 @@ public abstract class QueueHandlerFactory {
             if (Objects.nonNull(arguments)) {
                 totalLimits.addAll(checkArgumentEvents(arguments));
             }
+            Queue observableQueue = new ObservableQueue(queue, eventSync, totalLimits);
 
-            return new QueueHandler(queue,
-                    metricManager,
-                    new QueueHandler.DefaultQueueHandlerEventPublisher(eventSync, totalLimits));
+            return new ObservableQueueHandlerImpl(observableQueue, metricManager, eventSync, totalLimits);
         } else {
-            return new QueueHandler(queue, metricManager, new QueueHandler.NullQueueHandlerEventPublisher());
+            return new QueueHandlerImpl(queue, metricManager);
         }
     }
 

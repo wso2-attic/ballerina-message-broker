@@ -86,7 +86,8 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public QueueHandler dequeue(Xid xid, String queueName, DetachableMessage detachableMessage) throws BrokerException {
+    public QueueHandler dequeue(Xid xid, String queueName, DetachableMessage detachableMessage)
+            throws BrokerException {
         return broker.dequeue(xid, queueName, detachableMessage);
     }
 
@@ -306,7 +307,8 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public Set<QueueHandler> restoreDtxPreparedMessages(Xid xid, Collection<Message> messages) throws BrokerException {
+    public Set<QueueHandler> restoreDtxPreparedMessages(Xid xid, Collection<Message> messages)
+            throws BrokerException {
         return broker.restoreDtxPreparedMessages(xid, messages);
     }
 }

@@ -31,7 +31,7 @@ public interface StoreFactory {
     /**
      * Create exchange registry.
      *
-     * @return ExchangeRegistry object
+     * @return ExchangeRegistryImpl object
      */
     ExchangeRegistry getExchangeRegistry();
 
@@ -45,7 +45,7 @@ public interface StoreFactory {
     /**
      * Create queue registry.
      *
-     * @return QueueRegistry object
+     * @return QueueRegistryImpl object
      */
     QueueRegistry getQueueRegistry() throws BrokerException;
 }

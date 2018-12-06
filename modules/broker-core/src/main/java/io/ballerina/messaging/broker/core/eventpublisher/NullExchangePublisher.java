@@ -22,9 +22,9 @@ package io.ballerina.messaging.broker.core.eventpublisher;
 import java.util.Map;
 
 /**
- * Default implementation of {@link CorePublisher}.
+ * Default implementation of {@link ExchangePublisher}.
  */
-public class NullCorePublisher implements CorePublisher {
+public class NullExchangePublisher implements ExchangePublisher {
     @Override
     public void publishNotification(String id, Map<String, String> properties) {
         //Ignore

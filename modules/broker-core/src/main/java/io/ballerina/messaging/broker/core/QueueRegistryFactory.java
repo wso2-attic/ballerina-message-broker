@@ -42,18 +42,14 @@ public class QueueRegistryFactory {
 
     /**
      * Create a observable or a non observable queue registry with the give arguments.
-     * @return QueueRegistry object
+     * @return QueueRegistryImpl object
      */
     public QueueRegistry getQueueRegistry() throws BrokerException {
 
         if (Objects.nonNull(eventSync)) {
-            return new QueueRegistry(queueDao,
-                                    queueHandlerFactory,
-                                    new QueueRegistry.DefaultQueueRegistryEventPublisher(eventSync));
+            return new ObservableQueueRegistryImpl(queueDao, queueHandlerFactory, eventSync);
         } else {
-            return new QueueRegistry(queueDao,
-                                    queueHandlerFactory,
-                                    new QueueRegistry.NullQueueRegistryEventPublisher());
+            return new QueueRegistryImpl(queueDao, queueHandlerFactory);
         }
     }
 
