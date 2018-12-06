@@ -23,7 +23,6 @@ import io.ballerina.messaging.broker.client.resources.Exchange;
 import io.ballerina.messaging.broker.client.resources.Permission;
 import io.ballerina.messaging.broker.client.resources.Queue;
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -181,11 +180,11 @@ public class TableFormatter implements ResponseFormatter {
      */
     private void printTable(String[] titles, List<String[]> rows) {
         if (titles.length == 0) {
-            throw new InvalidParameterException("Column titles are empty.");
+            throw new IllegalArgumentException("Column titles are empty.");
         } else if (rows.isEmpty()) {
-            throw new InvalidParameterException("Table rows are empty.");
+            throw new IllegalArgumentException("Table rows are empty.");
         } else if (rows.stream().anyMatch(row -> row.length != titles.length)) {
-            throw new InvalidParameterException("Table rows does not match with table header.");
+            throw new IllegalArgumentException("Number of columns in the table rows do not match with table header.");
         } else {
             //calculating maximum column length
             Integer[] columnWidths = new Integer[titles.length];
