@@ -56,8 +56,7 @@ public class BindingsRegistryTest {
     public void testMultipleBindCallsWithDifferentSelectors(String queueName,
                                                             String selectorOne, String selectorTwo) throws Exception {
 
-        QueueHandler queueHandler = new QueueHandler(new MemQueueImpl(queueName, 2, false), null,
-                                                     new QueueHandler.NullQueueHandlerEventPublisher());
+        QueueHandler queueHandler = new QueueHandlerImpl(new MemQueueImpl(queueName, 2, false), null);
 
         registry.bind(queueHandler, queueName, getFieldTable(selectorOne));
         registry.bind(queueHandler, queueName, getFieldTable(selectorTwo));
@@ -66,8 +65,7 @@ public class BindingsRegistryTest {
     @Test(dataProvider = "SimilarBindingData")
     public void testMultipleBindCallsWithSameArguments(String queueName,
                                                        String selectorOne, String selectorTwo) throws Exception {
-        QueueHandler queueHandler = new QueueHandler(new MemQueueImpl(queueName, 2, false), null,
-                                                     new QueueHandler.NullQueueHandlerEventPublisher());
+        QueueHandler queueHandler = new QueueHandlerImpl(new MemQueueImpl(queueName, 2, false), null);
         // Bind with similar bindings twice.
         registry.bind(queueHandler, queueName, getFieldTable(selectorOne));
         registry.bind(queueHandler, queueName, getFieldTable(selectorTwo));

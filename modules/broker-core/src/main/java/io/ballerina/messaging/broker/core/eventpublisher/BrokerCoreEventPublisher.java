@@ -29,7 +29,7 @@ import java.util.Objects;
  */
 public class BrokerCoreEventPublisher implements EventSync {
 
-    private CorePublisher exchangePublisher = new NullCorePublisher();
+    private ExchangePublisher exchangePublisher = new NullExchangePublisher();
     private Broker broker = null;
 
     public void publish(String id, Map<String, String> properties) {
@@ -42,12 +42,12 @@ public class BrokerCoreEventPublisher implements EventSync {
 
     public void activate() {
         if (Objects.nonNull(this.broker)) {
-            this.exchangePublisher = new DefaultCorePublisher(this.broker);
+            this.exchangePublisher = new DefaultExchangePublisher(this.broker);
         }
     }
 
     public void deactivate() {
-        this.exchangePublisher = new NullCorePublisher();
+        this.exchangePublisher = new NullExchangePublisher();
     }
 
 }

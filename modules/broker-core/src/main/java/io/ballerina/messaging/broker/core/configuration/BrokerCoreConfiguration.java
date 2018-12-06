@@ -20,9 +20,7 @@
 package io.ballerina.messaging.broker.core.configuration;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents configuration for broker.
@@ -198,17 +196,9 @@ public class BrokerCoreConfiguration {
          */
         private List<Integer> commonLimits = new ArrayList<>();
         /**
-         * Defines queue specefic message limits to trigger event notifications.
+         * Defines queue specific message limits to trigger event notifications.
          */
-        private Map<String, List<Integer>> specificLimits = new HashMap<>();
-
-        public Map<String, List<Integer>> getSpecificLimits() {
-            return specificLimits;
-        }
-
-        public void setEventLimits(Map<String, List<Integer>> specificLimits) {
-            this.specificLimits = specificLimits;
-        }
+        private List<QueueLimitEvent> queues = new ArrayList<>();
 
         public List<Integer> getCommonLimits() {
             return commonLimits;
@@ -217,7 +207,37 @@ public class BrokerCoreConfiguration {
         public void setCommonLimits(List<Integer> commonLimits) {
             this.commonLimits = commonLimits;
         }
+
+        public List<QueueLimitEvent> getQueues() {
+            return queues;
+        }
+
+        public void setQueues(List<QueueLimitEvent> queues) {
+            this.queues = queues;
+        }
+
+        /**
+         * Represent queue specific event related configurations.
+         */
+        public static class QueueLimitEvent {
+            private String name = "test";
+            private List<Integer> limits = new ArrayList<>();
+
+            public String getName() {
+            return name;
+        }
+
+            public void setName(String name) {
+            this.name = name;
+        }
+
+            public List<Integer> getLimits() {
+            return limits;
+        }
+
+            public void setLimits(List<Integer> limits) {
+            this.limits = limits;
+        }
+        }
     }
-
-
 }

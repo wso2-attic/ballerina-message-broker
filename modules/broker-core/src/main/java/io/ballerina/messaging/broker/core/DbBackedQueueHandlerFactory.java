@@ -36,16 +36,15 @@ public class DbBackedQueueHandlerFactory extends QueueHandlerFactory {
     private final BrokerMetricManager metricManager;
     private final int nonDurableQueueMaxDepth;
     private QueueBufferFactory queueBufferFactory;
-    private final EventSync eventSync;
     private final BrokerCoreConfiguration.QueueEvents queueEventConfiguration;
 
     public DbBackedQueueHandlerFactory(DbMessageStore dbMessageStore, BrokerMetricManager metricManager,
                                        BrokerCoreConfiguration configuration, EventSync eventSync) {
+        super(configuration.getEventConfig().getQueueEvents(), eventSync);
         this.dbMessageStore = dbMessageStore;
         this.metricManager = metricManager;
         nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
         queueBufferFactory = new QueueBufferFactory(configuration);
-        this.eventSync = eventSync;
         this.queueEventConfiguration = configuration.getEventConfig().getQueueEvents();
     }
     /**
@@ -54,13 +53,13 @@ public class DbBackedQueueHandlerFactory extends QueueHandlerFactory {
      * @param queueName  name of the queue
      * @param autoDelete true if auto deletable
      * @param arguments arguments to modify the queue
-     * @return QueueHandler object
+     * @return QueueHandlerImpl object
      * @throws BrokerException if cannot create queue handler
      */
     public QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete, FieldTable arguments)
             throws BrokerException {
         Queue queue = new DbBackedQueueImpl(queueName, autoDelete, dbMessageStore, queueBufferFactory);
-        return createQueueHandler(queue, this.eventSync, this.metricManager, arguments, queueEventConfiguration);
+        return createQueueHandler(queue, this.metricManager, arguments, queueEventConfiguration);
     }
 
     /**
@@ -69,10 +68,11 @@ public class DbBackedQueueHandlerFactory extends QueueHandlerFactory {
      * @param queueName  name of the queue
      * @param autoDelete true if auto deletable
      * @param arguments arguments to modify the queue
-     * @return QueueHandler object
+     * @return QueueHandlerImpl object
      */
-    public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete, FieldTable arguments) {
+    public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete,
+                                                     FieldTable arguments) {
         Queue queue = new MemQueueImpl(queueName, nonDurableQueueMaxDepth, autoDelete);
-        return createQueueHandler(queue, this.eventSync, this.metricManager, arguments, queueEventConfiguration);
+        return createQueueHandler(queue, this.metricManager, arguments, queueEventConfiguration);
     }
 }

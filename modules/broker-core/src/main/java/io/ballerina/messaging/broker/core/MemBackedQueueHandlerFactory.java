@@ -31,13 +31,12 @@ import io.ballerina.messaging.broker.eventing.EventSync;
 public class MemBackedQueueHandlerFactory extends QueueHandlerFactory {
     private final BrokerMetricManager metricManager;
     private final int nonDurableQueueMaxDepth;
-    private final EventSync eventSync;
     private final BrokerCoreConfiguration.QueueEvents queueEventConfiguration;
     public MemBackedQueueHandlerFactory(BrokerMetricManager metricManager,
                                         BrokerCoreConfiguration configuration, EventSync eventSync) {
+        super(configuration.getEventConfig().getQueueEvents(), eventSync);
         this.metricManager = metricManager;
         this.nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
-        this.eventSync = eventSync;
         this.queueEventConfiguration = configuration.getEventConfig().getQueueEvents();
     }
 
@@ -47,13 +46,15 @@ public class MemBackedQueueHandlerFactory extends QueueHandlerFactory {
     }
 
     @Override
-    public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete, FieldTable arguments) {
+    public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete,
+                                                     FieldTable arguments) {
         return getQueueHandler(queueName, false, autoDelete, arguments);
     }
 
-    private QueueHandler getQueueHandler(String queueName, boolean durable, boolean autoDelete, FieldTable arguments) {
+    private QueueHandler getQueueHandler(String queueName, boolean durable, boolean autoDelete,
+                                         FieldTable arguments) {
         Queue queue = new MemQueueImpl(queueName, durable, nonDurableQueueMaxDepth, autoDelete);
-        return createQueueHandler(queue, this.eventSync, this.metricManager, arguments, queueEventConfiguration);
+        return createQueueHandler(queue, this.metricManager, arguments, queueEventConfiguration);
 
     }
 

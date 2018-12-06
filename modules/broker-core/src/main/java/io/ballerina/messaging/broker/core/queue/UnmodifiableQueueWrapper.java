@@ -23,7 +23,6 @@ import io.ballerina.messaging.broker.core.DetachableMessage;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Queue;
 import io.ballerina.messaging.broker.core.QueueHandler;
-
 import javax.transaction.xa.Xid;
 
 /**
