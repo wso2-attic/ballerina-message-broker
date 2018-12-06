@@ -26,16 +26,11 @@ import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.queue.MemQueueImpl;
 import io.ballerina.messaging.broker.core.queue.UnmodifiableQueueWrapper;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
-import io.ballerina.messaging.broker.eventing.EventSync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -299,90 +294,6 @@ public final class QueueHandlerImpl extends QueueHandler {
         } else {
             throw new ValidationException("Cannot purge queue " + queue.getName() + " since there " + consumerCount()
                     + " active consumer(s)");
-        }
-    }
-    /**
-     * Represents the event publisher handler in resource QueueHandlerImpl.
-     */
-    interface QueueHandlerEventPublisher {
-
-        void publishConsumerEvent(String id, Consumer consumer);
-
-        void publishBindingEvent(String id, Binding binding);
-
-        void publishQueueLimitReachedEvent(QueueHandlerImpl queueHandler);
-    }
-
-    /**
-     * Default implementation of {@link QueueHandlerEventPublisher}.
-     */
-    static class DefaultQueueHandlerEventPublisher implements QueueHandlerEventPublisher {
-
-        EventSync eventSync;
-        HashSet<Integer> messageLimits;
-
-        DefaultQueueHandlerEventPublisher(EventSync eventSync, List<Integer> messageLimits) {
-
-            this.eventSync = eventSync;
-            this.messageLimits = new HashSet<>(messageLimits);
-        }
-
-        @Override
-        public void publishConsumerEvent(String id, Consumer consumer) {
-
-            Map<String, String> properties = new HashMap<>();
-            properties.put("consumerID", String.valueOf(consumer.getId()));
-            properties.put("queueName", consumer.getQueueName());
-            properties.put("ready", String.valueOf(consumer.isReady()));
-            properties.put("exclusive", String.valueOf(consumer.isExclusive()));
-            eventSync.publish(id, properties);
-        }
-
-        @Override
-        public void publishBindingEvent(String id, Binding binding) {
-
-            Map<String, String> properties = new HashMap<>();
-            properties.put("bindingQueue", binding.getQueue().getName());
-            properties.put("bindingPattern", binding.getBindingPattern());
-            eventSync.publish(id, properties);
-        }
-
-        @Override
-        public void publishQueueLimitReachedEvent(QueueHandlerImpl queueHandler) {
-            int queueSize = queueHandler.size();
-            if (messageLimits.contains(queueSize)) {
-                Map<String, String> properties = new HashMap<>();
-                String queueName = queueHandler.getUnmodifiableQueue().getName();
-                String isAutoDelete = String.valueOf(queueHandler.getUnmodifiableQueue().isAutoDelete());
-                String isDurable = String.valueOf(queueHandler.getUnmodifiableQueue().isDurable());
-                properties.put("queueName", queueName);
-                properties.put("autoDelete", isAutoDelete);
-                properties.put("durable", isDurable);
-                properties.put("messageCount", String.valueOf(queueHandler.size()));
-                String id = "queue.limitReached." + queueName + "." + queueSize;
-                eventSync.publish(id, properties);
-            }
-        }
-    }
-
-    /**
-     * Null implementation of {@link QueueHandlerEventPublisher}.
-     */
-    static class NullQueueHandlerEventPublisher implements QueueHandlerEventPublisher {
-
-        @Override
-        public void publishConsumerEvent(String id, Consumer consumer) {
-            //Ignore
-        }
-
-        @Override
-        public void publishBindingEvent(String id, Binding binding) {
-            //Ignore
-        }
-
-        @Override
-        public void publishQueueLimitReachedEvent(QueueHandlerImpl queueHandler) {
-            //Ignore
         }
     }
 }
