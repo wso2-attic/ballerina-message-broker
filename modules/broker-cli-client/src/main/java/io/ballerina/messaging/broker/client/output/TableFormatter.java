@@ -114,34 +114,15 @@ public class TableFormatter implements ResponseFormatter {
             OUT_STREAM.println("Not found");
             return;
         }
-        int maxLoggerNameLength = Arrays.stream(loggers)
-                                        .mapToInt(logger -> logger.getName().length())
-                                        .max()
-                                        .getAsInt();
 
-        int maxLoggerNameColumnSize = Math.max(maxLoggerNameLength, Logger.NAME_TAG.length());
+        ArrayList<String[]> tempLoggers = new ArrayList<>();
 
-        String printTemplate = "%-2s%-" + (maxLoggerNameColumnSize + TABLE_PADDING) + "s%-2s%-15s%-2s\n";
-
-
-        StringBuilder loggerNameDivider = new StringBuilder();
-        for (int i = 0; i < maxLoggerNameColumnSize + TABLE_PADDING; i++) {
-            loggerNameDivider.append(Logger.BLOCK_SEPERATOR);
-        }
-
-        OUT_STREAM.printf(printTemplate, Logger.CORNER_SIGN_BEGIN, loggerNameDivider.toString(),
-                          Logger.CORNER_SIGN_BEGIN, Logger.BLOCK_SEPERATOR_FOR_LEVEL, Logger.CORNER_SIGN_END);
-        OUT_STREAM.printf(printTemplate, Logger.COLUMN_SEPERATOR_BEGIN, Logger.NAME_TAG, Logger
-                .COLUMN_SEPERATOR_BEGIN, Logger.LEVEL_TAG, Logger.COLUMN_SEPERATOR_END);
-        OUT_STREAM.printf(printTemplate, Logger.CORNER_SIGN_BEGIN, loggerNameDivider.toString(),
-                          Logger.CORNER_SIGN_BEGIN, Logger.BLOCK_SEPERATOR_FOR_LEVEL, Logger.CORNER_SIGN_END);
         for (Logger logger : loggers) {
-            OUT_STREAM.printf(printTemplate, Logger.COLUMN_SEPERATOR_BEGIN, logger.getName(), Logger
-                    .COLUMN_SEPERATOR_BEGIN, logger
-                    .getLevel(), Logger.COLUMN_SEPERATOR_END);
+            tempLoggers.add(new String[]{logger.getName(), logger.getLevel()});
         }
-        OUT_STREAM.printf(printTemplate, Logger.CORNER_SIGN_BEGIN, loggerNameDivider.toString(),
-                          Logger.CORNER_SIGN_BEGIN, Logger.BLOCK_SEPERATOR_FOR_LEVEL, Logger.CORNER_SIGN_END);
+
+        printTable(new String[]{Logger.NAME_TAG, Logger.LEVEL_TAG}, tempLoggers);
+
     }
 
     @Override
