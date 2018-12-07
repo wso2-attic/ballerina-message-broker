@@ -18,14 +18,24 @@
 
 package io.ballerina.messaging.broker.integration.cluster;
 
+import io.ballerina.messaging.broker.integration.util.ClientHelper;
 import io.ballerina.messaging.broker.integration.util.ClusterUtils;
+import org.awaitility.Awaitility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.concurrent.TimeUnit;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -35,7 +45,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -43,37 +52,42 @@ import javax.naming.NamingException;
  * Test class to restart broker node
  * Node one is active and node two is passive, restart node one
  * */
-@Test(groups = {"RestartTestClass"})
+@Test(groups = {"RestartTestClass"}, dependsOnGroups = "StartTestClass")
 public class RestartTest {
 
-    private static final String QPID_ICF = "org.wso2.andes.jndi.PropertiesFileInitialContextFactory";
-    private static final String CF_NAME_PREFIX = "connectionfactory.";
-    private static final String QUEUE_NAME_PREFIX = "queue.";
-    private static final String CF_NAME = "qpidConnectionfactory";
-    private static final String CARBON_CLIENT_ID = "carbon";
-    private static final String CARBON_VIRTUAL_HOST_NAME = "carbon";
+    private int node;
     private static final String queueName = "testQueue";
-    private static InitialContext ctx;
-    private static ConnectionFactory connFactory;
+    private Connection connection;
+    private InitialContext ctx;
+    private static final Logger LOGGER = LoggerFactory.getLogger(KillTest.class);
+    private File file = new File(getClass().getResource("/docker-compose.yml").getFile());
 
-    @Parameters({"admin-username", "admin-password", "broker-1-hostname", "broker-1-port", "broker-2-hostname",
-            "broker-2-port"})
+    @Parameters({"admin-username", "admin-password", "broker-1-hostname", "broker-1-port", "db-username",
+            "db-password"})
     @BeforeClass
-    public void setUp(String username, String password, String hostnameOne, String portOne,
-                      String hostnameTwo, String portTwo) throws NamingException, JMSException {
+    public void setUp(String username, String password, String hostnameOne, String portOne, String dbUsername,
+                      String dbPassword) throws JMSException,
+            IOException, SQLException {
+        Runtime.getRuntime().exec("docker-compose -f " + file.getPath() + " up");
+        Awaitility.await().atMost(240, TimeUnit.SECONDS)
+                .pollInterval(3, TimeUnit.SECONDS)
+                .until(() -> isConnectionAvailable(username, password, hostnameOne, portOne));
 
-        Properties properties = new Properties();
-        properties.put(Context.INITIAL_CONTEXT_FACTORY, QPID_ICF);
-        properties.put(CF_NAME_PREFIX + CF_NAME, getTCPConnectionURL(username, password, hostnameOne, portOne,
-                hostnameTwo, portTwo));
-        properties.put(QUEUE_NAME_PREFIX + queueName, queueName);
-        ctx = new InitialContext(properties);
+        String mysqlUrl = "jdbc:mysql://localhost:3307/brokerdb";
+        java.sql.Connection connectiondb = DriverManager.getConnection(mysqlUrl, dbUsername, dbPassword);
+        String query = "select count(*) from MB_NODE_HEARTBEAT";
+        Statement statement = connectiondb.createStatement();
 
-        connFactory = (ConnectionFactory) ctx.lookup(CF_NAME);
-        Connection queueConnectionOne = connFactory.createConnection();
-        queueConnectionOne.start();
-
-        Session producerSession = queueConnectionOne.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        Awaitility.await().atMost(60, TimeUnit.SECONDS)
+                .pollInterval(3, TimeUnit.SECONDS)
+                .until(() -> {
+                    ResultSet resultSets = statement.executeQuery(query);
+                    while (resultSets.next()) {
+                        node = resultSets.getInt("count(*)");
+                    }
+                    return node == 2;
+                });
+        Session producerSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         Queue queue = producerSession.createQueue(queueName);
         MessageProducer producer = producerSession.createProducer(queue);
 
@@ -82,46 +96,42 @@ public class RestartTest {
             producer.send(producerSession.createTextMessage("Test message " + i));
         }
         producerSession.close();
-        queueConnectionOne.close();
+        connection.close();
     }
 
-    @Parameters({"broker-1-port", "broker-1-hostname"})
+    @Parameters({"admin-username", "admin-password", "broker-1-hostname", "broker-1-port"})
     @Test(description = "Confirms node one is in active mode")
-    public void testNodeOneAvailableBeforeRestart(String portOne, String hostnameOne) {
-        Assert.assertFalse(ClusterUtils.isPortAvailable(hostnameOne, Integer.parseInt(portOne)),
-                "Broker node one is not active");
+    public void testNodeOneAvailableBeforeRestart(String username, String password, String hostnameOne,
+                                                  String portOne) {
+        Assert.assertTrue(isConnectionAvailable(username, password, hostnameOne, portOne));
     }
 
-    @Parameters({"broker-2-port", "broker-2-hostname"})
+    @Parameters({"admin-username", "admin-password", "broker-2-hostname", "broker-2-port"})
     @Test(description = "Confirms node two in passive mode", dependsOnMethods = "testNodeOneAvailableBeforeRestart")
-    public void testNodeTwoAvailableBeforeRestart(String portTwo, String hostnameTwo) {
-        Assert.assertTrue(ClusterUtils.isPortAvailable(hostnameTwo, Integer.parseInt(portTwo)),
-                "Broker node two is not passive");
+    public void testNodeTwoAvailableBeforeRestart(String username, String password, String hostnameTwo,
+                                                  String portTwo) {
+        Assert.assertFalse(isConnectionAvailable(username, password, hostnameTwo, portTwo));
     }
 
-    @Parameters({"broker-1-port", "broker-1-hostname", "broker-2-port", "broker-2-hostname", "broker-1-home"})
+    @Parameters({"admin-username", "admin-password", "broker-2-port", "broker-2-hostname"})
     @Test(description = "Confirms node one is restarted", dependsOnMethods = "testNodeTwoAvailableBeforeRestart")
-    public void testRestartBrokerNode(String portOne, String hostnameOne, String portTwo, String hostnameTwo,
-                                      String brokerHome)
+    public void testRestartBrokerNode(String username, String password, String portTwo, String hostnameTwo)
             throws IOException {
-        ClusterUtils.restartBrokerNode(brokerHome, portOne, hostnameTwo, portTwo);
-        Assert.assertTrue(ClusterUtils.isPortAvailable(hostnameOne, Integer.parseInt(portOne)),
-                "Broker node one is not restarted");
+        ClusterUtils.restartBrokerNode("brokernode1", username, password, hostnameTwo, portTwo);
     }
 
-    @Parameters({"broker-2-port", "broker-2-hostname"})
+    @Parameters({"admin-username", "admin-password", "broker-2-port", "broker-2-hostname"})
     @Test(description = "Confirms node two is active", dependsOnMethods = "testRestartBrokerNode")
-    public void testNodeTwoAvailableAfterRestart(String portTwo, String hostnameTwo) {
-        Assert.assertFalse(ClusterUtils.isPortAvailable(hostnameTwo, Integer.parseInt(portTwo)),
-                "Broker node two is not active");
+    public void testNodeTwoAvailableAfterRestart(String username, String password, String portTwo, String hostnameTwo) {
+        Assert.assertTrue(isConnectionAvailable(username, password, hostnameTwo, portTwo));
     }
 
+    @Parameters({"admin-username", "admin-password", "broker-2-port", "broker-2-hostname"})
     @Test(description = "Confirms message is received from active node",
             dependsOnMethods = "testNodeTwoAvailableAfterRestart")
-    public void testReceiveMessage() throws JMSException, NamingException {
-        Connection queueConnectionTwo = connFactory.createConnection();
-        queueConnectionTwo.start();
-        Session subscriberSession = queueConnectionTwo.createSession(false, Session.AUTO_ACKNOWLEDGE);
+    public void testReceiveMessage()
+            throws JMSException, NamingException {
+        Session subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         Destination subscriberDestination = (Destination) ctx.lookup(queueName);
         MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
 
@@ -130,29 +140,40 @@ public class RestartTest {
             Assert.assertNotNull(String.valueOf(message), "Message #" + i + " was not received");
         }
         subscriberSession.close();
-        queueConnectionTwo.close();
+        connection.close();
     }
 
-    /**
-     * Method for get the TCP connection url
-     *
-     * @param password    admin password
-     * @param hostnameOne hostname of broker node one
-     * @param portOne     port of broker node one
-     * @param hostnameTwo hostname of broker node two
-     * @param portTwo     port of broker node two
-     */
-    private static String getTCPConnectionURL(String username, String password, String hostnameOne, String portOne,
-                                              String hostnameTwo, String portTwo) {
-        return new StringBuffer()
-                .append("amqp://").append(username).append(":").append(password)
-                .append("@").append(CARBON_CLIENT_ID)
-                .append("/").append(CARBON_VIRTUAL_HOST_NAME)
-                .append("?failover='roundrobin'&cyclecount='2'&brokerlist='tcp://")
-                .append(hostnameOne).append(":").append(portOne)
-                .append("?retries='5'&connectdelay='50';tcp://")
-                .append(hostnameTwo).append(":").append(portTwo)
-                .append("?retries='5'&connectdelay='50''")
-                .toString();
+    @Parameters({"admin-username", "admin-password", "broker-1-hostname", "broker-1-port", "broker-2-hostname",
+            "broker-2-port", "db-hostname", "db-port"})
+    @AfterClass
+    public void tearDown(String username, String password, String hostnameOne, String portOne, String hostnameTwo,
+                         String portTwo, String dbHostname, String dbPort) throws IOException {
+        Runtime.getRuntime().exec("docker stop brokernode1 && docker rm $_");
+        Runtime.getRuntime().exec("docker-compose -f " + file.getPath() + " down");
+        Awaitility.await().atMost(60, TimeUnit.SECONDS)
+                .pollInterval(3, TimeUnit.SECONDS)
+                .until(() -> ClusterUtils.isPortAvailable(hostnameOne, Integer.parseInt(portOne)));
+        Awaitility.await().atMost(60, TimeUnit.SECONDS)
+                .pollInterval(3, TimeUnit.SECONDS)
+                .until(() -> ClusterUtils.isPortAvailable(hostnameTwo, Integer.parseInt(portTwo)));
+        Awaitility.await().atMost(60, TimeUnit.SECONDS)
+                .pollInterval(3, TimeUnit.SECONDS)
+                .until(() -> ClusterUtils.isPortAvailable(dbHostname, Integer.parseInt(dbPort)));
+    }
+
+
+    public boolean isConnectionAvailable(String userName, String password, String hostname, String port) {
+        try {
+            ctx = ClientHelper.getInitialContextBuilder(userName, password, hostname, port)
+                    .withQueue(queueName).build();
+            ConnectionFactory connectionFactory = (ConnectionFactory) ctx.lookup(ClientHelper.CONNECTION_FACTORY);
+            connection = connectionFactory.createConnection();
+            connection.start();
+            LOGGER.info("Connection available...");
+            return true;
+        } catch (NamingException | JMSException e) {
+            LOGGER.info("Connection not available...", e);
+            return false;
+        }
     }
 }

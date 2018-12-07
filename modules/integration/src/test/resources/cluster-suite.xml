@@ -29,11 +29,11 @@
     <parameter name="admin-username" value="admin"/>
     <parameter name="admin-password" value="admin"/>
 
-    <parameter name="db-username" value="root"/>
-    <parameter name="db-password" value="rootroot"/>
+    <parameter name="db-username" value="wso2"/>
+    <parameter name="db-password" value="wso2"/>
 
-    <parameter name="broker-1-home" value="/Users/praveen/Desktop/message-broker-0.970.5"/>
-    <parameter name="broker-2-home" value="/Users/praveen/Desktop/message-broker-0.970.5 2"/>
+    <parameter name="db-hostname" value="localhost"/>
+    <parameter name="db-port" value="3307"/>
 
     <listeners>
         <listener class-name="io.ballerina.messaging.broker.integration.util.TestExecutionListener"/>
@@ -42,17 +42,17 @@
     <test name="cluster-tests" verbose="2">
         <groups>
             <run>
-                <exclude name="KillTestClass"/>
-                <exclude name="RestartTestClass"/>
-                <exclude name="ShutdownTestClass"/>
-                <exclude name="StartTestClass"/>
+                <include name="KillTestClass"/>
+                <include name="RestartTestClass"/>
+                <include name="ShutdownTestClass"/>
+                <include name="StartTestClass"/>
             </run>
         </groups>
         <classes>
-            <class name="io.ballerina.messaging.broker.integration.cluster.KillTest" />
-            <class name="io.ballerina.messaging.broker.integration.cluster.StartTest" />
-            <class name="io.ballerina.messaging.broker.integration.cluster.ShutdownTest" />
-            <class name="io.ballerina.messaging.broker.integration.cluster.RestartTest" />
+            <class name="io.ballerina.messaging.broker.integration.cluster.KillTest"/>
+            <class name="io.ballerina.messaging.broker.integration.cluster.ShutdownTest"/>
+            <class name="io.ballerina.messaging.broker.integration.cluster.RestartTest"/>
+            <class name="io.ballerina.messaging.broker.integration.cluster.StartTest"/>
         </classes>
     </test>
 </suite>
