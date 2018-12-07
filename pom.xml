@@ -437,11 +437,11 @@
         <andes.version>3.2.70</andes.version>
         <geronimo-jms_1.1_spec.version>1.1.0.wso2v1</geronimo-jms_1.1_spec.version>
         <javacc.plugin.version>2.6</javacc.plugin.version>
-        <carbon.config.version>2.1.5</carbon.config.version>
+        <carbon.config.version>2.1.7-SNAPSHOT</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
         <hikari.version>2.7.4</hikari.version>
         <h2.version>1.4.196</h2.version>
-        <msf4j.version>2.6.1</msf4j.version>
+        <msf4j.version>2.6.4</msf4j.version>
         <msf4j.package.import.version.range>[2.5.0, 2.6.0)</msf4j.package.import.version.range>
         <com.ibatis.version>2.1.7.597</com.ibatis.version>
         <lmax.disruptor.version>3.3.7.wso2v1</lmax.disruptor.version>
@@ -449,7 +449,7 @@
         <swagger.annotations.version>1.5.3</swagger.annotations.version>
         <jackson.annotations.version>2.9.3</jackson.annotations.version>
         <javax.validation-api.version>1.1.0.Final</javax.validation-api.version>
-        <httpclient.version>4.5.4</httpclient.version>
+        <httpclient.version>4.5.6</httpclient.version>
         <jaxrs.api.version>2.0</jaxrs.api.version>
         <jaxrs.api.package.import.version.range>[2.0,3.0)</jaxrs.api.package.import.version.range>
         <json.jackson.version>2.26</json.jackson.version>

@@ -209,3 +209,18 @@ wso2.securevault:
     parameters:
       # Read master keys from thremaster-keys.yaml
       masterKeyReaderFile: ${sys:message.broker.home}/conf/master-keys.yaml
+
+wso2.broker.admin.service:
+  listenerConfigurations:
+    -
+      id: "https"
+      host: "0.0.0.0"
+      port: 9000
+      scheme: https
+      keyStoreFile: "${message.broker.home}/resources/security/keystore.jks"
+      keyStorePassword: ballerina
+      certPass: ballerina
+
+  senderConfigurations:
+    -
+      id: "http-sender"

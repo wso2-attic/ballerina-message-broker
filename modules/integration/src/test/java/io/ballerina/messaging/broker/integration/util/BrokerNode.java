@@ -43,7 +43,8 @@ import io.ballerina.messaging.broker.core.DefaultBrokerFactory;
 import io.ballerina.messaging.broker.core.SecureBrokerFactory;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.rest.BrokerRestServer;
-import io.ballerina.messaging.broker.rest.config.RestServerConfiguration;
+import org.wso2.transport.http.netty.config.ListenerConfiguration;
+import org.wso2.transport.http.netty.config.TransportsConfiguration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -53,6 +54,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Collections;
 import java.util.HashMap;
 import javax.sql.DataSource;
 
@@ -94,9 +96,17 @@ public class BrokerNode {
         serverConfiguration.getSsl().getTrustStore().setPassword(TestConstants.TRUST_STORE_PASSWORD);
         configProvider.registerConfigurationObject(AmqpServerConfiguration.NAMESPACE, serverConfiguration);
 
-        RestServerConfiguration restConfig = new RestServerConfiguration();
-        restConfig.getPlain().setPort(restPort);
-        configProvider.registerConfigurationObject(RestServerConfiguration.NAMESPACE, restConfig);
+        TransportsConfiguration transportsConfiguration = new TransportsConfiguration();
+        ListenerConfiguration listenerConfiguration = new ListenerConfiguration();
+        listenerConfiguration.setPort(Integer.parseInt(restPort));
+        listenerConfiguration.setHost("0.0.0.0");
+        listenerConfiguration.setId("https");
+        listenerConfiguration.setScheme("https");
+        listenerConfiguration.setKeyStoreFile("src/test/resources/security/keystore.jks");
+        listenerConfiguration.setKeyStorePass("ballerina");
+        listenerConfiguration.setCertPass("ballerina");
+        transportsConfiguration.setListenerConfigurations(Collections.singleton(listenerConfiguration));
+        configProvider.registerConfigurationObject("wso2.broker.admin.service", transportsConfiguration);
 
         BrokerHaConfiguration haConfiguration = configProvider.getConfigurationObject(
                 BrokerHaConfiguration.NAMESPACE, BrokerHaConfiguration.class);

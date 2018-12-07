@@ -22,72 +22,68 @@ import org.awaitility.Awaitility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 public class ClusterUtils {
 
-    private static final String GET_PID = "lsof -ti tcp:";
-    private static final String KILL_PID = "kill -9 ";
-    private static final String SHUTDOWN = "kill -s TERM ";
-    private static ConnectionFactory connFactory;
-
+    private static final String queueName = "testQueue";
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterUtils.class);
 
     /**
      * Method to kill broker node
      *
-     * @param port port of the broker node to be killed
+     * @param brokernode brokernode to be killed
      */
-    public static void killBrokerNode(String port) throws IOException {
-        Process process = Runtime.getRuntime().exec(GET_PID + port);
-        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String pid = stdInput.readLine();
-        Runtime.getRuntime().exec(KILL_PID + pid);
+    public static void killBrokerNode(String brokernode) throws IOException {
+        Runtime.getRuntime().exec("docker kill " + brokernode);
     }
 
     /**
      * Method to start broker node
      *
-     * @param brokerHome path to the broker home to be started
+     * @param brokernode brokernode to be started
      */
-    public static void startBrokerNode(String brokerHome) throws IOException {
-        Runtime.getRuntime().exec("sh " + brokerHome + "/bin/broker");
+    public static void startBrokerNode(String brokernode) throws IOException {
+        Runtime.getRuntime().exec("docker start " + brokernode);
     }
 
     /**
      * Method to shutdown broker node
      *
-     * @param port port of the broker home to be shutdown
+     * @param brokernode brokernode to be shutdown
      */
-    public static void shutdownBrokerNode(String port) throws IOException {
-        Process process = Runtime.getRuntime().exec(GET_PID + port);
-        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String pid = stdInput.readLine();
-        Runtime.getRuntime().exec(SHUTDOWN + pid);
+    public static void shutdownBrokerNode(String brokernode) throws IOException {
+        Runtime.getRuntime().exec("docker stop " + brokernode);
     }
 
     /**
      * Method to restart broker node
      *
-     * @param brokerHome path to the broker home to be restarted
-     * @param portOne    port of the broker home to be restarted
+     * @param brokernode brokernode to be restarted
+     * @param username   username
+     * @param password   password
+     * @param hostname   hostname
+     * @param port       port
      */
-    public static void restartBrokerNode(String brokerHome, String portOne, String hostnameTwo, String portTwo)
+    public static void restartBrokerNode(String brokernode, String username, String password, String hostname,
+                                         String port)
             throws IOException {
-        shutdownBrokerNode(portOne);
-        Awaitility.await().atMost(30, TimeUnit.SECONDS)
-                .pollInterval(2, TimeUnit.SECONDS)
-                .until(() -> !ClusterUtils.isPortAvailable(hostnameTwo, Integer.parseInt(portTwo)));
-        startBrokerNode(brokerHome);
+        Runtime.getRuntime().exec("docker stop " + brokernode);
+        Awaitility.await().atMost(120, TimeUnit.SECONDS)
+                .pollInterval(3, TimeUnit.SECONDS)
+                .until(() -> isConnectionAvailable(username, password, hostname, port));
+        Runtime.getRuntime().exec("docker start " + brokernode);
     }
 
     /**
-     * Method for check port availability
+     * Method to check port availability
      *
      * @param hostName name of the host
      * @param port     port
@@ -109,6 +105,29 @@ public class ClusterUtils {
                     LOGGER.error("Error in closing socket", e);
                 }
             }
+        }
+    }
+
+    /**
+     * Method to check JMS connection
+     *
+     * @param userName username
+     * @param password password
+     * @param hostname hostname
+     * @param port     port
+     * */
+    private static boolean isConnectionAvailable(String userName, String password, String hostname, String port) {
+        try {
+            InitialContext ctx = ClientHelper.getInitialContextBuilder(userName, password, hostname, port)
+                    .withQueue(queueName).build();
+            ConnectionFactory connectionFactory = (ConnectionFactory) ctx.lookup(ClientHelper.CONNECTION_FACTORY);
+            Connection connection = connectionFactory.createConnection();
+            connection.start();
+            LOGGER.info("Connection available...");
+            return true;
+        } catch (NamingException | JMSException e) {
+            LOGGER.info("Connection not available...", e);
+            return false;
         }
     }
 }

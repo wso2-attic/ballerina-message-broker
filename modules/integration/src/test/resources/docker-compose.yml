@@ -1,0 +1,75 @@
+version: '2.3'
+
+services:
+  db:
+    image: mysql:5.7.19
+    container_name: test-mysql
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: wso2
+      MYSQL_DATABASE: brokerdb
+      MYSQL_USER: wso2
+      MYSQL_PASSWORD: wso2
+    volumes:
+      - ./mySQL:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-uwso2", "-pwso2"]
+      interval: 10s
+      timeout: 60s
+      retries: 15
+      start_period: 10s
+
+  broker1:
+    image: praveenwso2/broker1:v1
+    container_name: brokernode1
+    ports:
+      - 5672:5672
+      - 9000:9000
+      - 8672:8672
+    environment:
+      BALLERINA_BROKER_FAILOVER__ENABLED: "true"
+      BALLERINA_BROKER__DATASOURCE_URL: "jdbc:mysql://db:3306/brokerdb"
+      BALLERINA_BROKER__DATASOURCE_USER: "wso2"
+      BALLERINA_BROKER__DATASOURCE_PASSWORD: "wso2"
+    volumes:
+      - ./mysql-connector-java-8.0.12.jar:/message-broker-1/lib/mysql-connector-java-8.0.12.jar
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "5672"]
+      interval: 10s
+      timeout: 120s
+      start_period: 10s
+    depends_on:
+      db:
+        condition: service_healthy
+
+  broker2:
+    image: praveenwso2/broker2:v1
+    container_name: brokernode2
+    ports:
+      - 5673:5673
+      - 9001:9001
+      - 8673:8673
+    environment:
+      BALLERINA_BROKER_FAILOVER__ENABLED: "true"
+      BALLERINA_BROKER__DATASOURCE_URL: "jdbc:mysql://db:3306/brokerdb"
+      BALLERINA_BROKER__DATASOURCE_USER: "wso2"
+      BALLERINA_BROKER__DATASOURCE_PASSWORD: "wso2"
+      BALLERINA_BROKER_TRANSPORT_AMQP__PLAIN_PORT: 5673
+      BALLERINA_BROKER_TRANSPORT_AMQP__SSL_PORT: 8673
+      WSO2_BROKER_ADMIN_SERVICE__LISTENERCONFIGURATIONS_UNIQUE: "id"
+      WSO2_BROKER_ADMIN_SERVICE__LISTENERCONFIGURATIONS_0_ID: "https"
+      WSO2_BROKER_ADMIN_SERVICE__LISTENERCONFIGURATIONS_0_PORT: 9001
+    volumes:
+      - ./mysql-connector-java-8.0.12.jar:/message-broker-2/lib/mysql-connector-java-8.0.12.jar
+    healthcheck:
+      test: ["CMD", "nc", "-z","localhost", "5673"]
+      interval: 10s
+      timeout: 120s
+      start_period: 10s
+      retries: 10
+    depends_on:
+      db:
+        condition: service_healthy
+      broker1:
+        condition: service_healthy
