@@ -49,8 +49,7 @@ public class ListConsumerCmd extends ListCmd {
                description = "id of the consumer which info needs to be retrieved")
     private String consumerId = "";
 
-    @Parameter(names = { "--queue", "-q" },
-               description = "name of the queue",
+    @Parameter(description = "name of the queue",
                required = true)
     private String queueName = "";
 
