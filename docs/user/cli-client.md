@@ -19,7 +19,7 @@ Following is the list of possible operations supported by the Broker CLI.
     4.1. [Binding creation](#41-binding-creation)<br/>
     4.2. [Binding information retrieval](#42-binding-information-retrieval)<br/>
 5. [Consumer related administrative operations](#5-consumer-related-administrative-operations)<br/>
-    4.1. [Consumer information retrieval](#51-consumer-information-retrieval)
+    5.1. [Consumer information retrieval](#51-consumer-information-retrieval)
 6. [Logger related administrative operations](#6-logger-related-administrative-operations)<br/>
     6.1. [Logger information retrieval](#61-logger-information-retrieval)<br/>
     6.2. [Logger log level change](#62-logger-log-level-change) 
@@ -218,15 +218,19 @@ Message consumers are connected to queues under the AMQP architecture. Broker's 
 List down message consumers of a queue. If consumer Id is not given, CLI will display all the consumers on the given queue.
 
 #### Command format:
-`./broker-admin.sh list consumer <consumer_id>? ([--queue|-q] <queue_name>) ([--output|-o] <output_format>)? (global_flags)*`
+`./broker-admin.sh list consumer <queue_name> ([--consumer|-c] <consumer_id>)? ([--output|-o] <output_format>)? (global_flags)*`
 
 #### Options:
-- Name of the queue (--queue, -q) (mandatory)<br/>
+- Name of the queue (mandatory)<br/>
+- Id of the consumer (--consumer, -c)<br/>
 - Result output format (--output, -o) (default: table) (allowed values: table, csv)
 
 #### Sample commands:
 List all consumers of queue in the Broker<br/>
-`./broker-admin.sh list consumer -q my_queue`
+`./broker-admin.sh list consumer my_queue`
+
+List specific consumer of queue in the Broker<br/>
+`./broker-admin.sh list consumer my_queue --consumer 12`
 
 ## 6. Logger related administrative operations
 
