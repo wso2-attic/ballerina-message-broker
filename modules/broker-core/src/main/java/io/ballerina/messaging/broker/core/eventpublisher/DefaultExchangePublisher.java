@@ -18,9 +18,7 @@
  */
 package io.ballerina.messaging.broker.core.eventpublisher;
 
-import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.FieldValue;
-import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.Broker;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.ContentChunk;
@@ -56,10 +54,8 @@ public class DefaultExchangePublisher implements ExchangePublisher {
         String data = "Event Message";
         Metadata metadata = new Metadata(id, exchangeName, data.length());
         metadata.setHeaders(properties);
-        FieldTable messageProperties = new FieldTable();
-        messageProperties.add(ShortString.parseString("propertyFlags"), FieldValue.parseLongInt(8192));
         //Transfer to metadata
-        metadata.setProperties(messageProperties);
+        metadata.addProperty("propertyFlags", FieldValue.parseLongInt(8192));
         Message notificationMessage = new Message(Broker.getNextMessageId(), metadata);
 
         //Creating the body of the message

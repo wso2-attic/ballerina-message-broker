@@ -178,4 +178,8 @@ public class Metadata {
             addHeader(key, obj);
         }
     }
+
+    public void addProperty(String propertyName, FieldValue propertyValue) {
+        properties.add(ShortString.parseString(propertyName), propertyValue);
+    }
 }
