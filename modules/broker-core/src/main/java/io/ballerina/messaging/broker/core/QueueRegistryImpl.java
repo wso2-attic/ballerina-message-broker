@@ -31,7 +31,7 @@ import java.util.Objects;
 /**
  * Registry object which contains all the queues of the broker.
  */
-public final class QueueRegistryImpl extends QueueRegistry {
+final class QueueRegistryImpl extends QueueRegistry {
 
     private final Map<String, QueueHandler> queueHandlerMap;
 
@@ -40,7 +40,7 @@ public final class QueueRegistryImpl extends QueueRegistry {
     private final QueueHandlerFactory queueHandlerFactory;
 
 
-    public QueueRegistryImpl(QueueDao queueDao, QueueHandlerFactory queueHandlerFactory) throws BrokerException {
+     QueueRegistryImpl(QueueDao queueDao, QueueHandlerFactory queueHandlerFactory) throws BrokerException {
         this.queueHandlerMap = new HashMap<>();
         this.queueDao = queueDao;
         this.queueHandlerFactory = queueHandlerFactory;
@@ -105,9 +105,8 @@ public final class QueueRegistryImpl extends QueueRegistry {
     }
 
     private void retrieveQueuesFromDao() throws BrokerException {
-            queueDao.retrieveAll((name) -> {
-                QueueHandler handler = queueHandlerFactory.createDurableQueueHandler(name, false,
-                        null);
+            queueDao.retrieveAll(name -> {
+                QueueHandler handler = queueHandlerFactory.createDurableQueueHandler(name, false, null);
                 queueHandlerMap.putIfAbsent(name, handler);
             });
     }

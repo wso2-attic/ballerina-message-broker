@@ -39,7 +39,7 @@ public abstract class QueueRegistry {
             ValidationException,
             ResourceNotFoundException;
 
-    abstract Collection<QueueHandler> getAllQueues();
+    public abstract Collection<QueueHandler> getAllQueues();
 
     /**
      * Method to reload queues on becoming the active node.

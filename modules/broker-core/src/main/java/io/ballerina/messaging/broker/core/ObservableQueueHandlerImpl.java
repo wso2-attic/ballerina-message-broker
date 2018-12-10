@@ -18,10 +18,9 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.util.function.ThrowingConsumer;
-import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
-import io.ballerina.messaging.broker.eventing.EventSync;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,15 +33,16 @@ import javax.transaction.xa.Xid;
  */
 public class ObservableQueueHandlerImpl extends QueueHandler {
 
-    private QueueHandlerImpl queueHandler;
-    private DefaultQueueHandlerEventPublisher defaultQueueHandlerEventPublisher;
-    private EventSync eventSync;
+    private final QueueHandlerImpl queueHandler;
+    private final DefaultQueueHandlerEventPublisher defaultQueueHandlerEventPublisher;
+    private final EventSync eventSync;
 
-    ObservableQueueHandlerImpl(Queue queue,
-                               BrokerMetricManager metricManager,
-                               EventSync eventSync,
-                               List<Integer> messageLimits) {
-        queueHandler = new QueueHandlerImpl(queue, metricManager);
+    private static final String CONSUMER_ADDED_EVENT = "consumer.added";
+    private static final String CONSUMER_REMOVED_EVENT = "consumer.removed";
+
+
+    ObservableQueueHandlerImpl(QueueHandlerImpl queueHandler, EventSync eventSync, List<Integer> messageLimits) {
+        this.queueHandler = queueHandler;
         defaultQueueHandlerEventPublisher = new DefaultQueueHandlerEventPublisher(eventSync, messageLimits);
         this.eventSync = eventSync;
     }
@@ -61,7 +61,7 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
     boolean addConsumer(Consumer consumer) {
         boolean consumerAdded = queueHandler.addConsumer(new ObservableConsumer(consumer, eventSync));
         if (consumerAdded) {
-            defaultQueueHandlerEventPublisher.publishConsumerEvent("consumer.added", consumer);
+            defaultQueueHandlerEventPublisher.publishConsumerEvent(CONSUMER_ADDED_EVENT, consumer);
         }
         return consumerAdded;
     }
@@ -70,7 +70,7 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
     boolean removeConsumer(Consumer consumer) {
         boolean consumerRemoved = queueHandler.removeConsumer(consumer);
         if (consumerRemoved) {
-            defaultQueueHandlerEventPublisher.publishConsumerEvent("consumer.removed", consumer);
+            defaultQueueHandlerEventPublisher.publishConsumerEvent(CONSUMER_REMOVED_EVENT, consumer);
         }
         return consumerRemoved;
     }
