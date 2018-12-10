@@ -18,10 +18,8 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.common.ValidationException;
-import io.ballerina.messaging.broker.core.store.dao.BindingDao;
-import io.ballerina.messaging.broker.core.store.dao.ExchangeDao;
-import io.ballerina.messaging.broker.eventing.EventSync;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,13 +29,11 @@ import java.util.Objects;
  * Represents an Exchange Registry which trigger events for the broker.
  */
 public class ObservableExchangeRegistryImpl extends ExchangeRegistry {
-    private ExchangeRegistryImpl exchangeRegistry;
-    private EventSync eventSync;
+    private final ExchangeRegistryImpl exchangeRegistry;
+    private final EventSync eventSync;
 
-    ObservableExchangeRegistryImpl(ExchangeDao exchangeDao,
-                                   BindingDao bindingDao,
-                                   EventSync eventSync) {
-        this.exchangeRegistry = new ExchangeRegistryImpl(exchangeDao, bindingDao);
+    ObservableExchangeRegistryImpl(ExchangeRegistryImpl exchangeRegistry, EventSync eventSync) {
+        this.exchangeRegistry = exchangeRegistry;
         this.eventSync = eventSync;
     }
 

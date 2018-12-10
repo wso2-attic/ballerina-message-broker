@@ -52,10 +52,6 @@
             <artifactId>broker-metrics</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.ballerina.messaging</groupId>
-            <artifactId>broker-event-publisher</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <scope>test</scope>

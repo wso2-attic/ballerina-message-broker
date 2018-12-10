@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core.store;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.DbBackedQueueHandlerFactory;
 import io.ballerina.messaging.broker.core.ExchangeRegistry;
@@ -28,7 +29,6 @@ import io.ballerina.messaging.broker.core.QueueRegistryFactory;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.dao.impl.DaoFactory;
-import io.ballerina.messaging.broker.eventing.EventSync;
 
 import javax.sql.DataSource;
 
