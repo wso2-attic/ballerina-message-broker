@@ -19,8 +19,8 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.core.store.dao.QueueDao;
-import io.ballerina.messaging.broker.eventing.EventSync;
 
 import java.util.Objects;
 
@@ -45,9 +45,9 @@ public class QueueRegistryFactory {
      * @return QueueRegistryImpl object
      */
     public QueueRegistry getQueueRegistry() throws BrokerException {
-
         if (Objects.nonNull(eventSync)) {
-            return new ObservableQueueRegistryImpl(queueDao, queueHandlerFactory, eventSync);
+            QueueRegistryImpl queueRegistry = new QueueRegistryImpl(queueDao, queueHandlerFactory);
+            return new ObservableQueueRegistryImpl(queueRegistry, eventSync);
         } else {
             return new QueueRegistryImpl(queueDao, queueHandlerFactory);
         }

@@ -19,9 +19,9 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.core.store.dao.BindingDao;
 import io.ballerina.messaging.broker.core.store.dao.ExchangeDao;
-import io.ballerina.messaging.broker.eventing.EventSync;
 
 import java.util.Objects;
 
@@ -48,7 +48,8 @@ public class ExchangeRegistryFactory {
      */
     public ExchangeRegistry getExchangeRegistry() {
         if (Objects.nonNull(this.eventSync)) {
-            return new ObservableExchangeRegistryImpl(exchangeDao, bindingDao, eventSync);
+            ExchangeRegistryImpl exchangeRegistry = new ExchangeRegistryImpl(exchangeDao, bindingDao);
+            return new ObservableExchangeRegistryImpl(exchangeRegistry, eventSync);
         } else {
             return new ExchangeRegistryImpl(exchangeDao, bindingDao);
         }

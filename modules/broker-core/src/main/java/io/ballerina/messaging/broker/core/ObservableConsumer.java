@@ -18,8 +18,7 @@
 
 package io.ballerina.messaging.broker.core;
 
-import io.ballerina.messaging.broker.eventing.EventSync;
-
+import io.ballerina.messaging.broker.common.EventSync;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;

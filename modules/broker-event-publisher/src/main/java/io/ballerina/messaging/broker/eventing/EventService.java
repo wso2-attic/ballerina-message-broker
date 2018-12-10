@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.eventing;
 
 import io.ballerina.messaging.broker.common.BrokerClassLoader;
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.slf4j.Logger;

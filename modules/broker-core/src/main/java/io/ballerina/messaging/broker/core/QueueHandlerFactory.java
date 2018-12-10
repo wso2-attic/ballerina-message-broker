@@ -19,12 +19,12 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.FieldValue;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
-import io.ballerina.messaging.broker.eventing.EventSync;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -105,7 +105,9 @@ public abstract class QueueHandlerFactory {
             }
             Queue observableQueue = new ObservableQueue(queue, eventSync, totalLimits);
 
-            return new ObservableQueueHandlerImpl(observableQueue, metricManager, eventSync, totalLimits);
+            QueueHandlerImpl queueHandler = new QueueHandlerImpl(observableQueue, metricManager);
+
+            return new ObservableQueueHandlerImpl(queueHandler, eventSync, totalLimits);
         } else {
             return new QueueHandlerImpl(queue, metricManager);
         }

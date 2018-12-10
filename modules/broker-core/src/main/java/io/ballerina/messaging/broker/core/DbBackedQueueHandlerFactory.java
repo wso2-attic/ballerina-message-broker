@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
@@ -26,7 +27,6 @@ import io.ballerina.messaging.broker.core.queue.DbBackedQueueImpl;
 import io.ballerina.messaging.broker.core.queue.MemQueueImpl;
 import io.ballerina.messaging.broker.core.queue.QueueBufferFactory;
 import io.ballerina.messaging.broker.core.store.DbMessageStore;
-import io.ballerina.messaging.broker.eventing.EventSync;
 
 /**
  * DB backed factory for creating queue handler objects.

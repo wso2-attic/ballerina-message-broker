@@ -18,7 +18,7 @@
 
 package io.ballerina.messaging.broker.core;
 
-import io.ballerina.messaging.broker.eventing.EventSync;
+import io.ballerina.messaging.broker.common.EventSync;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,11 +29,15 @@ import javax.transaction.xa.Xid;
 /**
  * Represents an Queue which trigger events for the broker.
  */
-public class ObservableQueue extends Queue {
+final class ObservableQueue extends Queue {
 
-    private Queue queue;
-    private HashSet<Integer> messageLimits;
-    private EventSync eventSync;
+    private final Queue queue;
+    /**
+     * We are using a HashSet instead of a concurrent for message limits set because this object is only read or
+     * accessed and not written or modified.
+     */
+    private final HashSet<Integer> messageLimits;
+    private final EventSync eventSync;
 
     ObservableQueue(Queue queue, EventSync eventSync, List<Integer> messageLimits) {
         super(queue.getName(), queue.isDurable(), queue.isAutoDelete());
@@ -41,6 +45,7 @@ public class ObservableQueue extends Queue {
         this.eventSync = eventSync;
         this.messageLimits = new HashSet<>(messageLimits);
     }
+
     @Override
     public int capacity() {
         return queue.capacity();

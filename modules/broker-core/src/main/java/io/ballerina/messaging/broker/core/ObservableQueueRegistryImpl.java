@@ -18,11 +18,10 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.common.ResourceNotFoundException;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
-import io.ballerina.messaging.broker.core.store.dao.QueueDao;
-import io.ballerina.messaging.broker.eventing.EventSync;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,14 +29,13 @@ import java.util.Map;
 /**
  * Represents an Queue Registry which trigger events for the broker.
  */
-public class ObservableQueueRegistryImpl extends QueueRegistry {
+final class ObservableQueueRegistryImpl extends QueueRegistry {
 
-    private QueueRegistryImpl queueRegistry;
-    private EventSync eventSync;
+    private final QueueRegistryImpl queueRegistry;
+    private final EventSync eventSync;
 
-    ObservableQueueRegistryImpl(QueueDao queueDao, QueueHandlerFactory queueHandlerFactory, EventSync eventSync)
-            throws BrokerException {
-        this.queueRegistry = new QueueRegistryImpl(queueDao, queueHandlerFactory);
+    ObservableQueueRegistryImpl(QueueRegistryImpl queueRegistry, EventSync eventSync) {
+        this.queueRegistry = queueRegistry;
         this.eventSync = eventSync;
     }
 

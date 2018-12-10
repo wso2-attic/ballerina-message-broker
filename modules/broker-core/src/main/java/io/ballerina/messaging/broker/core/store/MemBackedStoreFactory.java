@@ -19,6 +19,7 @@
 
 package io.ballerina.messaging.broker.core.store;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.ExchangeRegistry;
 import io.ballerina.messaging.broker.core.ExchangeRegistryFactory;
@@ -30,7 +31,6 @@ import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.dao.impl.NullBindingDao;
 import io.ballerina.messaging.broker.core.store.dao.impl.NullExchangeDao;
 import io.ballerina.messaging.broker.core.store.dao.impl.NullQueueDao;
-import io.ballerina.messaging.broker.eventing.EventSync;
 
 /**
  * Memory backed store used when broker is operating in in-memory mode.
