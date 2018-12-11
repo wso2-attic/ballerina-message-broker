@@ -23,8 +23,6 @@ import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.common.util.function.ThrowingConsumer;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import javax.transaction.xa.Xid;
 
@@ -41,9 +39,9 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
     private static final String CONSUMER_REMOVED_EVENT = "consumer.removed";
 
 
-    ObservableQueueHandlerImpl(QueueHandlerImpl queueHandler, EventSync eventSync, List<Integer> messageLimits) {
+    ObservableQueueHandlerImpl(QueueHandlerImpl queueHandler, EventSync eventSync) {
         this.queueHandler = queueHandler;
-        defaultQueueHandlerEventPublisher = new DefaultQueueHandlerEventPublisher(eventSync, messageLimits);
+        defaultQueueHandlerEventPublisher = new DefaultQueueHandlerEventPublisher(eventSync);
         this.eventSync = eventSync;
     }
 
@@ -108,7 +106,6 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
     @Override
     void dequeue(DetachableMessage detachableMessage) throws BrokerException {
         queueHandler.dequeue(detachableMessage);
-        defaultQueueHandlerEventPublisher.publishQueueLimitReachedEvent(this.queueHandler);
     }
 
     @Override
@@ -165,11 +162,9 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
 
     private static class DefaultQueueHandlerEventPublisher {
         EventSync eventSync;
-        HashSet<Integer> messageLimits;
 
-        DefaultQueueHandlerEventPublisher(EventSync eventSync, List<Integer> messageLimits) {
+        DefaultQueueHandlerEventPublisher(EventSync eventSync) {
             this.eventSync = eventSync;
-            this.messageLimits = new HashSet<>(messageLimits);
         }
 
         private void publishConsumerEvent(String id, Consumer consumer) {
@@ -186,22 +181,6 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
             properties.put("bindingQueue", binding.getQueue().getName());
             properties.put("bindingPattern", binding.getBindingPattern());
             eventSync.publish(id, properties);
-        }
-
-        private void publishQueueLimitReachedEvent(QueueHandlerImpl queueHandler) {
-            int queueSize = queueHandler.size();
-            if (messageLimits.contains(queueSize)) {
-                Map<String, String> properties = new HashMap<>();
-                String queueName = queueHandler.getUnmodifiableQueue().getName();
-                String isAutoDelete = String.valueOf(queueHandler.getUnmodifiableQueue().isAutoDelete());
-                String isDurable = String.valueOf(queueHandler.getUnmodifiableQueue().isDurable());
-                properties.put("queueName", queueName);
-                properties.put("autoDelete", isAutoDelete);
-                properties.put("durable", isDurable);
-                properties.put("messageCount", String.valueOf(queueHandler.size()));
-                String id = "queue.limitReached." + queueName + "." + queueSize;
-                eventSync.publish(id, properties);
-            }
         }
     }
 }

@@ -107,7 +107,7 @@ public abstract class QueueHandlerFactory {
 
             QueueHandlerImpl queueHandler = new QueueHandlerImpl(observableQueue, metricManager);
 
-            return new ObservableQueueHandlerImpl(queueHandler, eventSync, totalLimits);
+            return new ObservableQueueHandlerImpl(queueHandler, eventSync);
         } else {
             return new QueueHandlerImpl(queue, metricManager);
         }
