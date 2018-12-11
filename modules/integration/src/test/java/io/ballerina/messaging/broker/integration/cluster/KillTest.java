@@ -130,7 +130,7 @@ public class KillTest {
         Assert.assertTrue(isConnectionAvailable(username, password, hostnameTwo, portTwo));
     }
 
-    @Parameters({"admin-username", "admin-password", "broker-2-hostname", "broker-2-port"})
+    //    @Parameters({"admin-username", "admin-password", "broker-2-hostname", "broker-2-port"})
     @Test(description = "Confirms message is received from active node", dependsOnMethods = "testNodeTwoActive")
     public void testReceiveMessage() throws JMSException, NamingException {
         Session subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

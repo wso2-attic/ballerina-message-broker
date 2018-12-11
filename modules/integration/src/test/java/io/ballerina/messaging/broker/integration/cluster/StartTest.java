@@ -59,9 +59,8 @@ public class StartTest {
             "broker-2-hostname", "broker-2-port"})
     @BeforeClass
     public void setUp(String dbUsername, String dbPassword, String username, String password, String hostnameOne,
-                      String portOne, String hostnameTwo, String portTwo)
-            throws SQLException, IOException {
-                Runtime.getRuntime().exec("docker-compose -f " + file.getPath() + " up");
+                      String portOne, String hostnameTwo, String portTwo) throws SQLException, IOException {
+        Runtime.getRuntime().exec("docker-compose -f " + file.getPath() + " up");
         Awaitility.await().atMost(240, TimeUnit.SECONDS)
                 .pollInterval(3, TimeUnit.SECONDS)
                 .until(() -> isConnectionAvailable(username, password, hostnameOne, portOne));

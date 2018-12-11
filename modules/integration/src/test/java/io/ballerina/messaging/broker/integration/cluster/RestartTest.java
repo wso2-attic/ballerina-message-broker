@@ -66,8 +66,7 @@ public class RestartTest {
             "db-password"})
     @BeforeClass
     public void setUp(String username, String password, String hostnameOne, String portOne, String dbUsername,
-                      String dbPassword) throws JMSException,
-            IOException, SQLException {
+                      String dbPassword) throws JMSException, IOException, SQLException {
         Runtime.getRuntime().exec("docker-compose -f " + file.getPath() + " up");
         Awaitility.await().atMost(240, TimeUnit.SECONDS)
                 .pollInterval(3, TimeUnit.SECONDS)
@@ -126,11 +125,10 @@ public class RestartTest {
         Assert.assertTrue(isConnectionAvailable(username, password, hostnameTwo, portTwo));
     }
 
-    @Parameters({"admin-username", "admin-password", "broker-2-port", "broker-2-hostname"})
+    //    @Parameters({"admin-username", "admin-password", "broker-2-port", "broker-2-hostname"})
     @Test(description = "Confirms message is received from active node",
             dependsOnMethods = "testNodeTwoAvailableAfterRestart")
-    public void testReceiveMessage()
-            throws JMSException, NamingException {
+    public void testReceiveMessage() throws JMSException, NamingException {
         Session subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         Destination subscriberDestination = (Destination) ctx.lookup(queueName);
         MessageConsumer consumer = subscriberSession.createConsumer(subscriberDestination);
@@ -160,7 +158,6 @@ public class RestartTest {
                 .pollInterval(3, TimeUnit.SECONDS)
                 .until(() -> ClusterUtils.isPortAvailable(dbHostname, Integer.parseInt(dbPort)));
     }
-
 
     public boolean isConnectionAvailable(String userName, String password, String hostname, String port) {
         try {

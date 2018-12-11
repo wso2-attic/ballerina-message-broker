@@ -210,17 +210,25 @@ wso2.securevault:
       # Read master keys from thremaster-keys.yaml
       masterKeyReaderFile: ${sys:message.broker.home}/conf/master-keys.yaml
 
+# Admin-service-transport configurations
 wso2.broker.admin.service:
+  # Admin-service-transport listener configurations
   listenerConfigurations:
-    -
+    - # Id used for listener configuration
       id: "https"
+      # Hostname configuration used in creating the server socket
       host: "0.0.0.0"
+      # Port used for listener configuration
       port: 9000
+      # Scheme used for listener configuration
       scheme: https
+      # Location of the keystore file
       keyStoreFile: "${message.broker.home}/resources/security/keystore.jks"
+      # Password of the keystore
       keyStorePassword: ballerina
+      # CertPass used in keystore
       certPass: ballerina
-
+  #admin-service-transport configurations
   senderConfigurations:
-    -
+    - # Id used for sender configuration
       id: "http-sender"

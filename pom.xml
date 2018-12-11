@@ -437,7 +437,7 @@
         <andes.version>3.2.70</andes.version>
         <geronimo-jms_1.1_spec.version>1.1.0.wso2v1</geronimo-jms_1.1_spec.version>
         <javacc.plugin.version>2.6</javacc.plugin.version>
-        <carbon.config.version>2.1.7-SNAPSHOT</carbon.config.version>
+        <carbon.config.version>2.1.6</carbon.config.version>
         <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
         <hikari.version>2.7.4</hikari.version>
         <h2.version>1.4.196</h2.version>

@@ -114,6 +114,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -131,7 +132,6 @@
                         <suiteXmlFile>src/test/resources/broker-in-memory-suite.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/failover-broker-suite.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/memory-leak-detector-suite.xml</suiteXmlFile>
-                        <suiteXmlFile>src/test/resources/cluster-suite.xml</suiteXmlFile>
                     </suiteXmlFiles>
                     <systemPropertyVariables>
                         <maven.test.haltafterfailure>false</maven.test.haltafterfailure>
@@ -158,4 +158,23 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>ClusterTest</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>2.20.1</version>
+                        <configuration>
+                            <suiteXmlFiles>
+                                <suiteXmlFile>src/test/resources/cluster-suite.xml</suiteXmlFile>
+                            </suiteXmlFiles>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

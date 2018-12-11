@@ -66,8 +66,7 @@ public class ShutdownTest {
             "db-password"})
     @BeforeClass
     public void setUp(String username, String password, String hostnameOne, String portOne, String dbUsername,
-                      String dbPassword) throws JMSException,
-            IOException, SQLException {
+                      String dbPassword) throws JMSException, IOException, SQLException {
         Runtime.getRuntime().exec("docker-compose -f " + file.getPath() + " up");
         Awaitility.await().atMost(120, TimeUnit.SECONDS)
                 .pollInterval(3, TimeUnit.SECONDS)
@@ -134,7 +133,7 @@ public class ShutdownTest {
         Assert.assertTrue(isConnectionAvailable(username, password, hostnameTwo, portTwo));
     }
 
-    @Parameters({"admin-username", "admin-password", "broker-2-hostname", "broker-2-port"})
+    //    @Parameters({"admin-username", "admin-password", "broker-2-hostname", "broker-2-port"})
     @Test(description = "Confirms message is received from active node", dependsOnMethods = "testNodeTwoActive")
     public void testReceiveMessage() throws JMSException, NamingException {
         Session subscriberSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
