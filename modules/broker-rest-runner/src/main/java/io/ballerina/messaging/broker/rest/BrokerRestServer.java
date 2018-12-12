@@ -19,16 +19,17 @@
 
 package io.ballerina.messaging.broker.rest;
 
+import com.google.common.base.Strings;
 import io.ballerina.messaging.broker.auth.AuthManager;
 import io.ballerina.messaging.broker.common.StartupContext;
 import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import io.ballerina.messaging.broker.coordination.BasicHaListener;
 import io.ballerina.messaging.broker.coordination.HaListener;
 import io.ballerina.messaging.broker.coordination.HaStrategy;
+import io.ballerina.messaging.broker.rest.config.RestServerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.msf4j.MicroservicesRunner;
-import org.wso2.transport.http.netty.config.TransportsConfiguration;
 
 /**
  * Handles Rest server related tasks.
@@ -41,7 +42,6 @@ public class BrokerRestServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(BrokerRestServer.class);
 
     private final MicroservicesRunner microservicesRunner;
-    private static final String TRANSPORT_CONFIGURATION_NAMESPACE = "wso2.broker.admin.service";
 
     /**
      * The {@link HaStrategy} for which the HA listener is registered.
@@ -51,12 +51,18 @@ public class BrokerRestServer {
     private BrokerRestRunnerHelper brokerRestRunnerHelper;
 
     public BrokerRestServer(StartupContext startupContext) throws Exception {
+        String transportConfig = System.getProperty("transports.netty.conf");
         AuthManager authManager = startupContext.getService(AuthManager.class);
-        BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
-        TransportsConfiguration transportsConfiguration = configProvider
-                .getConfigurationObject(TRANSPORT_CONFIGURATION_NAMESPACE, TransportsConfiguration.class);
-
-        microservicesRunner = new MicroservicesRunner(transportsConfiguration);
+        if (Strings.isNullOrEmpty(transportConfig)) {
+            BrokerConfigProvider configProvider = startupContext.getService(BrokerConfigProvider.class);
+            RestServerConfiguration configuration
+                    = configProvider.getConfigurationObject(RestServerConfiguration.NAMESPACE,
+                                                            RestServerConfiguration.class);
+            int port = Integer.parseInt(configuration.getPlain().getPort());
+            microservicesRunner = new MicroservicesRunner(port);
+        } else {
+            microservicesRunner = new MicroservicesRunner();
+        }
 
         startupContext.registerService(BrokerServiceRunner.class,
                                        new BrokerServiceRunner(microservicesRunner, authManager));
