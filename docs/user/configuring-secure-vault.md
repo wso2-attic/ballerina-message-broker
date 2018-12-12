@@ -51,7 +51,7 @@ in the secrets.properties file and return the resolved (decrypted) password.
 
 ## How to use Secure Vault
 
-1. All passwords in the broker.yaml are already added to secrets.properties. Make 
+1. All passwords in the broker.yaml and admin-service-transports.yaml are already added to secrets.properties. Make 
 sure to replace these passwords with your own passwords.
 
 2. Run the cipher tool to encrypt all plain text password in the secrets.properties file. You can find the cipher tool 

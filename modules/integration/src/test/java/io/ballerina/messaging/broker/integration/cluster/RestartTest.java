@@ -125,7 +125,6 @@ public class RestartTest {
         Assert.assertTrue(isConnectionAvailable(username, password, hostnameTwo, portTwo));
     }
 
-    //    @Parameters({"admin-username", "admin-password", "broker-2-port", "broker-2-hostname"})
     @Test(description = "Confirms message is received from active node",
             dependsOnMethods = "testNodeTwoAvailableAfterRestart")
     public void testReceiveMessage() throws JMSException, NamingException {

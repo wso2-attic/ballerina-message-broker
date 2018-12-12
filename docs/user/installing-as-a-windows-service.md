@@ -107,9 +107,10 @@ wrapper.java.additional.7 = -Djava.command=${java_home}\\bin\\java
 wrapper.java.additional.8 = -Dlog4j.configuration=file:${message_broker_home}\\conf\\log4j.properties
 wrapper.java.additional.9 = -Dbroker.config=${message_broker_home}\\conf\\broker.yaml 
 wrapper.java.additional.10 = -Dbroker.users.config=${message_broker_home}\\conf\\security\\users.yaml
-wrapper.java.additional.11 = -Dbroker.classpath=${message_broker_home}\\lib\\* 
-wrapper.java.additional.12 = -Dfile.encoding=UTF8
-wrapper.java.additional.13 = -Dorg.apache.jasper.compiler.Parser.STRICT_QUOTE_ESCAPING=false
+wrapper.java.additional.11 = -Dtransports.netty.conf=${message_broker_home}\\conf\\admin-service-transports.yaml 
+wrapper.java.additional.12 = -Dbroker.classpath=${message_broker_home}\\lib\\* 
+wrapper.java.additional.13 = -Dfile.encoding=UTF8
+wrapper.java.additional.14 = -Dorg.apache.jasper.compiler.Parser.STRICT_QUOTE_ESCAPING=false
 ```
 
 

@@ -91,11 +91,11 @@ These configurations are defined under the namespace `ballerina.broker.auth`.
 | cache:timeout                            | 15 | Auth cache timeout in Minutes |
 | cache:size                               | 5000 | Maximum Cache size to hold user id |
 
-## Admin service related configurations (broker.yaml)
+## Admin service related configurations (admin-service-transports.yaml)
 
 ### Admin service listener configurations
 
-These configurations are defined under the namespace `wso2.broker.admin.service.listenerConfigurations`. We can define a list of listener 
+These configurations are defined under the namespace `listenerConfigurations`. We can define a list of listener 
 configurations under this section. 
 
 | Config         | Default Value | Description                                           |
