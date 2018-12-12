@@ -38,7 +38,6 @@
             <includes>
                 <include>log4j.properties</include>
                 <include>broker.yaml</include>
-                <include>admin-service-transports.yaml</include>
                 <include>master-keys.yaml</include>
             </includes>
             <fileMode>644</fileMode>
