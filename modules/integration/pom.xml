@@ -131,7 +131,6 @@
                     <systemPropertyVariables>
                         <maven.test.haltafterfailure>false</maven.test.haltafterfailure>
                         <framework.resource.location>${project.basedir}/src/test/resources</framework.resource.location>
-                        <transports.netty.conf>src/test/resources/config/admin-service-transports.yaml</transports.netty.conf>
                         <testng.logs.directory>${project.basedir}/target/logs/memory-leak-detector.log</testng.logs.directory>
                     </systemPropertyVariables>
                 </configuration>
