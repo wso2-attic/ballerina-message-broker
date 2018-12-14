@@ -85,7 +85,6 @@ public class ObservableQueueRegistryImplTest {
     private static class TestQueueHandlerFactory extends QueueHandlerFactory {
 
         TestQueueHandlerFactory() {
-
             super(new BrokerCoreConfiguration.QueueEvents(), null);
         }
 
@@ -100,14 +99,12 @@ public class ObservableQueueRegistryImplTest {
         public QueueHandlerImpl createNonDurableQueueHandler(String queueName,
                                                              boolean autoDelete,
                                                              FieldTable arguments) {
-
             Queue queue = new MemQueueImpl(queueName, false, 10000, autoDelete);
             return new QueueHandlerImpl(queue, new NullBrokerMetricManager());
         }
     }
 
     private static class TestQueueDao implements QueueDao {
-
         @Override
         public void persist(Queue queue) {
 
