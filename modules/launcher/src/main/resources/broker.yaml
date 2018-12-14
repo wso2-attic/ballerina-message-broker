@@ -64,13 +64,20 @@ ballerina.broker.core:
 
  # Message limits for to trigger notifications in queues
  eventConfig:
-   queueEvents:
-      commonLimits: [10, 6]
-      queues:
-        - name: test
-          limits: [2,6]
-        - name: test2
-          limits: [2,8]
+  queueLimitEvents:
+    enabled:  true
+    commonLimits: [10, 6]
+    queues:
+      - name: test
+        limits: [2,6]
+      - name: test2
+        limits: [2,8]
+  # Exchange Admin Events
+  exchangeAdminEventsEnabled: true
+  # Queue Admin Events
+  queueAdminEventsEnabled: true
+  # Queue External Events
+  queueExternalEventsEnabled: true
 
 # Broker auth related configurations.
 ballerina.broker.auth:

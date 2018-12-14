@@ -62,6 +62,24 @@ public class ObservableConsumer extends Consumer {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof ObservableConsumer) {
+            return consumer.getId() == ((ObservableConsumer) obj).consumer.getId();
+        }
+        if (obj instanceof Consumer) {
+            return super.getId() == ((Consumer) obj).getId();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(consumer.getId());
+    }
+    @Override
     public Properties getTransportProperties() {
         return consumer.getTransportProperties();
     }

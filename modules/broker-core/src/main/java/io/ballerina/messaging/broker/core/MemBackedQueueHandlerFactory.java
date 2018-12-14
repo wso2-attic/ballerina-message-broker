@@ -31,13 +31,13 @@ import io.ballerina.messaging.broker.core.queue.MemQueueImpl;
 public class MemBackedQueueHandlerFactory extends QueueHandlerFactory {
     private final BrokerMetricManager metricManager;
     private final int nonDurableQueueMaxDepth;
-    private final BrokerCoreConfiguration.QueueEvents queueEventConfiguration;
+    private final BrokerCoreConfiguration.EventConfig eventConfig;
     public MemBackedQueueHandlerFactory(BrokerMetricManager metricManager,
                                         BrokerCoreConfiguration configuration, EventSync eventSync) {
-        super(configuration.getEventConfig().getQueueEvents(), eventSync);
+        super(configuration.getEventConfig().getQueueLimitEvents(), eventSync);
         this.metricManager = metricManager;
         this.nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
-        this.queueEventConfiguration = configuration.getEventConfig().getQueueEvents();
+        this.eventConfig = configuration.getEventConfig();
     }
 
     @Override
@@ -54,8 +54,7 @@ public class MemBackedQueueHandlerFactory extends QueueHandlerFactory {
     private QueueHandler getQueueHandler(String queueName, boolean durable, boolean autoDelete,
                                          FieldTable arguments) {
         Queue queue = new MemQueueImpl(queueName, durable, nonDurableQueueMaxDepth, autoDelete);
-        return createQueueHandler(queue, this.metricManager, arguments, queueEventConfiguration);
+        return createQueueHandler(queue, this.metricManager, arguments, eventConfig);
 
     }
-
 }

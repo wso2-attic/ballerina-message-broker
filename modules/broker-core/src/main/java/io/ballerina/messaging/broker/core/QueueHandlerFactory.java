@@ -33,12 +33,15 @@ import java.util.Objects;
  * Factory for creating queue handler objects.
  */
 public abstract class QueueHandlerFactory {
-    private List<Integer> commonLimits;
     private EventSync eventSync;
     private List<Integer> totalLimits = new ArrayList<>();
+    private boolean isQueueLimitReachedEventsEnabled;
     QueueHandlerFactory(BrokerCoreConfiguration.QueueEvents queueEventConfiguration, EventSync eventSync) {
+        List<Integer> commonLimits;
         this.eventSync = eventSync;
-        if (Objects.nonNull(this.eventSync)) {
+        this.isQueueLimitReachedEventsEnabled = queueEventConfiguration.isEnabled();
+
+        if (Objects.nonNull(this.eventSync) && isQueueLimitReachedEventsEnabled) {
             commonLimits = queueEventConfiguration.getCommonLimits();
             if (Objects.nonNull(commonLimits)) {
                 totalLimits.addAll(commonLimits);
@@ -78,36 +81,34 @@ public abstract class QueueHandlerFactory {
      * @param queue queue which the queue handler handles
      * @param metricManager handles metrics in the queue
      * @param arguments arguments to modify the queue
-     * @param queueEventConfiguration queue event configuration to modify queue events
+     * @param eventConfig event configuration to modify queue events
      * @return QueueHandlerImpl object
      */
     QueueHandler createQueueHandler(Queue queue,
                                     BrokerMetricManager metricManager, FieldTable arguments,
-                                    BrokerCoreConfiguration.QueueEvents queueEventConfiguration) {
-        if (Objects.nonNull(this.eventSync)) {
+                                    BrokerCoreConfiguration.EventConfig eventConfig) {
+        if (Objects.nonNull(this.eventSync) && isQueueLimitReachedEventsEnabled) {
 
-            List<BrokerCoreConfiguration.QueueEvents.QueueLimitEvent> queueLimits = queueEventConfiguration.getQueues();
-
-            if (Objects.nonNull(queueLimits)) {
-                for (BrokerCoreConfiguration.QueueEvents.QueueLimitEvent queueConfig : queueLimits) {
-                    if (queueConfig.getName().equals(queue.getName())) {
-                        totalLimits.addAll(queueConfig.getLimits());
-                    }
-                }
-            }
-
-            if (Objects.nonNull(commonLimits)) {
-                totalLimits.addAll(commonLimits);
-            }
+           checkConfigLimits(queue, eventConfig.getQueueLimitEvents());
 
             if (Objects.nonNull(arguments)) {
                 totalLimits.addAll(checkArgumentEvents(arguments));
             }
-            Queue observableQueue = new ObservableQueue(queue, eventSync, totalLimits);
+            Queue finalQueue = queue;
 
-            QueueHandlerImpl queueHandler = new QueueHandlerImpl(observableQueue, metricManager);
+            if (eventConfig.getQueueLimitEvents().isEnabled()) {
+                finalQueue = new ObservableQueue(queue, eventSync, totalLimits);
+            }
 
-            return new ObservableQueueHandlerImpl(queueHandler, eventSync);
+            QueueHandlerImpl queueHandler = new QueueHandlerImpl(finalQueue, metricManager);
+
+            QueueHandler finalHandler = queueHandler;
+
+            if (eventConfig.isQueueExternalEventsEnabled()) {
+                finalHandler =  new ObservableQueueHandlerImpl(queueHandler, eventSync);
+            }
+
+            return finalHandler;
         } else {
             return new QueueHandlerImpl(queue, metricManager);
         }
@@ -124,5 +125,16 @@ public abstract class QueueHandlerFactory {
             }
         }
         return  argumentLimits;
+    }
+
+    private void checkConfigLimits(Queue queue, BrokerCoreConfiguration.QueueEvents queueEventConfiguration) {
+        List<BrokerCoreConfiguration.QueueEvents.QueueLimitEvent> queueLimits = queueEventConfiguration.getQueues();
+        if (Objects.nonNull(queueLimits)) {
+            for (BrokerCoreConfiguration.QueueEvents.QueueLimitEvent queueConfig : queueLimits) {
+                if (queueConfig.getName().equals(queue.getName())) {
+                    totalLimits.addAll(queueConfig.getLimits());
+                }
+            }
+        }
     }
 }

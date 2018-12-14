@@ -57,7 +57,7 @@ public class MemBackedStoreFactory implements StoreFactory {
     public ExchangeRegistry getExchangeRegistry() {
 
        return new ExchangeRegistryFactory(new NullExchangeDao(),
-                new NullBindingDao(), eventSync).getExchangeRegistry();
+                new NullBindingDao(), eventSync, configuration.getEventConfig()).getExchangeRegistry();
     }
 
     @Override
@@ -69,6 +69,7 @@ public class MemBackedStoreFactory implements StoreFactory {
     public QueueRegistry getQueueRegistry() throws BrokerException {
         return new QueueRegistryFactory(new NullQueueDao(),
                 new MemBackedQueueHandlerFactory(metricManager, configuration, eventSync),
-                eventSync).getQueueRegistry();
+                eventSync,
+                configuration.getEventConfig()).getQueueRegistry();
     }
 }
