@@ -35,6 +35,11 @@
             <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -75,7 +80,6 @@
                     </instructions>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 </project>

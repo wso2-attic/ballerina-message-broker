@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core;
 
 import io.ballerina.messaging.broker.common.EventSync;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.store.dao.QueueDao;
 
 import java.util.Objects;
@@ -32,12 +33,15 @@ public class QueueRegistryFactory {
     private QueueDao queueDao;
     private EventSync eventSync;
     private QueueHandlerFactory queueHandlerFactory;
+    private BrokerCoreConfiguration.EventConfig eventConfig;
 
-    public QueueRegistryFactory(QueueDao queueDao, QueueHandlerFactory queueHandlerFactory, EventSync eventSync) {
+    public QueueRegistryFactory(QueueDao queueDao, QueueHandlerFactory queueHandlerFactory, EventSync eventSync,
+                                BrokerCoreConfiguration.EventConfig eventConfig) {
 
         this.eventSync = eventSync;
         this.queueHandlerFactory = queueHandlerFactory;
         this.queueDao = queueDao;
+        this.eventConfig = eventConfig;
     }
 
     /**
@@ -45,12 +49,11 @@ public class QueueRegistryFactory {
      * @return QueueRegistryImpl object
      */
     public QueueRegistry getQueueRegistry() throws BrokerException {
-        if (Objects.nonNull(eventSync)) {
+        if (Objects.nonNull(eventSync) && eventConfig.isQueueAdminEvents()) {
             QueueRegistryImpl queueRegistry = new QueueRegistryImpl(queueDao, queueHandlerFactory);
             return new ObservableQueueRegistryImpl(queueRegistry, eventSync);
         } else {
             return new QueueRegistryImpl(queueDao, queueHandlerFactory);
         }
     }
-
 }

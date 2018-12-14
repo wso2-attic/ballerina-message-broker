@@ -173,17 +173,47 @@ public class BrokerCoreConfiguration {
      * Represent event related configurations.
      */
     public static class EventConfig {
-        QueueEvents queueEvents = new QueueEvents();
+        private QueueEvents queueLimitEvents = new QueueEvents();
+
+        private boolean exchangeAdminEventsEnabled = true;
+
+        private boolean queueAdminEventsEnabled = true;
+
+        private boolean queueExternalEventsEnabled = true;
 
         /**
          * Getter for queueEvents.
          */
-        public QueueEvents getQueueEvents() {
-            return queueEvents;
+        public QueueEvents getQueueLimitEvents() {
+            return queueLimitEvents;
         }
 
-        public void setQueueEvents(QueueEvents queueEvents) {
-            this.queueEvents = queueEvents;
+        public void setQueueLimitEventsEnabled(QueueEvents queueEvents) {
+            this.queueLimitEvents = queueEvents;
+        }
+
+        public boolean isExchangeAdminEventsEnabled() {
+            return exchangeAdminEventsEnabled;
+        }
+
+        public boolean isQueueAdminEvents() {
+            return queueAdminEventsEnabled;
+        }
+
+        public boolean isQueueExternalEventsEnabled() {
+            return queueExternalEventsEnabled;
+        }
+
+        public void setExchangeAdminEventsEnabled(boolean exchangeAdminEventsEnabled) {
+            this.exchangeAdminEventsEnabled = exchangeAdminEventsEnabled;
+        }
+
+        public void setQueueAdminEventsEnabled(boolean queueAdminEventsEnabled) {
+            this.queueAdminEventsEnabled = queueAdminEventsEnabled;
+        }
+
+        public void setQueueExternalEventsEnabled(boolean queueExternalEventsEnabled) {
+            this.queueExternalEventsEnabled = queueExternalEventsEnabled;
         }
     }
 
@@ -191,6 +221,10 @@ public class BrokerCoreConfiguration {
      * Represent queue event related configurations.
      */
     public static class QueueEvents {
+        /**
+         * Defines whether queue events are enabled.
+         */
+        boolean enabled = true;
         /**
          * Defines common message limits to trigger event notifications.
          */
@@ -214,6 +248,14 @@ public class BrokerCoreConfiguration {
 
         public void setQueues(List<QueueLimitEvent> queues) {
             this.queues = queues;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         /**
