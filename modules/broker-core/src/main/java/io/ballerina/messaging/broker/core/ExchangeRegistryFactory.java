@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core;
 
 import io.ballerina.messaging.broker.common.EventSync;
+import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.store.dao.BindingDao;
 import io.ballerina.messaging.broker.core.store.dao.ExchangeDao;
 
@@ -36,10 +37,14 @@ public class ExchangeRegistryFactory {
 
     private final EventSync eventSync;
 
-    public ExchangeRegistryFactory(ExchangeDao exchangeDao, BindingDao bindingDao, EventSync eventSync) {
+    private final BrokerCoreConfiguration.EventConfig eventConfig;
+
+    public ExchangeRegistryFactory(ExchangeDao exchangeDao, BindingDao bindingDao, EventSync eventSync,
+                                   BrokerCoreConfiguration.EventConfig eventConfig) {
         this.exchangeDao = exchangeDao;
         this.bindingDao = bindingDao;
         this.eventSync = eventSync;
+        this.eventConfig = eventConfig;
     }
 
     /**
@@ -47,7 +52,7 @@ public class ExchangeRegistryFactory {
      * @return ExchangeRegistryImpl object
      */
     public ExchangeRegistry getExchangeRegistry() {
-        if (Objects.nonNull(this.eventSync)) {
+        if (Objects.nonNull(this.eventSync) && eventConfig.isExchangeAdminEventsEnabled()) {
             ExchangeRegistryImpl exchangeRegistry = new ExchangeRegistryImpl(exchangeDao, bindingDao);
             return new ObservableExchangeRegistryImpl(exchangeRegistry, eventSync);
         } else {

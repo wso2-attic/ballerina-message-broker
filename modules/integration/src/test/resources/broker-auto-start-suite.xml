@@ -45,6 +45,7 @@
         <packages>
             <package name="io.ballerina.messaging.broker.integration.standalone.rest"/>
             <package name="io.ballerina.messaging.broker.integration.standalone.amqp"/>
+            <package name="io.ballerina.messaging.broker.integration.standalone.eventing"/>
             <package name="io.ballerina.messaging.broker.integration.standalone.jms"/>
             <package name="io.ballerina.messaging.broker.integration.standalone.cli"/>
             <package name="io.ballerina.messaging.broker.integration.standalone.security"/>

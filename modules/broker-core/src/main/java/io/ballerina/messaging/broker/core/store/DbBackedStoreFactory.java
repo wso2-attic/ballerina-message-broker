@@ -60,7 +60,8 @@ public class DbBackedStoreFactory implements StoreFactory {
     public ExchangeRegistry getExchangeRegistry() {
         return new ExchangeRegistryFactory(daoFactory.createExchangeDao(),
                 daoFactory.createBindingDao(),
-                eventSync).getExchangeRegistry();
+                eventSync,
+                configuration.getEventConfig()).getExchangeRegistry();
     }
 
     @Override
@@ -72,6 +73,7 @@ public class DbBackedStoreFactory implements StoreFactory {
     public QueueRegistry getQueueRegistry() throws BrokerException {
         return new QueueRegistryFactory(daoFactory.createQueueDao(),
                 new DbBackedQueueHandlerFactory(dbMessageStore, metricManager, configuration, eventSync),
-                eventSync).getQueueRegistry();
+                eventSync,
+                configuration.getEventConfig()).getQueueRegistry();
     }
 }

@@ -66,7 +66,7 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
 
     @Override
     boolean removeConsumer(Consumer consumer) {
-        boolean consumerRemoved = queueHandler.removeConsumer(consumer);
+        boolean consumerRemoved = queueHandler.removeConsumer(new ObservableConsumer(consumer, eventSync));
         if (consumerRemoved) {
             defaultQueueHandlerEventPublisher.publishConsumerEvent(CONSUMER_REMOVED_EVENT, consumer);
         }
