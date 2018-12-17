@@ -25,7 +25,6 @@ import io.ballerina.messaging.broker.core.Metadata;
  * values provided.if left value is between other two values it evaluate to a boolean value.
  * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
-
 public class BetweenComparisionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;

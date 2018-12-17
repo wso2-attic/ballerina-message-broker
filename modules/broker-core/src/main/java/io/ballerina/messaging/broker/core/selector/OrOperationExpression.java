@@ -24,7 +24,6 @@ import io.ballerina.messaging.broker.core.Metadata;
  * Implementation of a boolean expression.This class is doing a boolean OR operation between the left and right
  * values provided
  */
-
 public class OrOperationExpression implements BooleanExpression {
 
     private final BooleanExpression left;

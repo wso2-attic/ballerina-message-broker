@@ -37,7 +37,6 @@ public class InComparisionExpression implements BooleanExpression {
         this.left = left;
         this.elements = elements;
     }
-
     @Override
     public boolean evaluate (Metadata metadata) {
         Collection t = null;

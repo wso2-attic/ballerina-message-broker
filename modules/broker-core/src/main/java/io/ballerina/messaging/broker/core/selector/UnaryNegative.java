@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 /**
  * Implementation of a expression. Here we evaluate the value of a unary expressions
  */
-
 public class UnaryNegative implements Expression<Metadata> {
 
     private static final BigDecimal BD_LONG_MIN_VALUE = BigDecimal.valueOf(Long.MIN_VALUE);

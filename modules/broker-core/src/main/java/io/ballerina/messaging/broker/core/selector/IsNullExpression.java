@@ -24,7 +24,6 @@ import io.ballerina.messaging.broker.core.Metadata;
 /**
  * Implementation of a boolean expression. Here we find the left value is null or not and evaluate to a boolean value.
  */
-
 public class IsNullExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;

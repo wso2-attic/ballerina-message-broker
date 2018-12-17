@@ -52,9 +52,8 @@ public class LessThanExpression implements BooleanExpression {
                 return l < l1;
             }
         }
-
             return false;
-        }
     }
+}
 
 

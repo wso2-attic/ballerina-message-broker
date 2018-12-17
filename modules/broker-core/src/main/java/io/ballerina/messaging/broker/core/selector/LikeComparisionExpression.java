@@ -81,7 +81,6 @@ public class LikeComparisionExpression implements BooleanExpression {
         regexp.append("\\z"); //Matches the end of the string.
 
         likePattern = Pattern.compile(regexp.toString() , Pattern.DOTALL);
-
         return likePattern.matcher((String) leftValue).matches();
     }
 }

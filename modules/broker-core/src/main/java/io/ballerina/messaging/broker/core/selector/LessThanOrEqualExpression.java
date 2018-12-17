@@ -48,7 +48,6 @@ public class LessThanOrEqualExpression implements BooleanExpression {
                 Double l = ((Number) leftValue).doubleValue();
                 Double l1 = ((Number) rightValue).doubleValue();
                 return l < l1 || l.equals(l1);
-
             }
         }
         return false;

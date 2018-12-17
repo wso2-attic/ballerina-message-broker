@@ -21,13 +21,9 @@ package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
 
-
-
 /**
  * Implementation of a  expression. Here we calculate the subtraction of two expressions and evaluate to a object value.
  */
-
-
 public class SubtractionExpression implements Expression<Metadata> {
 
     private final Expression<Metadata> left;
@@ -44,9 +40,6 @@ public class SubtractionExpression implements Expression<Metadata> {
     public Object evaluate(Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
-        if (leftValue == null || rightValue == null) {
-            return null;
-        }
         if (leftValue instanceof Number && rightValue instanceof Number) {
             switch (numberType((Number) leftValue, (Number) rightValue)) {
 

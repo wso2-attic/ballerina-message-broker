@@ -49,7 +49,6 @@ public class MultiplicationExpression implements Expression<Metadata> {
                     return ((Number) leftValue).doubleValue() * ((Number) rightValue).doubleValue();
                 case MultiplicationExpression.LONG:
                     return ((Number) leftValue).longValue() * ((Number) rightValue).longValue();
-
             }
         }
         return null;

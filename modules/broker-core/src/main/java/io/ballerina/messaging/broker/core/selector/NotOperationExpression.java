@@ -23,7 +23,6 @@ import io.ballerina.messaging.broker.core.Metadata;
 /**
  * Implementation of a boolean expression.This class is doing a boolean NOT operation for the value  provided.
  */
-
 public class NotOperationExpression implements BooleanExpression {
 
     private  final BooleanExpression value;

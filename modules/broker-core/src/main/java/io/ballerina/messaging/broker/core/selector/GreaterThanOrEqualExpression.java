@@ -35,7 +35,6 @@ public class GreaterThanOrEqualExpression implements BooleanExpression {
         this.left = left;
         this.right = right;
     }
-
     @Override
     public boolean evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);

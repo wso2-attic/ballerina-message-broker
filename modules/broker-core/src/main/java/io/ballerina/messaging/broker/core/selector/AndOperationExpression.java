@@ -25,7 +25,6 @@ import io.ballerina.messaging.broker.core.Metadata;
  * values provided.
  */
 
-
 public class AndOperationExpression implements BooleanExpression {
 
     private final BooleanExpression left;

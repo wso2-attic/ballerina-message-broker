@@ -20,7 +20,6 @@
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
-
 /**
  * Implementation of a boolean expression.This class is doing a not equal comparison between left and right values
  * provided and evaluate to a boolean value.

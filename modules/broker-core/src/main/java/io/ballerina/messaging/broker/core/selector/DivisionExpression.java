@@ -25,7 +25,6 @@ import io.ballerina.messaging.broker.core.Metadata;
 /**
  * Implementation of a  expression. Here we calculate division of two expressions and evaluate to a object value.
  */
-
 public class DivisionExpression implements Expression<Metadata> {
 
     private final Expression<Metadata> left;

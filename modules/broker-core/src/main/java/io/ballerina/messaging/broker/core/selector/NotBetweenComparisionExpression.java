@@ -42,7 +42,6 @@ public class NotBetweenComparisionExpression implements BooleanExpression {
         Object firstValue = value1.evaluate(metadata);
         Object secondValue = value2.evaluate(metadata);
 
-
         if (leftValue instanceof Number && firstValue instanceof Number && secondValue instanceof Number) {
             if ((leftValue instanceof Long) && (firstValue instanceof Long) && (secondValue instanceof Long)) {
                     long l = ((Number) leftValue).longValue();
