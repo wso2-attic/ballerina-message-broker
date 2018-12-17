@@ -49,32 +49,27 @@ public class ConstantExpression implements Expression<Object> {
         }
 
         long l = value.longValue();
-        if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE) {
-            value = value.intValue();
-        }
-        return new ConstantExpression(value);
+
+        return new ConstantExpression(l);
     }
 
     public static ConstantExpression createFromNumericHex (String text) {
         Number value = Long.parseLong(text.substring(2), 16);
         long l = value.longValue();
-        if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE) {
-            value = value.intValue();
-        }
-        return new ConstantExpression(value);
+
+        return new ConstantExpression(l);
     }
 
     public static ConstantExpression createFromNumericOctal (String text) {
         Number value = Long.parseLong(text, 8);
         long l = value.longValue();
-        if (Integer.MIN_VALUE <= l && l <= Integer.MAX_VALUE) {
-            value = value.intValue();
-        }
-        return new ConstantExpression(value);
+
+        return new ConstantExpression(l);
     }
 
     public static ConstantExpression createFromNumericFloat (String text) {
         Number value = Double.valueOf(text);
-        return new ConstantExpression(value);
+        double d = value.doubleValue();
+        return new ConstantExpression(d);
     }
 }

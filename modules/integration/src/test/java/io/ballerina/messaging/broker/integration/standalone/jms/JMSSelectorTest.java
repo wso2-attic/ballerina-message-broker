@@ -36,7 +36,7 @@ import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-public class JMSSelectorTestComparisonoperators {
+public class JMSSelectorTest {
 
     @Parameters({"broker-port", "admin-username", "admin-password", "broker-hostname"})
     @Test
@@ -60,10 +60,9 @@ public class JMSSelectorTestComparisonoperators {
         Topic topic = (Topic) initialContext.lookup(queueName);
 
         // Subscribe with a selector
-        String propertyName = "Name";
-        String propertyValue = "_propertyValue";
+        String propertyName = "MyProperty";
 
-        TopicSubscriber consumer = subscriberSession.createSubscriber(topic, "Name LIKE'\\_%'ESCAPE '\\'", false);
+        TopicSubscriber consumer = subscriberSession.createSubscriber(topic, "MyProperty * 2 + 1 > 100 ", false);
 
         // publish messages with property
         TopicSession producerSession = connection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
@@ -72,7 +71,7 @@ public class JMSSelectorTestComparisonoperators {
         int numberOfMessages = 100;
         for (int i = 0; i < numberOfMessages; i++) {
             TextMessage textMessage = producerSession.createTextMessage("Test message " + i);
-            textMessage.setStringProperty(propertyName, propertyValue);
+            textMessage.setIntProperty(propertyName, 60);
             producer.send(textMessage);
         }
 
@@ -108,8 +107,9 @@ public class JMSSelectorTestComparisonoperators {
 
         // Subscribe with a selector
         String propertyName = "MyProperty";
+        String propertyValue = "propertyValue";
 
-        TopicSubscriber consumer = subscriberSession.createSubscriber(topic, "MyProperty > 1", false);
+        TopicSubscriber consumer = subscriberSession.createSubscriber(topic, "MyProperty + 1 = 6", false);
 
         // publish messages with property
         TopicSession producerSession = connection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
@@ -119,7 +119,7 @@ public class JMSSelectorTestComparisonoperators {
         int numberOfMessages = 100;
         for (int i = 0; i < numberOfMessages; i++) {
             TextMessage textMessage = producerSession.createTextMessage("Test message " + i);
-            textMessage.setStringProperty(propertyName, "2");
+            textMessage.setStringProperty(propertyName, propertyValue);
             producer.send(textMessage);
         }
 
@@ -152,27 +152,27 @@ public class JMSSelectorTestComparisonoperators {
         Topic topic = (Topic) initialContext.lookup(queueName);
 
         // Subscribe with selectors.
-        TopicSubscriber consumer1 = subscriberSession.createSubscriber(topic, "Age BETWEEN 1 AND 12", false);
-        TopicSubscriber consumer2 = subscriberSession.createSubscriber(topic, "Num = 200", false);
-        TopicSubscriber consumer3 = subscriberSession.createSubscriber(topic, "Name = 'John'", false);
+        TopicSubscriber consumer1 = subscriberSession.createSubscriber(topic, "Age - 1 + 11 <> 310 ", false);
+        TopicSubscriber consumer2 = subscriberSession.createSubscriber(topic, "Age * 2 / 4 > 50", false);
+        TopicSubscriber consumer3 = subscriberSession.createSubscriber(topic, "Age + 1 BETWEEN 760 AND 770", false);
 
         // publish messages with property.
         TopicSession producerSession = connection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
         TopicPublisher producer = producerSession.createPublisher(topic);
 
-        String consumer1Message = "Age between 1 and 12 group";
-        String consumer2Message = "Employee number 200 group";
-        String consumer3Message = "Name not null group";
+        String consumer1Message = "Age minus one and add 11 is not equal to 210 group";
+        String consumer2Message = "Age divides by 4 and multiply 2 times greater than 50 group";
+        String consumer3Message = "Age add 1 is between 760 and 770 John group";
         TextMessage textMessage = producerSession.createTextMessage(consumer1Message);
-        textMessage.setIntProperty("Age", 10);
+        textMessage.setIntProperty("Age", 100);
         producer.send(textMessage);
 
         textMessage = producerSession.createTextMessage(consumer2Message);
-        textMessage.setIntProperty("Num", 200);
+        textMessage.setIntProperty("Age", 200);
         producer.send(textMessage);
 
         textMessage = producerSession.createTextMessage(consumer3Message);
-        textMessage.setStringProperty("Name", "John");
+        textMessage.setIntProperty("Age", 765);
         producer.send(textMessage);
 
 

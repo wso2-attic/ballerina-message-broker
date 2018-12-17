@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  * and evaluate to a boolean value.please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
 
-public class NotLikeComparision implements BooleanExpression {
+public class NotLikeComparisionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
 
@@ -37,7 +37,7 @@ public class NotLikeComparision implements BooleanExpression {
 
     private Pattern likePattern;
 
-    public NotLikeComparision (Expression<Metadata> left, String right, String escape) {
+    public NotLikeComparisionExpression (Expression left, String right, String escape) {
         this.left = left;
         this.right = right;
         this.escape = escape;

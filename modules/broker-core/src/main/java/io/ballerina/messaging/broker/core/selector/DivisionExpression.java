@@ -26,13 +26,16 @@ import io.ballerina.messaging.broker.core.Metadata;
  * Implementation of a  expression. Here we calculate division of two expressions and evaluate to a object value.
  */
 
-public class Division implements Expression<Metadata> {
+public class DivisionExpression implements Expression<Metadata> {
 
     private final Expression<Metadata> left;
 
     private final Expression<Metadata> right;
 
-    public Division (Expression<Metadata> left, Expression<Metadata> right) {
+    private static final int LONG = 1;
+    private static final int DOUBLE = 2;
+
+    public DivisionExpression (Expression left , Expression right) {
         this.left = left;
         this.right = right;
     }
@@ -41,14 +44,30 @@ public class Division implements Expression<Metadata> {
     public Object evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
-        if (leftValue == null || rightValue == null) {
-            return null;
-        }
-        if (leftValue instanceof Number) {
-            long l = ((Number) leftValue).longValue();
-            long l1 = ((Number) rightValue).longValue();
-            return l / l1;
+
+        if (leftValue instanceof Number && rightValue instanceof Number) {
+            switch (numberType((Number) leftValue, (Number) rightValue)) {
+
+                case DivisionExpression.DOUBLE:
+                    return  ((Number) leftValue).doubleValue() / ((Number) rightValue).doubleValue();
+
+                case DivisionExpression.LONG:
+                    return ((Number) leftValue).longValue() / ((Number) rightValue).longValue();
+
+            }
         }
         return null;
     }
+
+    private int numberType (Number left, Number right) {
+        if (left instanceof Double || right instanceof Double) {
+            return DivisionExpression.DOUBLE;
+        } else if ((left instanceof Long) && (right instanceof Long)) {
+            return DivisionExpression.LONG;
+        }
+        return DOUBLE;
+    }
+
 }
+
+

@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  * and evaluate to a boolean value.
  * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
-public class LikeComparision implements BooleanExpression {
+public class LikeComparisionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
 
@@ -37,7 +37,7 @@ public class LikeComparision implements BooleanExpression {
 
     private Pattern likePattern;
 
-    public LikeComparision (Expression<Metadata> left , String right , String escape) {
+    public LikeComparisionExpression (Expression left , String right , String escape) {
         this.left = left;
         this.right = right;
         this.escape = escape;
@@ -46,10 +46,9 @@ public class LikeComparision implements BooleanExpression {
     @Override
     public boolean evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
-        if (leftValue == null || right == null) {
+        if (!(leftValue instanceof String) || right == null) {
             return false;
         }
-
         if (!(escape == null) && (escape.length() != 1)) {
             throw new RuntimeException(
                     " Litteral used: " + escape + "is not a valid litteral it can use single character only");

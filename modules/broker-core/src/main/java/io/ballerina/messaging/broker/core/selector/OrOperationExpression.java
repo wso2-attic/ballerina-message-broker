@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -22,20 +21,24 @@ package io.ballerina.messaging.broker.core.selector;
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression. Here we find left value is null or not and evaluate to a boolean value.
+ * Implementation of a boolean expression.This class is doing a boolean OR operation between the left and right
+ * values provided
  */
 
-public class IsNotNull implements BooleanExpression {
+public class OrOperationExpression implements BooleanExpression {
 
-    private final Expression<Metadata> left;
+    private final BooleanExpression left;
+    private final BooleanExpression right;
 
-    public IsNotNull (Expression<Metadata> left) {
+    public OrOperationExpression (BooleanExpression left , BooleanExpression right) {
         this.left = left;
+        this.right = right;
     }
     @Override
-    public boolean evaluate(Metadata metadata) {
-        Object leftValue = left.evaluate(metadata);
+    public boolean evaluate (Metadata metadata) {
+        boolean leftValue = left.evaluate(metadata);
+        boolean rightValue = right.evaluate(metadata);
 
-        return leftValue != null;
+        return (leftValue || rightValue);
     }
 }

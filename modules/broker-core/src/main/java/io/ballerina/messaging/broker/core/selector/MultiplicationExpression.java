@@ -21,15 +21,19 @@ package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
 
+
+
 /**
  * Implementation of a expression. Here we calculate multiplication of two expressions and evaluate to a object value.
  */
-public class Multiplication implements Expression<Metadata> {
+public class MultiplicationExpression implements Expression<Metadata> {
 
     private final Expression<Metadata> left;
     private final Expression<Metadata> right;
+    private static final int LONG = 1;
+    private static final int DOUBLE = 2;
 
-    public Multiplication (Expression<Metadata> left , Expression<Metadata> right) {
+    public MultiplicationExpression (Expression left , Expression right) {
         this.left = left;
         this.right = right;
     }
@@ -37,14 +41,26 @@ public class Multiplication implements Expression<Metadata> {
     public Object evaluate(Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
-        if (leftValue == null || rightValue == null) {
-            return null;
-        }
-        if (leftValue instanceof Number) {
-            long l = ((Number) leftValue).longValue();
-            long l1 = ((Number) rightValue).longValue();
-            return (l * l1);
+
+        if (leftValue instanceof Number && rightValue instanceof Number) {
+            switch (numberType((Number) leftValue, (Number) rightValue)) {
+
+                case MultiplicationExpression.DOUBLE:
+                    return ((Number) leftValue).doubleValue() * ((Number) rightValue).doubleValue();
+                case MultiplicationExpression.LONG:
+                    return ((Number) leftValue).longValue() * ((Number) rightValue).longValue();
+
+            }
         }
         return null;
+    }
+
+    private int numberType (Number left, Number right) {
+        if (left instanceof Double || right instanceof Double) {
+            return MultiplicationExpression.DOUBLE;
+        } else if ((left instanceof Long) || (right instanceof Long)) {
+            return MultiplicationExpression.LONG;
+        }
+        return 0;
     }
 }

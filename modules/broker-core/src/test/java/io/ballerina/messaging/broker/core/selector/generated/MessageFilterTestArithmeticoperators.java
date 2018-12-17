@@ -46,12 +46,12 @@ public class MessageFilterTestArithmeticoperators {
     @DataProvider(name = "positive-filter-strings")
     public Object[] positiveFilterStrings() {
         return new String[] {
-                // unary operations
+               //  unary operations
                 "MyProperty + -1 = -5",
                 "-MyProperty * 8 = 23.4",
                 "-(MyProperty + 1*6) = 345",
                 "MyProperty + -34  < 4455",
-                "MyProperty + (-300)  =< 44.5",
+                "MyProperty + (-300)  <= 44.5",
                 "MyProperty * (+3.56)  >= 4",
                 "MyProperty + -(234 + (+45) - (-4))  <> 4455",
                 //multiplication ,division , addition and subtraction
@@ -62,7 +62,7 @@ public class MessageFilterTestArithmeticoperators {
                 "MyProperty + (1+1) = 6.6",
                 "(MyProperty +1) * 2.6 > 765",
                 "MyProperty * (20+100) = 500",
-                "(MyProperty*8.1) =< 20.2",
+                "(MyProperty*8.1) <= 20.2",
                 "(MyProperty/8) + 12 = 67",
                 "MyProperty * (78/3) >= 675.90",
                 "(MyProperty + (34*6) +1) + 3  =  3000",
@@ -71,8 +71,8 @@ public class MessageFilterTestArithmeticoperators {
                 "Age * 3 * 9 / 5 <> 10.2",
                 "Age + 1 BETWEEN 2 AND 3",
                 "Age + 1 NOT BETWEEN Eno + 1 AND EF -1",
-                // values with Exponent
-                "Age + 344 =< 40E0",
+//                // values with Exponent
+                "Age + 344 <= 40E0",
                 "Age + 67.E10 >= 45L",
                 "Age * (4E5 + 67.E10) >= 45L",
 

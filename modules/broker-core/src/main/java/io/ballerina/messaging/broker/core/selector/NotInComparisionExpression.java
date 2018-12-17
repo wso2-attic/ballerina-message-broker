@@ -29,12 +29,12 @@ import java.util.List;
  *values provided.if left expression contain or not contain the element list values and it evaluate as boolean value.
  * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
-public class NotInComparision implements BooleanExpression {
+public class NotInComparisionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private  final List elements;
 
-    public NotInComparision (Expression<Metadata> left , List elements) {
+    public NotInComparisionExpression (Expression left , List elements) {
         this.left = left;
         this.elements = elements;
     }
@@ -52,9 +52,6 @@ public class NotInComparision implements BooleanExpression {
             t = new HashSet<Object>(elements);
         }
         final Collection inList = t;
-        if (rvalue == null) {
-            return false;
-        }
         if (rvalue.getClass() != String.class) {
             return false;
         }

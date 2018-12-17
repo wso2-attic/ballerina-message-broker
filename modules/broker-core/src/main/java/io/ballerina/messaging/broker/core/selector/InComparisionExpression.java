@@ -28,12 +28,12 @@ import java.util.List;
  *Implementation of a boolean expression.This class is doing a comparison operation between the left and list of element
  * values provided.if left expression contain or not contain the element list values and it evaluate as boolean value.
  */
-public class InComparision implements BooleanExpression {
+public class InComparisionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private final List elements;
 
-    public InComparision (Expression<Metadata> left, List elements) {
+    public InComparisionExpression (Expression left, List elements) {
         this.left = left;
         this.elements = elements;
     }
@@ -52,9 +52,6 @@ public class InComparision implements BooleanExpression {
             t = new HashSet<Object>(elements);
         }
         final Collection inList = t;
-        if (rvalue == null) {
-            return false;
-        }
         if (rvalue.getClass() != String.class) {
             return false;
         }

@@ -32,7 +32,7 @@ public class EqualityExpression implements BooleanExpression {
 
     private final Expression<Metadata> right;
 
-    public EqualityExpression (Expression<Metadata> left, Expression<Metadata> right) {
+    public EqualityExpression (Expression left, Expression right) {
         this.left = left;
         this.right = right;
     }
@@ -41,9 +41,21 @@ public class EqualityExpression implements BooleanExpression {
     public boolean evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
-        if (leftValue == null || rightValue == null) {
-            return false;
+        if (leftValue instanceof Number && rightValue instanceof Number) {
+            if ((leftValue instanceof Long) && (rightValue instanceof Long)) {
+                long l = ((Number) leftValue).longValue();
+                long l1 = ((Number) rightValue).longValue();
+                return l == l1;
+            }
+            if ((leftValue instanceof Double) || (rightValue instanceof Double)) {
+                Double l = ((Number) leftValue).doubleValue();
+                Double l1 = ((Number) rightValue).doubleValue();
+                return l.equals(l1);
+            }
         }
-        return rightValue == leftValue || leftValue.equals(rightValue);
+        if ((leftValue instanceof String) && (rightValue instanceof String)) {
+            return rightValue == leftValue || leftValue.equals(rightValue);
+        }
+        return false;
     }
 }

@@ -30,7 +30,7 @@ public class NotEqualExpression implements BooleanExpression {
     private final Expression<Metadata> left;
     private final Expression<Metadata> right;
 
-    public NotEqualExpression(Expression<Metadata> left , Expression<Metadata> right) {
+    public NotEqualExpression(Expression left , Expression right) {
         this.left = left;
         this.right = right;
     }
@@ -38,9 +38,21 @@ public class NotEqualExpression implements BooleanExpression {
     public boolean evaluate(Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
-        if (leftValue == null || rightValue == null) {
-            return false;
+
+        if ((leftValue instanceof Long) && (rightValue instanceof Long)) {
+            long l = ((Number) leftValue).longValue();
+            long l1 = ((Number) rightValue).longValue();
+            return l != l1;
         }
-        return rightValue != leftValue;
+        if ((leftValue instanceof Double) || (rightValue instanceof Double)) {
+            Double l = ((Number) leftValue).doubleValue();
+            Double l1 = ((Number) rightValue).doubleValue();
+             return !l.equals(l1);
+        }
+        if ((leftValue instanceof String) && (rightValue instanceof String)) {
+            return rightValue != leftValue;
+        }
+        return false;
     }
 }
+

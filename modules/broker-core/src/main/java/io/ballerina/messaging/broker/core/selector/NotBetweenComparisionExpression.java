@@ -25,13 +25,13 @@ import io.ballerina.messaging.broker.core.Metadata;
  * values provided.if left value is between other two values it evaluate to a boolean value.
  * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
-public class NotBetweenComparision implements BooleanExpression {
+public class NotBetweenComparisionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private final Expression<Metadata> value1;
     private final Expression<Metadata> value2;
 
-    public NotBetweenComparision (Expression<Metadata> left, Expression<Metadata> value1, Expression<Metadata> value2) {
+    public NotBetweenComparisionExpression (Expression left, Expression value1, Expression value2) {
         this.left = left;
         this.value1 = value1;
         this.value2 = value2;
@@ -41,15 +41,22 @@ public class NotBetweenComparision implements BooleanExpression {
         Object leftValue = left.evaluate(metadata);
         Object firstValue = value1.evaluate(metadata);
         Object secondValue = value2.evaluate(metadata);
-        if (leftValue == null) {
-            return false;
-        }
-        if (leftValue instanceof Number) {
-            long l = ((Number) leftValue).longValue();
-            long l1 = ((Number) firstValue).longValue();
-            long l2 = ((Number) secondValue).longValue();
 
-            return ((leftValue != firstValue) && (l <= l1)) || ((leftValue != secondValue) && (l >= l2));
+
+        if (leftValue instanceof Number && firstValue instanceof Number && secondValue instanceof Number) {
+            if ((leftValue instanceof Long) && (firstValue instanceof Long) && (secondValue instanceof Long)) {
+                    long l = ((Number) leftValue).longValue();
+                    long l1 = ((Number) firstValue).longValue();
+                    long l2 = ((Number) secondValue).longValue();
+                    return ((leftValue != firstValue) && (l <= l1)) || ((leftValue != secondValue) && (l >= l2));
+
+                }
+            if ((leftValue instanceof Double) || (firstValue instanceof Double) || (secondValue instanceof Double)) {
+                double l = ((Number) leftValue).doubleValue();
+                double l1 = ((Number) firstValue).doubleValue();
+                double l2 = ((Number) secondValue).doubleValue();
+                return ((leftValue != firstValue) && (l <= l1)) || ((leftValue != secondValue) && (l >= l2));
+            }
         }
         return false;
     }

@@ -32,7 +32,7 @@ public class GreaterThanExpression implements BooleanExpression {
 
     private final Expression<Metadata> right;
 
-    public GreaterThanExpression (Expression<Metadata> left, Expression<Metadata> right) {
+    public GreaterThanExpression (Expression left, Expression right) {
         this.left = left;
         this.right = right;
     }
@@ -41,14 +41,18 @@ public class GreaterThanExpression implements BooleanExpression {
     public boolean evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
-        if (leftValue == null || rightValue == null) {
-            return false;
-        }
-        if (leftValue instanceof Number) {
-            long l = ((Number) leftValue).longValue();
-            long l1 = ((Number) rightValue).longValue();
-            return l > l1;
-        }
+       if (leftValue instanceof Number && rightValue instanceof Number) {
+           if ((leftValue instanceof Long) && (rightValue instanceof Long)) {
+               long l = ((Number) leftValue).longValue();
+               long l1 = ((Number) rightValue).longValue();
+               return l > l1;
+           }
+           if ((leftValue instanceof Double) || (rightValue instanceof Double)) {
+               Double l = ((Number) leftValue).doubleValue();
+               Double l1 = ((Number) rightValue).doubleValue();
+               return l > l1;
+           }
+       }
         return false;
     }
 }

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -17,44 +16,52 @@
  * under the License.
  *
  */
+
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression.This class is doing a less than comparison between left and right values
- *  provided and evaluate to a boolean value.
+ * Implementation of a expression. Here we calculate summation of two expressions and evaluate to a object value.
  */
 
-public class LessThanExpression implements BooleanExpression {
+public class AdditionExpression implements Expression<Metadata> {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
 
-    public LessThanExpression (Expression left , Expression right) {
+    private static final int LONG = 1;
+    private static final int DOUBLE = 2;
+
+    public AdditionExpression (Expression left, Expression right) {
         this.left = left;
         this.right = right;
     }
+
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public Object evaluate (Metadata metadata) {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue instanceof Number && rightValue instanceof Number) {
-            if ((leftValue instanceof Long) && (rightValue instanceof Long)) {
-                long l = ((Number) leftValue).longValue();
-                long l1 = ((Number) rightValue).longValue();
-                return l < l1;
-            }
-            if ((leftValue instanceof Double) || (rightValue instanceof Double)) {
-                Double l = ((Number) leftValue).doubleValue();
-                Double l1 = ((Number) rightValue).doubleValue();
-                return l < l1;
-            }
-        }
+            switch (numberType((Number) leftValue, (Number) rightValue)) {
 
-            return false;
+                case AdditionExpression.LONG:
+                    return ((Number) leftValue).longValue() + ((Number) rightValue).longValue();
+
+                case AdditionExpression.DOUBLE:
+                    return ((Number) leftValue).doubleValue() + ((Number) rightValue).doubleValue();
+            }
         }
+        return new Exception("value is not a number");
     }
 
+    private int numberType (Number left, Number right) {
+        if (left instanceof Double || right instanceof Double) {
+            return AdditionExpression.DOUBLE;
+        } else if ((left instanceof Long) && (right instanceof Long)) {
+            return AdditionExpression.LONG;
+        }
+        return DOUBLE;
+    }
+}
 

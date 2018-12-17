@@ -33,7 +33,7 @@ public class UnaryNegative implements Expression<Metadata> {
     private static final BigDecimal BD_LONG_MIN_VALUE = BigDecimal.valueOf(Long.MIN_VALUE);
     private final Expression<Metadata> left;
 
-    public UnaryNegative (Expression<Metadata> left) {
+    public UnaryNegative (Expression left) {
 
         this.left = left;
     }
@@ -46,16 +46,16 @@ public class UnaryNegative implements Expression<Metadata> {
         if (leftvalue instanceof Number) {
             return UnaryNegative.negate((Number) leftvalue);
         }
-        return null;
+        return new Exception("value is not a number");
     }
     private static Number negate (Number left) {
         Class clazz = left.getClass();
         if (clazz == Integer.class) {
-            return -left.intValue();
+            return -left.longValue();
         } else if (clazz == Long.class) {
             return -left.longValue();
         } else if (clazz == Float.class) {
-            return -left.floatValue();
+            return -left.doubleValue();
         } else if (clazz == Double.class) {
             return -left.doubleValue();
         } else if (clazz == BigDecimal.class) {
