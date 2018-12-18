@@ -16,7 +16,6 @@
  * under the License.
  *
  */
-
 package io.ballerina.messaging.broker.integration.standalone.jms;
 
 import io.ballerina.messaging.broker.integration.util.ClientHelper;

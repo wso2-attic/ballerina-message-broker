@@ -137,7 +137,7 @@ TOKEN :
 BooleanExpression parseSelector() :
 { BooleanExpression value; }
 {
-     value= OrExpression() <EOF>
+     value = OrExpression() <EOF>
      { return value; }
 }
 
@@ -148,9 +148,9 @@ BooleanExpression OrExpression():
 
 }
 {
-   value=AndExpression()
+   value = AndExpression()
    (
-       <OR>value1=AndExpression(){ value = new OrOperationExpression(value,value1);}
+       <OR>value1 = AndExpression(){ value = new OrOperationExpression(value,value1);}
    )*
    {return value;}
 }
@@ -161,9 +161,9 @@ BooleanExpression AndExpression():
  BooleanExpression value1;
 }
 {
-   value=NotExpression()
+   value = NotExpression()
    (
-       <AND>value1=NotExpression(){ value = new AndOperationExpression(value,value1);}
+       <AND>value1 = NotExpression(){ value = new AndOperationExpression(value,value1);}
    )*
    {return value;}
 }
@@ -196,10 +196,10 @@ BooleanExpression ComparisonExpression() :
     left = sum()
     (
         <EQUAL> right = unary(){ value = new EqualityExpression(left , right);}
-       | <GTREATER> right=  unary() { value= new GreaterThanExpression(left , right); }
-       | <GTREATER_EQAL> right= unary()  { value= new GreaterThanOrEqualExpression(left , right); }
-       |  <LESS> right= unary() { value= new LessThanExpression(left , right); }
-       |  <LESS_EQUAL> right= unary() { value= new LessThanOrEqualExpression(left , right); }
+       | <GTREATER> right =  unary() { value= new GreaterThanExpression(left , right); }
+       | <GTREATER_EQAL> right = unary()  { value = new GreaterThanOrEqualExpression(left , right); }
+       |  <LESS> right = unary() { value = new LessThanExpression(left , right); }
+       |  <LESS_EQUAL> right = unary() { value = new LessThanOrEqualExpression(left , right); }
        | <NOTEQUAL> right = unary() { value = new NotEqualExpression(left , right);}
        |
                             LOOKAHEAD(2)// if next two tokens are <IS> and <NULL> go to choice 1
@@ -214,7 +214,7 @@ BooleanExpression ComparisonExpression() :
                             }
                     |
                                   {
-                     					b=null;
+                     					b = null;
                      				}
                      		        <LIKE> a = stringLitteral()
                      		        	[ <ESCAPE> b = stringLitteral() ] //[] brackets are choose point if we want we can go inside or we can ignore
@@ -224,18 +224,18 @@ BooleanExpression ComparisonExpression() :
                     |
                      	        	LOOKAHEAD(2)
                      				{
-                     					b=null;
+                     					b = null;
                      				}
                      		        <NOT> <LIKE> a = stringLitteral() [ <ESCAPE> b = stringLitteral() ]
                      		        {
                                          value = new NotLikeComparisionExpression(left, a, b);
                      		        }
-                    |<BETWEEN> t= sum() <AND> u = sum()
+                    |<BETWEEN> t = sum() <AND> u = sum()
 
                                  { value = new BetweenComparisionExpression(left,t,u);}
                     |
                     LOOKAHEAD(2)
-                    <NOT><BETWEEN> t= sum() <AND> u = sum()
+                    <NOT><BETWEEN> t = sum() <AND> u = sum()
                           { value = new NotBetweenComparisionExpression(left,t,u);}
                     | <IN>
                       		        "("
@@ -288,7 +288,7 @@ Expression sum() :
    first = factor()
    (
      (
-    "+"second= factor(){ first = new AdditionExpression(first , second);}
+    "+"second = factor(){ first = new AdditionExpression(first , second);}
      |"-"second = factor(){ first = new SubtractionExpression(first , second);}
 
      )
@@ -305,7 +305,7 @@ Expression factor() :
    first = unary()
    (
       (
-       "*"second= unary(){ first = new  MultiplicationExpression(first , second);}
+       "*"second = unary(){ first = new  MultiplicationExpression(first , second);}
        | "/"second = unary(){ first = new  DivisionExpression(first , second);}
 
        )
@@ -404,7 +404,7 @@ String stringLitteral() :
         {
         	// Decode the sting value.
         	String image = t.image;
-        	for( int i=1; i < image.length()-1; i++ ) {
+        	for( int i = 1; i < image.length()-1; i++ ) {
         		char c = image.charAt(i);
 
        			rc.append(c);

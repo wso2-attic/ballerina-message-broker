@@ -27,7 +27,6 @@ import io.ballerina.messaging.broker.core.Metadata;
 public class LessThanOrEqualExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
 
     public LessThanOrEqualExpression (Expression left , Expression right) {

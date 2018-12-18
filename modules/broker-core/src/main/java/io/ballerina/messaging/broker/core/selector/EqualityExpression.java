@@ -29,7 +29,6 @@ import io.ballerina.messaging.broker.core.Metadata;
 public class EqualityExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
 
     public EqualityExpression (Expression left, Expression right) {

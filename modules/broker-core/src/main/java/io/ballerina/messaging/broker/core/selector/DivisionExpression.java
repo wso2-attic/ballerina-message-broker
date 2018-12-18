@@ -28,7 +28,6 @@ import io.ballerina.messaging.broker.core.Metadata;
 public class DivisionExpression implements Expression<Metadata> {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
 
     private static final int LONG = 1;

@@ -28,7 +28,6 @@ import io.ballerina.messaging.broker.core.Metadata;
 public class GreaterThanOrEqualExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
 
     public GreaterThanOrEqualExpression (Expression left, Expression right) {

@@ -20,7 +20,6 @@
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
-
 /**
  * Implementation of a boolean expression.This class is doing a less than comparison between left and right values
  *  provided and evaluate to a boolean value.
@@ -29,7 +28,6 @@ import io.ballerina.messaging.broker.core.Metadata;
 public class LessThanExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
-
     private final Expression<Metadata> right;
 
     public LessThanExpression (Expression left , Expression right) {

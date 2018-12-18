@@ -30,11 +30,8 @@ import java.util.regex.Pattern;
 public class LikeComparisionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
-
     private final String right;
-
     private final String escape;
-
     private Pattern likePattern;
 
     public LikeComparisionExpression (Expression left , String right , String escape) {

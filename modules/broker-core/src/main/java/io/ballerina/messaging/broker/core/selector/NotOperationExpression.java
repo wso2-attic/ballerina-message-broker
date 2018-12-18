@@ -19,7 +19,6 @@
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
-
 /**
  * Implementation of a boolean expression.This class is doing a boolean NOT operation for the value  provided.
  */

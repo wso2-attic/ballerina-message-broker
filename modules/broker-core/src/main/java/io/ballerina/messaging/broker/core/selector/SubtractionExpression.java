@@ -20,7 +20,6 @@
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
-
 /**
  * Implementation of a  expression. Here we calculate the subtraction of two expressions and evaluate to a object value.
  */

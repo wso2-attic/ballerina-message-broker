@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
  * Implementation of a boolean expression. Here we compare a expression value with pattern value
  * and evaluate to a boolean value.please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
-
 public class NotLikeComparisionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;

@@ -16,8 +16,6 @@
  * under the License.
  *
  */
-
-
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;

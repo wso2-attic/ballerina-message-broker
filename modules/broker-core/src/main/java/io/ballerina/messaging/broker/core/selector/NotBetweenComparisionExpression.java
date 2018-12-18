@@ -48,7 +48,6 @@ public class NotBetweenComparisionExpression implements BooleanExpression {
                     long l1 = ((Number) firstValue).longValue();
                     long l2 = ((Number) secondValue).longValue();
                     return ((leftValue != firstValue) && (l <= l1)) || ((leftValue != secondValue) && (l >= l2));
-
                 }
             if ((leftValue instanceof Double) || (firstValue instanceof Double) || (secondValue instanceof Double)) {
                 double l = ((Number) leftValue).doubleValue();
