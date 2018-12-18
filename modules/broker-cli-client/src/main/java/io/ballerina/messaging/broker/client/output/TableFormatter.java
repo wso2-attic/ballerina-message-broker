@@ -27,6 +27,7 @@ import io.ballerina.messaging.broker.client.resources.Queue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -174,6 +175,45 @@ public class TableFormatter implements ResponseFormatter {
 
         ArrayList<String[]> tempConsumers = new ArrayList<>();
 
+        // check whether at least one consumer contain transport properties
+        if (Arrays.stream(consumers).anyMatch(consumer -> consumer.getTransportProperties() instanceof Map)) {
+            // print table with transport properties column
+            for (Consumer consumer : consumers) {
+                Map<String, Object> transportProperties;
+                try {
+                    transportProperties = (Map<String, Object>) consumer.getTransportProperties();
+                } catch (ClassCastException e) {
+                    transportProperties = null;
+                }
+                if (transportProperties == null || transportProperties.isEmpty()) {
+                    tempConsumers.add(new String[]{Integer.toString(consumer.getId()),
+                                                   Boolean.toString(consumer.isExclusive()),
+                                                   Boolean.toString(consumer.isFlowEnabled()), " - "});
+                } else {
+                    /*
+                    printing the table with cells in transport property column having multiple rows of value
+                     */
+                    boolean firstProperty = true;
+                    for (Map.Entry<String, Object> entry : transportProperties.entrySet()) {
+                        if (firstProperty) {
+                            tempConsumers.add(new String[]{Integer.toString(consumer.getId()),
+                                                           Boolean.toString(consumer.isExclusive()),
+                                                           Boolean.toString(consumer.isFlowEnabled()),
+                                                           entry.getKey() + " : " + entry.getValue()});
+                            firstProperty = false;
+                        } else {
+                            tempConsumers.add(new String[]{"", "", "", entry.getKey() + " : " + entry.getValue()});
+                        }
+                    }
+                }
+            }
+            printTable(new String[]{Consumer.CONSUMER_ID, Consumer.IS_EXCLUSIVE, Consumer.FLOW_ENABLED,
+                                    Consumer.TRANSPORT_PROPERTIES},
+                       tempConsumers);
+            return;
+        }
+
+        // print table without transport properties column
         for (Consumer consumer : consumers) {
             tempConsumers.add(new String[]{Integer.toString(consumer.getId()),
                                            Boolean.toString(consumer.isExclusive()),

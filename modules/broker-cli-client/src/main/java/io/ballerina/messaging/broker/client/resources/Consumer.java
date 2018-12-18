@@ -26,6 +26,7 @@ public class Consumer {
     public static final String CONSUMER_ID = "id";
     public static final String IS_EXCLUSIVE = "isExclusive";
     public static final String FLOW_ENABLED = "flowEnabled";
+    public static final String TRANSPORT_PROPERTIES = "transportProperties";
 
     private String queueName;
 
@@ -35,11 +36,14 @@ public class Consumer {
 
     private boolean flowEnabled;
 
-    public Consumer(String queueName, int id, boolean isExclusive, boolean flowEnabled) {
+    private Object transportProperties;
+
+    public Consumer(String queueName, int id, boolean isExclusive, boolean flowEnabled, Object transportProperties) {
         this.queueName = queueName;
         this.id = id;
         this.isExclusive = isExclusive;
         this.flowEnabled = flowEnabled;
+        this.transportProperties = transportProperties;
     }
 
     public String getQueueName() {
@@ -56,5 +60,13 @@ public class Consumer {
 
     public boolean isFlowEnabled() {
         return flowEnabled;
+    }
+
+    public Object getTransportProperties() {
+        return transportProperties;
+    }
+
+    public void setTransportProperties(Object transportProperties) {
+        this.transportProperties = transportProperties;
     }
 }
