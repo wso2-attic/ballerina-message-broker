@@ -37,6 +37,8 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
 
     private static final String CONSUMER_ADDED_EVENT = "consumer.added";
     private static final String CONSUMER_REMOVED_EVENT = "consumer.removed";
+    private static final String BINDING_ADDED_EVENT = "binding.added";
+    private static final String BINDING_REMOVED_EVENT = "binding.removed";
 
 
     ObservableQueueHandlerImpl(QueueHandlerImpl queueHandler, EventSync eventSync) {
@@ -141,7 +143,7 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
     @Override
     public void addBinding(Binding binding, ThrowingConsumer<Binding, BrokerException> bindingChangeListener) {
         queueHandler.addBinding(binding, bindingChangeListener);
-        defaultQueueHandlerEventPublisher.publishBindingEvent("binding.added", binding);
+        defaultQueueHandlerEventPublisher.publishBindingEvent(BINDING_ADDED_EVENT, binding);
     }
 
     @Override
@@ -152,7 +154,7 @@ public class ObservableQueueHandlerImpl extends QueueHandler {
     @Override
     public void removeBinding(Binding binding) {
         queueHandler.removeBinding(binding);
-        defaultQueueHandlerEventPublisher.publishBindingEvent("binding.removed", binding);
+        defaultQueueHandlerEventPublisher.publishBindingEvent(BINDING_REMOVED_EVENT, binding);
     }
 
     @Override

@@ -33,6 +33,8 @@ final class ObservableQueueRegistryImpl extends QueueRegistry {
 
     private final QueueRegistryImpl queueRegistry;
     private final EventSync eventSync;
+    private static final String QUEUE_ADDED_EVENT = "queue.added";
+    private static final String QUEUE_REMOVED_EVENT = "queue.deleted";
 
     ObservableQueueRegistryImpl(QueueRegistryImpl queueRegistry, EventSync eventSync) {
         this.queueRegistry = queueRegistry;
@@ -48,7 +50,7 @@ final class ObservableQueueRegistryImpl extends QueueRegistry {
                             FieldTable arguments) throws BrokerException {
         boolean queueAdded = queueRegistry.addQueue(queueName, passive, durable, autoDelete, arguments);
         if (queueAdded) {
-            publishQueueEvent("queue.added", queueRegistry.getQueueHandler(queueName));
+            publishQueueEvent(QUEUE_ADDED_EVENT, queueRegistry.getQueueHandler(queueName));
         }
         return queueAdded;
     }
@@ -59,7 +61,7 @@ final class ObservableQueueRegistryImpl extends QueueRegistry {
 
         QueueHandler queueHandler = queueRegistry.getQueueHandler(queueName);
         int releasedResources = queueRegistry.removeQueue(queueName, ifUnused, ifEmpty);
-        publishQueueEvent("queue.deleted", queueHandler);
+        publishQueueEvent(QUEUE_REMOVED_EVENT, queueHandler);
         return releasedResources;
     }
 

@@ -39,7 +39,6 @@ public class ObservableQueueRegistryImplTest {
 
     @BeforeClass
     public void setup() throws BrokerException {
-
         testPublisher = new TestPublisher();
         observableQueueRegistry = new ObservableQueueRegistryImpl(new QueueRegistryImpl(
                 new ObservableQueueRegistryImplTest.TestQueueDao(),
@@ -50,7 +49,6 @@ public class ObservableQueueRegistryImplTest {
     @Test(description = "test properties of queue event publish", dataProvider = "example queues")
     public void testAddQueue(String queueName, String durable, String autoDelete)
             throws BrokerException {
-
         observableQueueRegistry.addQueue(queueName, false, Boolean.valueOf(durable),
                 Boolean.valueOf(autoDelete), null);
         Assert.assertEquals(testPublisher.getProperty("queueName"), queueName);
@@ -61,7 +59,6 @@ public class ObservableQueueRegistryImplTest {
     @Test(description = "test properties of queue event publish", dataProvider = "example queues")
     public void testRemoveQueue(String queueName, String durable, String autoDelete)
             throws BrokerException, ResourceNotFoundException, ValidationException {
-
         observableQueueRegistry.addQueue(queueName, false, Boolean.valueOf(durable),
                 Boolean.valueOf(autoDelete), null);
         testPublisher.id = null;
@@ -74,7 +71,6 @@ public class ObservableQueueRegistryImplTest {
 
     @DataProvider(name = "example queues")
     public Object[][] queueExamples() {
-
         return new Object[][]{
                 {"q1", "true", "true"},
                 {"q2", "true", "false"},
@@ -83,14 +79,12 @@ public class ObservableQueueRegistryImplTest {
     }
 
     private static class TestQueueHandlerFactory extends QueueHandlerFactory {
-
         TestQueueHandlerFactory() {
             super(new BrokerCoreConfiguration.QueueEvents(), null);
         }
 
         @Override
         public QueueHandlerImpl createDurableQueueHandler(String queueName, boolean autoDelete, FieldTable arguments) {
-
             Queue queue = new MemQueueImpl(queueName, true, 10000, autoDelete);
             return new QueueHandlerImpl(queue, new NullBrokerMetricManager());
         }
