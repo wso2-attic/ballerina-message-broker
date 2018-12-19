@@ -23,13 +23,13 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-public class LikeComparisionExpressionTest {
+public class LikeComparissionExpressionTest {
     Metadata metadata =  new Metadata("queue1", "amq.topic", 0);
     Expression c4 = new ConstantExpression("value");
 
     @Test(dataProvider = "positive-filter-strings")
     private void testLikeComparision_positive(String filter) {
-        LikeComparisionExpression value = new LikeComparisionExpression(c4, filter, null);
+        LikeComparissionExpression value = new LikeComparissionExpression(c4, filter, null);
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
@@ -38,14 +38,14 @@ public class LikeComparisionExpressionTest {
     @Test(dataProvider = "positive-filter-strings-for-escape")
     private void testLikeComparision_positive_with_escape(String filter) {
         Expression c5 = new ConstantExpression(filter);
-        LikeComparisionExpression value = new LikeComparisionExpression(c5, "\\_%", "\\");
+        LikeComparissionExpression value = new LikeComparissionExpression(c5, "\\_%", "\\");
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
     @Test(dataProvider = "negative-filter-strings")
     private void testLikeComparision_negative(String filter) {
-        LikeComparisionExpression value = new LikeComparisionExpression(c4, filter, null);
+        LikeComparissionExpression value = new LikeComparissionExpression(c4, filter, null);
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
@@ -53,7 +53,7 @@ public class LikeComparisionExpressionTest {
     @Test(dataProvider = "negative-filter-strings-for-escape")
     private void testLikeComparision_negative_with_escape(String filter) {
         Expression c5 = new ConstantExpression(filter);
-        LikeComparisionExpression value = new LikeComparisionExpression(c5, "\\_%", "\\");
+        LikeComparissionExpression value = new LikeComparissionExpression(c5, "\\_%", "\\");
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");

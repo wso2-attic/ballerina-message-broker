@@ -23,13 +23,13 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-public class NotLikeComparisionExpressionTest {
+public class NotLikeComparissionExpressionTest {
     Metadata metadata =  new Metadata("queue1", "amq.topic", 0);
     Expression c4 = new ConstantExpression("property");
 
     @Test(dataProvider = "positive-filter-strings")
     private void testNotikeComparision_positive(String filter) {
-        NotLikeComparisionExpression value = new NotLikeComparisionExpression(c4, filter, null);
+        NotLikeComparissionExpression value = new  NotLikeComparissionExpression(c4, filter, null);
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
@@ -38,14 +38,14 @@ public class NotLikeComparisionExpressionTest {
     @Test(dataProvider = "positive-filter-strings-for-escape")
     private void testNotLikeComparision_positive_with_escape(String filter) {
         Expression c5 = new ConstantExpression(filter);
-        NotLikeComparisionExpression value = new NotLikeComparisionExpression(c5, "\\_%", "\\");
+        NotLikeComparissionExpression value = new  NotLikeComparissionExpression(c5, "\\_%", "\\");
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
     @Test(dataProvider = "negative-filter-strings")
     private void testNotLikeComparision_negative(String filter) {
-        NotLikeComparisionExpression value = new NotLikeComparisionExpression(c4, filter, null);
+        NotLikeComparissionExpression value = new  NotLikeComparissionExpression(c4, filter, null);
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
@@ -53,7 +53,7 @@ public class NotLikeComparisionExpressionTest {
     @Test(dataProvider = "negative-filter-strings-for-escape")
     private void testNotLikeComparision_negative_with_escape(String filter) {
         Expression c5 = new ConstantExpression(filter);
-        NotLikeComparisionExpression value = new NotLikeComparisionExpression(c5, "\\_%", "\\");
+        NotLikeComparissionExpression value = new  NotLikeComparissionExpression(c5, "\\_%", "\\");
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");

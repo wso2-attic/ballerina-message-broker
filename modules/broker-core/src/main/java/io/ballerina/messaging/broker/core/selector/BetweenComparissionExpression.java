@@ -24,13 +24,13 @@ import io.ballerina.messaging.broker.core.Metadata;
  * values provided.if left value is between other two values it evaluate to a boolean value.
  * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
-public class BetweenComparisionExpression implements BooleanExpression {
+public class BetweenComparissionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private final Expression<Metadata> value1;
     private final Expression<Metadata> value2;
 
-    public BetweenComparisionExpression (Expression left, Expression value1, Expression value2) {
+    public BetweenComparissionExpression (Expression left, Expression value1, Expression value2) {
         this.left = left;
         this.value1 = value1;
         this.value2 = value2;

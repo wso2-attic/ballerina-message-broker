@@ -27,14 +27,14 @@ import java.util.regex.Pattern;
  * and evaluate to a boolean value.
  * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
-public class LikeComparisionExpression implements BooleanExpression {
+public class LikeComparissionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private final String right;
     private final String escape;
     private Pattern likePattern;
 
-    public LikeComparisionExpression (Expression left , String right , String escape) {
+    public LikeComparissionExpression (Expression left , String right , String escape) {
         this.left = left;
         this.right = right;
         this.escape = escape;

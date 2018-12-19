@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class InComparisionExpressionTest {
+public class InComparissionExpressionTest {
     Metadata metadata = new Metadata("queue1", "amq.topic", 0);
     String[] myStrings = new String[]{"Elem1", "Elem2", "Elem3"};
     List mylist = Arrays.asList(myStrings);
@@ -40,23 +40,23 @@ public class InComparisionExpressionTest {
 
     @Test(dataProvider = "Expressions-positive")
     private void testpositiveInComparision (Expression string) {
-        InComparisionExpression incmp = new InComparisionExpression(string, mylist);
+        InComparissionExpression incmp = new InComparissionExpression(string, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
     @Test(dataProvider = "Expressions-negative")
     private void testnegativeInComparision (Expression string) {
-        InComparisionExpression incmp = new InComparisionExpression(string, mylist);
+        InComparissionExpression incmp = new InComparissionExpression(string, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are equal");
     }
     @Test(expectedExceptions = NullPointerException.class, dataProvider = "Expressions-positive")
     private void testnullobject (Expression string) {
-        InComparisionExpression incmp = new InComparisionExpression(null, mylist);
+        InComparissionExpression incmp = new InComparissionExpression(null, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
-        InComparisionExpression incmp1 = new InComparisionExpression(string, null);
+        InComparissionExpression incmp1 = new InComparissionExpression(string, null);
         boolean actualvalue1 = incmp1.evaluate(metadata);
     }
 

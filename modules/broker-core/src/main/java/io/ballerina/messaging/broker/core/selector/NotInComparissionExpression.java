@@ -29,12 +29,12 @@ import java.util.List;
  * please refer the ![jms-selector-guide](../docs/user/jms-selector-guide.md).
  */
 
-public class NotInComparisionExpression implements BooleanExpression {
+public class NotInComparissionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private  final List elements;
 
-    public NotInComparisionExpression (Expression left , List elements) {
+    public NotInComparissionExpression (Expression left , List elements) {
         this.left = left;
         this.elements = elements;
     }

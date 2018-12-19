@@ -26,7 +26,7 @@ import org.testng.annotations.Test;
 import java.util.Arrays;
 import java.util.List;
 
-public class NotInComparisionExpressionTest {
+public class NotInComparissionExpressionTest {
     Metadata metadata = new Metadata("queue1", "amq.topic", 0);
     String[] myStrings = new String[]{"Elem1", "Elem2", "Elem3"};
     List mylist = Arrays.asList(myStrings);
@@ -40,7 +40,7 @@ public class NotInComparisionExpressionTest {
 
     @Test(dataProvider = "Expressions-positive")
     private void testpositiveNotInComparision (Expression string) {
-        NotInComparisionExpression incmp = new NotInComparisionExpression(string, mylist);
+        NotInComparissionExpression incmp = new  NotInComparissionExpression(string, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are equal");
@@ -48,7 +48,7 @@ public class NotInComparisionExpressionTest {
 
     @Test(dataProvider = "Expressions-negative")
     private void testnegativeNotInComparision (Expression string) {
-        NotInComparisionExpression incmp = new NotInComparisionExpression(string, mylist);
+        NotInComparissionExpression incmp = new  NotInComparissionExpression(string, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
@@ -56,9 +56,9 @@ public class NotInComparisionExpressionTest {
 
     @Test(expectedExceptions = NullPointerException.class, dataProvider = "Expressions-positive")
     private void testnullobject (Expression string) {
-        NotInComparisionExpression incmp = new NotInComparisionExpression(null, mylist);
+        NotInComparissionExpression incmp = new  NotInComparissionExpression(null, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
-        NotInComparisionExpression incmp1 = new NotInComparisionExpression(string, null);
+        NotInComparissionExpression incmp1 = new  NotInComparissionExpression(string, null);
         boolean actualvalue1 = incmp1.evaluate(metadata);
     }
 

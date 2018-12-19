@@ -66,12 +66,12 @@ import io.ballerina.messaging.broker.core.selector.AndOperationExpression;
 import io.ballerina.messaging.broker.core.selector.OrOperationExpression;
 import io.ballerina.messaging.broker.core.selector.IsNotNullExpression;
 import io.ballerina.messaging.broker.core.selector.IsNullExpression;
-import io.ballerina.messaging.broker.core.selector.LikeComparisionExpression;
-import io.ballerina.messaging.broker.core.selector.NotLikeComparisionExpression;
-import io.ballerina.messaging.broker.core.selector.BetweenComparisionExpression;
-import io.ballerina.messaging.broker.core.selector.NotBetweenComparisionExpression;
-import io.ballerina.messaging.broker.core.selector.InComparisionExpression;
-import io.ballerina.messaging.broker.core.selector.NotInComparisionExpression;
+import io.ballerina.messaging.broker.core.selector.LikeComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.NotLikeComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.BetweenComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.NotBetweenComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.InComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.NotInComparissionExpression;
 import io.ballerina.messaging.broker.core.selector.ConstantExpression;
 import io.ballerina.messaging.broker.core.selector.UnaryNegative;
 import io.ballerina.messaging.broker.core.selector.Expression;
@@ -202,42 +202,42 @@ BooleanExpression ComparisonExpression() :
        |  <LESS_EQUAL> right = unary() { value = new LessThanOrEqualExpression(left , right); }
        | <NOTEQUAL> right = unary() { value = new NotEqualExpression(left , right);}
        |
-                            LOOKAHEAD(2)// if next two tokens are <IS> and <NULL> go to choice 1
+         LOOKAHEAD(2)// if next two tokens are <IS> and <NULL> go to choice 1
                             <IS> <NULL>
                             {
                                 value = new IsNullExpression(left); // choice 1
                             }
-                            |
+       |
                             <IS> <NOT> <NULL>
                             {
                                 value = new IsNotNullExpression(left);
                             }
-                    |
+       |
                                   {
                      					b = null;
                      				}
                      		        <LIKE> a = stringLitteral()
                      		        	[ <ESCAPE> b = stringLitteral() ] //[] brackets are choose point if we want we can go inside or we can ignore
                      		        {
-                                         value = new LikeComparisionExpression(left, a, b);
+                                         value = new LikeComparissionExpression(left, a, b);
                      		        }
-                    |
+       |
                      	        	LOOKAHEAD(2)
                      				{
                      					b = null;
                      				}
                      		        <NOT> <LIKE> a = stringLitteral() [ <ESCAPE> b = stringLitteral() ]
                      		        {
-                                         value = new NotLikeComparisionExpression(left, a, b);
+                                         value = new NotLikeComparissionExpression(left, a, b);
                      		        }
-                    |<BETWEEN> t = sum() <AND> u = sum()
+       |<BETWEEN> t = sum() <AND> u = sum()
 
-                                 { value = new BetweenComparisionExpression(left,t,u);}
-                    |
-                    LOOKAHEAD(2)
+                                 { value = new BetweenComparissionExpression(left,t,u);}
+       |
+        LOOKAHEAD(2)
                     <NOT><BETWEEN> t = sum() <AND> u = sum()
-                          { value = new NotBetweenComparisionExpression(left,t,u);}
-                    | <IN>
+                          { value = new NotBetweenComparissionExpression(left,t,u);}
+       | <IN>
                       		        "("
                       		            a = stringLitteral()
                       		            {
@@ -253,10 +253,10 @@ BooleanExpression ComparisonExpression() :
                       			        )*
                       		        ")"
                       		        {
-                      		           value = new  InComparisionExpression(left, list);
+                      		           value = new  InComparissionExpression(left, list);
              }
-              |
-                     LOOKAHEAD(2)
+       |
+        LOOKAHEAD(2)
                      <NOT> <IN>
                        "("
                           a = stringLitteral()
@@ -273,9 +273,9 @@ BooleanExpression ComparisonExpression() :
                       	 )*
                            ")"
                       		  {
-                      		      value =  new NotInComparisionExpression(left, list);
+                      		      value =  new NotInComparissionExpression(left, list);
                       		  }
-                 )
+                         )
 
     { return value; }
 }
