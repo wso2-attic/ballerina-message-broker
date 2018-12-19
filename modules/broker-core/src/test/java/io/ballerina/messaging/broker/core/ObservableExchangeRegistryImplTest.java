@@ -22,6 +22,7 @@ package io.ballerina.messaging.broker.core;
 import io.ballerina.messaging.broker.common.ValidationException;
 import io.ballerina.messaging.broker.core.eventingutil.TestPublisher;
 import io.ballerina.messaging.broker.core.store.dao.BindingDao;
+import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -36,24 +37,21 @@ public class ObservableExchangeRegistryImplTest {
 
     @BeforeClass
     public void setup() {
-
         testPublisher = new TestPublisher();
         observableExchangeRegistry = new ObservableExchangeRegistryImpl(
                 new ExchangeRegistryImpl(new NoOpExchangeDaoTestUtil(),
-                new ObservableExchangeRegistryImplTest.TestDurableBindingDao()),
+                        Mockito.mock(BindingDao.class)),
                 testPublisher);
     }
 
     @BeforeMethod
     public void start() {
-
         testPublisher.id = null;
         testPublisher.properties = null;
     }
 
     @AfterMethod
     public void clean() {
-
         testPublisher.id = null;
         testPublisher.properties = null;
     }
@@ -121,7 +119,6 @@ public class ObservableExchangeRegistryImplTest {
         observableExchangeRegistry.declareExchange(exchangeName, "topic", true, false);
         Assert.assertNotNull(testPublisher.id);
         observableExchangeRegistry.deleteExchange(exchangeName, true);
-
     }
 
     @Test(description = "Test to check exchange declared when there is no exchange", expectedExceptions =
@@ -135,7 +132,6 @@ public class ObservableExchangeRegistryImplTest {
     @Test(description = "test properties of exchange created event publish", dataProvider = "example exchanges")
     public void testAddExchange(String exchangeName, String type, String durable)
             throws BrokerException, ValidationException {
-
         Exchange.Type exchangeType;
         if (type.equals("topic")) {
             exchangeType = Exchange.Type.TOPIC;
@@ -164,23 +160,5 @@ public class ObservableExchangeRegistryImplTest {
         return new Object[][]{
                 {"test1", true},
                 {"test2", false}};
-    }
-
-    private static class TestDurableBindingDao implements BindingDao {
-
-        @Override
-        public void persist(String exchangeName, Binding binding) {
-
-        }
-
-        @Override
-        public void delete(String queueName, String routingKey, String exchangeName) {
-
-        }
-
-        @Override
-        public void retrieveBindingsForExchange(String exchangeName, BindingCollector bindingCollector) {
-
-        }
     }
 }

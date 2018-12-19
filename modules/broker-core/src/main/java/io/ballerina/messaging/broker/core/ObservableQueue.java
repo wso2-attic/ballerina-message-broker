@@ -32,6 +32,9 @@ import javax.transaction.xa.Xid;
 final class ObservableQueue extends Queue {
 
     private final Queue queue;
+    private static final String MESSAGE_PUBLISH_LIMIT_EVENT = "queue.publishLimitReached.";
+    private static final String MESSAGE_DELIVER_LIMIT_EVENT = "queue.deliverLimitReached.";
+
     /**
      * We are using a HashSet instead of a concurrent for message limits set because this object is only read or
      * accessed and not written or modified.
@@ -60,7 +63,7 @@ final class ObservableQueue extends Queue {
     public boolean enqueue(Message message) throws BrokerException {
         boolean enqueued = queue.enqueue(message);
         if (enqueued) {
-            publishQueueLimitReachedEvent("queue.publishLimitReached.", getQueueHandler());
+            publishQueueLimitReachedEvent(MESSAGE_PUBLISH_LIMIT_EVENT, getQueueHandler());
         }
         return enqueued;
     }
@@ -83,7 +86,7 @@ final class ObservableQueue extends Queue {
     @Override
     public Message dequeue() {
         Message message =  queue.dequeue();
-        publishQueueLimitReachedEvent("queue.deliverLimitReached.", this.getQueueHandler());
+        publishQueueLimitReachedEvent(MESSAGE_DELIVER_LIMIT_EVENT, this.getQueueHandler());
         return message;
     }
 

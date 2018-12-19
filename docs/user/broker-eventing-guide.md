@@ -25,6 +25,8 @@ below (ex: Broker Publisher, Stream Processor Publisher).
 Available default implementations are,
 - Broker Event Publisher - io.ballerina.messaging.broker.core.eventpublisher.BrokerCoreEventPublisher
 
+### Enabling Event Publishing Capability
+
 Set the enabled attribute true or false according to your preference to enable events.
 ```yaml
 # Broker event related configurations.
@@ -34,6 +36,31 @@ ballerina.broker.events:
   # Publisher Implementation
   publisherClass: io.ballerina.messaging.broker.core.eventpublisher.BrokerCoreEventPublisher
 ```
+### Enabling Event Listening Capability
+
+```yaml
+# Message limits for to trigger notifications in queues
+ eventConfig:
+  queueLimitEvents:
+    enabled:  true
+    commonLimits: [10, 6]
+    queues:
+      - name: test
+        limits: [2,6]
+      - name: test2
+        limits: [2,8]
+  # Enable Exchange Admin Events
+  exchangeAdminEventsEnabled: true
+  # Enable Queue Admin Events
+  queueAdminEventsEnabled: true
+  # Enable Queue External Events
+  queueExternalEventsEnabled: true
+```
+
+- Queue Limit Events - `queue.publishLimitReached`, `queue.deliverLimitReached`
+- Queue Admin Events - `queue.added, queue.removed`
+- Queue External Events - `consumer.added, consumer.removed`, `binding.added`, `binding.removed`
+- Exchange Admin Events - `exchange.added`, `exchange.removed`
 ## Obtaining Event notifications
 
 To listen to specific event notifications you should declare an AMQP consumer with a queue which listen to routing keys 
@@ -43,7 +70,7 @@ shows events and their related routing key.
 ### Queue Related Events
 
 - Queue Created Event -	
-`queue.deleted`
+`queue.added`
 - Queue Deleted Event -	
 `queue.deleted`
 - Queue Limit Reached Events -	
@@ -78,11 +105,11 @@ shows events and their related routing key.
 - Consumer Added Event - 
 `consumer.added`
 - Consumer Added to queue “QueueName” -	
-`consumer.added.”QueueName`
+`consumer.added.”QueueName"`
 - Consumer Removed Event -	
 `consumer.removed`
 - Consumer Removed from queue “QueueName” -	
-`consumer.removed.”QueueName”`
+`consumer.removed.”QueueName"`
 - Consumer Events -	
 `consumer.*`
 
@@ -129,12 +156,15 @@ ballerina.broker.core: namespace. Specify the queue and the needed limits.
 
 ```yaml
  # Message limits for to trigger notifications in queues
- eventConfig:
-   queueEvents:
-      commonLimits: [10, 6]
-      specificLimits:
-        testQueue: [1, 2, 3]
-        testQueue1: [21, 3]
+  eventConfig:
+   queueLimitEvents:
+     enabled:  true
+     commonLimits: [10, 6]
+     queues:
+       - name: test
+         limits: [2,6]
+       - name: test2
+         limits: [2,8]
 ```
 ### Specifying message limits when declaring an AMQP consumer
 

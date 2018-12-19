@@ -20,7 +20,6 @@
 package io.ballerina.messaging.broker.core.eventingutil;
 
 import io.ballerina.messaging.broker.common.EventSync;
-import org.testng.Assert;
 
 import java.util.Map;
 
@@ -30,18 +29,6 @@ public class TestPublisher implements EventSync {
 
     public String getProperty(String propertyName) {
         return properties.get(propertyName);
-    }
-
-    void checkProperty(String propertyName, String value) {
-        Assert.assertEquals(properties.get(propertyName), value);
-    }
-
-    void testEvent(Object[][] properties) {
-        for (Object[] combination:properties) {
-            String propertyName = combination[0].toString();
-            String value = combination[1].toString();
-            Assert.assertEquals(this.properties.get(propertyName), value);
-        }
     }
 
     @Override

@@ -46,13 +46,11 @@ public class ObservableQueueHandlerImplTest {
 
     @BeforeClass
     public void setup() throws BrokerException {
-
         TestQueue testQueue = new TestQueue("TestQueue", false, false, 10);
         testPublisher = new TestPublisher();
         observableQueueHandler = new ObservableQueueHandlerImpl(
                 new QueueHandlerImpl(testQueue, new NullBrokerMetricManager()),
                 testPublisher);
-
         Queue testQueue1 = new MemQueueImpl("TestQueue", 16, false);
 
        //Queues to check message limit events
@@ -202,6 +200,18 @@ public class ObservableQueueHandlerImplTest {
         Assert.assertEquals(testPublisher.getProperty("bindingPattern"), bindingPattern);
         Assert.assertEquals(testPublisher.id, "binding.added");
         observableQueueHandler.removeBinding(binding);
+    }
+
+    @Test(description = "Observable Consumer equals testing")
+    public void testObservableConsumerEquals() {
+        Consumer consumer = new TestConsumer(false, false, "test");
+        Consumer consumer1 = new TestConsumer(false, false, "test");
+        Consumer observableConsumer1 = new ObservableConsumer(consumer, testPublisher);
+        Consumer observableConsumer2 = new ObservableConsumer(consumer, testPublisher);
+        Assert.assertEquals(observableConsumer1, observableConsumer2);
+
+        Consumer observableConsumer3 = new ObservableConsumer(consumer1, testPublisher);
+        Assert.assertNotEquals(observableConsumer1, observableConsumer3);
     }
 
     @DataProvider(name = "example consumers")
