@@ -54,7 +54,7 @@ public final class ExchangeRegistryImpl extends ExchangeRegistry {
 
     private final Collection<Exchange> unmodifiableExchangesView;
 
-    public ExchangeRegistryImpl(ExchangeDao exchangeDao,
+    ExchangeRegistryImpl(ExchangeDao exchangeDao,
                                 BindingDao bindingDao) {
         exchangeMap = new ConcurrentHashMap<>(3);
         exchangeMap.put(DIRECT, new DirectExchange(DIRECT, bindingDao));
@@ -206,5 +206,4 @@ public final class ExchangeRegistryImpl extends ExchangeRegistry {
             return exchange;
         }
     }
-
 }

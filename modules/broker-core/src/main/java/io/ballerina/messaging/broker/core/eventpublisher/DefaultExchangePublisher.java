@@ -40,17 +40,15 @@ public class DefaultExchangePublisher implements ExchangePublisher {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExchangePublisher.class);
     private Broker broker;
 
-    /**
-     * Name of the Exchange where notifications are published.
-     */
-    private String exchangeName = "x-event";
-
     DefaultExchangePublisher(Broker broker) {
         this.broker = broker;
     }
 
     @Override
     public void publishNotification(String id, Map<String, String> properties) {
+        //Name of the Exchange where notifications are published.
+        String exchangeName = "x-event";
+
         String data = "Event Message";
         Metadata metadata = new Metadata(id, exchangeName, data.length());
         metadata.setHeaders(properties);
@@ -66,10 +64,6 @@ public class DefaultExchangePublisher implements ExchangePublisher {
         } catch (BrokerException e) {
             LOGGER.warn("Exception while publishing event notification message {}", notificationMessage, e);
         }
-    }
-
-    void setExchangeName(String exchangeName) {
-        this.exchangeName = exchangeName;
     }
 
     private ContentChunk getChunk(String data) {

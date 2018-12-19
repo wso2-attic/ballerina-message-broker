@@ -124,5 +124,4 @@ final class QueueRegistryImpl extends QueueRegistry {
         queueHandlerMap.clear();
         retrieveQueuesFromDao();
     }
-
 }

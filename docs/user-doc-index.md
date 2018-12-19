@@ -12,3 +12,4 @@
 - [Broker Admin Command Line Interface (CLI)](user/cli-client.md)
 - [Embedding Message Broker](user/embedding-message-broker.md)
 - [Dockerfile for Message Broker](user/dockerfile-for-message-broker.md)
+- [Broker-Eventing-Guide](user/broker-eventing-guide.md)

@@ -30,8 +30,11 @@ public class TestQueue extends Queue {
     private int size;
 
     public TestQueue(String queueName, boolean durable, boolean autoDelete, int size) {
-
         super(queueName, durable, autoDelete);
+        this.size = size;
+    }
+
+    public void setSize(int size) {
         this.size = size;
     }
 

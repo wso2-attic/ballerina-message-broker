@@ -2,13 +2,13 @@ package io.ballerina.messaging.broker.core.eventpublisher;
 
 import io.ballerina.messaging.broker.common.EventSync;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
-
+import java.util.Objects;
 
 public class BrokerCoreEventPublisherTest {
 
@@ -17,24 +17,26 @@ public class BrokerCoreEventPublisherTest {
 
     @BeforeClass
     public void setup() {
-
         broker = new TestBroker();
         this.eventSync = new BrokerCoreEventPublisher();
-        ((BrokerCoreEventPublisher) this.eventSync).setBroker(broker);
     }
 
-    @Test(description = "test activating events")
-    public void testActivate() {
+    @Test(description = "test activating events",  dataProvider = "sample brokers")
+    public void testActivate(TestBroker broker) {
+        ((BrokerCoreEventPublisher) this.eventSync).setBroker(broker);
         eventSync.activate();
         eventSync.publish("test", new HashMap<>());
-        Assert.assertNotNull(broker.getMessage());
+        if (Objects.nonNull(broker)) {
+            Assert.assertNotNull(broker.getMessage());
+        }
     }
 
     @Test(description = "Test deactivating events")
     public void testDeactivate() {
+        ((BrokerCoreEventPublisher) this.eventSync).setBroker(broker);
         eventSync.deactivate();
         eventSync.publish("test", new HashMap<>());
-        Assert.assertNull(broker.getMessage());
+            Assert.assertNull(broker.getMessage());
     }
 
     @AfterMethod
@@ -42,9 +44,8 @@ public class BrokerCoreEventPublisherTest {
         broker.clearMessage();
     }
 
-    @AfterClass
-    public void tearDown() {
-        this.eventSync = null;
-        this.broker = null;
+    @DataProvider(name = "sample brokers")
+    public Object[] sampleBrokers() {
+        return new Object[] {broker, null};
     }
 }

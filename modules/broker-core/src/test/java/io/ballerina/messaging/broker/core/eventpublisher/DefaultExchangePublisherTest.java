@@ -1,8 +1,11 @@
 package io.ballerina.messaging.broker.core.eventpublisher;
 
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.Broker;
+import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
+import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -11,6 +14,9 @@ import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 
 public class DefaultExchangePublisherTest {
 
@@ -43,9 +49,14 @@ public class DefaultExchangePublisherTest {
         Assert.assertEquals(metadata.getHeader(ShortString.parseString(property2)).toString(), value2);
     }
 
-    @Test
-    public void testSetExchangeName() {
-
+    @Test(description = "Test unable to publish message to broker with BrokerException")
+    public void testPublishNotificationWithException() throws BrokerException {
+        Broker broker = Mockito.mock(Broker.class);
+        doThrow(BrokerException.class).when(broker).publish(any(Message.class));
+        ExchangePublisher exchangePublisher = new DefaultExchangePublisher(broker);
+        Map<String, String> properties = new HashMap<>();
+        properties.put("testProperty", "testValue");
+        exchangePublisher.publishNotification("test", properties);
     }
 
     @DataProvider(name = "example notifications")
