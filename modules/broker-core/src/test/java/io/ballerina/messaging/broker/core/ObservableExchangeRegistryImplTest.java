@@ -31,7 +31,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 public class ObservableExchangeRegistryImplTest {
-
     private TestPublisher testPublisher;
     private ObservableExchangeRegistryImpl observableExchangeRegistry;
 
@@ -156,7 +155,6 @@ public class ObservableExchangeRegistryImplTest {
 
     @DataProvider(name = "declare test parameters")
     public Object[][] declareInputs() {
-
         return new Object[][]{
                 {"test1", true},
                 {"test2", false}};

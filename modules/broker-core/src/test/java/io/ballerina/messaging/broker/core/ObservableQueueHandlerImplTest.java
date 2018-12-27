@@ -79,7 +79,6 @@ public class ObservableQueueHandlerImplTest {
 
     @AfterMethod
     public void clean() {
-
         testPublisher.id = null;
         testPublisher.properties = null;
     }
@@ -94,7 +93,7 @@ public class ObservableQueueHandlerImplTest {
         Assert.assertEquals(testPublisher.getProperty("queueName"), consumer.getQueueName());
     }
 
-     @Test
+     @Test(description = "Test existing consumer addition")
      public void testExistingConsumerConsumerAdd() {
          Consumer consumer = new TestConsumer(true, false, "existing");
          observableQueueHandler.addConsumer(consumer);
@@ -103,8 +102,8 @@ public class ObservableQueueHandlerImplTest {
          Assert.assertNull(testPublisher.id);
      }
 
-     @Test
-     public void testNonExistingCustomerRemove() {
+     @Test(description = "Test non existing consumer removal")
+     public void testNonExistingConsumerRemoval() {
         observableQueueHandler.removeConsumer(new TestConsumer(true, false, "non-existing"));
         Assert.assertNull(testPublisher.id);
      }
@@ -112,7 +111,6 @@ public class ObservableQueueHandlerImplTest {
 
     @Test(description = "test properties of consumer removed event publish", dataProvider = "example consumers")
     public void testRemoveConsumer(boolean exclusive, boolean ready, String queueName) {
-
         Consumer consumer = new TestConsumer(exclusive, ready, queueName);
         observableQueueHandler.addConsumer(consumer);
         testPublisher.properties = null;
@@ -122,7 +120,6 @@ public class ObservableQueueHandlerImplTest {
         Assert.assertEquals(testPublisher.getProperty("ready"), String.valueOf(consumer.isReady()));
         Assert.assertEquals(testPublisher.getProperty("queueName"), consumer.getQueueName());
         Assert.assertEquals(testPublisher.id, "consumer.removed");
-
     }
 
     @Test(description = "test properties of queue limit reached event publish", invocationCount = 17)
@@ -190,7 +187,6 @@ public class ObservableQueueHandlerImplTest {
     @Test(description = "test properties of binding event publish", dataProvider = "example bindings")
     public void testAddBinding(String queueName, String bindingPattern)
             throws BrokerException {
-
         TestQueue testQueue = new TestQueue(queueName, false, false, 10);
         FieldTable arguments = new FieldTable();
         Binding binding = new Binding(testQueue, bindingPattern, arguments);
@@ -208,10 +204,12 @@ public class ObservableQueueHandlerImplTest {
         Consumer consumer1 = new TestConsumer(false, false, "test");
         Consumer observableConsumer1 = new ObservableConsumer(consumer, testPublisher);
         Consumer observableConsumer2 = new ObservableConsumer(consumer, testPublisher);
-        Assert.assertEquals(observableConsumer1, observableConsumer2);
-
         Consumer observableConsumer3 = new ObservableConsumer(consumer1, testPublisher);
+
+        Assert.assertEquals(observableConsumer1, observableConsumer2);
         Assert.assertNotEquals(observableConsumer1, observableConsumer3);
+        Assert.assertEquals(observableConsumer1, consumer);
+        Assert.assertNotEquals(observableConsumer1, consumer1);
     }
 
     @DataProvider(name = "example consumers")
