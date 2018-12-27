@@ -36,6 +36,7 @@ import java.util.Objects;
 public class ExchangeRegistryFactoryTest {
 
     private BrokerCoreConfiguration.EventConfig eventConfig;
+
     @BeforeClass
     public void setup() {
         eventConfig = new BrokerCoreConfiguration().getEventConfig();

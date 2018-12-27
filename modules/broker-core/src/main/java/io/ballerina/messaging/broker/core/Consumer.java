@@ -80,6 +80,9 @@ public abstract class Consumer {
         if (this == obj) {
             return true;
         }
+        if (obj instanceof ObservableConsumer) {
+            return obj.equals(this);
+        }
         if (obj instanceof Consumer) {
             return id == ((Consumer) obj).id;
         }

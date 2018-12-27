@@ -27,8 +27,8 @@ import java.util.Properties;
  * Represents an Consumer which trigger events for the broker.
  */
 public class ObservableConsumer extends Consumer {
-    Consumer consumer;
-    EventSync eventSync;
+    private Consumer consumer;
+    private EventSync eventSync;
 
     ObservableConsumer(Consumer consumer, EventSync eventSync) {
         this.consumer = consumer;
@@ -70,7 +70,7 @@ public class ObservableConsumer extends Consumer {
             return consumer.getId() == ((ObservableConsumer) obj).consumer.getId();
         }
         if (obj instanceof Consumer) {
-            return super.getId() == ((Consumer) obj).getId();
+            return consumer.getId() == ((Consumer) obj).getId();
         }
         return false;
     }
