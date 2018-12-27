@@ -197,7 +197,7 @@ public class QueueHandlerFactoryTest {
 
     @DataProvider(name = "specific limit inputs")
     public Object[][] specificLimitDetails() {
-            return new Object[][]{
+            return new Object[][] {
                     {"test", true},
                     {"test", false},
                     {"different", true},
