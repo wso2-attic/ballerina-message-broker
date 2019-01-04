@@ -47,21 +47,18 @@ public class EventingTest {
     @Parameters({"broker-hostname", "broker-port", "admin-username", "admin-password"})
     @BeforeMethod
     public void setUp(String hostname, String port, String username, String password) throws Exception {
-
         connection = ClientHelper.getAmqpConnection(username, password, hostname, port);
         channel = connection.createChannel();
     }
 
     @AfterMethod
     public void tearDown() throws Exception {
-
         channel.close();
         connection.close();
     }
 
     @Test(dataProvider = "example queues")
     public void testQueueCreatedEvent(String queueName, boolean durable, boolean autoDelete) throws Exception {
-
         channel.queueDeclare("queue.added", false, false, false, null);
         channel.queueBind("queue.added", "x-event", "queue.created");
         channel.queueDeclare(queueName, durable, false, autoDelete, null);

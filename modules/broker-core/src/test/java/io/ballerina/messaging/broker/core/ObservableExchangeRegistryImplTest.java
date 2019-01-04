@@ -38,8 +38,8 @@ public class ObservableExchangeRegistryImplTest {
     public void setup() {
         testPublisher = new TestPublisher();
         observableExchangeRegistry = new ObservableExchangeRegistryImpl(
-                new ExchangeRegistryImpl(new NoOpExchangeDaoTestUtil(),
-                        Mockito.mock(BindingDao.class)),
+                         new ExchangeRegistryImpl(new NoOpExchangeDaoTestUtil(),
+                         Mockito.mock(BindingDao.class)),
                 testPublisher);
     }
 
