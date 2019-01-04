@@ -45,25 +45,23 @@ public class DivisionExpression implements Expression<Metadata> {
 
         if (leftValue instanceof Number && rightValue instanceof Number) {
             switch (numberType((Number) leftValue, (Number) rightValue)) {
-
-                case DivisionExpression.DOUBLE:
-                    return  ((Number) leftValue).doubleValue() / ((Number) rightValue).doubleValue();
-
-                case DivisionExpression.LONG:
+                case 1:
                     return ((Number) leftValue).longValue() / ((Number) rightValue).longValue();
-
+                case 2:
+                    return  ((Number) leftValue).doubleValue() / ((Number) rightValue).doubleValue();
             }
         }
         return null;
     }
 
     private int numberType (Number left, Number right) {
-        if (left instanceof Double || right instanceof Double) {
-            return DivisionExpression.DOUBLE;
-        } else if ((left instanceof Long) && (right instanceof Long)) {
-            return DivisionExpression.LONG;
+        Class lv = left.getClass();
+        if ((lv == Integer.class) || (lv == Long.class)) {
+            if (right instanceof Long) {
+                return 1;
+            }
         }
-        return DOUBLE;
+        return 2;
     }
 
 }

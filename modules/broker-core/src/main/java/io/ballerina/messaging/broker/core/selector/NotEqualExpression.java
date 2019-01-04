@@ -37,12 +37,15 @@ public class NotEqualExpression implements BooleanExpression {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
 
-        if ((leftValue instanceof Long) && (rightValue instanceof Long)) {
-            long l = ((Number) leftValue).longValue();
-            long l1 = ((Number) rightValue).longValue();
-            return l != l1;
-        }
-        if ((leftValue instanceof Double) || (rightValue instanceof Double)) {
+        if (leftValue instanceof Number && rightValue instanceof Number) {
+            Class lv = leftValue.getClass();
+            if ((lv == Integer.class) || (lv == Long.class)) {
+                if (rightValue instanceof Long) {
+                    long l = ((Number) leftValue).longValue();
+                    long l1 = ((Number) rightValue).longValue();
+                    return l != l1;
+                }
+            }
             Double l = ((Number) leftValue).doubleValue();
             Double l1 = ((Number) rightValue).doubleValue();
              return !l.equals(l1);

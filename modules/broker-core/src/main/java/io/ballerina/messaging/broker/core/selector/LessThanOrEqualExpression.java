@@ -38,10 +38,13 @@ public class LessThanOrEqualExpression implements BooleanExpression {
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue instanceof Number && rightValue instanceof Number) {
-            if ((leftValue instanceof Long) && (rightValue instanceof Long)) {
-                long l = ((Number) leftValue).longValue();
-                long l1 = ((Number) rightValue).longValue();
-                return l < l1 || l == l1;
+            Class lv = leftValue.getClass();
+            if ((lv == Integer.class) || (lv == Long.class)) {
+                if (rightValue instanceof Long) {
+                    long l = ((Number) leftValue).longValue();
+                    long l1 = ((Number) rightValue).longValue();
+                    return l < l1 || l == l1;
+                }
             }
             if ((leftValue instanceof Double) || (rightValue instanceof Double)) {
                 Double l = ((Number) leftValue).doubleValue();

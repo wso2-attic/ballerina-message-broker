@@ -43,20 +43,23 @@ public class BetweenComparissionExpression implements BooleanExpression {
         Object secondValue = value2.evaluate(metadata);
 
         if (leftValue instanceof Number && firstValue instanceof Number && secondValue instanceof Number) {
-            if ((leftValue instanceof Long) && (firstValue instanceof Long) && (secondValue instanceof Long)) {
-                Long l = ((Number) leftValue).longValue();
-                Long l1 = ((Number) firstValue).longValue();
-                Long l2 = ((Number) secondValue).longValue();
+                Class lv = leftValue.getClass();
+                if ((lv == Integer.class) || (lv == Long.class)) {
+                    if ((firstValue instanceof Long) && (secondValue instanceof Long)) {
+                        Long l = ((Number) leftValue).longValue();
+                        Long l1 = ((Number) firstValue).longValue();
+                        Long l2 = ((Number) secondValue).longValue();
 
-                return ((leftValue == firstValue) || (l > l1)) && ((leftValue == secondValue) || (l < l2));
-            }
-            if ((leftValue instanceof Double) || (firstValue instanceof Double) || (secondValue instanceof Double)) {
+                        return ((leftValue == firstValue) || (l > l1)) && ((leftValue == secondValue) || (l < l2));
+                    }
+                }
+
                 Double l = ((Number) leftValue).doubleValue();
                 Double l1 = ((Number) firstValue).doubleValue();
                 Double l2 = ((Number) secondValue).doubleValue();
 
                 return ((leftValue == firstValue) || (l > l1)) && ((leftValue == secondValue) || (l < l2));
-            }
+
         }
         return false;
     }

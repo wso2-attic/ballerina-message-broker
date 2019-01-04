@@ -41,24 +41,23 @@ public class SubtractionExpression implements Expression<Metadata> {
         Object rightValue = right.evaluate(metadata);
         if (leftValue instanceof Number && rightValue instanceof Number) {
             switch (numberType((Number) leftValue, (Number) rightValue)) {
-
-                case SubtractionExpression.DOUBLE:
-                    return  ((Number) leftValue).doubleValue() - ((Number) rightValue).doubleValue();
-                case SubtractionExpression.LONG:
+                case 1:
                     return ((Number) leftValue).longValue() - ((Number) rightValue).longValue();
 
+                case 2:
+                    return  ((Number) leftValue).doubleValue() - ((Number) rightValue).doubleValue();
             }
         }
         return null;
     }
 
     private int numberType (Number left, Number right) {
-        if (left instanceof Double || right instanceof Double) {
-            return SubtractionExpression.DOUBLE;
-        } else if ((left instanceof Long) && (right instanceof Long)) {
-            return SubtractionExpression.LONG;
+        Class lv = left.getClass();
+        if ((lv == Integer.class) || (lv == Long.class)) {
+            if (right instanceof Long) {
+                return 1;
+            }
         }
-        return DOUBLE;
+        return 2;
     }
-
 }

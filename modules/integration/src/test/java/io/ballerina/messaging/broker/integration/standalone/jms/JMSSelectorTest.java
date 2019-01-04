@@ -61,7 +61,7 @@ public class JMSSelectorTest {
         // Subscribe with a selector
         String propertyName = "MyProperty";
 
-        TopicSubscriber consumer = subscriberSession.createSubscriber(topic, "MyProperty * 2 + 1 > 100 ", false);
+        TopicSubscriber consumer = subscriberSession.createSubscriber(topic, "MyProperty + 100 > 120 ", false);
 
         // publish messages with property
         TopicSession producerSession = connection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
@@ -159,7 +159,7 @@ public class JMSSelectorTest {
         TopicSession producerSession = connection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
         TopicPublisher producer = producerSession.createPublisher(topic);
 
-        String consumer1Message = "Age minus one and add 11 is not equal to 210 group";
+        String consumer1Message = "Age minus one and add 11 is not equal to 310 group";
         String consumer2Message = "Age divides by 4 and multiply 2 times greater than 50 group";
         String consumer3Message = "Age add 1 is between 760 and 770 John group";
         TextMessage textMessage = producerSession.createTextMessage(consumer1Message);

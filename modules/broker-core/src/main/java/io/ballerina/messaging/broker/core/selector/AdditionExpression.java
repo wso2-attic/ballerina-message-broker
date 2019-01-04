@@ -43,10 +43,10 @@ public class AdditionExpression implements Expression<Metadata> {
         if (leftValue instanceof Number && rightValue instanceof Number) {
             switch (numberType((Number) leftValue, (Number) rightValue)) {
 
-                case AdditionExpression.LONG:
+                case 1:
                     return ((Number) leftValue).longValue() + ((Number) rightValue).longValue();
 
-                case AdditionExpression.DOUBLE:
+                case 2:
                     return ((Number) leftValue).doubleValue() + ((Number) rightValue).doubleValue();
             }
         }
@@ -54,12 +54,13 @@ public class AdditionExpression implements Expression<Metadata> {
     }
 
     private int numberType (Number left, Number right) {
-        if (left instanceof Double || right instanceof Double) {
-            return AdditionExpression.DOUBLE;
-        } else if ((left instanceof Long) && (right instanceof Long)) {
-            return AdditionExpression.LONG;
+        Class lv = left.getClass();
+         if ((lv == Integer.class) || (lv == Long.class)) {
+            if (right instanceof Long) {
+                return 1;
+            }
         }
-        return DOUBLE;
+        return 2;
     }
 }
 

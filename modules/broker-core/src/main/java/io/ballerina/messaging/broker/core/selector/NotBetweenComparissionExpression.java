@@ -43,18 +43,21 @@ public class NotBetweenComparissionExpression implements BooleanExpression {
         Object secondValue = value2.evaluate(metadata);
 
         if (leftValue instanceof Number && firstValue instanceof Number && secondValue instanceof Number) {
-            if ((leftValue instanceof Long) && (firstValue instanceof Long) && (secondValue instanceof Long)) {
+            Class lv = leftValue.getClass();
+            if ((lv == Integer.class) || (lv == Long.class)) {
+                if ((firstValue instanceof Long) && (secondValue instanceof Long)) {
                     long l = ((Number) leftValue).longValue();
                     long l1 = ((Number) firstValue).longValue();
                     long l2 = ((Number) secondValue).longValue();
                     return ((leftValue != firstValue) && (l <= l1)) || ((leftValue != secondValue) && (l >= l2));
                 }
-            if ((leftValue instanceof Double) || (firstValue instanceof Double) || (secondValue instanceof Double)) {
+            }
+
                 double l = ((Number) leftValue).doubleValue();
                 double l1 = ((Number) firstValue).doubleValue();
                 double l2 = ((Number) secondValue).doubleValue();
                 return ((leftValue != firstValue) && (l <= l1)) || ((leftValue != secondValue) && (l >= l2));
-            }
+
         }
         return false;
     }
