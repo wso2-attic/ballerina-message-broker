@@ -62,10 +62,12 @@ public class EventingTest {
     @Test(dataProvider = "example queues")
     public void testQueueCreatedEvent(String queueName, boolean durable, boolean autoDelete) throws Exception {
 
-        channel.queueDeclare("queue.created", false, false, false, null);
-        channel.queueBind("queue.created", "x-event", "queue.created");
+        channel.queueDeclare("queue.added", false, false, false, null);
+        channel.queueBind("queue.added", "x-event", "queue.created");
         channel.queueDeclare(queueName, durable, false, autoDelete, null);
 
+        AMQP.Queue.DeclareOk dok = channel.queueDeclare("queue.created", false, false, false, null);
+        Assert.assertFalse(dok.getQueue().isEmpty());
         DefaultConsumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope,
@@ -77,7 +79,7 @@ public class EventingTest {
                 Assert.assertEquals(String.valueOf(headers.get("autoDelete")), String.valueOf(autoDelete));
             }
         };
-        Assert.assertNotNull(channel.basicConsume("queue.created", false, consumer));
+        Assert.assertNotNull(channel.basicConsume("queue.added", false, consumer));
         channel.queueDelete(queueName);
     }
 
@@ -88,6 +90,8 @@ public class EventingTest {
         channel.queueBind("queue.deleted", "x-event", "queue.deleted");
         channel.queueDeclare(queueName, durable, false, autoDelete, null);
         channel.queueDelete(queueName);
+        AMQP.Queue.DeclareOk dok = channel.queueDeclare("queue.deleted", false, false, false, null);
+        Assert.assertFalse(dok.getQueue().isEmpty());
         DefaultConsumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope,
@@ -108,6 +112,8 @@ public class EventingTest {
         channel.queueDeclare("exchange.created", false, false, false, null);
         channel.queueBind("exchange.created", "x-event", "exchange.created");
         channel.exchangeDeclare(exchangeName, type, durable);
+        AMQP.Queue.DeclareOk dok = channel.queueDeclare("exchange.created", false, false, false, null);
+        Assert.assertFalse(dok.getQueue().isEmpty());
         DefaultConsumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope,
@@ -130,6 +136,8 @@ public class EventingTest {
         channel.queueBind("exchange.deleted", "x-event", "exchange.deleted");
         channel.exchangeDeclare(exchangeName, type, durable);
         channel.exchangeDelete(exchangeName);
+        AMQP.Queue.DeclareOk dok = channel.queueDeclare("exchange.deleted", false, false, false, null);
+        Assert.assertFalse(dok.getQueue().isEmpty());
         DefaultConsumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope,
@@ -151,6 +159,8 @@ public class EventingTest {
         channel.queueBind("binding.created", "x-event", "binding.created");
         channel.queueDeclare(queueName, false, false, false, null);
         channel.queueBind(queueName, "<<default>>", "testPattern");
+        AMQP.Queue.DeclareOk dok = channel.queueDeclare("binding.created", false, false, false, null);
+        Assert.assertFalse(dok.getQueue().isEmpty());
         DefaultConsumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope,
@@ -172,6 +182,8 @@ public class EventingTest {
         channel.queueDeclare(queueName, false, false, false, null);
         channel.queueBind(queueName, "<<default>>", "testPattern");
         channel.queueUnbind(queueName, "<<default>>", "testPattern");
+        AMQP.Queue.DeclareOk dok = channel.queueDeclare("binding.deleted", false, false, false, null);
+        Assert.assertFalse(dok.getQueue().isEmpty());
         DefaultConsumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope,
@@ -182,7 +194,7 @@ public class EventingTest {
                 Assert.assertEquals(String.valueOf(headers.get("bindingPattern")), "testPattern");
             }
         };
-        Assert.assertNotNull(channel.basicConsume("binding.created", false, consumer));
+        Assert.assertNotNull(channel.basicConsume("binding.deleted", false, consumer));
     }
 
     @Test(dataProvider = "queueNames")
@@ -209,6 +221,8 @@ public class EventingTest {
             }
         };
         channel.basicConsume(queueName, false, testConsumer);
+        AMQP.Queue.DeclareOk dok = channel.queueDeclare("consumer.added", false, false, false, null);
+        Assert.assertFalse(dok.getQueue().isEmpty());
         Assert.assertNotNull(channel.basicConsume("consumer.added", false, consumer));
     }
 
@@ -237,6 +251,8 @@ public class EventingTest {
         };
         String consumerTag = channel.basicConsume(queueName, false, testConsumer);
         channel.basicCancel(consumerTag);
+        AMQP.Queue.DeclareOk dok = channel.queueDeclare("consumer.removed", false, false, false, null);
+        Assert.assertFalse(dok.getQueue().isEmpty());
         Assert.assertNotNull(channel.basicConsume("consumer.removed", false, consumer));
     }
 
@@ -277,6 +293,9 @@ public class EventingTest {
         };
 
         if (type) {
+            AMQP.Queue.DeclareOk dok = channel.queueDeclare("queue.publishLimitReached." + queueName + "." + limit,
+                    false, false, false, null);
+            Assert.assertFalse(dok.getQueue().isEmpty());
             Assert.assertNotNull(channel.basicConsume("queue.publishLimitReached." + queueName + "." + limit, false,
                     consumer));
         } else {

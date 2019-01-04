@@ -103,10 +103,9 @@ public class ObservableExchangeRegistryImplTest {
             ValidationException {
         String exchangeName = "test3";
         testPublisher.id = null;
-            observableExchangeRegistry.declareExchange(exchangeName, "topic", false, false);
-                Assert.assertNotNull(testPublisher.id);
+        observableExchangeRegistry.declareExchange(exchangeName, "topic", false, false);
+        Assert.assertNotNull(testPublisher.id);
         observableExchangeRegistry.deleteExchange(exchangeName, true);
-
     }
 
     @Test(description = "Test to check exchange declared when there is no exchange", expectedExceptions =
