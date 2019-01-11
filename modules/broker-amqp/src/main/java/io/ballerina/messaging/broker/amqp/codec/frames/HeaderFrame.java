@@ -195,10 +195,15 @@ public class HeaderFrame extends GeneralFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        AmqpChannel channel = connectionHandler.getChannel(getChannel());
+        int channelID = getChannel();
+        AmqpChannel channel = connectionHandler.getChannel(channelID);
 
         InMemoryMessageAggregator inMemoryMessageAggregator = channel.getMessageAggregator();
         inMemoryMessageAggregator.headerFrameReceived(headers, properties, bodySize);
+
+        if (bodySize == 0) {
+            inMemoryMessageAggregator.publishMessage(ctx, channel, channelID);
+        }
     }
 
     private void writeProperty(ByteBuf buf, FieldValue fieldValue) {
