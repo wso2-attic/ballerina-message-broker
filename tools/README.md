@@ -65,7 +65,7 @@ Upon completion of the test, you will be directed to a web interface which conta
 
 ### Test scenario - Publish messages to queues/topics and consume them
 
-1.Run ```./run_broker_test_consumer.sh -d queue/topic```
+1.Run ```./run_broker_test_scenario.sh -d queue/topic```
 
 ## Special Notes
 

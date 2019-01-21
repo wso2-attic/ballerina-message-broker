@@ -31,7 +31,7 @@ exchange_name=""
 base_file_location="consumer"
 
 # get inputs from the user -p <location of the properties file> -d topic/queue
-while getopts "hi:d:s:t:h:v" OPTION
+while getopts "hi:d:s:t:h:x:v" OPTION
 do
      case $OPTION in
          d)
@@ -60,10 +60,9 @@ do
                     exit
                 ;;
             esac
-            break
             ;;
           h)
-            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./run_broker_consumer.sh [command].\n\nCommands\n\t-h  ask for help\n\t-i  set the location of the infrastructure properties file\n\t-t  set the location of the testplan properties file\n\t-d  set jms destination type queue/topic\n"
+            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./run_broker_consumer.sh [command].\n\nCommands\n\t-h  ask for help\n\t-i  set the location of the infrastructure properties file\n\t-t  set the location of the testplan properties file\n\t-d  set jms destination type queue/topic\n\t-x  set jms selector\n"
             printf "$help_text"
             exit
             ;;
@@ -74,6 +73,10 @@ do
          t)
             testplan_file_location=$OPTARG
          ;;
+         x)
+            selector_string=$OPTARG
+             break
+            ;;
          s)
             base_file_location="$OPTARG/consumer"
             ;;
@@ -134,14 +137,14 @@ case $queue_name in
             then
                  rm resources/jndi_queue.properties
             fi
-            printf "connectionfactory.QueueConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://"$host_url":${testplan_user_inputs["AMQPListenerPort"]}'\nqueue.QueueName=micro_benchmark_queue1" >> resources/jndi_queue.properties
+            printf "connectionfactory.QueueConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://localhost:${testplan_user_inputs["AMQPListenerPort"]}'\nqueue.QueueName=micro_benchmark_queue1" >> resources/jndi_queue.properties
         ;;
     micro_benchmark_queue2)
         if [ -e resources/jndi_topic.properties ];
             then
                  rm resources/jndi_topic.properties
             fi
-            printf "connectionfactory.TopicConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://"$host_url":${testplan_user_inputs["AMQPListenerPort"]}'\ntopic.TopicName=micro_benchmark_queue2" >> resources/jndi_topic.properties
+            printf "connectionfactory.TopicConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://localhost:${testplan_user_inputs["AMQPListenerPort"]}'\ntopic.TopicName=micro_benchmark_queue2" >> resources/jndi_topic.properties
         ;;
 esac
 
@@ -194,7 +197,7 @@ loop_count=$(echo "${testplan_user_inputs["NumberOfMessages"]}/${testplan_user_i
 if [ ${testplan_user_inputs["JmeterHome"]} != '' ]
         then
             # if user specified jmeter home
-            ${testplan_user_inputs["JmeterHome"]}/bin/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${testplan_user_inputs["ThreadCount"]} -DLOOP_COUNT=$loop_count -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
+            ${testplan_user_inputs["JmeterHome"]}/bin/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DSELECTOR="$selector_string" -DDESTINATION="$destination" -DTHREAD_COUNT=${testplan_user_inputs["ThreadCount"]} -DLOOP_COUNT=$loop_count -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
         else
             jmeter_console_out="$(command -v jmeter)"
             if [${jmeter_console_out} == '']
@@ -204,7 +207,7 @@ if [ ${testplan_user_inputs["JmeterHome"]} != '' ]
                 else
                     echo "$jmeter_console_out"
                     # if JmeterHome is already configured
-                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${testplan_user_inputs["ThreadCount"]} -DLOOP_COUNT=$loop_count -DTHROUGHPUT=${testplan_user_inputs["Throughput"]} -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
+                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DSELECTOR="$selector_string" -DTHREAD_COUNT=${testplan_user_inputs["ThreadCount"]} -DLOOP_COUNT=$loop_count -DTHROUGHPUT=${testplan_user_inputs["Throughput"]} -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
             fi
         fi
 

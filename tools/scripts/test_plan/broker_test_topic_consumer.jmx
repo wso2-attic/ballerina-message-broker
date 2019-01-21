@@ -57,7 +57,8 @@
           <stringProp name="jms.read_response">true</stringProp>
           <stringProp name="jms.client_choice">jms_subscriber_receive</stringProp>
           <stringProp name="jms_error_reconnect_on_codes"></stringProp>
-          <stringProp name="jms.durableSubscriptionId">${RANDOM_STRING}</stringProp>
+          <stringProp name="jms.selector">${__P(SELECTOR,prop=10)}</stringProp>
+          <stringProp name="jms.durableSubscriptionId"></stringProp>
         </SubscriberSampler>
         <hashTree>
           <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">

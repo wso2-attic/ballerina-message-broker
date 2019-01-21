@@ -47,9 +47,9 @@
         <PublisherSampler guiclass="JMSPublisherGui" testclass="PublisherSampler" testname="JMS Publisher" enabled="true">
           <stringProp name="jms.jndi_properties">false</stringProp>
           <stringProp name="jms.initial_context_factory">org.wso2.andes.jndi.PropertiesFileInitialContextFactory</stringProp>
-          <stringProp name="jms.provider_url">${__P(JNDI_URL,0;)}</stringProp>
-          <stringProp name="jms.connection_factory">${__P(CONNECTION_FACTORY,&quot;&quot;;)}</stringProp>
-          <stringProp name="jms.topic">${__P(DESTINATION,&quot;&quot;;)}</stringProp>
+          <stringProp name="jms.provider_url">resources/jndi_topic.properties</stringProp>
+          <stringProp name="jms.connection_factory">TopicConnectionFactory</stringProp>
+          <stringProp name="jms.topic">TopicName</stringProp>
           <stringProp name="jms.expiration"></stringProp>
           <stringProp name="jms_error_reconnect_on_codes"></stringProp>
           <stringProp name="jms.priority"></stringProp>
@@ -63,7 +63,13 @@
           <stringProp name="jms.iterations">1</stringProp>
           <boolProp name="jms.authenticate">false</boolProp>
           <elementProp name="jms.jmsProperties" elementType="JMSProperties">
-            <collectionProp name="JMSProperties.properties"/>
+            <collectionProp name="JMSProperties.properties">
+            <elementProp name="" elementType="JMSProperty">
+             <stringProp name="JMSProperty.name">${__P(PROPERTY_NAME,property;)}</stringProp>
+              <stringProp name="JMSProperty.value">${__P(PROPERTY_VALUE,0;)}</stringProp>
+               <stringProp name="JMSProperty.type">${__P(PROPERTY_TYPE,java.lang.Integer;)}</stringProp>
+               </elementProp>
+               </collectionProp>
           </elementProp>
           <stringProp name="jms.file_encoding">UTF-8</stringProp>
         </PublisherSampler>
