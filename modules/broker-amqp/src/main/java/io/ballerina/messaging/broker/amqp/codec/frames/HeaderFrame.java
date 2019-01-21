@@ -208,8 +208,7 @@ public class HeaderFrame extends GeneralFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        int channelID = getChannel();
-        AmqpChannel channel = connectionHandler.getChannel(channelID);
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
 
         InMemoryMessageAggregator inMemoryMessageAggregator = channel.getMessageAggregator();
         inMemoryMessageAggregator.headerFrameReceived(headers, properties, bodySize);
@@ -223,13 +222,13 @@ public class HeaderFrame extends GeneralFrame {
                     // flow manager should always be executed through the event loop
                     ctx.executor().submit(() -> channel.getFlowManager().notifyMessageRemoval(ctx));
                 } catch (BrokerException e) {
-                    LOGGER.warn("Content receiving failed", e);
+                    LOGGER.warn("Header receiving failed", e);
                 } catch (AuthException | AuthNotFoundException e) {
-                    ctx.writeAndFlush(new ChannelClose(channelID,
-                            ChannelException.ACCESS_REFUSED,
-                            ShortString.parseString(e.getMessage()),
-                            BasicPublish.CLASS_ID,
-                            BasicPublish.METHOD_ID));
+                    ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                       ChannelException.ACCESS_REFUSED,
+                                                       ShortString.parseString(e.getMessage()),
+                                                       BasicPublish.CLASS_ID,
+                                                       BasicPublish.METHOD_ID));
                 }
             });
         }

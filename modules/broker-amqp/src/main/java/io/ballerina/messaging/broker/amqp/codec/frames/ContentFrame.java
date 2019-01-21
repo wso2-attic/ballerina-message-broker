@@ -69,8 +69,7 @@ public class ContentFrame extends GeneralFrame {
 
     @Override
     public void handle(ChannelHandlerContext ctx, AmqpConnectionHandler connectionHandler) {
-        int channelID = getChannel();
-        AmqpChannel channel = connectionHandler.getChannel(channelID);
+        AmqpChannel channel = connectionHandler.getChannel(getChannel());
 
         boolean allContentReceived;
         InMemoryMessageAggregator messageAggregator = channel.getMessageAggregator();
@@ -84,6 +83,7 @@ public class ContentFrame extends GeneralFrame {
 
         if (allContentReceived) {
             Message message = messageAggregator.popMessage();
+
             ctx.fireChannelRead((BlockingTask) () -> {
                 try {
                     messageAggregator.publish(message);
@@ -92,11 +92,11 @@ public class ContentFrame extends GeneralFrame {
                 } catch (BrokerException e) {
                     LOGGER.warn("Content receiving failed", e);
                 } catch (AuthException | AuthNotFoundException e) {
-                    ctx.writeAndFlush(new ChannelClose(channelID,
-                            ChannelException.ACCESS_REFUSED,
-                            ShortString.parseString(e.getMessage()),
-                            BasicPublish.CLASS_ID,
-                            BasicPublish.METHOD_ID));
+                    ctx.writeAndFlush(new ChannelClose(getChannel(),
+                                                       ChannelException.ACCESS_REFUSED,
+                                                       ShortString.parseString(e.getMessage()),
+                                                       BasicPublish.CLASS_ID,
+                                                       BasicPublish.METHOD_ID));
                 }
             });
         }

@@ -34,8 +34,6 @@ import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
 import io.ballerina.messaging.broker.core.util.TraceField;
 import io.netty.buffer.ByteBuf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,11 +43,6 @@ import java.util.Objects;
  * Handles incoming AMQP message frames and creates {@link Message}.
  */
 public class InMemoryMessageAggregator {
-
-    /**
-     * Class logger.
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryMessageAggregator.class);
 
     private static final String CORRELATION_ID_FIELD_NAME = "correlationId";
 
