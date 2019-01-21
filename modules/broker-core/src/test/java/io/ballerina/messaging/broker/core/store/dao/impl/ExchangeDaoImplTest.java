@@ -22,7 +22,7 @@ package io.ballerina.messaging.broker.core.store.dao.impl;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.DbUtil;
 import io.ballerina.messaging.broker.core.Exchange;
-import io.ballerina.messaging.broker.core.ExchangeRegistry;
+import io.ballerina.messaging.broker.core.ExchangeRegistryImpl;
 import io.ballerina.messaging.broker.core.store.dao.BindingDao;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -69,7 +69,9 @@ public class ExchangeDaoImplTest {
 
     @Test(dataProvider = "exchangeData", description = "Test exchange persistence")
     public void testPersistAndDelete(String name, String type) throws Exception {
-        Exchange exchange = ExchangeRegistry.ExchangeFactory.newInstance(name, Exchange.Type.from(type), bindingDao);
+        Exchange exchange = ExchangeRegistryImpl.ExchangeFactory.newInstance(name,
+                                                                            Exchange.Type.from(type),
+                                                                            bindingDao);
         exchangeDao.persist(exchange);
 
         Connection connection = dataSource.getConnection();
@@ -99,7 +101,9 @@ public class ExchangeDaoImplTest {
     @Test(dataProvider = "exchangeData", description = "Test duplicate exchange persistence"
             , expectedExceptions = BrokerException.class)
     public void testDuplicatePersistence(String name, String type) throws Exception {
-        Exchange exchange = ExchangeRegistry.ExchangeFactory.newInstance(name, Exchange.Type.from(type), bindingDao);
+        Exchange exchange = ExchangeRegistryImpl.ExchangeFactory.newInstance(name,
+                                                                            Exchange.Type.from(type),
+                                                                            bindingDao);
         exchangeDao.persist(exchange);
         // Try to add an already existing exchange
         exchangeDao.persist(exchange);

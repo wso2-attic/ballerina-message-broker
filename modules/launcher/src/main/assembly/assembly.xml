@@ -102,6 +102,7 @@
                 <include>io.ballerina.messaging:broker-cli-client:jar</include>
                 <include>io.ballerina.messaging:broker-launcher:jar</include>
                 <include>io.ballerina.messaging:broker-cipher-tool:jar</include>
+                <include>io.ballerina.messaging:broker-event-publisher</include>
             </includes>
             <outputDirectory>lib</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>

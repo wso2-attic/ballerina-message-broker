@@ -98,6 +98,10 @@
             <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-cipher-tool</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.ballerina.messaging</groupId>
+            <artifactId>broker-event-publisher</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

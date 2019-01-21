@@ -179,9 +179,9 @@ public class AmqpChannel implements AmqpChannelView {
     }
 
     public void declareQueue(ShortString queue, boolean passive,
-                             boolean durable, boolean autoDelete)
+                             boolean durable, boolean autoDelete, FieldTable arguments)
             throws BrokerException, ValidationException {
-        broker.createQueue(queue.toString(), passive, durable, autoDelete);
+        broker.createQueue(queue.toString(), passive, durable, autoDelete, arguments);
     }
 
     public void bind(ShortString queue, ShortString exchange,

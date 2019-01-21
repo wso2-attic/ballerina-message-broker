@@ -19,6 +19,8 @@
 
 package io.ballerina.messaging.broker.core;
 
+import io.ballerina.messaging.broker.common.EventSync;
+import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.queue.DbBackedQueueImpl;
@@ -29,31 +31,35 @@ import io.ballerina.messaging.broker.core.store.DbMessageStore;
 /**
  * DB backed factory for creating queue handler objects.
  */
-public class DbBackedQueueHandlerFactory implements QueueHandlerFactory {
+public class DbBackedQueueHandlerFactory extends QueueHandlerFactory {
     private final DbMessageStore dbMessageStore;
     private final BrokerMetricManager metricManager;
     private final int nonDurableQueueMaxDepth;
     private QueueBufferFactory queueBufferFactory;
+    private final BrokerCoreConfiguration.EventConfig eventConfig;
 
     public DbBackedQueueHandlerFactory(DbMessageStore dbMessageStore, BrokerMetricManager metricManager,
-                                       BrokerCoreConfiguration configuration) {
+                                       BrokerCoreConfiguration configuration, EventSync eventSync) {
+        super(configuration.getEventConfig().getQueueLimitEvents(), eventSync);
         this.dbMessageStore = dbMessageStore;
         this.metricManager = metricManager;
         nonDurableQueueMaxDepth = Integer.parseInt(configuration.getNonDurableQueueMaxDepth());
         queueBufferFactory = new QueueBufferFactory(configuration);
+        this.eventConfig = configuration.getEventConfig();
     }
-
     /**
      * Create a durable queue handler with the give arguments.
      *
      * @param queueName  name of the queue
      * @param autoDelete true if auto deletable
-     * @return QueueHandler object
+     * @param arguments arguments to modify the queue
+     * @return QueueHandlerImpl object
      * @throws BrokerException if cannot create queue handler
      */
-    public QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete) throws BrokerException {
+    public QueueHandler createDurableQueueHandler(String queueName, boolean autoDelete, FieldTable arguments)
+            throws BrokerException {
         Queue queue = new DbBackedQueueImpl(queueName, autoDelete, dbMessageStore, queueBufferFactory);
-        return new QueueHandler(queue, metricManager);
+        return createQueueHandler(queue, this.metricManager, arguments, eventConfig);
     }
 
     /**
@@ -61,11 +67,12 @@ public class DbBackedQueueHandlerFactory implements QueueHandlerFactory {
      *
      * @param queueName  name of the queue
      * @param autoDelete true if auto deletable
-     * @return QueueHandler object
+     * @param arguments arguments to modify the queue
+     * @return QueueHandlerImpl object
      */
-    public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete) {
+    public QueueHandler createNonDurableQueueHandler(String queueName, boolean autoDelete,
+                                                     FieldTable arguments) {
         Queue queue = new MemQueueImpl(queueName, nonDurableQueueMaxDepth, autoDelete);
-        return new QueueHandler(queue, metricManager);
+        return createQueueHandler(queue, this.metricManager, arguments, eventConfig);
     }
-
 }

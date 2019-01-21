@@ -19,6 +19,9 @@
 
 package io.ballerina.messaging.broker.core.configuration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Represents configuration for broker.
  */
@@ -49,6 +52,8 @@ public class BrokerCoreConfiguration {
     private int maxDbWriteBatchSize = 1024;
 
     private DeliveryTask deliveryTask = new DeliveryTask();
+
+    private EventConfig eventConfig = new EventConfig();
 
     /**
      * Getter for nonDurableQueueMaxDepth.
@@ -117,6 +122,13 @@ public class BrokerCoreConfiguration {
     }
 
     /**
+     * Getter for eventConfig.
+     */
+    public EventConfig getEventConfig() {
+        return eventConfig;
+    }
+
+    /**
      * Represent delivery task related configurations.
      */
     public static class DeliveryTask {
@@ -154,6 +166,120 @@ public class BrokerCoreConfiguration {
 
         public void setDeliveryBatchSize(String deliveryBatchSize) {
             this.deliveryBatchSize = deliveryBatchSize;
+        }
+    }
+
+    /**
+     * Represent event related configurations.
+     */
+    public static class EventConfig {
+        private QueueEvents queueLimitEvents = new QueueEvents();
+
+        private boolean exchangeAdminEventsEnabled = true;
+
+        private boolean queueAdminEventsEnabled = true;
+
+        private boolean queueExternalEventsEnabled = true;
+
+        /**
+         * Getter for queueEvents.
+         */
+        public QueueEvents getQueueLimitEvents() {
+            return queueLimitEvents;
+        }
+
+        public void setQueueLimitEventsEnabled(QueueEvents queueEvents) {
+            this.queueLimitEvents = queueEvents;
+        }
+
+        public boolean isExchangeAdminEventsEnabled() {
+            return exchangeAdminEventsEnabled;
+        }
+
+        public boolean isQueueAdminEvents() {
+            return queueAdminEventsEnabled;
+        }
+
+        public boolean isQueueExternalEventsEnabled() {
+            return queueExternalEventsEnabled;
+        }
+
+        public void setExchangeAdminEventsEnabled(boolean exchangeAdminEventsEnabled) {
+            this.exchangeAdminEventsEnabled = exchangeAdminEventsEnabled;
+        }
+
+        public void setQueueAdminEventsEnabled(boolean queueAdminEventsEnabled) {
+            this.queueAdminEventsEnabled = queueAdminEventsEnabled;
+        }
+
+        public void setQueueExternalEventsEnabled(boolean queueExternalEventsEnabled) {
+            this.queueExternalEventsEnabled = queueExternalEventsEnabled;
+        }
+    }
+
+    /**
+     * Represent queue event related configurations.
+     */
+    public static class QueueEvents {
+        /**
+         * Defines whether queue events are enabled.
+         */
+        boolean enabled = true;
+        /**
+         * Defines common message limits to trigger event notifications.
+         */
+        private List<Integer> commonLimits = new ArrayList<>();
+        /**
+         * Defines queue specific message limits to trigger event notifications.
+         */
+        private List<QueueLimitEvent> queues = new ArrayList<>();
+
+        public List<Integer> getCommonLimits() {
+            return commonLimits;
+        }
+
+        public void setCommonLimits(List<Integer> commonLimits) {
+            this.commonLimits = commonLimits;
+        }
+
+        public List<QueueLimitEvent> getQueues() {
+            return queues;
+        }
+
+        public void setQueues(List<QueueLimitEvent> queues) {
+            this.queues = queues;
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        /**
+         * Represent queue specific event related configurations.
+         */
+        public static class QueueLimitEvent {
+            private String name = "test";
+            private List<Integer> limits = new ArrayList<>();
+
+            public String getName() {
+            return name;
+        }
+
+            public void setName(String name) {
+            this.name = name;
+        }
+
+            public List<Integer> getLimits() {
+            return limits;
+        }
+
+            public void setLimits(List<Integer> limits) {
+            this.limits = limits;
+        }
         }
     }
 }

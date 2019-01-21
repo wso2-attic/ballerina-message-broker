@@ -62,6 +62,23 @@ ballerina.broker.core:
   # message delivery batch size.
   deliveryBatchSize: 1000
 
+ # Message limits for to trigger notifications in queues
+ eventConfig:
+  queueLimitEvents:
+    enabled:  true
+    commonLimits: [10, 6]
+    queues:
+      - name: test
+        limits: [2,6]
+      - name: test2
+        limits: [2,8]
+  # Exchange Admin Events
+  exchangeAdminEventsEnabled: true
+  # Queue Admin Events
+  queueAdminEventsEnabled: true
+  # Queue External Events
+  queueExternalEventsEnabled: true
+
 # Broker auth related configurations.
 ballerina.broker.auth:
  # Broker authentication related configurations.
@@ -98,6 +115,13 @@ ballerina.broker.auth:
    timeout: 15
    # Maximum Cache size to hold user id
    size: 5000
+
+# Broker event related configurations.
+ballerina.broker.events:
+  # Enable Events
+  enabled: true
+  # Publisher Implementation
+  publisherClass: io.ballerina.messaging.broker.core.eventpublisher.BrokerCoreEventPublisher
 
 # AMQP transport related configurations.
 ballerina.broker.transport.amqp:

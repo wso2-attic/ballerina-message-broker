@@ -7,3 +7,4 @@
 - [Creating a RESTful service](dev/creating-a-new-rest-module.md)
 - [Message Persistence](dev/message-persistence.md)
 - [Local Transaction Design](dev/local-transaction-design.md)
+- [Broker-Eventing-Module-Extension](dev/broker-eventing-module-extension.md)

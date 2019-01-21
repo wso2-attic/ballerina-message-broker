@@ -102,5 +102,9 @@
             <groupId>io.ballerina.messaging</groupId>
             <artifactId>broker-cli-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.ballerina.messaging</groupId>
+            <artifactId>broker-event-publisher</artifactId>
+        </dependency>
     </dependencies>
 </project>

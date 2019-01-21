@@ -61,8 +61,9 @@ public class TopicExchangeTest {
                                                 String publishedTopic) throws BrokerException, ValidationException {
         DbBackedQueueHandlerFactory factory = new DbBackedQueueHandlerFactory(null,
                                                                               new NullBrokerMetricManager(),
-                                                                              new BrokerCoreConfiguration());
-        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
+                                                                              new BrokerCoreConfiguration(),
+                                                                                null);
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false, null);
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);
 
         BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
@@ -79,8 +80,9 @@ public class TopicExchangeTest {
     public void testNegativeSingleTopicMatching(String subscribedPattern,
                                                 String publishedTopic) throws BrokerException, ValidationException {
         DbBackedQueueHandlerFactory factory = new DbBackedQueueHandlerFactory(null, new NullBrokerMetricManager(),
-                                                                              new BrokerCoreConfiguration());
-        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
+                                                                              new BrokerCoreConfiguration(),
+                                                                                null);
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false, null);
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);
 
         BindingSet bindingSet = topicExchange.getBindingsForRoute(publishedTopic);
@@ -92,8 +94,9 @@ public class TopicExchangeTest {
     public void testTopicRemoval(String subscribedPattern, String publishedTopic)
             throws BrokerException, ValidationException {
         DbBackedQueueHandlerFactory factory = new DbBackedQueueHandlerFactory(null, new NullBrokerMetricManager(),
-                                                                              new BrokerCoreConfiguration());
-        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false);
+                                                                              new BrokerCoreConfiguration(),
+                                                                                null);
+        QueueHandler handler = factory.createNonDurableQueueHandler(subscribedPattern, false, null);
         Queue queue = handler.getUnmodifiableQueue();
         topicExchange.bind(handler, subscribedPattern, FieldTable.EMPTY_TABLE);
         topicExchange.unbind(queue, subscribedPattern);

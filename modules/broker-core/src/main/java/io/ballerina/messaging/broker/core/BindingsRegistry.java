@@ -145,7 +145,6 @@ public final class BindingsRegistry {
      * Handles binding delete events coming from listeners.
      */
     private class BindingDeleteListener implements ThrowingConsumer<Binding, BrokerException> {
-
         @Override
         public void accept(Binding binding) throws BrokerException {
             unbind(binding.getQueue(), binding.getBindingPattern());

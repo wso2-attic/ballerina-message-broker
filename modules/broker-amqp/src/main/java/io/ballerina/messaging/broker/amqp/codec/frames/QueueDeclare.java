@@ -107,7 +107,7 @@ public class QueueDeclare extends MethodFrame {
 
         ctx.fireChannelRead((BlockingTask) () -> {
             try {
-                channel.declareQueue(queue, passive, durable, autoDelete);
+                channel.declareQueue(queue, passive, durable, autoDelete, arguments);
                 ctx.writeAndFlush(new QueueDeclareOk(getChannel(), queue, 0, 0));
             } catch (ValidationException e) {
                 ctx.writeAndFlush(new ChannelClose(getChannel(),

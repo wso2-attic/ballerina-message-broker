@@ -84,7 +84,7 @@ public class DistributedTransactionValidationTest {
            expectedExceptionsMessageRegExp = "Xid .* cannot be started as it is already known")
     public void testStartWithAlreadyKnownXidWithoutJoinOrResume()  throws Exception {
         StoreFactory storeFactory = new MemBackedStoreFactory(new NullBrokerMetricManager(),
-                                                              new BrokerCoreConfiguration());
+                                                              new BrokerCoreConfiguration(), null);
         Branch branch = new Branch(xid, storeFactory.getMessageStore(), null);
         transactionRegistry.register(branch);
 
@@ -120,7 +120,7 @@ public class DistributedTransactionValidationTest {
            expectedExceptionsMessageRegExp = "Branch is set to rollback only. Can't commit with xid .*")
     public void testCommitWithRollbackOnlyBranch() throws Exception {
         StoreFactory storeFactory = new MemBackedStoreFactory(new NullBrokerMetricManager(),
-                                                              new BrokerCoreConfiguration());
+                                                              new BrokerCoreConfiguration(), null);
         Branch branch = new Branch(xid, storeFactory.getMessageStore(), null);
         transactionRegistry.register(branch);
         branch.setState(Branch.State.ROLLBACK_ONLY);

@@ -90,6 +90,7 @@
         <module>modules/integration</module>
         <module>modules/coverage-report</module>
         <module>modules/features</module>
+        <module>modules/broker-event-publisher</module>
     </modules>
 
     <dependencyManagement>
@@ -142,6 +143,11 @@
             <dependency>
                 <groupId>io.ballerina.messaging</groupId>
                 <artifactId>broker-cipher-tool</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ballerina.messaging</groupId>
+                <artifactId>broker-event-publisher</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

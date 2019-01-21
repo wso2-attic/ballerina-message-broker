@@ -19,10 +19,13 @@
 
 package io.ballerina.messaging.broker.core.store;
 
+import io.ballerina.messaging.broker.common.EventSync;
 import io.ballerina.messaging.broker.core.BrokerException;
 import io.ballerina.messaging.broker.core.DbBackedQueueHandlerFactory;
 import io.ballerina.messaging.broker.core.ExchangeRegistry;
+import io.ballerina.messaging.broker.core.ExchangeRegistryFactory;
 import io.ballerina.messaging.broker.core.QueueRegistry;
+import io.ballerina.messaging.broker.core.QueueRegistryFactory;
 import io.ballerina.messaging.broker.core.configuration.BrokerCoreConfiguration;
 import io.ballerina.messaging.broker.core.metrics.BrokerMetricManager;
 import io.ballerina.messaging.broker.core.store.dao.impl.DaoFactory;
@@ -37,15 +40,17 @@ public class DbBackedStoreFactory implements StoreFactory {
     private final DaoFactory daoFactory;
     private final BrokerMetricManager metricManager;
     private final BrokerCoreConfiguration configuration;
+    private final EventSync eventSync;
 
     private DbMessageStore dbMessageStore;
 
     public DbBackedStoreFactory(DataSource dataSource,
                                 BrokerMetricManager metricManager,
-                                BrokerCoreConfiguration configuration) {
+                                BrokerCoreConfiguration configuration, EventSync eventSync) {
         daoFactory = new DaoFactory(dataSource, metricManager, configuration);
         this.metricManager = metricManager;
         this.configuration = configuration;
+        this.eventSync = eventSync;
         int disruptorBufferSize = configuration.getDisruptorBufferSize();
         int maxDbBatchSize = configuration.getMaxDbWriteBatchSize();
         dbMessageStore = new DbMessageStore(daoFactory.createMessageDao(), disruptorBufferSize, maxDbBatchSize);
@@ -53,7 +58,10 @@ public class DbBackedStoreFactory implements StoreFactory {
 
     @Override
     public ExchangeRegistry getExchangeRegistry() {
-        return new ExchangeRegistry(daoFactory.createExchangeDao(), daoFactory.createBindingDao());
+        return new ExchangeRegistryFactory(daoFactory.createExchangeDao(),
+                daoFactory.createBindingDao(),
+                eventSync,
+                configuration.getEventConfig()).getExchangeRegistry();
     }
 
     @Override
@@ -63,7 +71,9 @@ public class DbBackedStoreFactory implements StoreFactory {
 
     @Override
     public QueueRegistry getQueueRegistry() throws BrokerException {
-        return new QueueRegistry(daoFactory.createQueueDao(),
-                                 new DbBackedQueueHandlerFactory(dbMessageStore, metricManager, configuration));
+        return new QueueRegistryFactory(daoFactory.createQueueDao(),
+                new DbBackedQueueHandlerFactory(dbMessageStore, metricManager, configuration, eventSync),
+                eventSync,
+                configuration.getEventConfig()).getQueueRegistry();
     }
 }

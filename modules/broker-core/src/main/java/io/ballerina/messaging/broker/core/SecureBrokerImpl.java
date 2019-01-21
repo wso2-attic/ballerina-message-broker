@@ -86,7 +86,8 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public QueueHandler dequeue(Xid xid, String queueName, DetachableMessage detachableMessage) throws BrokerException {
+    public QueueHandler dequeue(Xid xid, String queueName, DetachableMessage detachableMessage)
+            throws BrokerException {
         return broker.dequeue(xid, queueName, detachableMessage);
     }
 
@@ -155,13 +156,14 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete)
+    public boolean createQueue(String queueName, boolean passive, boolean durable, boolean autoDelete,
+                               FieldTable arguments)
             throws BrokerException, ValidationException {
         try {
             if (!queueExists(queueName) && !passive) {
                 authHandler.handle(ResourceAuthScope.QUEUES_CREATE, subject);
             }
-            boolean succeed = broker.createQueue(queueName, passive, durable, autoDelete);
+            boolean succeed = broker.createQueue(queueName, passive, durable, autoDelete, arguments);
             if (succeed) {
                 authHandler.createAuthResource(ResourceType.QUEUE, queueName, durable, subject);
             }
@@ -305,7 +307,8 @@ public class SecureBrokerImpl implements Broker {
     }
 
     @Override
-    public Set<QueueHandler> restoreDtxPreparedMessages(Xid xid, Collection<Message> messages) throws BrokerException {
+    public Set<QueueHandler> restoreDtxPreparedMessages(Xid xid, Collection<Message> messages)
+            throws BrokerException {
         return broker.restoreDtxPreparedMessages(xid, messages);
     }
 }
