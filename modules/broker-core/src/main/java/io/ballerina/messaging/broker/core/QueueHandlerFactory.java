@@ -92,7 +92,9 @@ public abstract class QueueHandlerFactory {
             if (isQueueLimitReachedEventsEnabled) {
                 checkConfigLimits(queue, eventConfig.getQueueLimitEvents());
                 checkArgumentEvents(arguments);
-                finalQueue = new ObservableQueue(queue, eventSync, totalLimits);
+                if (!totalLimits.isEmpty()) {
+                    finalQueue = new ObservableQueue(queue, eventSync, totalLimits);
+                }
             }
 
             QueueHandlerImpl queueHandler = new QueueHandlerImpl(finalQueue, metricManager);
