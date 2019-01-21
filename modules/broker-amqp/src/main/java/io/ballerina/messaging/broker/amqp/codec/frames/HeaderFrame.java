@@ -20,16 +20,24 @@
 package io.ballerina.messaging.broker.amqp.codec.frames;
 
 import io.ballerina.messaging.broker.amqp.codec.AmqpChannel;
+import io.ballerina.messaging.broker.amqp.codec.BlockingTask;
+import io.ballerina.messaging.broker.amqp.codec.ChannelException;
 import io.ballerina.messaging.broker.amqp.codec.InMemoryMessageAggregator;
 import io.ballerina.messaging.broker.amqp.codec.handlers.AmqpConnectionHandler;
+import io.ballerina.messaging.broker.auth.AuthException;
+import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.common.data.types.EncodableData;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
 import io.ballerina.messaging.broker.common.data.types.FieldValue;
 import io.ballerina.messaging.broker.common.data.types.LongInt;
 import io.ballerina.messaging.broker.common.data.types.ShortString;
+import io.ballerina.messaging.broker.core.BrokerException;
+import io.ballerina.messaging.broker.core.Message;
 import io.ballerina.messaging.broker.core.Metadata;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 
@@ -37,6 +45,11 @@ import java.util.HashMap;
  * AMQP header frame.
  */
 public class HeaderFrame extends GeneralFrame {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(HeaderFrame.class);
 
     private static final int CONTENT_TYPE_MASK = 1 << 15;
     private static final int ENCODING_MASK = 1 << 14;
@@ -202,7 +215,23 @@ public class HeaderFrame extends GeneralFrame {
         inMemoryMessageAggregator.headerFrameReceived(headers, properties, bodySize);
 
         if (bodySize == 0) {
-            inMemoryMessageAggregator.publishMessage(ctx, channel, channelID);
+            Message message = inMemoryMessageAggregator.popMessage();
+            // flow manager should always be executed through the event loop
+            ctx.fireChannelRead((BlockingTask) () -> {
+                try {
+                    inMemoryMessageAggregator.publish(message);
+                    // flow manager should always be executed through the event loop
+                    ctx.executor().submit(() -> channel.getFlowManager().notifyMessageRemoval(ctx));
+                } catch (BrokerException e) {
+                    LOGGER.warn("Content receiving failed", e);
+                } catch (AuthException | AuthNotFoundException e) {
+                    ctx.writeAndFlush(new ChannelClose(channelID,
+                            ChannelException.ACCESS_REFUSED,
+                            ShortString.parseString(e.getMessage()),
+                            BasicPublish.CLASS_ID,
+                            BasicPublish.METHOD_ID));
+                }
+            });
         }
     }
 

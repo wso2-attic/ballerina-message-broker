@@ -20,8 +20,6 @@
 package io.ballerina.messaging.broker.amqp.codec;
 
 import io.ballerina.messaging.broker.amqp.AmqpException;
-import io.ballerina.messaging.broker.amqp.codec.frames.BasicPublish;
-import io.ballerina.messaging.broker.amqp.codec.frames.ChannelClose;
 import io.ballerina.messaging.broker.auth.AuthException;
 import io.ballerina.messaging.broker.auth.AuthNotFoundException;
 import io.ballerina.messaging.broker.common.data.types.FieldTable;
@@ -36,7 +34,6 @@ import io.ballerina.messaging.broker.core.transaction.BrokerTransaction;
 import io.ballerina.messaging.broker.core.util.MessageTracer;
 import io.ballerina.messaging.broker.core.util.TraceField;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,26 +144,5 @@ public class InMemoryMessageAggregator {
 
     public void setTransaction(BrokerTransaction transaction) {
         this.transaction = transaction;
-    }
-
-    public void publishMessage(ChannelHandlerContext ctx, AmqpChannel channel, int channelID) {
-        Message publishMessage = popMessage();
-        // flow manager should always be executed through the event loop
-        ctx.fireChannelRead((BlockingTask) () -> {
-            try {
-                publish(publishMessage);
-                // flow manager should always be executed through the event loop
-                ctx.executor().submit(() -> channel.getFlowManager().notifyMessageRemoval(ctx));
-            } catch (BrokerException e) {
-                LOGGER.warn("Content receiving failed", e);
-            } catch (AuthException | AuthNotFoundException e) {
-                ctx.writeAndFlush(new ChannelClose(channelID,
-                        ChannelException.ACCESS_REFUSED,
-                        ShortString.parseString(e.getMessage()),
-                        BasicPublish.CLASS_ID,
-                        BasicPublish.METHOD_ID));
-            }
-        });
-
     }
 }
