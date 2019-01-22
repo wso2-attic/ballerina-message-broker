@@ -24,14 +24,16 @@ import io.ballerina.messaging.broker.common.data.types.ShortString;
 import io.ballerina.messaging.broker.core.Metadata;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class JmsPropertyExpressionTest {
 
     @Test
-    private void testJmsPropertyExpression() {
-        Metadata metadata =  new Metadata("queue1", "amq.topic", 0);
+    public void testJmsPropertyExpression() {
+
+        Metadata metadata = new Metadata("queue1", "amq.topic", 0);
         ShortString first = Metadata.CORRELATION_ID;
         ShortString second = Metadata.MESSAGE_ID;
         Map<ShortString, FieldValue> properties = new HashMap<>();
@@ -48,6 +50,6 @@ public class JmsPropertyExpressionTest {
         JmsPropertyExpression prop1 = new JmsPropertyExpression("JMSMessageID");
         Object actualvalue1 = prop1.evaluate(metadata);
         Object expectedvalue1 = 56546;
-        Assert.assertEquals(actualvalue1 , expectedvalue1, "values are not equals");
+        Assert.assertEquals(actualvalue1, expectedvalue1, "values are not equals");
     }
 }

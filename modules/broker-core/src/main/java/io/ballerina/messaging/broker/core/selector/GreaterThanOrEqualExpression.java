@@ -30,27 +30,30 @@ public class GreaterThanOrEqualExpression implements BooleanExpression {
     private final Expression<Metadata> left;
     private final Expression<Metadata> right;
 
-    public GreaterThanOrEqualExpression (Expression left, Expression right) {
+    public GreaterThanOrEqualExpression(Expression left, Expression right) {
+
         this.left = left;
         this.right = right;
     }
+
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public boolean evaluate(Metadata metadata) {
+
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue instanceof Number && rightValue instanceof Number) {
             Class lv = leftValue.getClass();
             if ((lv == Integer.class) || (lv == Long.class)) {
                 if (rightValue instanceof Long) {
-                    long l = ((Number) leftValue).longValue();
-                    long l1 = ((Number) rightValue).longValue();
-                    return l > l1 || l == l1;
+                    long value = ((Number) leftValue).longValue();
+                    long value1 = ((Number) rightValue).longValue();
+                    return value > value1 || value == value1;
                 }
             }
             if ((leftValue instanceof Double) || (rightValue instanceof Double)) {
-                Double l = ((Number) leftValue).doubleValue();
-                Double l1 = ((Number) rightValue).doubleValue();
-                return l > l1 || l.equals(l1);
+                Double value = ((Number) leftValue).doubleValue();
+                Double value1 = ((Number) rightValue).doubleValue();
+                return value > value1 || value.equals(value1);
             }
         }
         return false;

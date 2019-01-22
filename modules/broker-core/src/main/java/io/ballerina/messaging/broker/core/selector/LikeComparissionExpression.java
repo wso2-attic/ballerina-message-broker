@@ -34,14 +34,17 @@ public class LikeComparissionExpression implements BooleanExpression {
     private final String escape;
     private Pattern likePattern;
 
-    public LikeComparissionExpression (Expression left , String right , String escape) {
+    public LikeComparissionExpression(Expression left, String right, String escape) {
+
         this.left = left;
         this.right = right;
         this.escape = escape;
         this.likePattern = null;
     }
+
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public boolean evaluate(Metadata metadata) {
+
         Object leftValue = left.evaluate(metadata);
         if (!(leftValue instanceof String) || right == null) {
             return false;
@@ -52,7 +55,7 @@ public class LikeComparissionExpression implements BooleanExpression {
         }
         char q = 0;
         if (!(escape == null)) {
-            q =  escape.charAt(0);
+            q = escape.charAt(0);
         }
         StringBuilder regexp = new StringBuilder(right.length() * 2);
         regexp.append("\\A"); //Matches the beginning of the string.
@@ -77,7 +80,7 @@ public class LikeComparissionExpression implements BooleanExpression {
         }
         regexp.append("\\z"); //Matches the end of the string.
 
-        likePattern = Pattern.compile(regexp.toString() , Pattern.DOTALL);
+        likePattern = Pattern.compile(regexp.toString(), Pattern.DOTALL);
         return likePattern.matcher((String) leftValue).matches();
     }
 }

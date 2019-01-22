@@ -19,6 +19,7 @@
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
+
 /**
  * Implementation of a boolean expression.This class is doing a boolean AND operation between the left and right
  * values provided.
@@ -29,13 +30,15 @@ public class AndOperationExpression implements BooleanExpression {
     private final BooleanExpression left;
     private final BooleanExpression right;
 
-    public AndOperationExpression (BooleanExpression left, BooleanExpression right) {
+    public AndOperationExpression(BooleanExpression left, BooleanExpression right) {
+
         this.left = left;
         this.right = right;
     }
 
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public boolean evaluate(Metadata metadata) {
+
         boolean leftValue = left.evaluate(metadata);
         boolean rightValue = right.evaluate(metadata);
 

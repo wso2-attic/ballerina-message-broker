@@ -20,9 +20,10 @@
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
+
 /**
  * Implementation of a boolean expression.This class is doing a less than comparison between left and right values
- *  provided and evaluate to a boolean value.
+ * provided and evaluate to a boolean value.
  */
 
 public class LessThanExpression implements BooleanExpression {
@@ -30,12 +31,15 @@ public class LessThanExpression implements BooleanExpression {
     private final Expression<Metadata> left;
     private final Expression<Metadata> right;
 
-    public LessThanExpression (Expression left , Expression right) {
+    public LessThanExpression(Expression left, Expression right) {
+
         this.left = left;
         this.right = right;
     }
+
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public boolean evaluate(Metadata metadata) {
+
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue instanceof Number && rightValue instanceof Number) {
@@ -53,7 +57,7 @@ public class LessThanExpression implements BooleanExpression {
                 return l < l1;
             }
         }
-            return false;
+        return false;
     }
 }
 

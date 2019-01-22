@@ -24,11 +24,13 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 public class LikeComparissionExpressionTest {
-    Metadata metadata =  new Metadata("queue1", "amq.topic", 0);
+
+    Metadata metadata = new Metadata("queue1", "amq.topic", 0);
     Expression c4 = new ConstantExpression("value");
 
     @Test(dataProvider = "positive-filter-strings")
-    private void testLikeComparision_positive(String filter) {
+    public void testLikeComparision_positive(String filter) {
+
         LikeComparissionExpression value = new LikeComparissionExpression(c4, filter, null);
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = true;
@@ -36,22 +38,27 @@ public class LikeComparissionExpressionTest {
     }
 
     @Test(dataProvider = "positive-filter-strings-for-escape")
-    private void testLikeComparision_positive_with_escape(String filter) {
+    public void testLikeComparision_positive_with_escape(String filter) {
+
         Expression c5 = new ConstantExpression(filter);
         LikeComparissionExpression value = new LikeComparissionExpression(c5, "\\_%", "\\");
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
+
     @Test(dataProvider = "negative-filter-strings")
-    private void testLikeComparision_negative(String filter) {
+    public void testLikeComparision_negative(String filter) {
+
         LikeComparissionExpression value = new LikeComparissionExpression(c4, filter, null);
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
+
     @Test(dataProvider = "negative-filter-strings-for-escape")
-    private void testLikeComparision_negative_with_escape(String filter) {
+    public void testLikeComparision_negative_with_escape(String filter) {
+
         Expression c5 = new ConstantExpression(filter);
         LikeComparissionExpression value = new LikeComparissionExpression(c5, "\\_%", "\\");
         boolean actualvalue = value.evaluate(metadata);
@@ -61,7 +68,8 @@ public class LikeComparissionExpressionTest {
 
     @DataProvider(name = "positive-filter-strings")
     public Object[] positiveFilterStrings() {
-        return new String[] {
+
+        return new String[]{
                 "v%",
                 "va%",
                 "val%",
@@ -87,9 +95,11 @@ public class LikeComparissionExpressionTest {
 
         };
     }
+
     @DataProvider(name = "positive-filter-strings-for-escape")
     public Object[] positiveFilterStringsforescape() {
-        return new String[] {
+
+        return new String[]{
                 "_value",
                 "_VALUE",
                 "__value",
@@ -100,9 +110,11 @@ public class LikeComparissionExpressionTest {
                 "_12adfd234",
         };
     }
+
     @DataProvider(name = "negative-filter-strings")
     public Object[] negativeFilterStrings() {
-        return new String[] {
+
+        return new String[]{
                 "",
                 "v\\%",
                 "V%",
@@ -110,9 +122,11 @@ public class LikeComparissionExpressionTest {
 
         };
     }
+
     @DataProvider(name = "negative-filter-strings-for-escape")
     public Object[] negativeFilterStringsforescape() {
-        return new String[] {
+
+        return new String[]{
                 "",
                 "value",
                 "%_value"

@@ -45,9 +45,9 @@ public class DivisionExpression implements Expression<Metadata> {
 
         if (leftValue instanceof Number && rightValue instanceof Number) {
             switch (numberType((Number) leftValue, (Number) rightValue)) {
-                case 1:
+                case LONG:
                     return ((Number) leftValue).longValue() / ((Number) rightValue).longValue();
-                case 2:
+                case DOUBLE:
                     return  ((Number) leftValue).doubleValue() / ((Number) rightValue).doubleValue();
             }
         }
@@ -58,10 +58,10 @@ public class DivisionExpression implements Expression<Metadata> {
         Class lv = left.getClass();
         if ((lv == Integer.class) || (lv == Long.class)) {
             if (right instanceof Long) {
-                return 1;
+                return LONG;
             }
         }
-        return 2;
+        return DOUBLE;
     }
 
 }

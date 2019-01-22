@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class NotInComparissionExpressionTest {
+
     Metadata metadata = new Metadata("queue1", "amq.topic", 0);
     String[] myStrings = new String[]{"Elem1", "Elem2", "Elem3"};
     List mylist = Arrays.asList(myStrings);
@@ -39,31 +40,35 @@ public class NotInComparissionExpressionTest {
     ConstantExpression c7 = ConstantExpression.createFromNumericFloat("120");
 
     @Test(dataProvider = "Expressions-positive")
-    private void testpositiveNotInComparision (Expression string) {
-        NotInComparissionExpression incmp = new  NotInComparissionExpression(string, mylist);
+    public void testpositiveNotInComparision(Expression string) {
+
+        NotInComparissionExpression incmp = new NotInComparissionExpression(string, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are equal");
     }
 
     @Test(dataProvider = "Expressions-negative")
-    private void testnegativeNotInComparision (Expression string) {
-        NotInComparissionExpression incmp = new  NotInComparissionExpression(string, mylist);
+    public void testnegativeNotInComparision(Expression string) {
+
+        NotInComparissionExpression incmp = new NotInComparissionExpression(string, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
 
     @Test(expectedExceptions = NullPointerException.class, dataProvider = "Expressions-positive")
-    private void testnullobject (Expression string) {
-        NotInComparissionExpression incmp = new  NotInComparissionExpression(null, mylist);
+    public void testnullobject(Expression string) {
+
+        NotInComparissionExpression incmp = new NotInComparissionExpression(null, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
-        NotInComparissionExpression incmp1 = new  NotInComparissionExpression(string, null);
+        NotInComparissionExpression incmp1 = new NotInComparissionExpression(string, null);
         boolean actualvalue1 = incmp1.evaluate(metadata);
     }
 
     @DataProvider(name = "Expressions-positive")
-    public Object[] negative () {
+    public Object[] negative() {
+
         return new Expression[]{
                 c4, c5, c6,
         };
@@ -71,7 +76,8 @@ public class NotInComparissionExpressionTest {
     }
 
     @DataProvider(name = "Expressions-negative")
-    public Object[] positive () {
+    public Object[] positive() {
+
         return new Expression[]{
                 c1, c2, c3, c7
         };

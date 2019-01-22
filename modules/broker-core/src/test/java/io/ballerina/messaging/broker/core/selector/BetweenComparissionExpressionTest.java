@@ -20,40 +20,57 @@ package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-
 public class BetweenComparissionExpressionTest {
-    private Metadata metadata =  new Metadata("queue1", "amq.topic", 0);
-    private ConstantExpression c1 = ConstantExpression.createFromNumericDecimal("89"); // long value
-    private ConstantExpression c2 = ConstantExpression.createFromNumericDecimal("8"); // long value
-    private ConstantExpression c3 = ConstantExpression.createFromNumericFloat("7.9"); // double value
 
-    @Test
-    private void testBetweenExpressionpositive () throws Exception {
-        BetweenComparissionExpression between = new BetweenComparissionExpression(c2, c3, c1);
+    private Metadata metadata = new Metadata("queue1", "amq.topic", 0);
+
+    @Test(dataProvider = "Expressions-values")
+    public void testBetweenExpressionpositive(Expression value1, Expression value2, Expression value3)
+            throws Exception {
+
+        BetweenComparissionExpression between = new BetweenComparissionExpression(value2, value3, value1);
         boolean actual = between.evaluate(metadata);
         boolean expected = true;
         Assert.assertEquals(actual, expected, "values are not equal");
     }
-    @Test
-    private void testBetweenExpressionnegative () throws Exception {
-     BetweenComparissionExpression between = new BetweenComparissionExpression(c1, c2, c3);
-     boolean actual = between.evaluate(metadata);
-     boolean expected = false;
-     Assert.assertEquals(actual, expected, "values are not equal");
+
+    @Test(dataProvider = "Expressions-values")
+    public void testBetweenExpressionnegative(Expression value1, Expression value2, Expression value3)
+            throws Exception {
+
+        BetweenComparissionExpression between = new BetweenComparissionExpression(value1, value2, value3);
+        boolean actual = between.evaluate(metadata);
+        boolean expected = false;
+        Assert.assertEquals(actual, expected, "values are not equal");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
-    private void testnullobject () {
+    @Test(expectedExceptions = NullPointerException.class, dataProvider = "Expressions-values")
+    public void testnullobject(Expression value1, Expression value2, Expression value3) throws Exception {
+
         BetweenComparissionExpression between = new BetweenComparissionExpression(null, null, null);
         between.evaluate(metadata);
-        BetweenComparissionExpression between1 = new BetweenComparissionExpression(null, null, c1);
+        BetweenComparissionExpression between1 = new BetweenComparissionExpression(null, null, value1);
         between1.evaluate(metadata);
-        BetweenComparissionExpression between2 = new BetweenComparissionExpression(c2, null, null);
+        BetweenComparissionExpression between2 = new BetweenComparissionExpression(value2, null, null);
         between2.evaluate(metadata);
-        BetweenComparissionExpression between3 = new BetweenComparissionExpression(c2, null, c1);
+        BetweenComparissionExpression between3 = new BetweenComparissionExpression(value2, null, value1);
         between3.evaluate(metadata);
+    }
+
+    @DataProvider(name = "Expressions-values")
+    public Object[][] expressions() {
+
+        ConstantExpression c1 = ConstantExpression.createFromNumericDecimal("89"); // long value
+        ConstantExpression c2 = ConstantExpression.createFromNumericDecimal("8"); // long value
+        ConstantExpression c3 = ConstantExpression.createFromNumericFloat("7.9"); // double value
+
+        return new Expression[][]{
+                new Expression[]{c1, c2, c3},
+
+        };
     }
 
 }

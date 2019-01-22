@@ -23,21 +23,25 @@ import io.ballerina.messaging.broker.core.Metadata;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+
 /**
  *Implementation of a boolean expression.This class is doing a comparison operation between the left and list of element
- * values provided.if left expression contain or not contain the element list values and it evaluate as boolean value.
+ *values provided.if left expression contain or not contain the element list values and it evaluate as boolean value.
  */
 public class InComparissionExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private final List elements;
 
-    public InComparissionExpression (Expression left, List elements) {
+    public InComparissionExpression(Expression left, List elements) {
+
         this.left = left;
         this.elements = elements;
     }
+
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public boolean evaluate(Metadata metadata) {
+
         Collection t = null;
         Object rvalue = left.evaluate(metadata);
         if (elements.size() == 0) {

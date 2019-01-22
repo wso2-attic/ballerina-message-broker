@@ -24,36 +24,43 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 public class NotLikeComparissionExpressionTest {
-    Metadata metadata =  new Metadata("queue1", "amq.topic", 0);
+
+    Metadata metadata = new Metadata("queue1", "amq.topic", 0);
     Expression c4 = new ConstantExpression("property");
 
     @Test(dataProvider = "positive-filter-strings")
-    private void testNotikeComparision_positive(String filter) {
-        NotLikeComparissionExpression value = new  NotLikeComparissionExpression(c4, filter, null);
+    public void testNotikeComparision_positive(String filter) {
+
+        NotLikeComparissionExpression value = new NotLikeComparissionExpression(c4, filter, null);
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
 
     @Test(dataProvider = "positive-filter-strings-for-escape")
-    private void testNotLikeComparision_positive_with_escape(String filter) {
+    public void testNotLikeComparision_positive_with_escape(String filter) {
+
         Expression c5 = new ConstantExpression(filter);
-        NotLikeComparissionExpression value = new  NotLikeComparissionExpression(c5, "\\_%", "\\");
+        NotLikeComparissionExpression value = new NotLikeComparissionExpression(c5, "\\_%", "\\");
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
+
     @Test(dataProvider = "negative-filter-strings")
-    private void testNotLikeComparision_negative(String filter) {
-        NotLikeComparissionExpression value = new  NotLikeComparissionExpression(c4, filter, null);
+    public void testNotLikeComparision_negative(String filter) {
+
+        NotLikeComparissionExpression value = new NotLikeComparissionExpression(c4, filter, null);
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
+
     @Test(dataProvider = "negative-filter-strings-for-escape")
-    private void testNotLikeComparision_negative_with_escape(String filter) {
+    public void testNotLikeComparision_negative_with_escape(String filter) {
+
         Expression c5 = new ConstantExpression(filter);
-        NotLikeComparissionExpression value = new  NotLikeComparissionExpression(c5, "\\_%", "\\");
+        NotLikeComparissionExpression value = new NotLikeComparissionExpression(c5, "\\_%", "\\");
         boolean actualvalue = value.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
@@ -61,7 +68,8 @@ public class NotLikeComparissionExpressionTest {
 
     @DataProvider(name = "positive-filter-strings")
     public Object[] positiveFilterStrings() {
-        return new String[] {
+
+        return new String[]{
                 "v%",
                 "va%",
                 "val%",
@@ -86,9 +94,11 @@ public class NotLikeComparissionExpressionTest {
                 "v__u_"
         };
     }
+
     @DataProvider(name = "positive-filter-strings-for-escape")
     public Object[] positiveFilterStringsforescape() {
-        return new String[] {
+
+        return new String[]{
                 "value",
                 "V_ALUE",
                 "val__ue",
@@ -99,9 +109,11 @@ public class NotLikeComparissionExpressionTest {
                 "12ad_fd234",
         };
     }
+
     @DataProvider(name = "negative-filter-strings")
     public Object[] negativeFilterStrings() {
-        return new String[] {
+
+        return new String[]{
                 "p%",
                 "pr%",
                 "pro%",
@@ -126,9 +138,11 @@ public class NotLikeComparissionExpressionTest {
                 "p____r__"
         };
     }
+
     @DataProvider(name = "negative-filter-strings-for-escape")
     public Object[] negativeFilterStringsforescape() {
-        return new String[] {
+
+        return new String[]{
                 "_property",
                 "_PROPERTY",
                 "__property",

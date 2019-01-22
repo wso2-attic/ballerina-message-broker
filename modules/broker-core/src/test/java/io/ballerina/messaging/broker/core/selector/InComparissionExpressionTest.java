@@ -22,11 +22,12 @@ import io.ballerina.messaging.broker.core.Metadata;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
 import java.util.Arrays;
 import java.util.List;
 
-
 public class InComparissionExpressionTest {
+
     Metadata metadata = new Metadata("queue1", "amq.topic", 0);
     String[] myStrings = new String[]{"Elem1", "Elem2", "Elem3"};
     List mylist = Arrays.asList(myStrings);
@@ -39,21 +40,26 @@ public class InComparissionExpressionTest {
     ConstantExpression c7 = ConstantExpression.createFromNumericFloat("120");
 
     @Test(dataProvider = "Expressions-positive")
-    private void testpositiveInComparision (Expression string) {
+    public void testpositiveInComparision(Expression string) {
+
         InComparissionExpression incmp = new InComparissionExpression(string, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
         boolean expectedvalue = true;
         Assert.assertEquals(actualvalue, expectedvalue, "values are not equal");
     }
+
     @Test(dataProvider = "Expressions-negative")
-    private void testnegativeInComparision (Expression string) {
+    public void testnegativeInComparision(Expression string) {
+
         InComparissionExpression incmp = new InComparissionExpression(string, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
         boolean expectedvalue = false;
         Assert.assertEquals(actualvalue, expectedvalue, "values are equal");
     }
+
     @Test(expectedExceptions = NullPointerException.class, dataProvider = "Expressions-positive")
-    private void testnullobject (Expression string) {
+    public void testnullobject(Expression string) {
+
         InComparissionExpression incmp = new InComparissionExpression(null, mylist);
         boolean actualvalue = incmp.evaluate(metadata);
         InComparissionExpression incmp1 = new InComparissionExpression(string, null);
@@ -61,14 +67,17 @@ public class InComparissionExpressionTest {
     }
 
     @DataProvider(name = "Expressions-positive")
-    public Object[] positive () {
+    public Object[] positive() {
+
         return new Expression[]{
                 c1, c2, c3,
         };
 
     }
+
     @DataProvider(name = "Expressions-negative")
-    public Object[] negative () {
+    public Object[] negative() {
+
         return new Expression[]{
                 c4, c5, c6, c7
         };

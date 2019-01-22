@@ -33,7 +33,8 @@ public class NotLikeComparissionExpression implements BooleanExpression {
     private final String escape;
     private Pattern likePattern;
 
-    public NotLikeComparissionExpression (Expression left, String right, String escape) {
+    public NotLikeComparissionExpression(Expression left, String right, String escape) {
+
         this.left = left;
         this.right = right;
         this.escape = escape;
@@ -41,7 +42,8 @@ public class NotLikeComparissionExpression implements BooleanExpression {
     }
 
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public boolean evaluate(Metadata metadata) {
+
         Object leftValue = left.evaluate(metadata);
 
         if (leftValue == null || right == null) {
@@ -54,7 +56,7 @@ public class NotLikeComparissionExpression implements BooleanExpression {
         }
         char q = 0;
         if (!(escape == null)) {
-            q =  escape.charAt(0);
+            q = escape.charAt(0);
         }
         StringBuilder regexp = new StringBuilder(right.length() * 2);
         regexp.append("\\A"); // The beginning of the input

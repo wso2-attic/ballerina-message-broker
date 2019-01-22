@@ -30,12 +30,14 @@ public class UnaryNegative implements Expression<Metadata> {
     private static final BigDecimal BD_LONG_MIN_VALUE = BigDecimal.valueOf(Long.MIN_VALUE);
     private final Expression<Metadata> left;
 
-    public UnaryNegative (Expression left) {
+    public UnaryNegative(Expression left) {
 
         this.left = left;
     }
+
     @Override
-    public Object evaluate (Metadata metadata) {
+    public Object evaluate(Metadata metadata) {
+
         Object leftvalue = left.evaluate(metadata);
         if (leftvalue == null) {
             return null;
@@ -45,7 +47,9 @@ public class UnaryNegative implements Expression<Metadata> {
         }
         return new Exception("value is not a number");
     }
-    private static Number negate (Number left) {
+
+    private static Number negate(Number left) {
+
         Class clazz = left.getClass();
         if (clazz == Integer.class) {
             return -left.longValue();

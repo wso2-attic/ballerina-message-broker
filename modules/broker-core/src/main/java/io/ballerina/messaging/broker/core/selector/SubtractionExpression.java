@@ -20,6 +20,7 @@
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
+
 /**
  * Implementation of a  expression. Here we calculate the subtraction of two expressions and evaluate to a object value.
  */
@@ -30,34 +31,37 @@ public class SubtractionExpression implements Expression<Metadata> {
     private static final int LONG = 1;
     private static final int DOUBLE = 2;
 
-    public SubtractionExpression (Expression left , Expression right) {
+    public SubtractionExpression(Expression left, Expression right) {
+
         this.left = left;
         this.right = right;
     }
 
     @Override
     public Object evaluate(Metadata metadata) {
+
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue instanceof Number && rightValue instanceof Number) {
             switch (numberType((Number) leftValue, (Number) rightValue)) {
-                case 1:
+                case LONG:
                     return ((Number) leftValue).longValue() - ((Number) rightValue).longValue();
 
-                case 2:
-                    return  ((Number) leftValue).doubleValue() - ((Number) rightValue).doubleValue();
+                case DOUBLE:
+                    return ((Number) leftValue).doubleValue() - ((Number) rightValue).doubleValue();
             }
         }
         return null;
     }
 
-    private int numberType (Number left, Number right) {
+    private int numberType(Number left, Number right) {
+
         Class lv = left.getClass();
         if ((lv == Integer.class) || (lv == Long.class)) {
             if (right instanceof Long) {
-                return 1;
+                return LONG;
             }
         }
-        return 2;
+        return DOUBLE;
     }
 }

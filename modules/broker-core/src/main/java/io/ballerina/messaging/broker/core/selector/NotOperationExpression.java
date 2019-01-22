@@ -19,19 +19,21 @@
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
+
 /**
  * Implementation of a boolean expression.This class is doing a boolean NOT operation for the value  provided.
  */
 public class NotOperationExpression implements BooleanExpression {
 
-    private  final BooleanExpression value;
+    private final BooleanExpression value;
 
-    public NotOperationExpression (BooleanExpression value) {
+    public NotOperationExpression(BooleanExpression value) {
+
         this.value = value;
     }
 
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public boolean evaluate(Metadata metadata) {
 
         boolean x = value.evaluate(metadata);
 

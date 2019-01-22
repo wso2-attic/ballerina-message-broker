@@ -19,6 +19,7 @@
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
+
 /**
  * Implementation of a boolean expression.This class is doing a comparison operation between the left with other two
  * values provided.if left value is between other two values it evaluate to a boolean value.
@@ -30,35 +31,38 @@ public class BetweenComparissionExpression implements BooleanExpression {
     private final Expression<Metadata> value1;
     private final Expression<Metadata> value2;
 
-    public BetweenComparissionExpression (Expression left, Expression value1, Expression value2) {
+    public BetweenComparissionExpression(Expression left, Expression value1, Expression value2) {
+
         this.left = left;
         this.value1 = value1;
         this.value2 = value2;
     }
 
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public boolean evaluate(Metadata metadata) {
+
         Object leftValue = left.evaluate(metadata);
         Object firstValue = value1.evaluate(metadata);
         Object secondValue = value2.evaluate(metadata);
 
         if (leftValue instanceof Number && firstValue instanceof Number && secondValue instanceof Number) {
-                Class lv = leftValue.getClass();
-                if ((lv == Integer.class) || (lv == Long.class)) {
-                    if ((firstValue instanceof Long) && (secondValue instanceof Long)) {
-                        Long l = ((Number) leftValue).longValue();
-                        Long l1 = ((Number) firstValue).longValue();
-                        Long l2 = ((Number) secondValue).longValue();
+            Class lv = leftValue.getClass();
+            if ((lv == Integer.class) || (lv == Long.class)) {
+                if ((firstValue instanceof Long) && (secondValue instanceof Long)) {
+                    Long value = ((Number) leftValue).longValue();
+                    Long value1 = ((Number) firstValue).longValue();
+                    Long value2 = ((Number) secondValue).longValue();
 
-                        return ((leftValue == firstValue) || (l > l1)) && ((leftValue == secondValue) || (l < l2));
-                    }
+                    return ((leftValue == firstValue) || (value > value1)) &&
+                            ((leftValue == secondValue) || (value < value2));
                 }
+            }
 
-                Double l = ((Number) leftValue).doubleValue();
-                Double l1 = ((Number) firstValue).doubleValue();
-                Double l2 = ((Number) secondValue).doubleValue();
+            Double value = ((Number) leftValue).doubleValue();
+            Double value1 = ((Number) firstValue).doubleValue();
+            Double value2 = ((Number) secondValue).doubleValue();
 
-                return ((leftValue == firstValue) || (l > l1)) && ((leftValue == secondValue) || (l < l2));
+            return ((leftValue == firstValue) || (value > value1)) && ((leftValue == secondValue) || (value < value2));
 
         }
         return false;

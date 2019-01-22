@@ -31,13 +31,16 @@ public class NotBetweenComparissionExpression implements BooleanExpression {
     private final Expression<Metadata> value1;
     private final Expression<Metadata> value2;
 
-    public NotBetweenComparissionExpression (Expression left, Expression value1, Expression value2) {
+    public NotBetweenComparissionExpression(Expression left, Expression value1, Expression value2) {
+
         this.left = left;
         this.value1 = value1;
         this.value2 = value2;
     }
+
     @Override
-    public boolean evaluate (Metadata metadata) {
+    public boolean evaluate(Metadata metadata) {
+
         Object leftValue = left.evaluate(metadata);
         Object firstValue = value1.evaluate(metadata);
         Object secondValue = value2.evaluate(metadata);
@@ -46,17 +49,19 @@ public class NotBetweenComparissionExpression implements BooleanExpression {
             Class lv = leftValue.getClass();
             if ((lv == Integer.class) || (lv == Long.class)) {
                 if ((firstValue instanceof Long) && (secondValue instanceof Long)) {
-                    long l = ((Number) leftValue).longValue();
-                    long l1 = ((Number) firstValue).longValue();
-                    long l2 = ((Number) secondValue).longValue();
-                    return ((leftValue != firstValue) && (l <= l1)) || ((leftValue != secondValue) && (l >= l2));
+                    long value = ((Number) leftValue).longValue();
+                    long value1 = ((Number) firstValue).longValue();
+                    long value2 = ((Number) secondValue).longValue();
+                    return ((leftValue != firstValue) && (value <= value1)) || ((leftValue != secondValue)
+                            && (value >= value2));
                 }
             }
 
-                double l = ((Number) leftValue).doubleValue();
-                double l1 = ((Number) firstValue).doubleValue();
-                double l2 = ((Number) secondValue).doubleValue();
-                return ((leftValue != firstValue) && (l <= l1)) || ((leftValue != secondValue) && (l >= l2));
+            double value = ((Number) leftValue).doubleValue();
+            double value1 = ((Number) firstValue).doubleValue();
+            double value2 = ((Number) secondValue).doubleValue();
+            return ((leftValue != firstValue) && (value <= value1)) || ((leftValue != secondValue)
+                    && (value >= value2));
 
         }
         return false;
