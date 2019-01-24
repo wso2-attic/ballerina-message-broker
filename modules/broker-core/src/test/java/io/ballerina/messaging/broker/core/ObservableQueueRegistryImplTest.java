@@ -51,9 +51,9 @@ public class ObservableQueueRegistryImplTest {
             throws BrokerException {
         observableQueueRegistry.addQueue(queueName, false, Boolean.valueOf(durable),
                 Boolean.valueOf(autoDelete), null);
-        Assert.assertEquals(testPublisher.getProperty("queueName"), queueName);
-        Assert.assertEquals(testPublisher.getProperty("durable"), durable);
-        Assert.assertEquals(testPublisher.getProperty("autoDelete"), autoDelete);
+        Assert.assertEquals(testPublisher.getProperty("queueName"), queueName, "Invalid event property");
+        Assert.assertEquals(testPublisher.getProperty("durable"), durable, "Invalid event property");
+        Assert.assertEquals(testPublisher.getProperty("autoDelete"), autoDelete, "Invalid event property");
     }
 
     @Test(description = "test properties of queue event publish", dataProvider = "example queues")
@@ -64,9 +64,9 @@ public class ObservableQueueRegistryImplTest {
         testPublisher.id = null;
         testPublisher.properties = null;
         observableQueueRegistry.removeQueue(queueName, true, true);
-        Assert.assertEquals(testPublisher.getProperty("queueName"), queueName);
-        Assert.assertEquals(testPublisher.getProperty("durable"), durable);
-        Assert.assertEquals(testPublisher.getProperty("autoDelete"), autoDelete);
+        Assert.assertEquals(testPublisher.getProperty("queueName"), queueName, "Invalid event property");
+        Assert.assertEquals(testPublisher.getProperty("durable"), durable, "Invalid event property");
+        Assert.assertEquals(testPublisher.getProperty("autoDelete"), autoDelete, "Invalid event property");
     }
 
     @DataProvider(name = "example queues")

@@ -77,11 +77,9 @@ public class QueueHandlerFactoryTest {
                 new NullBrokerMetricManager(),
                 null,
                 config.getEventConfig());
+        queueHandler.addConsumer(new TestConsumer(false, false, "test"));
         if (Objects.nonNull(testPublisher) && externalEventsEnabled) {
-            queueHandler.addConsumer(new TestConsumer(false, false, "test"));
-            Assert.assertNotNull(testPublisher.id);
-        } else {
-            queueHandler.addConsumer(new TestConsumer(false, false, "test"));
+            Assert.assertNotNull(testPublisher.id, "Observable QueueHandler not loaded");
         }
     }
 
@@ -101,7 +99,7 @@ public class QueueHandlerFactoryTest {
         when(queue.enqueue(null)).thenReturn(true);
         queueHandler.enqueue(null);
         if (Objects.nonNull(testPublisher) && enabled) {
-            Assert.assertNotNull(testPublisher.id);
+            Assert.assertNotNull(testPublisher.id, "Observable Queue not loaded");
         }
     }
 
@@ -129,9 +127,9 @@ public class QueueHandlerFactoryTest {
         queueHandler.enqueue(null);
 
         if (enabled && "test".equals(name)) {
-            Assert.assertNotNull(testPublisher.id);
+            Assert.assertNotNull(testPublisher.id, "Events not published for specific message limits in a queue");
         } else {
-            Assert.assertNull(testPublisher.id);
+            Assert.assertNull(testPublisher.id, "Event published for an undefined specific limit");
         }
     }
 
@@ -150,7 +148,7 @@ public class QueueHandlerFactoryTest {
         when(queue.size()).thenReturn(20);
         when(queue.enqueue(null)).thenReturn(true);
         queueHandler.enqueue(null);
-        Assert.assertNotNull(testPublisher.id);
+        Assert.assertNotNull(testPublisher.id, "Event not published for a queue specific limit");
     }
 
     @DataProvider(name = "Queue creation inputs")
