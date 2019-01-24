@@ -53,7 +53,7 @@ public class QueueRegistryFactoryTest {
         queueRegistry.addQueue("test", false, false, false, null);
 
         if (Objects.nonNull(testPublisher) && enabled) {
-            Assert.assertNotNull(testPublisher.id);
+            Assert.assertNotNull(testPublisher.id, "Observable queue registry not loaded");
         }
     }
 

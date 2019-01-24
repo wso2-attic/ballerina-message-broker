@@ -70,9 +70,9 @@ public class ObservableExchangeRegistryImplTest {
         testPublisher.properties = null;
         observableExchangeRegistry.deleteExchange(exchangeName, true);
         observableExchangeRegistry.deleteExchange(exchangeName, true);
-        Assert.assertEquals(exchangeName, testPublisher.getProperty("exchangeName"));
-        Assert.assertEquals(type, testPublisher.getProperty("type"));
-        Assert.assertEquals(durable, testPublisher.getProperty("durable"));
+        Assert.assertEquals(exchangeName, testPublisher.getProperty("exchangeName"), "Invalid event property");
+        Assert.assertEquals(type, testPublisher.getProperty("type"), "Invalid event property");
+        Assert.assertEquals(durable, testPublisher.getProperty("durable"), "Invalid event property");
     }
 
     @Test(description = "test exchange create event with passive bit set false",
@@ -83,7 +83,7 @@ public class ObservableExchangeRegistryImplTest {
             observableExchangeRegistry.createExchange(exchangeName, Exchange.Type.TOPIC, false);
             testPublisher.id = null;
             observableExchangeRegistry.declareExchange(exchangeName, "topic", false, false);
-            Assert.assertNull(testPublisher.id);
+            Assert.assertNull(testPublisher.id, "Event published for an existing exchange declare");
             observableExchangeRegistry.deleteExchange(exchangeName, true);
     }
 
@@ -94,7 +94,7 @@ public class ObservableExchangeRegistryImplTest {
         observableExchangeRegistry.createExchange(exchangeName, Exchange.Type.TOPIC, false);
         testPublisher.id = null;
         observableExchangeRegistry.declareExchange(exchangeName, "topic", true, false);
-        Assert.assertNull(testPublisher.id);
+        Assert.assertNull(testPublisher.id, "Event published for an existing exchange declare");
         observableExchangeRegistry.deleteExchange(exchangeName, true);
     }
 
@@ -104,7 +104,7 @@ public class ObservableExchangeRegistryImplTest {
         String exchangeName = "test3";
         testPublisher.id = null;
         observableExchangeRegistry.declareExchange(exchangeName, "topic", false, false);
-        Assert.assertNotNull(testPublisher.id);
+        Assert.assertNotNull(testPublisher.id, "Event not published for exchange creation");
         observableExchangeRegistry.deleteExchange(exchangeName, true);
     }
 
@@ -115,7 +115,7 @@ public class ObservableExchangeRegistryImplTest {
         testPublisher.id = null;
         String exchangeName = "test4";
         observableExchangeRegistry.declareExchange(exchangeName, "topic", true, false);
-        Assert.assertNotNull(testPublisher.id);
+        Assert.assertNotNull(testPublisher.id, "Event not published for exchange creation");
         observableExchangeRegistry.deleteExchange(exchangeName, true);
     }
 
@@ -124,7 +124,7 @@ public class ObservableExchangeRegistryImplTest {
     public void testExchangeDeclareWithNullName() throws BrokerException, ValidationException {
             String exchangeName = "";
             observableExchangeRegistry.declareExchange(exchangeName, "topic", true, false);
-            Assert.assertNull(testPublisher.id);
+            Assert.assertNull(testPublisher.id, "Event published without exchange creation");
     }
 
     @Test(description = "test properties of exchange created event publish", dataProvider = "example exchanges")
@@ -137,9 +137,9 @@ public class ObservableExchangeRegistryImplTest {
             exchangeType = Exchange.Type.DIRECT;
         }
         observableExchangeRegistry.createExchange(exchangeName, exchangeType, Boolean.parseBoolean(durable));
-        Assert.assertEquals(exchangeName, testPublisher.getProperty("exchangeName"));
-        Assert.assertEquals(type, testPublisher.getProperty("type"));
-        Assert.assertEquals(durable, testPublisher.getProperty("durable"));
+        Assert.assertEquals(exchangeName, testPublisher.getProperty("exchangeName"), "Invalid Event Property");
+        Assert.assertEquals(type, testPublisher.getProperty("type"), "Invalid Event Property");
+        Assert.assertEquals(durable, testPublisher.getProperty("durable"), "Invalid Event Property");
         observableExchangeRegistry.deleteExchange(exchangeName, true);
     }
 

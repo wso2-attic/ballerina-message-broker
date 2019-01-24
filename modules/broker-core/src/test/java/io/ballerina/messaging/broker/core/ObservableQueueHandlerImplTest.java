@@ -87,10 +87,13 @@ public class ObservableQueueHandlerImplTest {
     public void testAddConsumer(boolean exclusive, boolean ready, String queueName) {
         Consumer consumer = new TestConsumer(exclusive, ready, queueName);
         observableQueueHandler.addConsumer(consumer);
-        Assert.assertEquals(testPublisher.getProperty("consumerID"), String.valueOf(consumer.getId()));
-        Assert.assertEquals(testPublisher.getProperty("exclusive"), String.valueOf(consumer.isExclusive()));
-        Assert.assertEquals(testPublisher.getProperty("ready"), String.valueOf(consumer.isReady()));
-        Assert.assertEquals(testPublisher.getProperty("queueName"), consumer.getQueueName());
+        Assert.assertEquals(testPublisher.getProperty("consumerID"), String.valueOf(consumer.getId()),
+                "Invalid event property");
+        Assert.assertEquals(testPublisher.getProperty("exclusive"), String.valueOf(consumer.isExclusive()),
+                "Invalid event property");
+        Assert.assertEquals(testPublisher.getProperty("ready"), String.valueOf(consumer.isReady()),
+                "Invalid event property");
+        Assert.assertEquals(testPublisher.getProperty("queueName"), consumer.getQueueName(), "Invalid event Property");
     }
 
      @Test(description = "Test existing consumer addition")
@@ -99,13 +102,13 @@ public class ObservableQueueHandlerImplTest {
          observableQueueHandler.addConsumer(consumer);
          testPublisher.id = null;
          observableQueueHandler.addConsumer(consumer);
-         Assert.assertNull(testPublisher.id);
+         Assert.assertNull(testPublisher.id, "Consumer already exists");
      }
 
      @Test(description = "Test non existing consumer removal")
      public void testNonExistingConsumerRemoval() {
         observableQueueHandler.removeConsumer(new TestConsumer(true, false, "non-existing"));
-        Assert.assertNull(testPublisher.id);
+        Assert.assertNull(testPublisher.id, "Consumer does not exist");
      }
 
 
@@ -115,11 +118,15 @@ public class ObservableQueueHandlerImplTest {
         observableQueueHandler.addConsumer(consumer);
         testPublisher.properties = null;
         observableQueueHandler.removeConsumer(consumer);
-        Assert.assertEquals(testPublisher.getProperty("consumerID"), String.valueOf(consumer.getId()));
-        Assert.assertEquals(testPublisher.getProperty("exclusive"), String.valueOf(consumer.isExclusive()));
-        Assert.assertEquals(testPublisher.getProperty("ready"), String.valueOf(consumer.isReady()));
-        Assert.assertEquals(testPublisher.getProperty("queueName"), consumer.getQueueName());
-        Assert.assertEquals(testPublisher.id, "consumer.removed");
+        Assert.assertEquals(testPublisher.getProperty("consumerID"), String.valueOf(consumer.getId()),
+                "Invalid event Property");
+        Assert.assertEquals(testPublisher.getProperty("exclusive"), String.valueOf(consumer.isExclusive()),
+                "Invalid event Property");
+        Assert.assertEquals(testPublisher.getProperty("ready"), String.valueOf(consumer.isReady()),
+                "Invalid event Property");
+        Assert.assertEquals(testPublisher.getProperty("queueName"), consumer.getQueueName(),
+                "Invalid event Property");
+        Assert.assertEquals(testPublisher.id, "consumer.removed", "Invalid event id");
     }
 
     @Test(description = "test properties of queue limit reached event publish", invocationCount = 17)
@@ -128,13 +135,16 @@ public class ObservableQueueHandlerImplTest {
         limitQueue.enqueue(message);
         int queueSize = limitQueue.getQueueHandler().size();
         if (queueLimits.contains(queueSize)) {
-            Assert.assertEquals(testPublisher.getProperty("queueName"), "TestQueue");
-            Assert.assertEquals(testPublisher.getProperty("durable"), String.valueOf(false));
-            Assert.assertEquals(testPublisher.getProperty("autoDelete"), String.valueOf(false));
-            Assert.assertEquals(testPublisher.getProperty("messageCount"), String.valueOf(queueSize));
-            Assert.assertEquals(testPublisher.id, "queue.publishLimitReached.TestQueue." + String.valueOf(queueSize));
+            Assert.assertEquals(testPublisher.getProperty("queueName"), "TestQueue", "Invalid event Property");
+            Assert.assertEquals(testPublisher.getProperty("durable"), String.valueOf(false), "Invalid event Property");
+            Assert.assertEquals(testPublisher.getProperty("autoDelete"), String.valueOf(false),
+                    "Invalid event Property");
+            Assert.assertEquals(testPublisher.getProperty("messageCount"), String.valueOf(queueSize),
+                    "Invalid event Property");
+            Assert.assertEquals(testPublisher.id, "queue.publishLimitReached.TestQueue." + String.valueOf(queueSize),
+                    "Invalid event Property");
         } else {
-            Assert.assertNull(testPublisher.id);
+            Assert.assertNull(testPublisher.id, "Event published at an undefined limit");
         }
     }
 
@@ -143,13 +153,15 @@ public class ObservableQueueHandlerImplTest {
         limitQueue2.dequeue();
         int queueSize = limitQueue2.getQueueHandler().size();
         if (queueLimits.contains(queueSize)) {
-            Assert.assertEquals(testPublisher.getProperty("queueName"), "TestQueue");
-            Assert.assertEquals(testPublisher.getProperty("durable"), String.valueOf(false));
-            Assert.assertEquals(testPublisher.getProperty("autoDelete"), String.valueOf(false));
+            Assert.assertEquals(testPublisher.getProperty("queueName"), "TestQueue", "Invalid event property");
+            Assert.assertEquals(testPublisher.getProperty("durable"), String.valueOf(false), "Invalid event property");
+            Assert.assertEquals(testPublisher.getProperty("autoDelete"), String.valueOf(false),
+                    "Invalid event property");
             Assert.assertEquals(testPublisher.getProperty("messageCount"), String.valueOf(queueSize));
-            Assert.assertEquals(testPublisher.id, "queue.deliverLimitReached.TestQueue." + String.valueOf(queueSize));
+            Assert.assertEquals(testPublisher.id, "queue.deliverLimitReached.TestQueue." + String.valueOf(queueSize),
+                    "Invalid event property");
         } else {
-            Assert.assertNull(testPublisher.id);
+            Assert.assertNull(testPublisher.id, "Event published at an undefined limit");
         }
     }
 
@@ -162,9 +174,9 @@ public class ObservableQueueHandlerImplTest {
         ThrowingConsumer<Binding, BrokerException> bindingChangeListener = Mockito.mock(ThrowingConsumer.class);
         observableQueueHandler.addBinding(binding, bindingChangeListener);
         observableQueueHandler.removeBinding(binding);
-        Assert.assertEquals(testPublisher.getProperty("bindingQueue"), queueName);
-        Assert.assertEquals(testPublisher.getProperty("bindingPattern"), bindingPattern);
-        Assert.assertEquals(testPublisher.id, "binding.removed");
+        Assert.assertEquals(testPublisher.getProperty("bindingQueue"), queueName, "Invalid event property");
+        Assert.assertEquals(testPublisher.getProperty("bindingPattern"), bindingPattern, "Invalid event property");
+        Assert.assertEquals(testPublisher.id, "binding.removed", "Invalid event id");
     }
 
     @Test(description = "test properties of consumer removed event publish", dataProvider = "example consumers")
@@ -178,10 +190,13 @@ public class ObservableQueueHandlerImplTest {
         int consumerCount = newHandler.consumerCount();
         newHandler.releaseResources();
         Assert.assertEquals(consumerCount, 1);
-        Assert.assertEquals(testPublisher.getProperty("consumerID"), String.valueOf(consumer.getId()));
-        Assert.assertEquals(testPublisher.getProperty("exclusive"), String.valueOf(consumer.isExclusive()));
-        Assert.assertEquals(testPublisher.getProperty("ready"), String.valueOf(consumer.isReady()));
-        Assert.assertEquals(testPublisher.getProperty("queueName"), consumer.getQueueName());
+        Assert.assertEquals(testPublisher.getProperty("consumerID"), String.valueOf(consumer.getId()),
+                "Invalid event property");
+        Assert.assertEquals(testPublisher.getProperty("exclusive"), String.valueOf(consumer.isExclusive()),
+                "Invalid Event Property");
+        Assert.assertEquals(testPublisher.getProperty("ready"), String.valueOf(consumer.isReady()),
+                "Invalid Event Property");
+        Assert.assertEquals(testPublisher.getProperty("queueName"), consumer.getQueueName(), "Invalid Event Property");
     }
 
     @Test(description = "test properties of binding event publish", dataProvider = "example bindings")
@@ -192,9 +207,9 @@ public class ObservableQueueHandlerImplTest {
         Binding binding = new Binding(testQueue, bindingPattern, arguments);
         ThrowingConsumer<Binding, BrokerException> bindingChangeListener = Mockito.mock(ThrowingConsumer.class);
         observableQueueHandler.addBinding(binding, bindingChangeListener);
-        Assert.assertEquals(testPublisher.getProperty("bindingQueue"), queueName);
-        Assert.assertEquals(testPublisher.getProperty("bindingPattern"), bindingPattern);
-        Assert.assertEquals(testPublisher.id, "binding.added");
+        Assert.assertEquals(testPublisher.getProperty("bindingQueue"), queueName, "Invalid Event Property");
+        Assert.assertEquals(testPublisher.getProperty("bindingPattern"), bindingPattern, "Invalid Event Property");
+        Assert.assertEquals(testPublisher.id, "binding.added", "Invalid Event ID");
         observableQueueHandler.removeBinding(binding);
     }
 
@@ -206,10 +221,10 @@ public class ObservableQueueHandlerImplTest {
         Consumer observableConsumer2 = new ObservableConsumer(consumer, testPublisher);
         Consumer observableConsumer3 = new ObservableConsumer(consumer1, testPublisher);
 
-        Assert.assertEquals(observableConsumer1, observableConsumer2);
-        Assert.assertNotEquals(observableConsumer1, observableConsumer3);
-        Assert.assertEquals(observableConsumer1, consumer);
-        Assert.assertNotEquals(observableConsumer1, consumer1);
+        Assert.assertEquals(observableConsumer1, observableConsumer2, "Consumer equality failed");
+        Assert.assertNotEquals(observableConsumer1, observableConsumer3, "Consumers equality failed");
+        Assert.assertEquals(observableConsumer1, consumer, "Consumers equality failed");
+        Assert.assertNotEquals(observableConsumer1, consumer1, "Consumers equality failed");
     }
 
     @DataProvider(name = "example consumers")
