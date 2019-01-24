@@ -54,7 +54,7 @@ public class ExchangeRegistryFactoryTest {
         ExchangeRegistry exchangeRegistry = exchangeRegistryFactory.getExchangeRegistry();
         exchangeRegistry.createExchange(exchangeName, Exchange.Type.TOPIC, false);
         if (Objects.nonNull(testPublisher) && enabled) {
-            Assert.assertNotNull(testPublisher.id);
+            Assert.assertNotNull(testPublisher.id, "Observable exchange registry not loaded");
         }
     }
 
