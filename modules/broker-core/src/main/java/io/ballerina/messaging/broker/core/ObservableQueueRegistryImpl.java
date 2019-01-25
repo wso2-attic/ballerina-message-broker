@@ -33,7 +33,7 @@ final class ObservableQueueRegistryImpl extends QueueRegistry {
 
     private final QueueRegistryImpl queueRegistry;
     private final EventSync eventSync;
-    private static final String QUEUE_ADDED_EVENT = "queue.added";
+    private static final String QUEUE_ADDED_EVENT = "queue.created";
     private static final String QUEUE_REMOVED_EVENT = "queue.deleted";
 
     ObservableQueueRegistryImpl(QueueRegistryImpl queueRegistry, EventSync eventSync) {

@@ -25,6 +25,7 @@ import io.ballerina.messaging.broker.common.config.BrokerConfigProvider;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,58 +56,52 @@ public class TestPublisherRegistration {
         startupContext.registerService(EventConfiguration.class, testConfig);
     }
 
-    @Test(description = "Test whether the right event publisher is loaded when events are enabled")
-    public void testEventingEnabledPublisherLoad() throws Exception {
-        testConfig.setEnabled(true);
+    @Test(description = "Test whether the right event publisher is loaded", dataProvider = "Events enabled")
+    public void testEventingPublisherLoad(boolean enabled) throws Exception {
+        testConfig.setEnabled(enabled);
         testConfig.setPublisherClass("io.ballerina.messaging.broker.eventing.TestPublisher");
         new EventService(startupContext);
         TestPublisher testPublisher = (TestPublisher) startupContext.getService(EventSync.class);
-        String id = testPublisher.getID();
-        Assert.assertEquals("TestPublisher", id);
+        if (enabled) {
+            String id = testPublisher.getID();
+            Assert.assertEquals("TestPublisher", id, "Incorrect event publisher loaded");
+        } else {
+            Assert.assertNull(testPublisher, "Event publisher loaded when events are disabled");
+        }
     }
 
-    @Test(description = "Test whether a event publisher is not loaded when events are disabled")
-    public void testEventingDisabledPublisherLoad() throws Exception {
-        testConfig.setEnabled(false);
-        testConfig.setPublisherClass("io.ballerina.messaging.broker.eventing.TestPublisher");
-        new EventService(startupContext);
-        EventSync eventSync = startupContext.getService(EventSync.class);
-        Assert.assertNull(eventSync);
-    }
-
-    @Test
-    public void testStart() throws Exception {
-        testConfig.setEnabled(true);
+    @Test(description = "Test start and stop of an event publisher", dataProvider = "Events enabled")
+    public void testStartStop(boolean enabled) throws Exception {
+        testConfig.setEnabled(enabled);
         testConfig.setPublisherClass("io.ballerina.messaging.broker.eventing.TestPublisher");
         EventService eventService = new EventService(startupContext);
         EventSync eventSync = startupContext.getService(EventSync.class);
         eventService.start();
-        Assert.assertTrue(((TestPublisher) eventSync).isActiveState());
+        if (enabled) {
+            Assert.assertTrue(((TestPublisher) eventSync).isActiveState(), "Event publisher not active");
+        }
         eventService.stop();
-        Assert.assertFalse(((TestPublisher) eventSync).isActiveState());
+        if (enabled) {
+            Assert.assertFalse(((TestPublisher) eventSync).isActiveState(), "Event publisher is active");
+        }
     }
 
-    @Test
-    public void testNegativeStartStop() throws Exception {
-        testConfig.setEnabled(false);
-        testConfig.setPublisherClass("io.ballerina.messaging.broker.eventing.TestPublisher");
-        EventService eventService = new EventService(startupContext);
-        eventService.start();
-        eventService.stop();
-    }
-
-    @Test
+    @Test(description = "Test incorrect publisher name in broker config file")
     public void incorrectPublisherNameTest() throws Exception {
         testConfig.setEnabled(true);
         testConfig.setPublisherClass("io.ballerina.messaging.broker.eventing.IncorrectPublisherName");
         new EventService(startupContext);
         EventSync eventSync = startupContext.getService(EventSync.class);
-        Assert.assertNull(eventSync);
+        Assert.assertNull(eventSync, "Incorrect event publisher loaded");
+    }
+
+    @DataProvider(name = "Events enabled")
+    public Object[] eventsEnabled() {
+        return new Object[] {true, false};
     }
 
     private static class TestBrokerConfigProvider implements BrokerConfigProvider {
         Map<String, Object> configMap = new HashMap<>();
-
         @Override
         public <T> T getConfigurationObject(String namespace, Class<T> configurationClass) throws Exception {
             Object configObject = configMap.get(namespace);
@@ -115,7 +110,6 @@ public class TestPublisherRegistration {
             }
             return configurationClass.cast(configObject);
         }
-
         private void addConfigObject(Object configObject) {
             configMap.put(EventConfiguration.NAMESPACE, configObject);
         }
