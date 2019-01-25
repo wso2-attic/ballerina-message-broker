@@ -44,9 +44,11 @@ public class DefaultExchangePublisherTest {
         exchangePublisher.publishNotification(key, properties);
         Message message = testBroker.getMessage();
         Metadata metadata = message.getMetadata();
-        Assert.assertEquals(metadata.getRoutingKey(), key);
-        Assert.assertEquals(metadata.getHeader(ShortString.parseString(property1)).toString(), value1);
-        Assert.assertEquals(metadata.getHeader(ShortString.parseString(property2)).toString(), value2);
+        Assert.assertEquals(metadata.getRoutingKey(), key, "Invalid routing key");
+        Assert.assertEquals(metadata.getHeader(ShortString.parseString(property1)).toString(), value1,
+                "Invalid message property");
+        Assert.assertEquals(metadata.getHeader(ShortString.parseString(property2)).toString(), value2,
+                "Invalid message property");
     }
 
     @Test(description = "Test unable to publish message to broker with BrokerException")

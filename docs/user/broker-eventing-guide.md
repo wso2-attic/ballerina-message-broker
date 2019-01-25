@@ -70,15 +70,21 @@ shows events and their related routing key.
 ### Queue Related Events
 
 - Queue Created Event -	
-`queue.added`
+`queue.created`
 - Queue Deleted Event -	
 `queue.deleted`
-- Queue Limit Reached Events -	
-`queue.limitReached.*`                                                  
-- Queue Limit Reached Events for a specific queue “QueueName” - 	
-`queue.limiReached.”QueueName”.*`  
-- Queue Limit Reached Event for queue “QueueName” for limit “limitValue” - 
-`queue.limitReached.”QueueName”.”limitValue”`
+- Queue Publish Limit Reached Events -	
+`queue.publishLimitReached.*`                                                   
+- Queue Publish Limit Reached Events for a specific queue “QueueName” - 	
+`queue.publishLimiReached.”QueueName”.*`  
+- Queue Publish Limit Reached Events for queue “QueueName” for limit “limitValue” - 
+`queue.publishLimitReached.”QueueName”.”limitValue”`
+- Queue Deliver Limit Reached Events -
+`queue.deliverLimitReached.*`
+- Queue Deliver Limit Reached Events for a specific queue “QueueName” - 	
+`queue.deliverLimiReached.”QueueName”.*`  
+- Queue Deliver Limit Reached Events for queue “QueueName” for limit “limitValue” - 
+`queue.deliverLimitReached.”QueueName”.”limitValue”`
 - Queue Events -	
 `queue.*`
 

@@ -21,22 +21,20 @@ public class BrokerCoreEventPublisherTest {
         this.eventSync = new BrokerCoreEventPublisher();
     }
 
-    @Test(description = "test activating events",  dataProvider = "sample brokers")
+    @Test(description = "test activating and deactivating events",  dataProvider = "sample brokers")
     public void testActivate(TestBroker broker) {
         ((BrokerCoreEventPublisher) this.eventSync).setBroker(broker);
         eventSync.activate();
         eventSync.publish("test", new HashMap<>());
         if (Objects.nonNull(broker)) {
-            Assert.assertNotNull(broker.getMessage());
+            Assert.assertNotNull(broker.getMessage(), "Publisher is inactive even it is activated");
+            broker.clearMessage();
         }
-    }
-
-    @Test(description = "Test deactivating events")
-    public void testDeactivate() {
-        ((BrokerCoreEventPublisher) this.eventSync).setBroker(broker);
         eventSync.deactivate();
         eventSync.publish("test", new HashMap<>());
-            Assert.assertNull(broker.getMessage());
+        if (Objects.nonNull(broker)) {
+            Assert.assertNull(broker.getMessage(), "Publisher is active even it is deactivated");
+        }
     }
 
     @AfterMethod
