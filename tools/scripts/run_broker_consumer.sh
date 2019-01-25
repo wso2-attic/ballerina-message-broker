@@ -75,6 +75,7 @@ do
          ;;
          x)
             selector_string=$OPTARG
+             jmx_file_location="test_plan/broker_test_topic_consumer_selector.jmx"
              break
             ;;
          s)
@@ -185,6 +186,7 @@ if [ "$queue_available_response" == 404 ]
 echo Host is set to "$host_url"
 echo Broker port is set to ${testplan_user_inputs["BrokerPort"]} and AMQP listener port is set to ${testplan_user_inputs["AMQPListenerPort"]}
 echo Jmeter home is set to - ${testplan_user_inputs["JmeterHome"]}
+echo "$queue_name"
 
 # create folder to store report files
 folder_name=$(date '+%d-%m-%Y-%H-%M-%S')
