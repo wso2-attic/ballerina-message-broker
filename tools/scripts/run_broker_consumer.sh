@@ -31,10 +31,11 @@ exchange_name=""
 base_file_location="consumer"
 
 # get inputs from the user -p <location of the properties file> -d topic/queue
-while getopts "hi:d:s:t:h:x:v" OPTION
+while getopts "hi:d:s:t:h:x:m:v" OPTION
 do
      case $OPTION in
          d)
+            destination_type=$OPTARG
             case $OPTARG in
                 queue)
                     is_given_destination=true
@@ -62,7 +63,7 @@ do
             esac
             ;;
           h)
-            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./run_broker_consumer.sh [command].\n\nCommands\n\t-h  ask for help\n\t-i  set the location of the infrastructure properties file\n\t-t  set the location of the testplan properties file\n\t-d  set jms destination type queue/topic\n\t-x  set jms selector\n"
+            help_text="Welcome to ballerina message broker micro-benchmark tool\n\nUsage:\n\t./run_broker_consumer.sh [command].\n\nCommands\n\t-h  ask for help\n\t-i  set the location of the infrastructure properties file\n\t-t  set the location of the testplan properties file\n\t-d  set jms destination type queue/topic\n\t-x  set jms selector\n\t -m durability\n"
             printf "$help_text"
             exit
             ;;
@@ -72,12 +73,54 @@ do
             ;;
          t)
             testplan_file_location=$OPTARG
+           ;;
+         m)
+            case $destination_type in
+            topic)
+             durability_type=$OPTARG
+             if [ $durability_type == true ];
+            then
+             jmx_file_location="test_plan/broker_test_topic_durable_consumer.jmx"
+             fi
+              if [ $durability_type == false ];
+            then
+             jmx_file_location="test_plan/broker_test_topic_consumer.jmx"
+             fi
+            ;;
+            queue)
+            echo "$destination_type is an invalid destination.JMS destination should be a topic"
+            exit
+           ;;
+           ?)
+            echo "enter the durability type"
+            exit
+            ;;
+          esac
          ;;
          x)
             selector_string=$OPTARG
-             jmx_file_location="test_plan/broker_test_topic_consumer_selector.jmx"
-             break
+            case $destination_type in
+            topic)
+            if [ $durability_type == true ];
+            then
+              jmx_file_location="test_plan/broker_test_topic_durable_consumer_selector.jmx"
+               fi
+             if [ $durability_type == false ];
+            then
+              jmx_file_location="test_plan/broker_test_topic_consumer_selector.jmx"
+               fi
             ;;
+            queue)
+            echo "$OPTARG is an invalid destination.JMS destination should be a topic"
+            exit
+           ;;
+           ?)
+            echo "enter the durability type"
+            exit
+            ;;
+          esac
+         break
+         ;;
          s)
             base_file_location="$OPTARG/consumer"
             ;;

@@ -26,6 +26,9 @@ The tool allows developers to publish/consume messages to/from queues and topics
     ThreadCount = <number_of_threads>
     MessageSize = <size_of_the_message>
     NumberOfMessages = <number_of_messages_need_to_be_published>
+    property_name=<property_name>
+    property_value=<property_value>
+    property_type=<property_type>
     Throughput= <throughput_need_to_be_maintained>
     
     ```
@@ -49,6 +52,7 @@ Upon completion of the test, you will be directed to a web interface which conta
 JmeterHome = <jmeter_home>
 ThreadCount = <number_of_threads>
 NumberOfMessages = <number_of_messages_need_to_be_published>
+
 ```
 
 2. Include the following details in broker_test_infrastructure.properties file which is located at resources/.
@@ -57,9 +61,10 @@ NumberOfMessages = <number_of_messages_need_to_be_published>
     BrokerPort=<broker_port>
     AMQPListenerPort=<amqp_listener_port>
     ```
-Run ```./run_broker_consumer.sh -i <location_of_infrastructure_properties_file> -t <location_of_testplan_properties_file> -d queue/topic```
+Run ```./run_broker_consumer.sh -i <location_of_infrastructure_properties_file> -t <location_of_testplan_properties_file> -d queue/topic -m true -x prop=10```
 
 - -i and -t are optional parameters.If not provided ```resources/broker_test_infrastructure.properties``` and ```resources/broker_test_plan.properties``` are set as default file locations
+- -x and -m are optional parameters.
 
 Upon completion of the test, you will be directed to a web interface which contains the summary of the results obtained by the test.
 
@@ -82,5 +87,8 @@ Upon completion of the test, you will be directed to a web interface which conta
     - ThreadCount = 1
     - MessageSize = 10KB
     - NumberOfMessages = 1000000
+    - property_name=property
+    - property_value=10
+    - property_type=java.lang.Integer
     - Throughput = 5000 (5000 messages/seconds)
     
