@@ -23,7 +23,9 @@ Following sequence diagrams can be used to understand the high level functionali
 
 To develop a new Event Publisher and include it to publish events you should adopt the following steps,
 
-- Implement the [EventSync]() interface using the necessary code.
+- Implement the 
+[EventSync](../../modules/broker-common/src/main/java/io/ballerina/messaging/broker/common/EventSync.java) 
+interface in common module using the necessary code.
 - Include the implementation path in broker.yaml file as below under namespace 
 `ballerina.broker.events: publisherClass:`
 
