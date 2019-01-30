@@ -101,7 +101,7 @@ public abstract class QueueHandlerFactory {
             QueueHandler finalHandler = queueHandler;
 
             //Add consumer and binding event listening
-            if (eventConfig.isQueueExternalEventsEnabled()) {
+            if (eventConfig.getEnableQueueExternalEvents()) {
                 finalHandler = new ObservableQueueHandlerImpl(queueHandler, eventSync);
             }
 

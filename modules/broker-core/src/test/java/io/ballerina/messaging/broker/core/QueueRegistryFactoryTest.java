@@ -42,7 +42,7 @@ public class QueueRegistryFactoryTest {
 
     @Test(description = "Test queue registry creation with events", dataProvider = "sample publishers")
     public void testGetQueueRegistry(TestPublisher testPublisher, boolean enabled) throws BrokerException {
-        eventConfig.setQueueAdminEventsEnabled(enabled);
+        eventConfig.setEnableQueueAdminEvents(enabled);
         QueueRegistryFactory queueRegistryFactory = new QueueRegistryFactory(Mockito.mock(QueueDao.class),
                 new MemBackedQueueHandlerFactory(new NullBrokerMetricManager(),
                         new BrokerCoreConfiguration(),
