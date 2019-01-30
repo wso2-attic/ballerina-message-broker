@@ -175,11 +175,11 @@ public class BrokerCoreConfiguration {
     public static class EventConfig {
         private QueueEvents queueLimitEvents = new QueueEvents();
 
-        private boolean exchangeAdminEventsEnabled = true;
+        private boolean enableExchangeAdminEvents = true;
 
-        private boolean queueAdminEventsEnabled = true;
+        private boolean enableQueueAdminEvents = true;
 
-        private boolean queueExternalEventsEnabled = true;
+        private boolean enableQueueExternalEvents = true;
 
         /**
          * Getter for queueEvents.
@@ -188,32 +188,32 @@ public class BrokerCoreConfiguration {
             return queueLimitEvents;
         }
 
-        public void setQueueLimitEventsEnabled(QueueEvents queueEvents) {
+        public void setQueueLimitEvents(QueueEvents queueEvents) {
             this.queueLimitEvents = queueEvents;
         }
 
-        public boolean isExchangeAdminEventsEnabled() {
-            return exchangeAdminEventsEnabled;
+        public boolean getEnableExchangeAdminEvents() {
+            return enableExchangeAdminEvents;
         }
 
-        public boolean isQueueAdminEvents() {
-            return queueAdminEventsEnabled;
+        public boolean getEnableQueueAdminEvents() {
+            return enableQueueAdminEvents;
         }
 
-        public boolean isQueueExternalEventsEnabled() {
-            return queueExternalEventsEnabled;
+        public boolean getEnableQueueExternalEvents() {
+            return enableQueueExternalEvents;
         }
 
-        public void setExchangeAdminEventsEnabled(boolean exchangeAdminEventsEnabled) {
-            this.exchangeAdminEventsEnabled = exchangeAdminEventsEnabled;
+        public void setEnableExchangeAdminEvents(boolean exchangeAdminEventsEnabled) {
+            this.enableExchangeAdminEvents = exchangeAdminEventsEnabled;
         }
 
-        public void setQueueAdminEventsEnabled(boolean queueAdminEventsEnabled) {
-            this.queueAdminEventsEnabled = queueAdminEventsEnabled;
+        public void setEnableQueueAdminEvents(boolean queueAdminEventsEnabled) {
+            this.enableQueueAdminEvents = queueAdminEventsEnabled;
         }
 
-        public void setQueueExternalEventsEnabled(boolean queueExternalEventsEnabled) {
-            this.queueExternalEventsEnabled = queueExternalEventsEnabled;
+        public void setEnableQueueExternalEvents(boolean queueExternalEventsEnabled) {
+            this.enableQueueExternalEvents = queueExternalEventsEnabled;
         }
     }
 

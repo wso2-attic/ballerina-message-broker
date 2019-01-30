@@ -52,7 +52,7 @@ public class ExchangeRegistryFactory {
      * @return ExchangeRegistryImpl object
      */
     public ExchangeRegistry getExchangeRegistry() {
-        if (Objects.nonNull(this.eventSync) && eventConfig.isExchangeAdminEventsEnabled()) {
+        if (Objects.nonNull(this.eventSync) && eventConfig.getEnableExchangeAdminEvents()) {
             ExchangeRegistryImpl exchangeRegistry = new ExchangeRegistryImpl(exchangeDao, bindingDao);
             return new ObservableExchangeRegistryImpl(exchangeRegistry, eventSync);
         } else {

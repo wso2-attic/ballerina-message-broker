@@ -46,7 +46,7 @@ public class ExchangeRegistryFactoryTest {
     public void testGetExchangeRegistry(String exchangeName, TestPublisher testPublisher, boolean enabled)
             throws BrokerException,
             ValidationException {
-        eventConfig.setExchangeAdminEventsEnabled(enabled);
+        eventConfig.setEnableExchangeAdminEvents(enabled);
         ExchangeRegistryFactory exchangeRegistryFactory = new ExchangeRegistryFactory(Mockito.mock(ExchangeDao.class),
                 Mockito.mock(BindingDao.class),
                 testPublisher,
