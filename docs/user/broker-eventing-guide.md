@@ -38,6 +38,9 @@ ballerina.broker.events:
 ```
 ### Enabling Event Listening Capability
 
+You can enable and disable different event types according to your preference by setting true or false to the 
+intended event type.
+
 ```yaml
 # Message limits for to trigger notifications in queues
  eventConfig:
@@ -50,11 +53,11 @@ ballerina.broker.events:
       - name: test2
         limits: [2,8]
   # Enable Exchange Admin Events
-  exchangeAdminEventsEnabled: true
+  enableExchangeAdminEvents: true
   # Enable Queue Admin Events
-  queueAdminEventsEnabled: true
+  enableQueueAdminEvents: true
   # Enable Queue External Events
-  queueExternalEventsEnabled: true
+  enableQueueExternalEvents: true
 ```
 
 - Queue Limit Events - `queue.publishLimitReached`, `queue.deliverLimitReached`

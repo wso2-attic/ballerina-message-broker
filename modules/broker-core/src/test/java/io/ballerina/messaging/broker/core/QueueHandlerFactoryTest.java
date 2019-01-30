@@ -45,7 +45,6 @@ public class QueueHandlerFactoryTest {
     private TestPublisher testPublisher;
     private BrokerCoreConfiguration config;
 
-
     @BeforeClass
     public void setup() {
         testPublisher = new TestPublisher();
@@ -70,7 +69,7 @@ public class QueueHandlerFactoryTest {
 
     @Test(description = "Test queue creation with consumer and binding events", dataProvider = "sample publishers")
     public void testCreateQueueHandler(TestPublisher testPublisher, boolean externalEventsEnabled) {
-        config.getEventConfig().setQueueExternalEventsEnabled(externalEventsEnabled);
+        config.getEventConfig().setEnableQueueExternalEvents(externalEventsEnabled);
         QueueHandlerFactory queueHandlerFactory = new MemBackedQueueHandlerFactory(new NullBrokerMetricManager(),
                 config, testPublisher);
         QueueHandler queueHandler = queueHandlerFactory.createQueueHandler(Mockito.mock(Queue.class),

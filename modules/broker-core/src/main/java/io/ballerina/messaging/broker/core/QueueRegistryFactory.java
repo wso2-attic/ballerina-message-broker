@@ -49,7 +49,7 @@ public class QueueRegistryFactory {
      * @return QueueRegistryImpl object
      */
     public QueueRegistry getQueueRegistry() throws BrokerException {
-        if (Objects.nonNull(eventSync) && eventConfig.isQueueAdminEvents()) {
+        if (Objects.nonNull(eventSync) && eventConfig.getEnableQueueAdminEvents()) {
             QueueRegistryImpl queueRegistry = new QueueRegistryImpl(queueDao, queueHandlerFactory);
             return new ObservableQueueRegistryImpl(queueRegistry, eventSync);
         } else {
