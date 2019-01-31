@@ -44,7 +44,6 @@ public class TestPublisherRegistration {
         configProvider.addConfigObject(testConfig);
         startupContext = new StartupContext();
         startupContext.registerService(BrokerConfigProvider.class, configProvider);
-
     }
 
     @AfterMethod
