@@ -26,11 +26,11 @@ public class TestPublisher implements EventSync {
 
     private boolean activeState;
 
-    public boolean isActiveState() {
+    boolean isActiveState() {
         return activeState;
     }
 
-    public String getID() {
+    String getID() {
         return "TestPublisher";
     }
 
