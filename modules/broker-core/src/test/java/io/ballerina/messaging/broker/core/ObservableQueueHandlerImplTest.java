@@ -221,10 +221,13 @@ public class ObservableQueueHandlerImplTest {
         Consumer observableConsumer2 = new ObservableConsumer(consumer, testPublisher);
         Consumer observableConsumer3 = new ObservableConsumer(consumer1, testPublisher);
 
+        Assert.assertEquals(observableConsumer1, observableConsumer1, "Consumer equality failed");
         Assert.assertEquals(observableConsumer1, observableConsumer2, "Consumer equality failed");
         Assert.assertNotEquals(observableConsumer1, observableConsumer3, "Consumers equality failed");
         Assert.assertEquals(observableConsumer1, consumer, "Consumers equality failed");
         Assert.assertNotEquals(observableConsumer1, consumer1, "Consumers equality failed");
+        Assert.assertNotEquals(observableConsumer1, new Object(), "Consumer equals a different object");
+        Assert.assertFalse(observableConsumer1.equals(new Object()), "Consumer equals a different object");
     }
 
     @DataProvider(name = "example consumers")
