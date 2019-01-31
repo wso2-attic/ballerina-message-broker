@@ -77,49 +77,49 @@ do
          m)
             case $destination_type in
             topic)
-             durability_type=$OPTARG
+               durability_type=$OPTARG
              if [ $durability_type == true ];
-            then
-             jmx_file_location="test_plan/broker_test_topic_durable_consumer.jmx"
-             fi
-              if [ $durability_type == false ];
-            then
-             jmx_file_location="test_plan/broker_test_topic_consumer.jmx"
-             fi
-            ;;
+               then
+                 jmx_file_location="test_plan/broker_test_topic_durable_consumer.jmx"
+                  fi
+             if [ $durability_type == false ];
+               then
+                 jmx_file_location="test_plan/broker_test_topic_consumer.jmx"
+                  fi
+              ;;
             queue)
-            echo "$destination_type is an invalid destination.JMS destination should be a topic"
-            exit
-           ;;
+               echo "$destination_type is an invalid destination.JMS destination should be a topic"
+               exit
+              ;;
            ?)
-            echo "enter the durability type"
-            exit
-            ;;
-          esac
+              echo "enter the durability type"
+              exit
+             ;;
+           esac
          ;;
          x)
             selector_string=$OPTARG
             case $destination_type in
             topic)
-            if [ $durability_type == true ];
-            then
-              jmx_file_location="test_plan/broker_test_topic_durable_consumer_selector.jmx"
-               fi
-             if [ $durability_type == false ];
-            then
-              jmx_file_location="test_plan/broker_test_topic_consumer_selector.jmx"
-               fi
-            ;;
+              if [ $durability_type == true ];
+                then
+                  jmx_file_location="test_plan/broker_test_topic_durable_consumer_selector.jmx"
+                   fi
+              if [ $durability_type == false ];
+                then
+                  jmx_file_location="test_plan/broker_test_topic_consumer_selector.jmx"
+                    fi
+               ;;
             queue)
-            echo "$OPTARG is an invalid destination.JMS destination should be a topic"
-            exit
-           ;;
+                echo "$destination_type is an invalid destination.JMS destination should be a topic"
+                exit
+              ;;
            ?)
-            echo "enter the durability type"
-            exit
-            ;;
-          esac
-         break
+                echo "enter the durability type"
+               exit
+             ;;
+            esac
+           break
          ;;
          s)
             base_file_location="$OPTARG/consumer"
