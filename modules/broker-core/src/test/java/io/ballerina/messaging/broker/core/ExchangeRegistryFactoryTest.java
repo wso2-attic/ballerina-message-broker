@@ -42,7 +42,7 @@ public class ExchangeRegistryFactoryTest {
         eventConfig = new BrokerCoreConfiguration().getEventConfig();
     }
 
-    @Test(description = "Test get exchange registry function", dataProvider = "sample publishers")
+    @Test(description = "test get exchange registry function", dataProvider = "sample publishers")
     public void testGetExchangeRegistry(String exchangeName, TestPublisher testPublisher, boolean enabled)
             throws BrokerException,
             ValidationException {
