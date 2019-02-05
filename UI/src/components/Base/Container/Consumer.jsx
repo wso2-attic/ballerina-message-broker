@@ -38,10 +38,6 @@ const styles = (theme) => ({
 		fontSize: 30,
 		color: '#284456'
 	},
-	formControl: {
-		margin: theme.spacing.unit,
-		minWidth: 120
-	},
 
 	root: {
 		display: 'flex'
@@ -63,21 +59,6 @@ const styles = (theme) => ({
 		flexGrow: 1,
 		backgroundColor: ' #E2E5E9',
 		padding: theme.spacing.unit * 3
-	},
-
-	button: {
-		margin: theme.spacing.unit,
-		width: 200,
-		fontSize: '18px',
-
-		color: 'white',
-
-		textDecoration: 'none',
-		font: 'white',
-		'&:hover': {
-			backgroundColor: '#00897b',
-			color: 'white'
-		}
 	},
 
 	link: {
@@ -130,6 +111,7 @@ class Consumer extends React.Component {
 		qName: ''
 	};
 
+	//set the state of value to the selected value of the dropdown
 	onChange = (event) => {
 		this.setState({ value: event.target.value });
 	};
@@ -138,6 +120,7 @@ class Consumer extends React.Component {
 		this.state.queueName = nextProps.match.params.name;
 	}
 
+	//send get request to retieve list of all queues in the broker
 	componentDidMount() {
 		axios
 			.get('/broker/v1.0/queues', {
@@ -164,8 +147,9 @@ class Consumer extends React.Component {
 			.catch(function(error) {});
 	}
 
+	//send get request to retieve list of all consumers for a selected queue
 	handleChange = (event) => {
-		this.setState({ value: event.target.value }, () => console.log('valuew', this.state.value));
+		this.setState({ value: event.target.value }, () => console.log('value', this.state.value));
 
 		const url = `/broker/v1.0/queues/${event.target.value.trim()}/consumers`;
 
@@ -180,6 +164,7 @@ class Consumer extends React.Component {
 			.then((response) => {
 				const consumers = [];
 				response.data.forEach((element, index) => {
+					//add the response details to consumers array
 					consumers.push({
 						id: index,
 						isExclusive: element.isExclusive,
@@ -218,6 +203,8 @@ class Consumer extends React.Component {
 						<Typography className={classes.title}>Consumers</Typography>
 					</div>
 					<br />
+					<br />
+					<br />
 					<div>
 						{this.props.match.params.name == undefined ? (
 							<div>
@@ -246,6 +233,7 @@ class Consumer extends React.Component {
 										))}
 									</Select>
 								</FormControl>
+								<br />
 								<TableConsumers data={this.state.value} />
 							</div>
 						) : (
@@ -275,6 +263,8 @@ class Consumer extends React.Component {
 										))}
 									</Select>
 								</FormControl>
+								<br />
+
 								<TableConsumers data={this.props.match.params.name} />
 							</div>
 						)}

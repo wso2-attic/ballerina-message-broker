@@ -169,7 +169,7 @@ const newTo = {
 };
 
 /**
- * Construct the table for adding new bindings to exchanges
+ * Construct the table for showing binding details of exchanges
  * @class  TableBindings
  * @extends {React.Component}
  */

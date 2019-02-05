@@ -124,15 +124,17 @@ class Exchange extends React.Component {
 			scroll: 'paper',
 			filterText: '',
 			query: '',
-			columnToQuery: ''
+			selectedValue: ''
 		};
 	}
+	//change state of filterText to the input text value
 	handleUserInput(filterText) {
 		this.setState({ filterText: filterText });
 	}
 
+	//change state of selectedValue to the value selected from the dropdown
 	handleChange = (event) => {
-		this.setState({ columnToQuery: event.target.value });
+		this.setState({ selectedValue: event.target.value });
 	};
 
 	render(props) {
@@ -175,7 +177,7 @@ class Exchange extends React.Component {
 							/>
 							<FormControl className={classes.formControl}>
 								<NativeSelect
-									value={this.state.columnToQuery}
+									value={this.state.selectedValue}
 									onChange={this.handleChange}
 									name="age"
 									className={classes.selectEmpty}
@@ -196,7 +198,7 @@ class Exchange extends React.Component {
 
 					<br />
 					<div align="left">
-						<TableExchanges data={this.state.query} columnToQuery={this.state.columnToQuery} />
+						<TableExchanges data={this.state.query} selectedValue={this.state.selectedValue} />
 					</div>
 
 					<br />

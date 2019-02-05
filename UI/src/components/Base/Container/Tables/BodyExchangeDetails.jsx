@@ -37,7 +37,7 @@ class BodyExchangeDetails extends React.Component {
 				<div>
 					<Drawer />
 				</div>
-				<div>
+				<div style={(length = '75%')}>
 					<ExchangeDetails data={this.props.match.params.name} />
 				</div>
 			</div>

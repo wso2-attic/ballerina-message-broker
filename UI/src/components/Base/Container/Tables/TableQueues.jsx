@@ -34,6 +34,10 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
+import DeleteIcon from '@material-ui/icons/Delete';
+import FilterListIcon from '@material-ui/icons/FilterList';
 
 const rows = [
 	{
@@ -154,6 +158,21 @@ let EnhancedTableToolbar = (props) => {
 				)}
 			</div>
 			<div className={classes.spacer} />
+			<div className={classes.actions}>
+				{numSelected > 0 ? (
+					<Tooltip title="Delete">
+						<IconButton aria-label="Delete">
+							<DeleteIcon />
+						</IconButton>
+					</Tooltip>
+				) : (
+					<Tooltip title="Filter list">
+						<IconButton aria-label="Filter list">
+							<FilterListIcon />
+						</IconButton>
+					</Tooltip>
+				)}
+			</div>
 		</Toolbar>
 	);
 };
@@ -202,6 +221,7 @@ class TableQueues extends React.Component {
 		rowsPerPage: 5
 	};
 
+	//send get request to retieve details of all queues in the broker
 	componentDidMount() {
 		axios
 			.get('/broker/v1.0/queues', {
@@ -214,6 +234,7 @@ class TableQueues extends React.Component {
 			.then((response) => {
 				const DATA = [];
 				response.data.forEach((element, index) => {
+					//add the response details to DATA array
 					DATA.push({
 						id: index,
 						name: element.name,

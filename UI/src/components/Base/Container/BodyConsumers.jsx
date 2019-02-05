@@ -21,15 +21,15 @@ import TableConsumers from './Tables/TableConsumers';
 
 /**
  * Construct the component for displaying details of consumers of the broker
- * @class BodyExchanges
+ * @class BodyConsumers
  * @extends {React.Component}
  */
 
-export default class BodyExchanges extends React.Component {
+export default class BodyConsumers extends React.Component {
 	render() {
 		return (
 			<div>
-				<div align="right">
+				<div>
 					<TableConsumers data={this.props.match.params.name} />
 				</div>
 			</div>

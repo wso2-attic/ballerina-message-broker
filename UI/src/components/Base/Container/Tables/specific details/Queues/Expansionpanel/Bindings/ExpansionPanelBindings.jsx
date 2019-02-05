@@ -37,7 +37,7 @@ const styles = (theme) => ({
 });
 
 /**
- * Construct the expansion panel for adding new bindings to the broker
+ *  Construct the expansion panel for showing binding details of queues
  * @function ExpansionPanelBindings
  */
 

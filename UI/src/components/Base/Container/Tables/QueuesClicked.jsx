@@ -118,6 +118,7 @@ class QueuesClicked extends React.Component {
 		rowsPerPage: 5
 	};
 
+	//send get request to retieve details of selected queue
 	componentDidMount() {
 		const url = `/broker/v1.0/queues/${this.props.match.params.name.trim()}`;
 

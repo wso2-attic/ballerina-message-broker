@@ -54,9 +54,9 @@ class Navbar extends React.Component {
 								<img
 									src={MessagebrokerImage}
 									alt=""
-									height="50"
-									width="250"
-									style={{ marginLeft: 250 }}
+									height="20%"
+									width="50%"
+									style={{ marginLeft: '53%', position: 'relative' }}
 								/>
 							}
 						</div>

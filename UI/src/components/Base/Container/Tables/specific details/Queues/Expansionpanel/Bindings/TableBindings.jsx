@@ -186,7 +186,7 @@ const newTo = {
 };
 
 /**
- * Construct the table for adding new bindings to queues
+ * Construct the table for showing binding details of exchanges
  * @class  Tablebindings
  * @extends {React.Component}
  */

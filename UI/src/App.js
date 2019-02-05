@@ -18,7 +18,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
-import welcome from './components/Base/Container/Welcome';
+
 import Exchange from './components/Base/Container/Exchange';
 import Queue from './components/Base/Container/Queue';
 import Consumer from './components/Base/Container/Consumer';

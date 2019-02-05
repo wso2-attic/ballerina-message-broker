@@ -120,6 +120,7 @@ class ExchangeClicked extends React.Component {
 		data: []
 	};
 
+	//send get request to retieve details of selected exchange
 	componentDidMount() {
 		const url = `/broker/v1.0/exchanges/${this.props.match.params.name.trim()}`;
 

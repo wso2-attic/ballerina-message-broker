@@ -194,6 +194,7 @@ class TableExchanges extends React.Component {
 		rowsPerPage: 5
 	};
 
+	//send get request to retieve details of all exchanges in the broker
 	componentDidMount() {
 		axios
 			.get('/broker/v1.0/exchanges', {
@@ -206,6 +207,7 @@ class TableExchanges extends React.Component {
 			.then((response) => {
 				const DATA = [];
 				response.data.forEach((element, index) => {
+					//add the response details to DATA array
 					DATA.push({
 						id: index,
 						name: element.name,

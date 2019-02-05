@@ -23,7 +23,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Navbar from '../Header/Navbar';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
-import { BrowserRouter as Router, Link, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Link } from 'react-router-dom';
 
 const drawerWidth = 240;
 
@@ -52,10 +52,10 @@ const styles = (theme) => ({
 
 	button: {
 		margin: theme.spacing.unit,
-		marginLeft: 25,
-		width: 200,
-		height: 40,
-		fontSize: '18px',
+		marginLeft: ' 10%',
+		width: '80%',
+		height: '5%',
+		fontSize: '125%',
 
 		textDecoration: 'none',
 		font: 'white',
@@ -108,34 +108,44 @@ class DrawerInterface extends React.Component {
 			foreColorExchange: 'white',
 			foreColorQueue: 'white',
 			foreColorConsumer: 'white',
-			foreColorHome: 'white'
+			foreColorHome: 'white',
+			redirect: false
 		};
 	}
 
+	//handle onClick function of button Exchange
 	onClickExchange = () => {
 		this.setState({
 			bgColorExchange: 'white',
-			foreColorExchange: 'black'
+			foreColorExchange: 'black',
+			bgColorQueue: '#00897b',
+			foreColorQueue: 'white',
+			bgColorConsumer: '#00897b',
+			foreColorConsumer: 'white'
 		});
 	};
 
+	//handle onClick function of  button Queue
 	onClickQueue = () => {
 		this.setState({
 			bgColorQueue: 'white',
-			foreColorQueue: 'black'
+			foreColorQueue: 'black',
+			bgColorExchange: '#00897b',
+			foreColorExchange: 'white',
+			bgColorConsumer: '#00897b',
+			foreColorConsumer: 'white'
 		});
 	};
 
+	//handle onClick function of  button Consumer
 	onClickConsumer = () => {
 		this.setState({
 			bgColorConsumer: 'white',
-			foreColorConsumer: 'black'
-		});
-	};
-	onClickHome = () => {
-		this.setState({
-			bgColorHome: 'white',
-			foreColorHome: 'black'
+			foreColorConsumer: 'black',
+			bgColorQueue: '#00897b',
+			foreColorQueue: 'white',
+			bgColorExchange: '#00897b',
+			foreColorExchange: 'white'
 		});
 	};
 
@@ -158,7 +168,7 @@ class DrawerInterface extends React.Component {
 				>
 					<div className={classes.toolbar} />
 
-					<Tooltip title="all Exchanges in the broker" enterDelay={300}>
+					<Tooltip title="all Exchanges in the broker">
 						<Link className={classes.link} to="/exchange">
 							<Button
 								variant="outlined"
@@ -191,7 +201,7 @@ class DrawerInterface extends React.Component {
 					</Tooltip>
 					<br />
 
-					<Tooltip title="consumers for a specific queue" enterDelay={300}>
+					<Tooltip title="consumers for a specific queue">
 						<Link className={classes.link} to="/consumer">
 							<Button
 								variant="outlined"
@@ -202,6 +212,7 @@ class DrawerInterface extends React.Component {
 								className={classes.button}
 								onClick={this.onClickConsumer}
 							>
+								<Link className={classes.link} to="/consumer" />
 								Consumers
 							</Button>
 						</Link>
