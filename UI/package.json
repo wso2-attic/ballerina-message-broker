@@ -1,0 +1,44 @@
+{
+	"name": "messagebrokerui",
+	"version": "0.1.0",
+	"private": true,
+	"dependencies": {
+		"@material-ui/core": "^3.8.1",
+		"@material-ui/icons": "^3.0.1",
+		"@material/button": "^0.42.0",
+		"@material/typography": "^0.42.0",
+		"axios": "^0.18.0",
+		"babel-runtime": "^6.26.0",
+		"cors": "^2.8.5",
+		"express": "^4.16.4",
+		"history": "^4.7.2",
+		"material-colors": "^1.2.6",
+		"material-ui": "^1.0.0-beta.47",
+		"prop-types": "^15.6.2",
+		"react": "^16.6.3",
+		"react-alert": "^4.0.4",
+		"react-breadcrumbs": "^2.1.6",
+		"react-dom": "^16.6.3",
+		"react-highlight-click": "^0.1.4",
+		"react-router": "^3.2.1",
+		"react-router-dom": "^4.3.1",
+		"react-scripts": "2.1.1",
+		"typeface-roboto": "0.0.54",
+		"react-transition-group": "^2.3.0"
+	},
+	"scripts": {
+		"start": "react-scripts start",
+		"build": "react-scripts build",
+		"test": "react-scripts test",
+		"eject": "react-scripts eject"
+	},
+	"browserslist": [
+		">0.2%",
+		"not dead",
+		"not ie <= 11",
+		"not op_mini all"
+	],
+	"devDependencies": {
+		"babel-loader": "^8.0.4"
+	}
+}
