@@ -10,5 +10,6 @@
 - [Using JMS selectors](user/jms-selector-guide.md)
 - [Local Transaction](user/local-transaction.md)
 - [Broker Admin Command Line Interface (CLI)](user/cli-client.md)
+- [Broker User Interface (GUI)](user/ui-client.md)
 - [Embedding Message Broker](user/embedding-message-broker.md)
 - [Dockerfile for Message Broker](user/dockerfile-for-message-broker.md)
