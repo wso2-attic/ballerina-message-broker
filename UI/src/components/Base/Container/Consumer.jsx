@@ -20,7 +20,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Navbar from '../Header/Navbar';
-import { BrowserRouter as Router, Link, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Link } from 'react-router-dom';
 import { Typography } from '@material-ui/core';
 import Drawer from './Drawer';
 import TableConsumers from './Tables/TableConsumers';
@@ -258,9 +258,6 @@ class Consumer extends React.Component {
 										<option value={this.props.match.params.name}>
 											{this.props.match.params.name}
 										</option>
-										{data.map((element, index) => (
-											<option value={element.name}>{element.name}</option>
-										))}
 									</Select>
 								</FormControl>
 								<br />

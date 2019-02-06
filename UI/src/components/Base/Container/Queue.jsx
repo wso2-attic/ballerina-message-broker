@@ -111,7 +111,7 @@ class Queue extends React.Component {
 			open: false,
 			scroll: 'paper',
 			query: '',
-			selectedValue: ''
+			columnToQuery: ''
 		};
 	}
 
@@ -122,7 +122,7 @@ class Queue extends React.Component {
 
 	//change state of selectedValue to the value selected from the dropdown
 	handleChange = (event) => {
-		this.setState({ selectedValue: event.target.value });
+		this.setState({ columnToQuery: event.target.value });
 	};
 
 	render(props) {
@@ -167,7 +167,7 @@ class Queue extends React.Component {
 
 							<FormControl className={classes.formControl}>
 								<NativeSelect
-									value={this.state.selectedValue}
+									value={this.state.columnToQuery}
 									onChange={this.handleChange}
 									name="age"
 									className={classes.selectEmpty}
@@ -187,7 +187,7 @@ class Queue extends React.Component {
 						</div>
 					</div>
 					<div align="left">
-						<TableQueues data={this.state.query} selectedValue={this.state.selectedValue} />
+						<TableQueues data={this.state.query} columnToQuery={this.state.columnToQuery} />
 					</div>
 
 					<br />

@@ -17,7 +17,6 @@
 */
 
 import React from 'react';
-import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -30,14 +29,9 @@ import FormLabel from '@material-ui/core/FormLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import Checkbox from '@material-ui/core/Checkbox';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
-import DeleteIcon from '@material-ui/icons/Delete';
-import FilterListIcon from '@material-ui/icons/FilterList';
 
 const rows = [
 	{
@@ -75,19 +69,10 @@ const rows = [
 
 class EnhancedTableHead extends React.Component {
 	render() {
-		const { onSelectAllClick, numSelected, rowCount } = this.props;
-		const { classes } = this.props;
-
 		return (
 			<TableHead>
 				<TableRow>
-					<TableCell padding="checkbox">
-						<Checkbox
-							indeterminate={numSelected > 0 && numSelected < rowCount}
-							checked={numSelected === rowCount}
-							onChange={onSelectAllClick}
-						/>
-					</TableCell>
+					<TableCell padding="checkbox" />
 					{rows.map((row) => {
 						return (
 							<TableCell
@@ -107,7 +92,7 @@ class EnhancedTableHead extends React.Component {
 
 EnhancedTableHead.propTypes = {
 	classes: PropTypes.object.isRequired,
-	numSelected: PropTypes.number.isRequired,
+
 	onSelectAllClick: PropTypes.func.isRequired,
 	rowCount: PropTypes.number.isRequired
 };
@@ -138,48 +123,23 @@ const toolbarStyles = (theme) => ({
 });
 
 let EnhancedTableToolbar = (props) => {
-	const { numSelected, classes } = props;
+	const { classes } = props;
 
 	return (
-		<Toolbar
-			className={classNames(classes.root, {
-				[classes.highlight]: numSelected > 0
-			})}
-		>
+		<Toolbar>
 			<div className={classes.title}>
-				{numSelected > 0 ? (
-					<Typography color="inherit" variant="subtitle1">
-						{numSelected} selected
-					</Typography>
-				) : (
-					<Typography variant="h6" id="tableTitle">
-						Queues
-					</Typography>
-				)}
+				<Typography variant="h6" id="tableTitle">
+					Queue details
+				</Typography>
 			</div>
 			<div className={classes.spacer} />
-			<div className={classes.actions}>
-				{numSelected > 0 ? (
-					<Tooltip title="Delete">
-						<IconButton aria-label="Delete">
-							<DeleteIcon />
-						</IconButton>
-					</Tooltip>
-				) : (
-					<Tooltip title="Filter list">
-						<IconButton aria-label="Filter list">
-							<FilterListIcon />
-						</IconButton>
-					</Tooltip>
-				)}
-			</div>
+			<div className={classes.actions} />
 		</Toolbar>
 	);
 };
 
 EnhancedTableToolbar.propTypes = {
-	classes: PropTypes.object.isRequired,
-	numSelected: PropTypes.number.isRequired
+	classes: PropTypes.object.isRequired
 };
 
 EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
@@ -214,8 +174,6 @@ const styles = (theme) => ({
 
 class TableQueues extends React.Component {
 	state = {
-		selected: [],
-
 		data: [],
 		page: 0,
 		rowsPerPage: 5
@@ -273,31 +231,6 @@ class TableQueues extends React.Component {
 			}
 		};
 	};
-	handleSelectAllClick = (event) => {
-		if (event.target.checked) {
-			this.setState((state) => ({ selected: state.data.map((n) => n.id) }));
-			return;
-		}
-		this.setState({ selected: [] });
-	};
-
-	handleClick = (event, id) => {
-		const { selected } = this.state;
-		const selectedIndex = selected.indexOf(id);
-		let newSelected = [];
-
-		if (selectedIndex === -1) {
-			newSelected = newSelected.concat(selected, id);
-		} else if (selectedIndex === 0) {
-			newSelected = newSelected.concat(selected.slice(1));
-		} else if (selectedIndex === selected.length - 1) {
-			newSelected = newSelected.concat(selected.slice(0, -1));
-		} else if (selectedIndex > 0) {
-			newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
-		}
-
-		this.setState({ selected: newSelected });
-	};
 
 	handleChangePage = (event, page) => {
 		this.setState({ page });
@@ -307,43 +240,31 @@ class TableQueues extends React.Component {
 		this.setState({ rowsPerPage: event.target.value });
 	};
 
-	isSelected = (id) => this.state.selected.indexOf(id) !== -1;
-
 	render() {
 		const { classes } = this.props;
-		const { data, selected, rowsPerPage, page } = this.state;
+		const { data, rowsPerPage, page } = this.state;
 		const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
 		return (
 			<Paper className={classes.root}>
-				<EnhancedTableToolbar numSelected={selected.length} />
+				<EnhancedTableToolbar />
 				<div className={classes.tableWrapper}>
 					<Table className={classes.table} aria-labelledby="tableTitle" pagination={{ pageSize: 5 }}>
-						<EnhancedTableHead
-							numSelected={selected.length}
-							onSelectAllClick={this.handleSelectAllClick}
-							rowCount={data.length}
-						/>
+						<EnhancedTableHead onSelectAllClick={this.handleSelectAllClick} rowCount={data.length} />
 						<TableBody pagination={{ pageSize: 5 }}>
 							{data
 								.filter(this.searchingFor(this.props.data))
 								.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 								.map((element, index) => {
-									const isSelected = this.isSelected(element.id);
 									return (
 										<TableRow
 											permissions
 											hover
 											className={classes.tableRow}
-											onClick={(event) => this.handleClick(event, index)}
 											key={index}
-											role="checkbox"
-											selected={isSelected}
 											tabIndex={-1}
 										>
-											<TableCell padding="checkbox">
-												<Checkbox checked={isSelected} />
-											</TableCell>
+											<TableCell padding="checkbox" />
 
 											<TableCell component="th" scope="row" padding="none">
 												<Link className={classes.tabledetails} to={`/queue/${element.name} `}>

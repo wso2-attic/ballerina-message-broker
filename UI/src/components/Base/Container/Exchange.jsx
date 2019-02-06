@@ -20,7 +20,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Navbar from '../Header/Navbar';
-import { BrowserRouter as Router, Link, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Link } from 'react-router-dom';
 import DialogExchanges from './Dialogs/DialogExchanges';
 import TableExchanges from './Tables/TableExchanges';
 import TextField from '@material-ui/core/TextField';
@@ -124,7 +124,7 @@ class Exchange extends React.Component {
 			scroll: 'paper',
 			filterText: '',
 			query: '',
-			selectedValue: ''
+			columnToQuery: ''
 		};
 	}
 	//change state of filterText to the input text value
@@ -134,7 +134,7 @@ class Exchange extends React.Component {
 
 	//change state of selectedValue to the value selected from the dropdown
 	handleChange = (event) => {
-		this.setState({ selectedValue: event.target.value });
+		this.setState({ columnToQuery: event.target.value });
 	};
 
 	render(props) {
@@ -177,7 +177,7 @@ class Exchange extends React.Component {
 							/>
 							<FormControl className={classes.formControl}>
 								<NativeSelect
-									value={this.state.selectedValue}
+									value={this.state.columnToQuery}
 									onChange={this.handleChange}
 									name="age"
 									className={classes.selectEmpty}
@@ -198,7 +198,7 @@ class Exchange extends React.Component {
 
 					<br />
 					<div align="left">
-						<TableExchanges data={this.state.query} selectedValue={this.state.selectedValue} />
+						<TableExchanges data={this.state.query} columnToQuery={this.state.columnToQuery} />
 					</div>
 
 					<br />

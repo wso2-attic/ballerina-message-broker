@@ -30,7 +30,6 @@ import FormLabel from '@material-ui/core/FormLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import Checkbox from '@material-ui/core/Checkbox';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -53,18 +52,10 @@ const rows = [
 
 class EnhancedTableHead extends React.Component {
 	render() {
-		const { onSelectAllClick, numSelected, rowCount } = this.props;
-
 		return (
 			<TableHead>
 				<TableRow>
-					<TableCell padding="checkbox">
-						<Checkbox
-							indeterminate={numSelected > 0 && numSelected < rowCount}
-							checked={numSelected === rowCount}
-							onChange={onSelectAllClick}
-						/>
-					</TableCell>
+					<TableCell padding="checkbox" />
 					{rows.map((row) => {
 						return (
 							<TableCell
@@ -83,7 +74,6 @@ class EnhancedTableHead extends React.Component {
 }
 
 EnhancedTableHead.propTypes = {
-	numSelected: PropTypes.number.isRequired,
 	onSelectAllClick: PropTypes.func.isRequired,
 	rowCount: PropTypes.number.isRequired
 };
@@ -114,24 +104,14 @@ const toolbarStyles = (theme) => ({
 });
 
 let EnhancedTableToolbar = (props) => {
-	const { numSelected, classes } = props;
+	const { classes } = props;
 
 	return (
-		<Toolbar
-			className={classNames(classes.root, {
-				[classes.highlight]: numSelected > 0
-			})}
-		>
+		<Toolbar>
 			<div className={classes.title}>
-				{numSelected > 0 ? (
-					<Typography color="inherit" variant="subtitle1">
-						{numSelected} selected
-					</Typography>
-				) : (
-					<Typography variant="h6" id="tableTitle">
-						Bindings
-					</Typography>
-				)}
+				<Typography variant="h6" id="tableTitle">
+					Binding details
+				</Typography>
 			</div>
 			<div className={classes.spacer} />
 		</Toolbar>
@@ -139,8 +119,7 @@ let EnhancedTableToolbar = (props) => {
 };
 
 EnhancedTableToolbar.propTypes = {
-	classes: PropTypes.object.isRequired,
-	numSelected: PropTypes.number.isRequired
+	classes: PropTypes.object.isRequired
 };
 
 EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
@@ -176,8 +155,6 @@ const newTo = {
 
 class TableBindings extends React.Component {
 	state = {
-		selected: [],
-
 		data: [],
 
 		page: 0,
@@ -210,32 +187,6 @@ class TableBindings extends React.Component {
 			.catch(function(error) {});
 	}
 
-	handleSelectAllClick = (event) => {
-		if (event.target.checked) {
-			this.setState((state) => ({ selected: state.data.map((n) => n.id) }));
-			return;
-		}
-		this.setState({ selected: [] });
-	};
-
-	handleClick = (event, id) => {
-		const { selected } = this.state;
-		const selectedIndex = selected.indexOf(id);
-		let newSelected = [];
-
-		if (selectedIndex === -1) {
-			newSelected = newSelected.concat(selected, id);
-		} else if (selectedIndex === 0) {
-			newSelected = newSelected.concat(selected.slice(1));
-		} else if (selectedIndex === selected.length - 1) {
-			newSelected = newSelected.concat(selected.slice(0, -1));
-		} else if (selectedIndex > 0) {
-			newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
-		}
-
-		this.setState({ selected: newSelected });
-	};
-
 	handleChangePage = (event, page) => {
 		this.setState({ page });
 	};
@@ -244,38 +195,27 @@ class TableBindings extends React.Component {
 		this.setState({ rowsPerPage: event.target.value });
 	};
 
-	isSelected = (id) => this.state.selected.indexOf(id) !== -1;
-
 	render() {
 		const { classes } = this.props;
-		const { data, selected, page, rowsPerPage } = this.state;
+		const { data, page, rowsPerPage } = this.state;
 
 		return (
 			<Paper className={classes.root}>
-				<EnhancedTableToolbar numSelected={selected.length} />
+				<EnhancedTableToolbar />
 				<div className={classes.tableWrapper}>
 					<Table className={classes.table} aria-labelledby="tableTitle">
-						<EnhancedTableHead
-							numSelected={selected.length}
-							onSelectAllClick={this.handleSelectAllClick}
-							rowCount={data.length}
-						/>
+						<EnhancedTableHead onSelectAllClick={this.handleSelectAllClick} rowCount={data.length} />
 						<TableBody>
 							{data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((element, index) => {
-								const isSelected = this.isSelected(element.id);
 								return (
 									<TableRow
 										hover
 										className={classes.tableRow}
-										onClick={(event) => this.handleClick(event, index)}
 										key={index}
 										role="checkbox"
-										selected={isSelected}
 										tabIndex={-1}
 									>
-										<TableCell padding="checkbox">
-											<Checkbox checked={isSelected} />
-										</TableCell>
+										<TableCell padding="checkbox" />
 
 										<TableCell component="th" scope="row" padding="10px">
 											<Link to={`/queue/${element.bindings} `}>{element.bindings}</Link>
