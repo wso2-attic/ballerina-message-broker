@@ -17,7 +17,7 @@
 */
 
 import React from 'react';
-import { withStyles, Grid, TextField, Button, FormControlLabel, Checkbox, Typography } from '@material-ui/core';
+import { withStyles, Grid, TextField, Button, Typography } from '@material-ui/core';
 import { Face, Fingerprint } from '@material-ui/icons';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -28,6 +28,9 @@ const styles = {
 	background: {
 		backgroundColor: 'linear-gradient(${red}, ${black})',
 		opacity: '.4'
+	},
+	textField: {
+		width: '90%'
 	},
 
 	card: {
@@ -71,7 +74,9 @@ class Login extends React.Component {
 		this.state = {
 			username: '',
 			password: '',
-			isLoggedIn: 'false'
+			isLoggedIn: 'false',
+			host: '',
+			port: ''
 		};
 	}
 
@@ -93,6 +98,11 @@ class Login extends React.Component {
 		} else {
 			window.confirm('incorrect username or password!');
 		}
+		sessionStorage.setItem('Host', this.state.host);
+		sessionStorage.setItem('Port', this.state.port);
+		sessionStorage.setItem('Username', this.state.username);
+		sessionStorage.setItem('Password', this.state.password);
+		sessionStorage.setItem('isLoggedIn', this.state.isLoggedIn);
 	};
 
 	render(props) {
@@ -100,14 +110,28 @@ class Login extends React.Component {
 		const { isLoggedIn } = this.state;
 
 		if (isLoggedIn === true) {
-			return <Redirect to="/exchange" />;
+			return (
+				<Redirect
+					to={{
+						pathname: '/exchange',
+
+						state: {
+							username: this.state.username,
+							password: this.state.password,
+							host: this.state.host,
+							port: this.state.port,
+							isLoggedIn: this.state.isLoggedIn
+						}
+					}}
+				/>
+			);
 		}
 		return (
 			<div>
 				<Card className={classes.card} style={{ backgroundColor: 'rgba(52, 52, 52, 0.2)' }}>
 					<CardContent className={classes.cardcontent}>
 						<div>
-							<Typography variant="h5" align="center" style={{ color: 'white', fontSize: '300' }}>
+							<Typography variant="h5" align="center" style={{ color: '#284456', fontSize: '300' }}>
 								Login
 							</Typography>
 						</div>
@@ -161,19 +185,44 @@ class Login extends React.Component {
 						<br />
 						<Grid container alignItems="center" justify="space-between">
 							<Grid item>
-								<FormControlLabel control={<Checkbox color="primary" />} label="Remember me" />
+								<div>
+									<Typography style={{ color: '#284456' }}>Host</Typography>
+
+									<TextField
+										id="outlinedinput"
+										label="host"
+										className={classes.textField}
+										type="host"
+										margin="normal"
+										variant="outlined"
+										value={this.props.filterText}
+										ref="filterTextInput"
+										onChange={(e) =>
+											this.setState({
+												host: e.target.value
+											})}
+									/>
+								</div>
 							</Grid>
+							<br />
 							<Grid item>
-								<Button
-									disableFocusRipple
-									disableRipple
-									style={{ textTransform: 'none' }}
-									variant="text"
-									color="primary"
-								>
-									Forgot password ?
-								</Button>
+								<div>
+									<Typography style={{ color: '#284456' }}>Port</Typography>
+
+									<TextField
+										id="outlinedinput"
+										label="port"
+										className={classes.textField}
+										type="port"
+										margin="normal"
+										variant="outlined"
+										value={this.props.filterText}
+										ref="filterTextInput"
+										onChange={(e) => this.setState({ port: e.target.value })}
+									/>
+								</div>
 							</Grid>
+							<Grid item />
 						</Grid>
 						<br />
 						<br />
@@ -183,8 +232,12 @@ class Login extends React.Component {
 						<Grid container justify="center" style={{ marginTop: '10px' }}>
 							<Button
 								variant="outlined"
-								color="primary"
-								style={{ textTransform: 'none', width: 500 }}
+								style={{
+									textTransform: 'none',
+									width: 300,
+									backgroundColor: '#284456',
+									color: 'white'
+								}}
 								onClick={this.login}
 							>
 								Login

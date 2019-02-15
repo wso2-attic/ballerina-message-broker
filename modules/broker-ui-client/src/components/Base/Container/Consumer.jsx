@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * WSO2 Inc. licenses this file to you under the Apache License,
 * Version 2.0 (the "License"); you may not use this file except
@@ -122,12 +122,17 @@ class Consumer extends React.Component {
 
 	//send get request to retieve list of all queues in the broker
 	componentDidMount() {
+		let host = sessionStorage.getItem('Host');
+		let port = sessionStorage.getItem('Port');
+		let username = sessionStorage.getItem('Username');
+		let password = sessionStorage.getItem('Password');
+		let encodedString = new Buffer(username + ':' + password).toString('base64');
 		axios
-			.get('/broker/v1.0/queues', {
+			.get(`https://${host}:${port}/broker/v1.0/queues`, {
 				withCredentials: true,
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: 'Bearer YWRtaW46YWRtaW4='
+					Authorization: `Basic ${encodedString}`
 				}
 			})
 			.then((response) => {
@@ -149,16 +154,21 @@ class Consumer extends React.Component {
 
 	//send get request to retieve list of all consumers for a selected queue
 	handleChange = (event) => {
-		this.setState({ value: event.target.value }, () => console.log('value', this.state.value));
+		this.setState({ value: event.target.value });
+		let host = sessionStorage.getItem('Host');
+		let port = sessionStorage.getItem('Port');
+		let username = sessionStorage.getItem('Username');
+		let password = sessionStorage.getItem('Password');
+		let encodedString = new Buffer(username + ':' + password).toString('base64');
 
-		const url = `/broker/v1.0/queues/${event.target.value.trim()}/consumers`;
+		const url = `https://${host}:${port}/broker/v1.0/queues/${event.target.value.trim()}/consumers`;
 
 		axios
 			.get(url, {
 				withCredentials: true,
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: 'Bearer YWRtaW46YWRtaW4='
+					Authorization: `Basic ${encodedString}`
 				}
 			})
 			.then((response) => {

@@ -17,24 +17,18 @@
 */
 
 import React from 'react';
-import TableQueues from './Tables/TableQueues';
-import DialogQueues from './Dialogs/DialogQueues';
+import { Redirect, Route } from 'react-router-dom';
 
 /**
- * Construct the component for displaying details of consumers of the broker
- * @class  BodyQueues
- * @extends {React.Component}
+ * Construct  PrivateRoute required when redirecting a user to login page if not logged in
  */
 
-export default class BodyQueues extends React.Component {
-	render() {
-		return (
-			<div>
-				<div align="right">
-					<DialogQueues />
-					<TableQueues />
-				</div>
-			</div>
-		);
-	}
-}
+const PrivateRoute = ({ component: Component, ...rest }) => (
+	<Route
+		{...rest}
+		render={(props) =>
+			sessionStorage.getItem('isLoggedIn') != null ? <Component {...props} /> : <Redirect to="/" />}
+	/>
+);
+
+export default PrivateRoute;

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * WSO2 Inc. licenses this file to you under the Apache License,
 * Version 2.0 (the "License"); you may not use this file except
@@ -109,7 +109,8 @@ class DrawerInterface extends React.Component {
 			foreColorQueue: 'white',
 			foreColorConsumer: 'white',
 			foreColorHome: 'white',
-			redirect: false
+			redirect: false,
+			host: this.props.host
 		};
 	}
 

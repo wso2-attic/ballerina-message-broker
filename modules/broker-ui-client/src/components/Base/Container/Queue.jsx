@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * WSO2 Inc. licenses this file to you under the Apache License,
 * Version 2.0 (the "License"); you may not use this file except
@@ -21,7 +21,7 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from './Drawer';
 import Navbar from '../Header/Navbar';
-import { BrowserRouter as Router, Link, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Link } from 'react-router-dom';
 import DialogQueues from './Dialogs/DialogQueues';
 import TableQueues from './Tables/TableQueues';
 import TextField from '@material-ui/core/TextField';

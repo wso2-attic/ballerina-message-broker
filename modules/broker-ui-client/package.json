@@ -12,6 +12,7 @@
 		"cors": "^2.8.5",
 		"express": "^4.16.4",
 		"history": "^4.7.2",
+		"http-proxy-middleware": "^0.19.1",
 		"material-colors": "^1.2.6",
 		"material-ui": "^1.0.0-beta.47",
 		"prop-types": "^15.6.2",
@@ -23,8 +24,8 @@
 		"react-router": "^3.2.1",
 		"react-router-dom": "^4.3.1",
 		"react-scripts": "2.1.1",
-		"typeface-roboto": "0.0.54",
-		"react-transition-group": "^2.3.0"
+		"react-transition-group": "^2.3.0",
+		"typeface-roboto": "0.0.54"
 	},
 	"scripts": {
 		"start": "react-scripts start",
@@ -32,13 +33,9 @@
 		"test": "react-scripts test",
 		"eject": "react-scripts eject"
 	},
-	"browserslist": [
-		">0.2%",
-		"not dead",
-		"not ie <= 11",
-		"not op_mini all"
-	],
+	"browserslist": [ ">0.2%", "not dead", "not ie <= 11", "not op_mini all" ],
 	"devDependencies": {
-		"babel-loader": "^8.0.4"
+		"babel-loader": "^8.0.4",
+		"redux": "^4.0.1"
 	}
 }

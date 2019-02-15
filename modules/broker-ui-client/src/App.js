@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * WSO2 Inc. licenses this file to you under the Apache License,
 * Version 2.0 (the "License"); you may not use this file except
@@ -17,14 +17,17 @@
 */
 
 import React from 'react';
-import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 import Exchange from './components/Base/Container/Exchange';
+
 import Queue from './components/Base/Container/Queue';
 import Consumer from './components/Base/Container/Consumer';
 import ExchangeClicked from './components/Base/Container/Tables/ExchangeClicked';
 import QueuesClicked from './components/Base/Container/Tables/QueuesClicked';
+
 import Main from './components/main';
+import PrivateRoute from './PrivateRoute';
 
 class App extends React.Component {
 	/**
@@ -38,13 +41,13 @@ class App extends React.Component {
 				<Router>
 					<Switch>
 						<Route exact path="/" render={(props) => <Main />} />
-						<Route exact path="/exchange" component={Exchange} />
-						<Route exact path="/queue" component={Queue} />
-						<Route exact path="/consumer" component={Consumer} />
-						<Route exact path="/consumer/:name" component={Consumer} />
-						<Route exact path="/exchange/:name" component={ExchangeClicked} />
-						<Route exact path="/queue/:name" component={QueuesClicked} />
-						<Route exact path="/consumer/:name" component={Consumer} />
+						<PrivateRoute path="/exchange" component={Exchange} />
+						<PrivateRoute exact path="/exchange" component={Exchange} />
+						<PrivateRoute exact path="/queue" component={Queue} />
+						<PrivateRoute exact path="/consumer" component={Consumer} />
+						<PrivateRoute exact path="/consumer/:name" component={Consumer} />
+						<PrivateRoute exact path="/exchange/:name" component={ExchangeClicked} />
+						<PrivateRoute exact path="/queue/:name" component={QueuesClicked} />
 					</Switch>
 				</Router>
 			</div>

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * WSO2 Inc. licenses this file to you under the Apache License,
 * Version 2.0 (the "License"); you may not use this file except
@@ -89,14 +89,20 @@ class DialogQueues extends React.Component {
 		if (this.state.queueName == '' || this.state.durability.name == '' || this.state.autoDelete.name == '') {
 			window.confirm('please provide all the details');
 		} else {
-			const url = `/broker/v1.0/queues/`;
+			let host = sessionStorage.getItem('Host');
+			let port = sessionStorage.getItem('Port');
+			let username = sessionStorage.getItem('Username');
+			let password = sessionStorage.getItem('Password');
+			let encodedString = new Buffer(username + ':' + password).toString('base64');
+
+			const url = ` https://${host}:${port}/broker/v1.0/queues/`;
 
 			axios
 				.post(url, {
 					withCredentials: true,
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: 'Bearer YWRtaW46YWRtaW4='
+						Authorization: `Basic ${encodedString}`
 					},
 					name: this.state.queueName,
 					durable: this.state.durability.name,

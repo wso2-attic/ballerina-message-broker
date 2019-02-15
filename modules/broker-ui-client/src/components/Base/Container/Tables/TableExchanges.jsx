@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * WSO2 Inc. licenses this file to you under the Apache License,
 * Version 2.0 (the "License"); you may not use this file except
@@ -173,12 +173,18 @@ class TableExchanges extends React.Component {
 
 	//send get request to retieve details of all exchanges in the broker
 	componentDidMount() {
+		let host = sessionStorage.getItem('Host');
+		let port = sessionStorage.getItem('Port');
+		let username = sessionStorage.getItem('Username');
+		let password = sessionStorage.getItem('Password');
+		let encodedString = new Buffer(username + ':' + password).toString('base64');
+
 		axios
-			.get('/broker/v1.0/exchanges', {
+			.get(` https://${host}:${port}/broker/v1.0/exchanges`, {
 				withCredentials: true,
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: 'Bearer YWRtaW46YWRtaW4='
+					Authorization: `Basic ${encodedString} `
 				}
 			})
 			.then((response) => {
@@ -235,7 +241,7 @@ class TableExchanges extends React.Component {
 					<EnhancedTableToolbar />
 					<div className={classes.tableWrapper}>
 						<Table className={classes.table} aria-labelledby="tableTitle">
-							<TableExchangesHead onSelectAllClick={this.handleSelectAllClick} rowCount={data.length} />
+							<TableExchangesHead />
 							<TableBody>
 								{data
 									.filter(this.searchingFor(this.props.data))

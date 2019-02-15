@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+* Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 * WSO2 Inc. licenses this file to you under the Apache License,
 * Version 2.0 (the "License"); you may not use this file except
@@ -17,7 +17,6 @@
 */
 
 import React from 'react';
-import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -162,14 +161,20 @@ class TableBindings extends React.Component {
 	};
 
 	componentDidMount() {
-		const url = `/broker/v1.0/exchanges/${this.props.data.trim()}/bindings`;
+		let host = sessionStorage.getItem('Host');
+		let port = sessionStorage.getItem('Port');
+		let username = sessionStorage.getItem('Username');
+		let password = sessionStorage.getItem('Password');
+		let encodedString = new Buffer(username + ':' + password).toString('base64');
+
+		const url = ` https://${host}:${port}/broker/v1.0/exchanges/${this.props.data.trim()}/bindings`;
 
 		axios
 			.get(url, {
 				withCredentials: true,
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: 'Bearer YWRtaW46YWRtaW4='
+					Authorization: `Basic ${encodedString}`
 				}
 			})
 			.then((response) => {
