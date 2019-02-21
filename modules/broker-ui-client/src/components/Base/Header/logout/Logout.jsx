@@ -18,18 +18,14 @@
 
 import React from 'react';
 import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import DropdownDurability from './DropDowns/DropdownDurability';
-import DropdownAutodelete from './DropDowns/DropdownAutodelete';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
-import AddIcon from '@material-ui/icons/Add';
-import Fab from '@material-ui/core/Fab';
 import { Grid, Typography } from '@material-ui/core';
 import axios from 'axios';
 
@@ -47,19 +43,19 @@ const styles = (theme) => ({
 		backgroundColor: '#284456'
 	}
 });
-
 /**
- * Construct the popup window for adding new queues to the broker
- * @class DialogQueues
+ * Construct the popup window for adding new exchanges to the broker
+ * @class  DialogExchanges
  * @extends {React.Component}
  */
 
-class DialogQueues extends React.Component {
+class DialogExchanges extends React.Component {
 	constructor(props) {
 		super(props);
 
 		this.state = {
-			queueName: '',
+			exchangeName: '',
+			type: '',
 			durability: '',
 			autoDelete: '',
 			showError: false,
@@ -68,15 +64,22 @@ class DialogQueues extends React.Component {
 	}
 
 	state = {
-		open: false
+		open: false,
+		color: '#009688'
 	};
 
 	handleClickOpen = () => {
 		this.setState({ open: true });
 	};
-
-	handleClose = () => {
+	handleClickClose = () => {
 		this.setState({ open: false });
+	};
+
+	handleClickClear = () => {
+		this.setState({
+			exchangeName: '',
+			showSuccess: false
+		});
 	};
 	handleInputName = (event) => {
 		const { target } = event;
@@ -88,21 +91,13 @@ class DialogQueues extends React.Component {
 		});
 	};
 
-	handleClickClose = () => {
-		this.setState({ open: false });
-	};
-	handleClickClear = () => {
-		this.setState({
-			queueName: '',
-			showSuccess: false
-		});
-	};
-
 	handleAdd = () => {
-		if (this.state.queueName == '' || this.state.durability.name == '' || this.state.autoDelete.name == '') {
-			this.setState({
-				showError: true
-			});
+		if (this.state.exchangeName == '' || this.state.type.name == '' || this.state.durability.name == '') {
+			{
+				this.setState({
+					showError: true
+				});
+			}
 		} else {
 			let host = sessionStorage.getItem('Host');
 			let port = sessionStorage.getItem('Port');
@@ -110,7 +105,7 @@ class DialogQueues extends React.Component {
 			let password = sessionStorage.getItem('Password');
 			let encodedString = new Buffer(username + ':' + password).toString('base64');
 
-			const url = ` https://${host}:${port}/broker/v1.0/queues/`;
+			const url = ` https://${host}:${port}/broker/v1.0/exchanges/`;
 
 			axios
 				.post(url, {
@@ -119,9 +114,9 @@ class DialogQueues extends React.Component {
 						'Content-Type': 'application/json',
 						Authorization: `Basic ${encodedString}`
 					},
-					name: this.state.queueName,
-					durable: this.state.durability.name,
-					autoDelete: this.state.autoDelete.name
+					name: this.state.exchangeName,
+					type: this.state.type.name,
+					durable: this.state.durability.name
 				})
 				.then(function(response) {})
 				.catch(function(error) {});
@@ -140,10 +135,18 @@ class DialogQueues extends React.Component {
 
 		return (
 			<div>
-				<Fab aria-label="Add" className={classes.fab} onClick={this.handleClickOpen}>
-					<AddIcon style={{ color: 'white' }} />
-				</Fab>
-
+				<Button
+					variant="outlined"
+					style={{
+						textTransform: 'none',
+						width: '5%',
+						backgroundColor: '#284456',
+						color: 'white'
+					}}
+					onClick={this.handleClickOpen}
+				>
+					Logout
+				</Button>
 				<Dialog
 					PaperProps={{
 						style: {
@@ -156,80 +159,32 @@ class DialogQueues extends React.Component {
 					open={this.state.open}
 					onClose={this.handleClose}
 					aria-labelledby="form-dialog-title"
+					max-width="105% !important;"
 				>
 					<DialogTitle id="form-dialog-title" style={{ backgroundColor: '#00897b' }}>
 						<Typography variant="h5" style={{ color: 'white' }}>
-							Add a new Queue
+							Logout
 						</Typography>
 					</DialogTitle>
 					<br />
+					<br />
 					<DialogContent>
-						<DialogContentText />
-						<br />
-						<Typography variant="h6" style={{ color: 'white' }}>
-							Queue Name
-						</Typography>
-						<br />
-						<TextField
-							variant="outlined"
-							style={{ backgroundColor: 'white' }}
-							autoFocus
-							margin="dense"
-							id="queueName"
-							label="Name"
-							type="email"
-							fullWidth
-							onChange={this.handleInputName}
-							value={this.state.queueName}
-						/>
-						<br />
-						<br />
-						<br />
-
-						<DropdownDurability
-							onChange={(durability) => {
-								this.setState({ durability });
-							}}
-						/>
-						<br />
-						<br />
-						<DropdownAutodelete
-							onChange={(autoDelete) => {
-								this.setState({ autoDelete });
-							}}
-						/>
-						<br />
-						<br />
-						{this.state.showError == true ? (
-							<Typography variant="h7" style={{ color: '#f44336' }}>
-								Please provide all the details
-							</Typography>
-						) : (
-							''
-						)}
-						{this.state.showSuccess == true ? (
-							<Typography variant="h7" style={{ color: 'white' }}>
-								Queue {this.state.queueName} created successfully!
-							</Typography>
-						) : (
-							''
-						)}
+						<DialogContentText style={{ color: 'white', fontSize: 20 }}>
+							Are you sure you want to logout?
+						</DialogContentText>
 					</DialogContent>
 					<DialogActions>
 						<Grid container spacing={7}>
 							<Grid style={{ margin: '4%' }}>
-								<Button onClick={this.handleAdd} className={classes.button}>
-									Add Queue
-								</Button>
+								<Link style={{ textDecoration: 'none' }} to="/">
+									<Button onClick={this.handleAdd} className={classes.button}>
+										Yes
+									</Button>
+								</Link>
 							</Grid>
 							<Grid style={{ margin: '4%' }}>
 								<Button onClick={this.handleClickClose} className={classes.button}>
-									Cancel
-								</Button>
-							</Grid>
-							<Grid style={{ margin: '4%' }}>
-								<Button onClick={this.handleClickClear} className={classes.button}>
-									Clear
+									No
 								</Button>
 							</Grid>
 						</Grid>
@@ -240,8 +195,8 @@ class DialogQueues extends React.Component {
 	}
 }
 
-DialogQueues.propTypes = {
+DialogExchanges.propTypes = {
 	classes: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(DialogQueues);
+export default withStyles(styles)(DialogExchanges);

@@ -30,12 +30,17 @@ import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
+import { Grid, Typography } from '@material-ui/core';
 import axios from 'axios';
 
 const styles = (theme) => ({
 	button: {
-		backgroundColor: '#284456',
-		color: 'white'
+		backgroundColor: '#00897b',
+		color: 'white',
+		'&:hover': {
+			backgroundColor: 'white',
+			color: 'black'
+		}
 	},
 	fab: {
 		margin: theme.spacing.unit,
@@ -56,7 +61,9 @@ class DialogExchanges extends React.Component {
 			exchangeName: '',
 			type: '',
 			durability: '',
-			autoDelete: ''
+			autoDelete: '',
+			showError: false,
+			showSuccess: false
 		};
 	}
 
@@ -71,6 +78,13 @@ class DialogExchanges extends React.Component {
 	handleClickClose = () => {
 		this.setState({ open: false });
 	};
+
+	handleClickClear = () => {
+		this.setState({
+			exchangeName: '',
+			showSuccess: false
+		});
+	};
 	handleInputName = (event) => {
 		const { target } = event;
 		const value = target.value;
@@ -83,7 +97,11 @@ class DialogExchanges extends React.Component {
 
 	handleAdd = () => {
 		if (this.state.exchangeName == '' || this.state.type.name == '' || this.state.durability.name == '') {
-			window.confirm('please provide all the details');
+			{
+				this.setState({
+					showError: true
+				});
+			}
 		} else {
 			let host = sessionStorage.getItem('Host');
 			let port = sessionStorage.getItem('Port');
@@ -107,7 +125,12 @@ class DialogExchanges extends React.Component {
 				.then(function(response) {})
 				.catch(function(error) {});
 
-			window.confirm('exchange' + ' ' + this.state.exchangeName + ' ' + 'created successfully ');
+			{
+				this.setState({
+					showError: false,
+					showSuccess: true
+				});
+			}
 		}
 	};
 
@@ -121,15 +144,35 @@ class DialogExchanges extends React.Component {
 				</Fab>
 
 				<Dialog
+					PaperProps={{
+						style: {
+							backgroundColor: '#284456',
+							boxShadow: 'none'
+						}
+					}}
+					fullWidth={true}
+					maxWidth={'sm'}
 					open={this.state.open}
 					onClose={this.handleClose}
 					aria-labelledby="form-dialog-title"
-					max-width="95% !important;"
+					max-width="105% !important;"
 				>
-					<DialogTitle id="form-dialog-title">Add a new Exchange</DialogTitle>
+					<DialogTitle id="form-dialog-title" style={{ backgroundColor: '#00897b' }}>
+						<Typography variant="h5" style={{ color: 'white' }}>
+							Add a new Exchange
+						</Typography>
+					</DialogTitle>
+					<br />
+					<br />
 					<DialogContent>
 						<DialogContentText />
+						<Typography variant="h6" style={{ color: 'white' }}>
+							Exchange Name
+						</Typography>
+						<br />
 						<TextField
+							variant="outlined"
+							style={{ backgroundColor: 'white' }}
 							autoFocus
 							margin="dense"
 							id="exchangeName"
@@ -137,25 +180,60 @@ class DialogExchanges extends React.Component {
 							type="email"
 							fullWidth
 							onChange={this.handleInputName}
+							value={this.state.exchangeName}
 						/>
+						<br />
+
+						<br />
+						<br />
 						<DropdownType
 							onChange={(type) => {
 								this.setState({ type });
 							}}
 						/>
+						<br />
+
+						<br />
 						<DropdownDurability
 							onChange={(durability) => {
 								this.setState({ durability });
 							}}
 						/>
+						<br />
+						<br />
+						{this.state.showError == true ? (
+							<Typography variant="h7" style={{ color: '#f44336' }}>
+								Please provide all the details
+							</Typography>
+						) : (
+							''
+						)}
+						{this.state.showSuccess == true ? (
+							<Typography variant="h7" style={{ color: 'white' }}>
+								exchange {this.state.exchangeName} created successfully!
+							</Typography>
+						) : (
+							''
+						)}
 					</DialogContent>
 					<DialogActions>
-						<Button onClick={this.handleAdd} className={classes.button}>
-							Add Exchange
-						</Button>
-						<Button onClick={this.handleClickClose} className={classes.button}>
-							Cancel
-						</Button>
+						<Grid container spacing={7}>
+							<Grid style={{ margin: '4%' }}>
+								<Button onClick={this.handleAdd} className={classes.button}>
+									Add Exchange
+								</Button>
+							</Grid>
+							<Grid style={{ margin: '4%' }}>
+								<Button onClick={this.handleClickClose} className={classes.button}>
+									Cancel
+								</Button>
+							</Grid>
+							<Grid style={{ margin: '4%' }}>
+								<Button onClick={this.handleClickClear} className={classes.button}>
+									Clear
+								</Button>
+							</Grid>
+						</Grid>
 					</DialogActions>
 				</Dialog>
 			</div>

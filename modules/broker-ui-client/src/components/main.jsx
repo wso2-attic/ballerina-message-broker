@@ -20,7 +20,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Navbar from './Base/Header/Navbar';
-import Login from './login/Login';
+import Login from './Base/Header/login/Login';
 
 const drawerWidth = 240;
 
@@ -46,7 +46,10 @@ class LoginInterface extends React.Component {
 		const { classes } = this.props;
 
 		return (
-			<div className={classes.root}>
+			<div
+				style={{ background: 'linear-gradient(to right bottom,#000033,#284456,#00897b,#33ccff)' }}
+				className={classes.root}
+			>
 				<div align="center">
 					<Navbar />
 				</div>

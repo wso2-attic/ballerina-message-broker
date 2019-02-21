@@ -22,6 +22,7 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import MessagebrokerImage from '../images/message-broker.png';
+import Logout from './logout/Logout';
 
 const styles = {
 	Toolbar: {
@@ -42,6 +43,9 @@ const styles = {
  */
 
 class Navbar extends React.Component {
+	logout = () => {
+		return <Logout />;
+	};
 	render() {
 		const { classes } = this.props;
 
@@ -49,16 +53,21 @@ class Navbar extends React.Component {
 			<div>
 				<AppBar position="fixed" color="#284456">
 					<Toolbar className={classes.Toolbar}>
-						<div>
-							{
+						<div style={{ display: 'inline' }}>
+							{sessionStorage.getItem('isLoggedIn') == 'true' ? (
+								<img src={MessagebrokerImage} height="30%" width="50%" style={{ marginLeft: '60%' }} />
+							) : (
 								<img
 									src={MessagebrokerImage}
-									alt=""
-									height="20%"
+									height="30%"
 									width="50%"
-									style={{ marginLeft: '53%', position: 'relative' }}
+									style={{ marginRight: '100px' }}
 								/>
-							}
+							)}
+						</div>
+
+						<div style={{ display: 'inline', marginLeft: '70%' }}>
+							{sessionStorage.getItem('isLoggedIn') == 'true' ? <Logout /> : ''}
 						</div>
 					</Toolbar>
 				</AppBar>

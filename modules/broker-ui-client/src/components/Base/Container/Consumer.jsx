@@ -271,6 +271,7 @@ class Consumer extends React.Component {
 									</Select>
 								</FormControl>
 								<br />
+								<br />
 
 								<TableConsumers data={this.props.match.params.name} />
 							</div>

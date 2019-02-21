@@ -19,7 +19,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import InputLabel from '@material-ui/core/InputLabel';
+import { Typography } from '@material-ui/core';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
@@ -64,9 +64,13 @@ class DropdownType extends React.Component {
 		return (
 			<div className={classes.root}>
 				<FormControl className={classes.formControl}>
-					<InputLabel htmlFor="exchange type">Type</InputLabel>
+					<Typography variant="h6" style={{ color: 'white' }}>
+						Type
+					</Typography>
+					<br />
 					<Select
 						native
+						style={{ backgroundColor: 'white' }}
 						value={this.state.age}
 						onChange={this.handleChange('name')}
 						inputProps={{
@@ -74,10 +78,9 @@ class DropdownType extends React.Component {
 							id: 'age-native-simple'
 						}}
 					>
-						<option value="" />
-						<option value={'direct'}>direct</option>
-						<option value={'topic'}>topic</option>
-						<option value={'fanout'}>fanout</option>
+						<option value={'direct'}>Direct</option>
+						<option value={'topic'}>Topic</option>
+						<option value={'fanout'}>Fanout</option>
 					</Select>
 				</FormControl>
 			</div>
