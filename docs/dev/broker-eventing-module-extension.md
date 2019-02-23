@@ -6,11 +6,11 @@ Eventing module consist of basically two parts.
 
 Following sequence diagrams can be used to understand the high level functionality of this module.
 - Registering an Event Publisher
-![Event Triggering](../images/Retrieving the needed Event Publisher.png)
+![Event Triggering](../images/retrieving-the-needed-event-publisher.png)
 - Loading the needed resources
-![Event Triggering](../images/Observable Resource Load.png)
+![Event Triggering](../images/observable-resource-load.png)
 - Triggering an Event
-![Event Triggering](../images/Event  Triggering.png)
+![Event Triggering](../images/event-triggering.png)
 
 
 ## Current Resource Classes that trigger Events
