@@ -123,7 +123,6 @@ class DialogExchanges extends React.Component {
 					durable: this.state.durability.name
 				})
 				.then((response) => {
-					console.log(response);
 					this.setState({
 						showError: false,
 						showSuccess: true
@@ -137,7 +136,6 @@ class DialogExchanges extends React.Component {
 
 	render(props) {
 		const { classes } = this.props;
-		console.log(this.state.showSuccess);
 
 		return (
 			<div>

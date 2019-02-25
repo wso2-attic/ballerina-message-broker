@@ -110,7 +110,7 @@ class DialogQueues extends React.Component {
 			let password = sessionStorage.getItem('Password');
 			let encodedString = new Buffer(username + ':' + password).toString('base64');
 
-			const url = ` https://${host}:${port}/broker/v1.0/queues/`;
+			const url = `https://${host}:${port}/broker/v1.0/queues/`;
 
 			axios
 				.post(url, {
@@ -124,7 +124,6 @@ class DialogQueues extends React.Component {
 					autoDelete: this.state.autoDelete.name
 				})
 				.then((response) => {
-					console.log(response);
 					this.setState({
 						showError: false,
 						showSuccess: true
