@@ -188,7 +188,7 @@ class TableQueues extends React.Component {
 		let encodedString = new Buffer(username + ':' + password).toString('base64');
 
 		axios
-			.get(` https://${host}:${port}/broker/v1.0/queues`, {
+			.get(`https://${host}:${port}/broker/v1.0/queues`, {
 				withCredentials: true,
 				headers: {
 					'Content-Type': 'application/json',
@@ -214,8 +214,9 @@ class TableQueues extends React.Component {
 
 				this.setState({ data: DATA });
 			})
-			.then((response) => response.data)
-			.catch(function(error) {});
+			.catch((error) => {
+				console.log(error);
+			});
 	}
 
 	searchingFor = (term) => {

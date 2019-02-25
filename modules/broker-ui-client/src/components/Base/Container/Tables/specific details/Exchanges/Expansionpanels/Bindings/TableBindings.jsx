@@ -167,7 +167,7 @@ class TableBindings extends React.Component {
 		let password = sessionStorage.getItem('Password');
 		let encodedString = new Buffer(username + ':' + password).toString('base64');
 
-		const url = ` https://${host}:${port}/broker/v1.0/exchanges/${this.props.data.trim()}/bindings`;
+		const url = `https://${host}:${port}/broker/v1.0/exchanges/${this.props.data.trim()}/bindings`;
 
 		axios
 			.get(url, {
@@ -189,7 +189,9 @@ class TableBindings extends React.Component {
 
 				this.setState({ data: DATA });
 			})
-			.catch(function(error) {});
+			.catch((error) => {
+				console.log(error);
+			});
 	}
 
 	handleChangePage = (event, page) => {

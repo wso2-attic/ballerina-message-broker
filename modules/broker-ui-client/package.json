@@ -27,6 +27,7 @@
 		"react-transition-group": "^2.3.0",
 		"typeface-roboto": "0.0.54"
 	},
+
 	"scripts": {
 		"start": "react-scripts start",
 		"build": "react-scripts build",

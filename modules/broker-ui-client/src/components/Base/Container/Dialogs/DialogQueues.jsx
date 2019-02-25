@@ -123,15 +123,16 @@ class DialogQueues extends React.Component {
 					durable: this.state.durability.name,
 					autoDelete: this.state.autoDelete.name
 				})
-				.then(function(response) {})
-				.catch(function(error) {});
-
-			{
-				this.setState({
-					showError: false,
-					showSuccess: true
+				.then((response) => {
+					console.log(response);
+					this.setState({
+						showError: false,
+						showSuccess: true
+					});
+				})
+				.catch((error) => {
+					console.log(error);
 				});
-			}
 		}
 	};
 

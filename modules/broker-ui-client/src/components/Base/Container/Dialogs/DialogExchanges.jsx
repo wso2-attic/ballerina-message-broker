@@ -109,7 +109,7 @@ class DialogExchanges extends React.Component {
 			let password = sessionStorage.getItem('Password');
 			let encodedString = new Buffer(username + ':' + password).toString('base64');
 
-			const url = ` https://${host}:${port}/broker/v1.0/exchanges/`;
+			const url = `https://${host}:${port}/broker/v1.0/exchanges/`;
 
 			axios
 				.post(url, {
@@ -122,20 +122,22 @@ class DialogExchanges extends React.Component {
 					type: this.state.type.name,
 					durable: this.state.durability.name
 				})
-				.then(function(response) {})
-				.catch(function(error) {});
-
-			{
-				this.setState({
-					showError: false,
-					showSuccess: true
+				.then((response) => {
+					console.log(response);
+					this.setState({
+						showError: false,
+						showSuccess: true
+					});
+				})
+				.catch((error) => {
+					console.log(error);
 				});
-			}
 		}
 	};
 
 	render(props) {
 		const { classes } = this.props;
+		console.log(this.state.showSuccess);
 
 		return (
 			<div>

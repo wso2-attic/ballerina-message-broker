@@ -221,7 +221,9 @@ class TableConsumers extends React.Component {
 
 				this.setState({ data: DATA });
 			})
-			.catch(function(error) {});
+			.catch((error) => {
+				console.log(error);
+			});
 	}
 
 	componentDidMount() {}
