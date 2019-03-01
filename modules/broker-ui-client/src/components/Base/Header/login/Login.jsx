@@ -194,11 +194,16 @@ class Login extends React.Component {
 									required
 									style={{ backgroundColor: 'white' }}
 									onChange={this.handleInputChange}
-									inputStyle={{ textAlign: 'center' }}
+									inputStyle={{
+										textAlign: 'center'
+									}}
 									InputProps={{
 										classes: {
 											input: classes.resize
 										}
+									}}
+									FormLabelClasses={{
+										fontColor: 'white'
 									}}
 								/>
 							</Grid>

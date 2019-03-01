@@ -205,7 +205,7 @@ class Tablebindings extends React.Component {
 		let password = sessionStorage.getItem('Password');
 		let encodedString = new Buffer(username + ':' + password).toString('base64');
 
-		const url = ` https://${host}:${port}/broker/v1.0/queues/${this.props.data.trim()}/bindings`;
+		const url = `https://${host}:${port}/broker/v1.0/queues/${this.props.data.trim()}/bindings`;
 
 		axios
 			.get(url, {
@@ -227,7 +227,9 @@ class Tablebindings extends React.Component {
 
 				this.setState({ data: DATA });
 			})
-			.catch(function(error) {});
+			.catch((error) => {
+				console.log(error);
+			});
 	};
 
 	render() {

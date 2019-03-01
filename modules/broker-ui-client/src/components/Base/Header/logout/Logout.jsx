@@ -27,7 +27,6 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import { Grid, Typography } from '@material-ui/core';
-import axios from 'axios';
 
 const styles = (theme) => ({
 	button: {
@@ -37,30 +36,20 @@ const styles = (theme) => ({
 			backgroundColor: 'white',
 			color: 'black'
 		}
-	},
-	fab: {
-		margin: theme.spacing.unit,
-		backgroundColor: '#284456'
 	}
 });
+
 /**
- * Construct the popup window for adding new exchanges to the broker
- * @class  DialogExchanges
+ * Construct the logout window 
+ * @class Logout
  * @extends {React.Component}
  */
 
-class DialogExchanges extends React.Component {
+class Logout extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {
-			exchangeName: '',
-			type: '',
-			durability: '',
-			autoDelete: '',
-			showError: false,
-			showSuccess: false
-		};
+		this.state = {};
 	}
 
 	state = {
@@ -75,61 +64,9 @@ class DialogExchanges extends React.Component {
 		this.setState({ open: false });
 	};
 
-	handleClickClear = () => {
-		this.setState({
-			exchangeName: '',
-			showSuccess: false
-		});
+	logout = () => {
+		sessionStorage.clear();
 	};
-	handleInputName = (event) => {
-		const { target } = event;
-		const value = target.value;
-		const name = target.id;
-
-		this.setState({
-			[name]: value
-		});
-	};
-
-	handleAdd = () => {
-		if (this.state.exchangeName == '' || this.state.type.name == '' || this.state.durability.name == '') {
-			{
-				this.setState({
-					showError: true
-				});
-			}
-		} else {
-			let host = sessionStorage.getItem('Host');
-			let port = sessionStorage.getItem('Port');
-			let username = sessionStorage.getItem('Username');
-			let password = sessionStorage.getItem('Password');
-			let encodedString = new Buffer(username + ':' + password).toString('base64');
-
-			const url = ` https://${host}:${port}/broker/v1.0/exchanges/`;
-
-			axios
-				.post(url, {
-					withCredentials: true,
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Basic ${encodedString}`
-					},
-					name: this.state.exchangeName,
-					type: this.state.type.name,
-					durable: this.state.durability.name
-				})
-				.then(function(response) {})
-				.catch(function(error) {});
-
-			{
-				this.setState({
-					showError: false,
-					showSuccess: true
-				});
-			}
-		}
-	};
-
 	render(props) {
 		const { classes } = this.props;
 
@@ -177,7 +114,7 @@ class DialogExchanges extends React.Component {
 						<Grid container spacing={7}>
 							<Grid style={{ margin: '4%' }}>
 								<Link style={{ textDecoration: 'none' }} to="/">
-									<Button onClick={this.handleAdd} className={classes.button}>
+									<Button onClick={this.logout} className={classes.button}>
 										Yes
 									</Button>
 								</Link>
@@ -194,9 +131,8 @@ class DialogExchanges extends React.Component {
 		);
 	}
 }
-
-DialogExchanges.propTypes = {
+Logout.propTypes = {
 	classes: PropTypes.object.isRequired
 };
 
-export default withStyles(styles)(DialogExchanges);
+export default withStyles(styles)(Logout);

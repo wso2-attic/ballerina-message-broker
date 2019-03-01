@@ -41,7 +41,6 @@ class App extends React.Component {
 				<Router>
 					<Switch>
 						<Route exact path="/" render={(props) => <Main />} />
-						<PrivateRoute path="/exchange" component={Exchange} />
 						<PrivateRoute exact path="/exchange" component={Exchange} />
 						<PrivateRoute exact path="/queue" component={Queue} />
 						<PrivateRoute exact path="/consumer" component={Consumer} />

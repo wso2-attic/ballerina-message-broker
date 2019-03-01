@@ -128,7 +128,7 @@ class ExchangeClicked extends React.Component {
 		let password = sessionStorage.getItem('Password');
 		let encodedString = new Buffer(username + ':' + password).toString('base64');
 
-		const url = ` https://${host}:${port}/broker/v1.0/exchanges/${this.props.match.params.name.trim()}`;
+		const url = `https://${host}:${port}/broker/v1.0/exchanges/${this.props.match.params.name.trim()}`;
 
 		axios
 			.get(url, {
@@ -143,7 +143,9 @@ class ExchangeClicked extends React.Component {
 
 				this.setState({ data: DATA });
 			})
-			.catch(function(error) {});
+			.catch((error) => {
+				console.log(error);
+			});
 	}
 
 	render(props) {

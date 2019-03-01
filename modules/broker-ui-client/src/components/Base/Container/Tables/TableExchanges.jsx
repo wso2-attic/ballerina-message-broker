@@ -180,7 +180,7 @@ class TableExchanges extends React.Component {
 		let encodedString = new Buffer(username + ':' + password).toString('base64');
 
 		axios
-			.get(` https://${host}:${port}/broker/v1.0/exchanges`, {
+			.get(`https://${host}:${port}/broker/v1.0/exchanges`, {
 				withCredentials: true,
 				headers: {
 					'Content-Type': 'application/json',
@@ -202,7 +202,9 @@ class TableExchanges extends React.Component {
 
 				this.setState({ data: DATA });
 			})
-			.catch(function(error) {});
+			.catch((error) => {
+				console.log(error);
+			});
 	}
 
 	searchingFor = (term) => {
@@ -260,7 +262,7 @@ class TableExchanges extends React.Component {
 												<TableCell component="th" scope="row" padding="none">
 													<Link
 														className={classes.tabledetails}
-														to={`/exchange/${element.name} `}
+														to={`/exchange/${element.name}`}
 													>
 														{element.name}
 													</Link>
