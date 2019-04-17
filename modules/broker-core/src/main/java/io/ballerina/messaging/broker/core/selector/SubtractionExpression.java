@@ -22,43 +22,46 @@ package io.ballerina.messaging.broker.core.selector;
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression.This class is doing a equality comparison between left and right values
- * provided and evaluate to a boolean value.
+ * Implementation of a  expression. Here we calculate the subtraction of two expressions and evaluate to a object value.
  */
-public class EqualityExpression implements BooleanExpression {
+public class SubtractionExpression implements Expression<Metadata> {
 
     private final Expression<Metadata> left;
     private final Expression<Metadata> right;
+    private static final int LONG = 1;
+    private static final int DOUBLE = 2;
 
-    public EqualityExpression(Expression left, Expression right) {
+    public SubtractionExpression(Expression left, Expression right) {
 
         this.left = left;
         this.right = right;
     }
 
     @Override
-    public boolean evaluate(Metadata metadata) {
+    public Object evaluate(Metadata metadata) {
 
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
         if (leftValue instanceof Number && rightValue instanceof Number) {
-            Class lv = leftValue.getClass();
-            if ((lv == Integer.class) || (lv == Long.class)) {
-                if (rightValue instanceof Long) {
-                    long value = ((Number) leftValue).longValue();
-                    long value1 = ((Number) rightValue).longValue();
-                    return value == value1;
-                }
-            }
-            if (rightValue instanceof Double) {
-                Double value = ((Number) leftValue).doubleValue();
-                Double value1 = ((Number) rightValue).doubleValue();
-                return value.equals(value1);
+            switch (numberType((Number) leftValue, (Number) rightValue)) {
+                case LONG:
+                    return ((Number) leftValue).longValue() - ((Number) rightValue).longValue();
+
+                case DOUBLE:
+                    return ((Number) leftValue).doubleValue() - ((Number) rightValue).doubleValue();
             }
         }
-        if ((leftValue instanceof String) && (rightValue instanceof String)) {
-            return rightValue == leftValue || leftValue.equals(rightValue);
+        return null;
+    }
+
+    private int numberType(Number left, Number right) {
+
+        Class lv = left.getClass();
+        if ((lv == Integer.class) || (lv == Long.class)) {
+            if (right instanceof Long) {
+                return LONG;
+            }
         }
-        return false;
+        return DOUBLE;
     }
 }

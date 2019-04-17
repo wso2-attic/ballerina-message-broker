@@ -16,21 +16,20 @@
  * under the License.
  *
  */
-
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression.This class is doing a equality comparison between left and right values
+ * Implementation of a boolean expression.This class is doing a not equal comparison between left and right values
  * provided and evaluate to a boolean value.
  */
-public class EqualityExpression implements BooleanExpression {
+public class NotEqualExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private final Expression<Metadata> right;
 
-    public EqualityExpression(Expression left, Expression right) {
+    public NotEqualExpression(Expression left, Expression right) {
 
         this.left = left;
         this.right = right;
@@ -41,24 +40,24 @@ public class EqualityExpression implements BooleanExpression {
 
         Object leftValue = left.evaluate(metadata);
         Object rightValue = right.evaluate(metadata);
+
         if (leftValue instanceof Number && rightValue instanceof Number) {
             Class lv = leftValue.getClass();
             if ((lv == Integer.class) || (lv == Long.class)) {
                 if (rightValue instanceof Long) {
                     long value = ((Number) leftValue).longValue();
                     long value1 = ((Number) rightValue).longValue();
-                    return value == value1;
+                    return value != value1;
                 }
             }
-            if (rightValue instanceof Double) {
-                Double value = ((Number) leftValue).doubleValue();
-                Double value1 = ((Number) rightValue).doubleValue();
-                return value.equals(value1);
-            }
+            Double value = ((Number) leftValue).doubleValue();
+            Double value1 = ((Number) rightValue).doubleValue();
+            return !value.equals(value1);
         }
         if ((leftValue instanceof String) && (rightValue instanceof String)) {
-            return rightValue == leftValue || leftValue.equals(rightValue);
+            return rightValue != leftValue;
         }
         return false;
     }
 }
+

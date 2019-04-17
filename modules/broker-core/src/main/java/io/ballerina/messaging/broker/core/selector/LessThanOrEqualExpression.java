@@ -16,21 +16,20 @@
  * under the License.
  *
  */
-
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression.This class is doing a equality comparison between left and right values
- * provided and evaluate to a boolean value.
+ * Implementation of a boolean expression.This class is doing a less than or equal comparison between left and right
+ * values provided and evaluate to a boolean value.
  */
-public class EqualityExpression implements BooleanExpression {
+public class LessThanOrEqualExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private final Expression<Metadata> right;
 
-    public EqualityExpression(Expression left, Expression right) {
+    public LessThanOrEqualExpression(Expression left, Expression right) {
 
         this.left = left;
         this.right = right;
@@ -47,17 +46,14 @@ public class EqualityExpression implements BooleanExpression {
                 if (rightValue instanceof Long) {
                     long value = ((Number) leftValue).longValue();
                     long value1 = ((Number) rightValue).longValue();
-                    return value == value1;
+                    return value < value1 || value == value1;
                 }
             }
-            if (rightValue instanceof Double) {
+            if ((leftValue instanceof Double) || (rightValue instanceof Double)) {
                 Double value = ((Number) leftValue).doubleValue();
                 Double value1 = ((Number) rightValue).doubleValue();
-                return value.equals(value1);
+                return value < value1 || value.equals(value1);
             }
-        }
-        if ((leftValue instanceof String) && (rightValue instanceof String)) {
-            return rightValue == leftValue || leftValue.equals(rightValue);
         }
         return false;
     }

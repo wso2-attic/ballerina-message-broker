@@ -22,11 +22,11 @@ options {
   UNICODE_INPUT = true;
 
   // some performance optimizations
+  OPTIMIZE_TOKEN_MANAGER = true;
   ERROR_REPORTING = false;
 }
 
 PARSER_BEGIN(MessageFilter)
-
 /*
  * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -49,28 +49,45 @@ PARSER_BEGIN(MessageFilter)
 package io.ballerina.messaging.broker.core.selector.generated;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import io.ballerina.messaging.broker.core.selector.BooleanExpression;
 import io.ballerina.messaging.broker.core.selector.EqualityExpression;
+import io.ballerina.messaging.broker.core.selector.GreaterThanExpression;
+import io.ballerina.messaging.broker.core.selector.GreaterThanOrEqualExpression ;
+import io.ballerina.messaging.broker.core.selector.NotEqualExpression;
+import io.ballerina.messaging.broker.core.selector.LessThanExpression;
+import io.ballerina.messaging.broker.core.selector.LessThanOrEqualExpression;
+import io.ballerina.messaging.broker.core.selector.AdditionExpression;
+import io.ballerina.messaging.broker.core.selector.SubtractionExpression;
+import io.ballerina.messaging.broker.core.selector.MultiplicationExpression;
+import io.ballerina.messaging.broker.core.selector.DivisionExpression;
+import io.ballerina.messaging.broker.core.selector.NotOperationExpression;
+import io.ballerina.messaging.broker.core.selector.AndOperationExpression;
+import io.ballerina.messaging.broker.core.selector.OrOperationExpression;
+import io.ballerina.messaging.broker.core.selector.IsNotNullExpression;
+import io.ballerina.messaging.broker.core.selector.IsNullExpression;
+import io.ballerina.messaging.broker.core.selector.LikeComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.NotLikeComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.BetweenComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.NotBetweenComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.InComparissionExpression;
+import io.ballerina.messaging.broker.core.selector.NotInComparissionExpression;
 import io.ballerina.messaging.broker.core.selector.ConstantExpression;
+import io.ballerina.messaging.broker.core.selector.UnaryNegative;
 import io.ballerina.messaging.broker.core.selector.Expression;
 import io.ballerina.messaging.broker.core.selector.JmsPropertyExpression;
 
 public class MessageFilter {
-
     public MessageFilter() {
         this(new StringReader(""));
     }
-
     public MessageFilter(String selectorString) {
         this(new StringReader(selectorString));
     }
-
     public BooleanExpression parse() throws Exception {
         return parseSelector();
     }
-
 }
-
 PARSER_END(MessageFilter)
 SKIP :
 {
@@ -87,47 +104,241 @@ TOKEN [IGNORE_CASE] :
   | <  ESCAPE  : "ESCAPE">
   | <  IN      : "IN">
   | <  IS      : "IS">
-  | <  TRUE    : "TRUE" >
-  | <  FALSE   : "FALSE" >
   | <  NULL    : "NULL" >
 }
 
 TOKEN [IGNORE_CASE] :
 {
-    <NUMERIC_LITERAL: (["0"-"9"])+(["L"])?>
-   | <STRING_LITERAL: "'" (("''") | ~["'"] )* "'">
+    < DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* (["l","L"])? >
+     | < HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+   | < OCTAL_LITERAL: "0" (["0"-"7"])* >
+   | < STRING_LITERAL: "'" ( ("''") | ~["'"] )*  "'" >
+   | < FLOATING_POINT_LITERAL:
+             (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? // matches: 5.5 or 5. or 5.5E10 or 5.E10
+           | "." (["0"-"9"])+ (<EXPONENT>)?              // matches: .5 or .5E10
+           | (["0"-"9"])+ <EXPONENT>                     // matches: 5E10
+       >
+     | < #EXPONENT: "E" (["+","-"])? (["0"-"9"])+ >
 }
-
 TOKEN :
 {
     <IDENTIFIER : ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_","$"])*>
 }
+TOKEN :
+    {
+     < EQUAL: "=" >
+    | < GTREATER: ">" >
+    | < LESS: "<" >
+    | < GTREATER_EQUAL: ">=" >
+    | < LESS_EQUAL: "<=" >
+    | < NOTEQUAL: "<>" >
+    }
 
 BooleanExpression parseSelector() :
 { BooleanExpression value; }
 {
-     value=ComparisonExpression() <EOF>
+     value = OrExpression() <EOF>
      { return value; }
 }
+
+BooleanExpression OrExpression():
+{
+  BooleanExpression value;
+ BooleanExpression value1;
+
+}
+{
+   value = AndExpression()
+   (
+       <OR>value1 = AndExpression(){ value = new OrOperationExpression(value,value1);}
+   )*
+   {return value;}
+}
+
+BooleanExpression AndExpression():
+{
+ BooleanExpression value;
+ BooleanExpression value1;
+}
+{
+   value = NotExpression()
+   (
+       <AND>value1 = NotExpression(){ value = new AndOperationExpression(value,value1);}
+   )*
+   {return value;}
+}
+
+BooleanExpression NotExpression() :
+{
+    BooleanExpression value;
+
+ }
+  {
+   (
+     <NOT> value = NotExpression(){ value = new NotOperationExpression(value);}
+     | value = ComparisonExpression()
+   )
+     { return value;}
+ }
 
 BooleanExpression ComparisonExpression() :
 {
     BooleanExpression value;
-    Expression left;
-    Expression right;
+        Expression left;
+        Expression right;
+        ArrayList list;
+        Expression t;
+        Expression u ;
+        String a;
+        String b;
 }
 {
-    left = identifier()
+    left = sum()
     (
-        "=" right = value()
-        {
-            value = new EqualityExpression(left, right);
-        }
-    )
+        <EQUAL> right = unary(){ value = new EqualityExpression(left , right);}
+       | <GTREATER> right =  unary() { value= new GreaterThanExpression(left , right); }
+       | <GTREATER_EQUAL> right = unary()  { value = new GreaterThanOrEqualExpression(left , right); }
+       |  <LESS> right = unary() { value = new LessThanExpression(left , right); }
+       |  <LESS_EQUAL> right = unary() { value = new LessThanOrEqualExpression(left , right); }
+       | <NOTEQUAL> right = unary() { value = new NotEqualExpression(left , right);}
+       |
+         LOOKAHEAD(2)// if next two tokens are <IS> and <NULL> go to choice 1
+                            <IS> <NULL>
+                            {
+                                value = new IsNullExpression(left); // choice 1
+                            }
+       |
+                            <IS> <NOT> <NULL>
+                            {
+                                value = new IsNotNullExpression(left);
+                            }
+       |
+                                  {
+                     					b = null;
+                     				}
+                     		        <LIKE> a = stringLitteral()
+                     		        	[ <ESCAPE> b = stringLitteral() ] //[] brackets are choose point if we want we can go inside or we can ignore
+                     		        {
+                                         value = new LikeComparissionExpression(left, a, b);
+                     		        }
+       |
+                     	        	LOOKAHEAD(2)
+                     				{
+                     					b = null;
+                     				}
+                     		        <NOT> <LIKE> a = stringLitteral() [ <ESCAPE> b = stringLitteral() ]
+                     		        {
+                                         value = new NotLikeComparissionExpression(left, a, b);
+                     		        }
+       |<BETWEEN> t = sum() <AND> u = sum()
+
+                                 { value = new BetweenComparissionExpression(left,t,u);}
+       |
+        LOOKAHEAD(2)
+                    <NOT><BETWEEN> t = sum() <AND> u = sum()
+                          { value = new NotBetweenComparissionExpression(left,t,u);}
+       | <IN>
+                      		        "("
+                      		            a = stringLitteral()
+                      		            {
+                      			            list = new ArrayList();
+                      			            list.add( a );
+                      		            }
+                      			        (
+                      			        	","
+                      			            a = stringLitteral()
+                      			            {
+                      				            list.add( a );
+                      			            }
+                      			        )*
+                      		        ")"
+                      		        {
+                      		           value = new  InComparissionExpression(left, list);
+             }
+       |
+        LOOKAHEAD(2)
+                     <NOT> <IN>
+                       "("
+                          a = stringLitteral()
+                       {
+                      	list = new ArrayList();
+                      		list.add( a );
+                        }
+                      	 (
+                      	   ","
+                      		a = stringLitteral()
+                      		 {
+                      			list.add( a );
+                      		  }
+                      	 )*
+                           ")"
+                      		  {
+                      		      value =  new NotInComparissionExpression(left, list);
+                      		  }
+                         )
 
     { return value; }
 }
+Expression sum() :
+{
+ Expression first;
+ Expression second;
+}
+{
+   first = factor()
+   (
+     (
+    "+"second = factor(){ first = new AdditionExpression(first , second);}
+     |"-"second = factor(){ first = new SubtractionExpression(first , second);}
 
+     )
+   )*
+     {return first;}
+}
+
+Expression factor() :
+{
+  Expression first;
+  Expression second;
+}
+{
+   first = unary()
+   (
+      (
+       "*"second = unary(){ first = new  MultiplicationExpression(first , second);}
+       | "/"second = unary(){ first = new  DivisionExpression(first , second);}
+
+       )
+   )*
+        {return first;}
+}
+Expression unary() :
+{
+  Expression first;
+}
+{
+    (
+       "+" first =  element()
+       | "-" first =  element(){ first = new UnaryNegative(first);}
+       | first = element()
+    )
+
+    {return first;}
+}
+
+
+Expression element() :
+{
+ Expression first;
+}
+{
+   (
+     first =identifier()
+     | first = value()
+     |"("first = sum()")"
+   )
+   {return first;}
+}
 Expression identifier() :
 {
     Token t;
@@ -148,49 +359,110 @@ Expression identifier() :
 Expression value() :
 {
     Expression expr;
+    String s;
 }
 {
     (
-        expr = stringLiteral()
-        | expr = numericLiteral()
-    )
+        (
+             s = stringLitteral()
+               {
+                   expr = new ConstantExpression(s);
+                 }
+        )
+        | expr =  NumericalValues()
+
+     )
     {
         return expr;
     }
 }
+Expression NumericalValues():
+{
+  Expression expr;
+}
+{     (
+              expr = decimalLitteral()
+            | expr = floatingPointLitteral()
+            | expr = hexLitteral()
+            | expr = octalLitteral()
+       )
+           {
+           return expr;
+           }
 
-Expression stringLiteral() :
+
+}
+
+String stringLitteral() :
 {
     Token t;
-    Expression expr;
+    StringBuffer rc = new StringBuffer();
+
 }
 {
-    t = <STRING_LITERAL>
-    {
-        String text = t.image;
-        char[] charArray = new char[text.length()-2];
-        for (int i = 1; i < text.length() - 1; i++) {
-            charArray[i-1] = text.charAt(i);
+     t = <STRING_LITERAL>
+        {
+        	// Decode the sting value.
+        	String image = t.image;
+        	for( int i = 1; i < image.length()-1; i++ ) {
+        		char c = image.charAt(i);
+
+       			rc.append(c);
+        	}
+    	    return rc.toString();
         }
-        expr = new ConstantExpression(new String(charArray));
-    }
-    {
-        return expr;
-    }
 }
 
-Expression numericLiteral() :
+Expression decimalLitteral() :
 {
     Token t;
     Expression expr;
 }
 {
-    t = <NUMERIC_LITERAL>
+    t = <DECIMAL_LITERAL>
     {
         String text = t.image;
-        expr = ConstantExpression.createFromNumericInteger(text);
+        expr = ConstantExpression.createFromNumericDecimal(text);
     }
+    {return expr;}
+}
+
+Expression floatingPointLitteral():
+{
+  Token t;
+  Expression expr;
+}
+{
+    t= <FLOATING_POINT_LITERAL>
     {
-        return expr;
+       String text = t.image;
+       expr = ConstantExpression.createFromNumericFloat(text);
     }
+   {return expr;}
+}
+Expression hexLitteral() :
+{
+    Token t;
+    Expression expr;
+}
+{
+    t = <HEX_LITERAL>
+    {
+        String text = t.image;
+        expr = ConstantExpression.createFromNumericHex(text);
+    }
+    {return expr;}
+}
+Expression octalLitteral() :
+{
+    Token t;
+    Expression expr;
+}
+{
+    t = <OCTAL_LITERAL>
+    {
+        String text = t.image;
+        expr = ConstantExpression.createFromNumericOctal(text);
+    }
+    {return expr;}
 }

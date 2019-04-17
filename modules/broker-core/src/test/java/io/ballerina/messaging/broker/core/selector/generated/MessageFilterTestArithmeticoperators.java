@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 /**
  * {@link MessageFilter} parsing and expression evaluation tests
  */
-public class MessageFilterTest {
+public class MessageFilterTestArithmeticoperators {
 
     @Test (dataProvider = "positive-filter-strings", description = "Test parsing correct filter strings")
     private void testPositiveFilterStringParsing(String filterString) throws Exception {
@@ -46,33 +46,37 @@ public class MessageFilterTest {
     @DataProvider(name = "positive-filter-strings")
     public Object[] positiveFilterStrings() {
         return new String[] {
-                // valid string literal
-                "MyProperty = 'abcdef'",
-                "MyProperty = 'abcde''f'",
-                "MyProperty = 'ABCDEF'",
-                "MyProperty = 'aBCDEF'",
-                "MyProperty = 'aB$CDEF'",
-                "MyProperty = 'aB_CDEF'",
-                "MyProperty = 'aB1CDEF'",
-                "MyProperty = 'aBCdef$'",
-                "MyProperty = 'aBCdef_'",
-                "MyProperty = 'aBCdef2'",
-                "MyProperty = '_aBCdef2'",
-                "MyProperty = '$aBCdef2'",
-                "MyProperty = '2aBCdef2'",
-                "MyProperty = 'aB$C1d_ef2'",
-                // valid identifiers
-                "abCDEF = 'abcdef'",
-                "ab9cdef = 'abcdef'",
-                "ab$cdef = 'abcdef'",
-                "ab_cdef = 'abcdef'",
-                "abcdef2 = 'abcdef'",
-                "abcdef$ = 'abcdef'",
-                "abcdef_ = 'abcdef'",
-                // numeric literals
-                "Age = 10",
-                "Age = 40l",
-                "Age = 45L"
+               //  unary operations
+                "MyProperty + -1 = -5",
+                "-MyProperty * 8 = 23.4",
+                "-(MyProperty + 1*6) = 345",
+                "MyProperty + -34  < 4455",
+                "MyProperty + (-300)  <= 44.5",
+                "MyProperty * (+3.56)  >= 4",
+                "MyProperty + -(234 + (+45) - (-4))  <> 4455",
+                //multiplication ,division , addition and subtraction
+                "MyProperty + 1 = 222",
+                "MyProperty - 10 = 0",
+                "MyProperty * 2 <> 88",
+                "MyProperty / 5 = 89",
+                "MyProperty + (1+1) = 6.6",
+                "(MyProperty +1) * 2.6 > 765",
+                "MyProperty * (20+100) = 500",
+                "(MyProperty*8.1) <= 20.2",
+                "(MyProperty/8) + 12 = 67",
+                "MyProperty * (78/3) >= 675.90",
+                "(MyProperty + (34*6) +1) + 3  =  3000",
+                "MyProperty - +345 = 45.90",
+                "-MyProperty + (45.9+ 345) = 567",
+                "Age * 3 * 9 / 5 <> 10.2",
+                "Age + 1 BETWEEN 2 AND 3",
+                "Age + 1 NOT BETWEEN Eno + 1 AND EF -1",
+//                // values with Exponent
+                "Age + 344 <= 40E0",
+                "Age + 67.E10 >= 45L",
+                "Age * (4E5 + 67.E10) >= 45L",
+
+
         };
     }
 
@@ -80,19 +84,18 @@ public class MessageFilterTest {
     public Object[] negativeFilterStrings() {
         return new String[] {
                 "",
-                // invalid string literals
-                "MyProperty = 'abcde'f'",
-                "MyProperty = abcdef",
-                // invalid identifiers
-                "$yProperty = 'abcdef'",
-                "_yProperty = 'abcdef'",
-                "1yProperty = 'abcdef'",
-                "'property' = 'abcdef'",
-                "10 = Age",
-                // invalid numeric literals
-                "myProperty = 123LL",
-                "myProperty = 123ll",
-                "myProperty = 123lLl",
+                // invalid arithmetic operations
+                "MyProperty ++ 2 = 'abcde'f'",
+                "MyProperty+34+ = 8",
+
+                "MyProperty = 3.E",
+                "MyProperty = 3.EE",
+                "Property ++ = 89",
+                "--Property >= Age",
+                "Property +  <= 8",
+               "myProperty *()() = 123LL",
+                "myProperty + () 5= 123ll",
+                "myProperty+(5)(345) = 123lLl",
         };
     }
 }

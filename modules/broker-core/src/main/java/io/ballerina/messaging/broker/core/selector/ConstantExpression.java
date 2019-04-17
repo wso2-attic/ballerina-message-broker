@@ -24,36 +24,59 @@ import java.math.BigDecimal;
 /**
  * Represents a constant value in an expression.
  */
+
 public class ConstantExpression implements Expression<Object> {
 
     private final Object value;
 
     public ConstantExpression(Object value) {
+
         this.value = value;
     }
 
     @Override
     public Object evaluate(Object object) {
+
         return value;
     }
 
-    public static ConstantExpression createFromNumericInteger(String text) {
+    public static ConstantExpression createFromNumericDecimal(String text) {
 
         if (text.endsWith("l") || text.endsWith("L")) {
             text = text.substring(0, text.length() - 1);
         }
-
         Number value;
         try {
             value = Long.valueOf(text);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException var4) {
             value = new BigDecimal(text);
         }
 
-        if (value.intValue() < Integer.MAX_VALUE && value.intValue() > Integer.MIN_VALUE) {
-            value = value.intValue();
-        }
+        long l = value.longValue();
 
-        return new ConstantExpression(value);
+        return new ConstantExpression(l);
+    }
+
+    public static ConstantExpression createFromNumericHex(String text) {
+
+        Number value = Long.parseLong(text.substring(2), 16);
+        long l = value.longValue();
+
+        return new ConstantExpression(l);
+    }
+
+    public static ConstantExpression createFromNumericOctal(String text) {
+
+        Number value = Long.parseLong(text, 8);
+        long l = value.longValue();
+
+        return new ConstantExpression(l);
+    }
+
+    public static ConstantExpression createFromNumericFloat(String text) {
+
+        Number value = Double.valueOf(text);
+        double d = value.doubleValue();
+        return new ConstantExpression(d);
     }
 }

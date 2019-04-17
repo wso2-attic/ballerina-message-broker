@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
@@ -16,21 +17,21 @@
  * under the License.
  *
  */
-
 package io.ballerina.messaging.broker.core.selector;
 
 import io.ballerina.messaging.broker.core.Metadata;
 
 /**
- * Implementation of a boolean expression.This class is doing a equality comparison between left and right values
+ * Implementation of a boolean expression.This class is doing a less than comparison between left and right values
  * provided and evaluate to a boolean value.
  */
-public class EqualityExpression implements BooleanExpression {
+
+public class LessThanExpression implements BooleanExpression {
 
     private final Expression<Metadata> left;
     private final Expression<Metadata> right;
 
-    public EqualityExpression(Expression left, Expression right) {
+    public LessThanExpression(Expression left, Expression right) {
 
         this.left = left;
         this.right = right;
@@ -45,20 +46,19 @@ public class EqualityExpression implements BooleanExpression {
             Class lv = leftValue.getClass();
             if ((lv == Integer.class) || (lv == Long.class)) {
                 if (rightValue instanceof Long) {
-                    long value = ((Number) leftValue).longValue();
-                    long value1 = ((Number) rightValue).longValue();
-                    return value == value1;
+                    long l = ((Number) leftValue).longValue();
+                    long l1 = ((Number) rightValue).longValue();
+                    return l < l1;
                 }
             }
-            if (rightValue instanceof Double) {
-                Double value = ((Number) leftValue).doubleValue();
-                Double value1 = ((Number) rightValue).doubleValue();
-                return value.equals(value1);
+            if ((leftValue instanceof Double) || (rightValue instanceof Double)) {
+                Double l = ((Number) leftValue).doubleValue();
+                Double l1 = ((Number) rightValue).doubleValue();
+                return l < l1;
             }
-        }
-        if ((leftValue instanceof String) && (rightValue instanceof String)) {
-            return rightValue == leftValue || leftValue.equals(rightValue);
         }
         return false;
     }
 }
+
+

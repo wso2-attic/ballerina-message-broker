@@ -6,4 +6,5 @@
 - [Security Architecture](dev/security-architecture.md)
 - [Creating a RESTful service](dev/creating-a-new-rest-module.md)
 - [Message Persistence](dev/message-persistence.md)
+- [Using JMS selectors](dev/jms-selectors.md)
 - [Local Transaction Design](dev/local-transaction-design.md)

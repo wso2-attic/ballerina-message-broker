@@ -45,11 +45,13 @@ public class JmsPropertyExpression implements Expression<Metadata> {
     private final Expression<Metadata> jmsPropertyExpression;
 
     public JmsPropertyExpression(String name) {
+
         this.name = name;
         this.jmsPropertyExpression = JMS_PROPERTY_EXPRESSIONS.get(name);
     }
 
     static Object getValue(FieldValue value) {
+
         if (value != null) {
             switch (value.getType()) {
                 case SHORT_SHORT_INT:
@@ -77,6 +79,7 @@ public class JmsPropertyExpression implements Expression<Metadata> {
 
     @Override
     public Object evaluate(Metadata metadata) {
+
         if (jmsPropertyExpression != null) {
             return jmsPropertyExpression.evaluate(metadata);
         } else {
