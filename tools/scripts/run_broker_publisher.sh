@@ -98,7 +98,7 @@ getProperty()
 }
 
 # hash-map to store user test plan inputs
-declare -A testplan_user_inputs=(["JmeterHome"]="" ["BrokerPort"]="9000" ["AMQPListenerPort"]="5672" ["ThreadCount"]="1" ["NumberOfMessages"]="1000000" ["Throughput"]="5000" ["MessageSize"]="10KB")
+declare -A testplan_user_inputs=(["JmeterHome"]="" ["BrokerPort"]="9000" ["AMQPListenerPort"]="5672" ["ThreadCount"]="1" ["NumberOfMessages"]="1000000" ["Throughput"]="5000" ["MessageSize"]="10KB" ["property_name"]="property" ["property_value"]="10" ["property_type"]=java.lang.Integer)
 
 for parameter in "${!testplan_user_inputs[@]}";
 do
@@ -137,14 +137,14 @@ case $queue_name in
             then
                  rm resources/jndi_queue.properties
             fi
-            printf "connectionfactory.QueueConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://"$host_url":${testplan_user_inputs["AMQPListenerPort"]}'\nqueue.QueueName=micro_benchmark_queue1" >> resources/jndi_queue.properties
+            printf "connectionfactory.QueueConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://localhost:${testplan_user_inputs["AMQPListenerPort"]}'\nqueue.QueueName=micro_benchmark_queue1" >> resources/jndi_queue.properties
         ;;
     micro_benchmark_queue2)
         if [ -e resources/jndi_topic.properties ];
             then
                  rm resources/jndi_topic.properties
             fi
-            printf "connectionfactory.TopicConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://"$host_url":${testplan_user_inputs["AMQPListenerPort"]}'\ntopic.TopicName=micro_benchmark_queue2" >> resources/jndi_topic.properties
+            printf "connectionfactory.TopicConnectionFactory=amqp://admin:admin@clientID/carbon?brokerlist='tcp://localhost:${testplan_user_inputs["AMQPListenerPort"]}'\ntopic.TopicName=micro_benchmark_queue2" >> resources/jndi_topic.properties
         ;;
 esac
 
@@ -186,6 +186,7 @@ echo Host is set to "$host_url"
 echo Broker port is set to ${testplan_user_inputs["BrokerPort"]} and AMQP listener port is set to ${testplan_user_inputs["AMQPListenerPort"]}
 echo Jmeter home is set to - ${testplan_user_inputs["JmeterHome"]}
 echo Starting test process with ${testplan_user_inputs["NumberOfMessages"]} messages and and Throughput - ${testplan_user_inputs["Throughput"]}
+echo property name is ${testplan_user_inputs["property_name"]} and property value is - ${testplan_user_inputs["property_value"]}
 
 # calculate loop count
 loop_count=$(echo "${testplan_user_inputs["NumberOfMessages"]}/${testplan_user_inputs["ThreadCount"]}" | bc)
@@ -223,7 +224,7 @@ mkdir -p target/"$base_file_location"/"$folder_name"
 if [ ${testplan_user_inputs["JmeterHome"]} != '' ]
         then
             # if user specified jmeter home
-            ${testplan_user_inputs["JmeterHome"]}/bin/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${testplan_user_inputs["ThreadCount"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DTHROUGHPUT=${testplan_user_inputs["Throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
+            ${testplan_user_inputs["JmeterHome"]}/bin/jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DPROPERTY_NAME=${testplan_user_inputs["property_name"]} -DPROPERTY_VALUE=${testplan_user_inputs["property_value"]} -DPROPERTY_TYPE=${testplan_user_inputs["property_type"]} -DTHREAD_COUNT=${testplan_user_inputs["ThreadCount"]} -DDURATION_OF_THE_TEST=$duration_of_the_test -DLOOP_COUNT=$loop_count -DTHROUGHPUT=${testplan_user_inputs["Throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
         else
             jmeter_console_out="$(command -v jmeter)"
             if [${jmeter_console_out} == '']
@@ -233,7 +234,7 @@ if [ ${testplan_user_inputs["JmeterHome"]} != '' ]
                 else
                     echo "$jmeter_console_out"
                     # if JmeterHome is already configured
-                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DTHREAD_COUNT=${testplan_user_inputs["ThreadCount"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DTHROUGHPUT=${testplan_user_inputs["Throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
+                    jmeter -n -t "$jmx_file_location" -DJNDI_URL="$jndi_file_location" -DCONNECTION_FACTORY="$connection_factory_name" -DDESTINATION="$destination" -DPROPERTY_NAME=${testplan_user_inputs["property_name"]} -DPROPERTY_VALUE=${testplan_user_inputs["property_value"]} -DPROPERTY_TYPE=${testplan_user_inputs["property_type"]} -DTHREAD_COUNT=${testplan_user_inputs["ThreadCount"]} -DLOOP_COUNT=$loop_count -DDURATION_OF_THE_TEST=$duration_of_the_test -DTHROUGHPUT=${testplan_user_inputs["Throughput"]} -DFILE_PATH="$text_message_file_location"  -l target/"$base_file_location"/"$folder_name"/log/test_results.jtl -e -o target/"$base_file_location"/"$folder_name"/report/
             fi
         fi
 
