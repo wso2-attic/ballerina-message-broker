@@ -127,7 +127,7 @@ public class InitCmdTest extends CliTestParent {
         String[] cmd = { CLI_ROOT_COMMAND, "init" };
         String expectedExpMessage = "User password is not provided.";
 
-        boolean doesContain = false;
+        boolean failed = false;
 
         Main.main(cmd);
         // haven't used testNG builtin exception support because BrokerClientException doesn't support
@@ -135,10 +135,10 @@ public class InitCmdTest extends CliTestParent {
         try {
             Utils.getConfiguration(null);
         } catch (BrokerClientException ex) {
-            doesContain = ex.getMessages().stream().anyMatch(msg -> msg.contains(expectedExpMessage));
+            failed = true;
+            boolean doesContain = ex.getMessages().stream().anyMatch(msg -> msg.contains(expectedExpMessage));
+            Assert.assertTrue(doesContain, "exception message is invalid");
         }
-
-        Assert.assertTrue(doesContain, "no exception is thrown or exception message is invalid");
+        Assert.assertTrue(failed, "no exception is thrown but BrokerClientException was expected");
     }
-
 }
