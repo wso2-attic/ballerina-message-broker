@@ -1,6 +1,10 @@
 [![Build Status](https://wso2.org/jenkins/buildStatus/icon?job=ballerina-platform/ballerina-message-broker)](https://wso2.org/jenkins/job/ballerina-platform/job/ballerina-message-broker/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+# This repository is no longer maintained.
+
+Issue reports and pull requests will not be attended.
+
 # Ballerina Message Broker
 
 Ballerina Message Broker is a lightweight, easy-to-use, 100% open source message-brokering server. It uses AMQP 0-9-1 
